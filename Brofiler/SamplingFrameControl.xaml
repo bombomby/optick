@@ -1,0 +1,11 @@
+﻿<UserControl x:Class="Profiler.SamplingFrameControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300"
+             xmlns:Profiler_Data="clr-namespace:Profiler.Data"
+             d:DataContext="{d:DesignInstance {x:Type Profiler_Data:TestSamplingFrame}, IsDesignTimeCreatable=True}">
+    <Grid></Grid>
+</UserControl>

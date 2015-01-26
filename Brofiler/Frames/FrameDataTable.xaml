@@ -1,0 +1,57 @@
+﻿<UserControl
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+	xmlns:Profiler_Data="clr-namespace:Profiler.Data"
+	mc:Ignorable="d"
+	x:Class="Profiler.FrameDataTable"
+	x:Name="UserControl" d:DesignHeight="480"
+	d:DataContext="{Binding Source={x:Static Profiler_Data:TestEventFrame.Board}}" Width="803.57">
+
+  <UserControl.Resources>
+    <CollectionViewSource x:Key="BoardViewResource" Source="{Binding}">
+      <CollectionViewSource.SortDescriptions>
+        <scm:SortDescription PropertyName="SelfPercent" Direction="Descending" />
+      </CollectionViewSource.SortDescriptions>
+    </CollectionViewSource>
+  </UserControl.Resources>
+  
+	<Grid x:Name="LayoutRoot" Margin="0">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="413*"/>
+		</Grid.RowDefinitions>
+    <TextBox x:Name="FilterText" TextWrapping="Wrap" Text="Type function name here ..." Background="#FFB2ECFF" SnapsToDevicePixels="True" VerticalAlignment="Top" TextChanged="FilterText_TextChanged" GotFocus="FilterText_GotFocus" PreviewKeyDown="FilterText_PreviewKeyDown" Margin="1" FontWeight="Normal" />
+    <DataGrid VirtualizingStackPanel.IsVirtualizing="True" 
+				VirtualizingStackPanel.VirtualizationMode="Recycling" 
+				x:Name="SummaryTable" 
+				ItemsSource="{Binding Source={StaticResource BoardViewResource}}" 
+				HorizontalGridLinesBrush="{x:Null}" 
+				VerticalGridLinesBrush="{x:Null}" 
+				CanUserAddRows="False" 
+				CanUserDeleteRows="False" 
+				Background="{x:Null}" 
+				BorderBrush="{x:Null}" 
+				AutoGenerateColumns="True" 
+				HorizontalContentAlignment="Stretch" 
+				VerticalContentAlignment="Stretch" 
+				VerticalScrollBarVisibility="Visible" 
+				AlternatingRowBackground="{DynamicResource TableAlternationBrush}" 
+				SnapsToDevicePixels="True" 
+				Grid.Row="1" 
+				Margin="1,1,1,1" 
+				AutoGeneratingColumn="SummaryTable_AutoGeneratingColumn" 
+				SelectionChanged="SummaryTable_SelectionChanged" 
+				KeyDown="SummaryTable_KeyDown" 
+				Sorting="SummaryTable_Sorting"
+				TextOptions.TextFormattingMode="Display">
+      <DataGrid.Resources>
+        <Style TargetType="DataGridRow">
+          <EventSetter Event="MouseDoubleClick" Handler="Row_DoubleClick"/>
+        </Style>
+      </DataGrid.Resources>
+    </DataGrid>
+  </Grid>
+</UserControl>

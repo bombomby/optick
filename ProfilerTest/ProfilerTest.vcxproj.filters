@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="ProfilerTest.cpp" />
+    <ClCompile Include="TestEngine.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="TestEngine.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="common">
+      <UniqueIdentifier>{bf62b990-2d18-41d5-9831-b85591f970b5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
