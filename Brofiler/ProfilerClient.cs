@@ -49,6 +49,9 @@ namespace Profiler
 					stream = client.GetStream();
 				}
 
+				if (!stream.DataAvailable)
+					return null;
+
         return DataResponse.Create(stream);
 			}
 			catch (System.IO.IOException ex)

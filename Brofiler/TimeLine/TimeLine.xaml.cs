@@ -251,7 +251,7 @@ namespace Profiler
 				if (response != null)
           Application.Current.Dispatcher.Invoke(new Action(() => ApplyResponse(response)));
 				else 
-					Thread.Sleep(1000);
+					Thread.Sleep(100);
       }
     }
 
