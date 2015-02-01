@@ -8,9 +8,9 @@ using System.Windows;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Brofiler")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Super Lightweight C++ Profiler for Games")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Microsoft")]
+[assembly: AssemblyCompany("Mail.ru Games")]
 [assembly: AssemblyProduct("Brofiler")]
 [assembly: AssemblyCopyright("Copyright © Vadim Syusarev 2015")]
 [assembly: AssemblyTrademark("")]
@@ -51,5 +51,5 @@ using System.Windows;
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.1.0")]
+[assembly: AssemblyVersion("1.0.2.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
