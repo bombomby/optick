@@ -44,8 +44,8 @@ namespace Profiler
 
     private void ApplyFilterToEventTree(HashSet<Object> filter, FilterMode mode)
     {
-			if (ShowAllFunctions.IsChecked ?? true)
-				mode.ShowAll = true;
+			if (FocusCallStack.IsChecked ?? true)
+				mode.HideNotRelative = true;
 
 			if (FilterByTime.IsChecked ?? true)
 			{
@@ -54,12 +54,11 @@ namespace Profiler
 					mode.TimeLimit = limit;
 			}
 
-      //ThreadStart thread = new ThreadStart(delegate ()
+      HashSet<Object> roof = null;
+      
+      if (filter != null && filter.Count > 0)
       {
-        //Stopwatch stop = new Stopwatch();
-        //stop.Start();
-
-        HashSet<Object> roof = new HashSet<Object>();
+        roof = new HashSet<Object>();
 
         foreach (Object node in filter)
         {
@@ -72,25 +71,20 @@ namespace Profiler
             current = current.Parent;
           }
         }
-
-        foreach (var node in EventTreeView.ItemsSource)
-        {
-          if (node is BaseTreeNode)
-          {
-            BaseTreeNode eventNode = node as BaseTreeNode;
-
-            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-            {
-              eventNode.ApplyFilter(roof, filter, mode);
-            }), DispatcherPriority.Loaded);
-          }
-        }
-        //stop.Stop();
-        //MessageBox.Show(stop.ElapsedMilliseconds.ToString());
       }
-      //);
 
-      //new Thread(thread).Start();
+      foreach (var node in EventTreeView.ItemsSource)
+      {
+        if (node is BaseTreeNode)
+        {
+          BaseTreeNode eventNode = node as BaseTreeNode;
+
+          Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+          {
+            eventNode.ApplyFilter(roof, filter, mode);
+          }), DispatcherPriority.Loaded);
+        }
+      }
     }
 
 		private void OnTreeViewItemMouseRightButtonDown(object sender, MouseButtonEventArgs e)

@@ -134,8 +134,8 @@
         <Image Height="20" Width="20" Margin="0,3,0,0" Source="/Brofiler;component/TimeLine/Icons/Timer-icon.png" Stretch="Fill"/>
       </ToggleButton>
       <TextBox x:Name="TimeLimit" Width="45" Text="0.001" FontWeight="Bold" Margin="0,0,1,0" VerticalAlignment="Center" BorderThickness="2,1,2,2" />
-      <ToggleButton x:Name="ShowAllFunctions" VerticalAlignment="Top" Height="24" Padding="1,-4,1,-1" ToolTip="Show all nodes in the tree" FontWeight="Bold" Width="24" Click="RefreshFilter" Margin="1,1,0,1">
-        <Image Height="18" Width="18" Margin="0,2,0,0" Source="/Brofiler;component/TimeLine/Icons/Eye-icon.png" Stretch="Fill"/>
+      <ToggleButton x:Name="FocusCallStack" VerticalAlignment="Top" Height="24" Padding="1,-4,1,-1" ToolTip="Focus on callstacks" FontWeight="Bold" Width="24" Click="RefreshFilter" Margin="1,1,0,1">
+        <Image Height="24" Width="24" Margin="-3,2,0,0" Source="/Brofiler;component/TimeLine/Icons/CallStack-icon.png" Stretch="Fill"/>
       </ToggleButton>
       <ToggleButton x:Name="ShowPercentButton" Content="%" VerticalAlignment="Top" Height="24" FontSize="18.667" Padding="1,-4,1,-1" ToolTip="Show events in percent" FontWeight="Bold" Width="24" Margin="1,1,0,1" Foreground="#FF333333"/>
       <ToggleButton x:Name="ShowPathButton" VerticalAlignment="Top" Height="24" FontSize="18.667" Padding="1,-4,1,-1" ToolTip="Show source path" FontWeight="Bold" Width="24" Margin="1">

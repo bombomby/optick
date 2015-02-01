@@ -306,4 +306,7 @@
   <ItemGroup>
     <Resource Include="TimeLine\Icons\Glasses-icon.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="TimeLine\Icons\CallStack-icon.png" />
+  </ItemGroup>
 </Project>

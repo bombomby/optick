@@ -49,8 +49,8 @@ namespace Profiler.Data
         return;
       }
 
-      if (Expanded == false && Visible == Visibility.Visible)
-        return;
+			//if (Expanded == false && Visible == Visibility.Visible)
+			//  return;
 
       Expanded = false;
       Visible = Visibility.Visible;
@@ -87,8 +87,6 @@ namespace Profiler.Data
       node.Ratio = node.Duration / Duration;
     }
 
-		//public abstract bool ApplyFilter(HashSet<Object> nodes, FilterMode mode);
-
     public abstract void ApplyFilter(HashSet<Object> roof, HashSet<Object> nodes, FilterMode mode);
   }
 
@@ -111,8 +109,8 @@ namespace Profiler.Data
       if (Duration < mode.TimeLimit)
       {
         Hide();
-      } 
-      else if (roof.Contains(this))
+      }
+      else if (roof != null && roof.Contains(this))
       {
         Visible = Visibility.Visible; 
 
@@ -120,8 +118,8 @@ namespace Profiler.Data
           node.ApplyFilter(roof, nodes, mode);
 
         Expanded = true;
-      } 
-      else if (nodes.Contains(this) || mode.ShowAll)
+      }
+      else if (nodes == null || nodes.Contains(this) || !mode.HideNotRelative)
       {
         Application.Current.Dispatcher.BeginInvoke(new Action(() =>
         {
@@ -135,44 +133,6 @@ namespace Profiler.Data
       }
     }
 
-    //public override bool ApplyFilter(HashSet<Object> nodes, FilterMode mode)
-    //{
-    //  //Thread.Sleep(5);
-
-    //  if (Duration < mode.TimeLimit)
-    //  {
-    //    Hide();
-    //    return false;
-    //  }
-
-    //  if (nodes == null || nodes.Contains(this))
-    //  {
-    //    if (mode.ChangeExpand)
-    //      Collapse();
-    //    else
-    //      Show();
-
-    //    return true;
-    //  }
-
-    //  bool isVisible = false;
-    //  foreach (var node in Children)
-    //  {
-    //    isVisible |= node.ApplyFilter(nodes, mode);
-    //  }
-
-    //  Visibility result = isVisible || mode.ShowAll ? Visibility.Visible : Visibility.Collapsed;
-
-    //  Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-    //  {
-    //    Visible = result;
-
-    //    if (mode.ChangeExpand)
-    //      Expanded = isVisible;
-    //  }), System.Windows.Threading.DispatcherPriority.Background);
-      
-    //  return isVisible;
-    //}
   }
 
   public class EventNode : TreeNode<EventDescription>
