@@ -44,6 +44,7 @@ namespace Profiler
 
 		fd_set recieveSet;
 
+		CriticalSection lock;
 		std::string errorMessage;
 
 		void Close()
@@ -58,10 +59,10 @@ namespace Profiler
 		int Bind(short port)
 		{
 			address.sin_family      = AF_INET;
-			address.sin_addr.s_addr = inet_addr("127.0.0.1");
+			address.sin_addr.s_addr = INADDR_ANY;
 			address.sin_port        = htons(port);
 
-			if (::bind(listenSocket, (sockaddr *)&address, sizeof(address)) != SOCKET_ERROR)
+			if (::bind(listenSocket, (sockaddr *)&address, sizeof(address)) == 0)
 				return ERROR_SUCCESS;
 
 			return WSAGetLastError();
@@ -76,7 +77,9 @@ namespace Profiler
 		}
 
 		void Disconnect()
-		{
+		{ 
+			CRITICAL_SECTION(lock);
+
 			if (acceptSocket != INVALID_SOCKET)
 			{
 				::closesocket(acceptSocket);
@@ -121,13 +124,18 @@ namespace Profiler
 		}
 
 		void Accept()
-		{
-			acceptSocket = accept(listenSocket, nullptr, nullptr);
-			BRO_VERIFY(acceptSocket != INVALID_SOCKET, "Can't accept socket", GetErrorMessage());
+		{ 
+			SOCKET incomingSocket = accept(listenSocket, nullptr, nullptr);
+			BRO_VERIFY(incomingSocket != INVALID_SOCKET, "Can't accept socket", GetErrorMessage());
+
+			CRITICAL_SECTION(lock);
+			acceptSocket = incomingSocket;
 		}
 
 		bool Send(const char *buf, int len)
 		{
+			CRITICAL_SECTION(lock);
+
 			if (acceptSocket == INVALID_SOCKET)
 				return false;
 
@@ -141,7 +149,9 @@ namespace Profiler
 		}
 
 		int Receive(char *buf, int len)
-		{
+		{ 
+			CRITICAL_SECTION(lock);
+
 			if (acceptSocket == INVALID_SOCKET)
 				return 0;
 

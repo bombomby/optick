@@ -38,11 +38,12 @@ namespace Profiler
         Data.EventFrame frame = (Data.EventFrame)DataContext;
 				LayoutRoot.Children.Clear();
 
+
 				foreach (var entry in frame.Categories)
 				{
 					Rectangle rect = new Rectangle();
 					rect.Width = Double.NaN;
-					rect.Height = entry.Duration;
+					rect.Height = FrameHeightConverter.Convert(entry.Duration);
           rect.Fill = new SolidColorBrush(entry.Description.Color);
 					LayoutRoot.Children.Add(rect);
 				}

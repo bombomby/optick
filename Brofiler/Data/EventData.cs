@@ -41,15 +41,8 @@ namespace Profiler.Data
 			set
 			{
 				fullName = value;
-				name = fullName;
-
-				int lastNameSymbol = fullName.IndexOf('(');
-				if (lastNameSymbol != -1)
-				{
-					String leftPart = fullName.Substring(0, lastNameSymbol);
-					int startIndex = leftPart.LastIndexOf(' ');
-					name = leftPart.Substring(startIndex + 1);
-				}
+				name = StripFunctionArguments(fullName);
+				name = StripReturnValue(name);
 			}
 		}
 
@@ -57,6 +50,51 @@ namespace Profiler.Data
 		public FileLine Path { 
 			get { return path; } 
 			set { path = value != null ? value : FileLine.Empty; } 
+		}
+
+		static char startBracket = '(';
+		static char endBracket = ')';
+		static char[] brackets = new char[] { startBracket, endBracket };
+		static String StripFunctionArguments(String name)
+		{
+			int counter = 0;
+			
+			int index = name.Length - 1;
+
+			while (index > 0)
+			{
+				index = name.LastIndexOfAny(brackets, index);
+				if (index != -1)
+				{
+					counter = counter + (name[index] == endBracket ? 1 : -1);
+					if (counter == 0)
+						return name.Substring(0, index);
+
+					--index;
+				}
+			}
+
+			return name;
+		}
+
+		static String[] callConventions = { "__thiscall", "__fastcall", "__cdecl", "__clrcall", "__stdcall", "__vectorcall" };
+		static String StripReturnValue(String name)
+		{
+			if (name.Length == 0)
+				return name;
+
+			foreach (String functionCall in callConventions)
+			{
+				int index = name.IndexOf(functionCall);
+				if (index != -1)
+				{
+					int cutIndex = index + functionCall.Length + 1;
+					if (cutIndex < name.Length)
+						return name.Substring(cutIndex);
+				}
+			}
+
+			return name;
 		}
 	}
 }

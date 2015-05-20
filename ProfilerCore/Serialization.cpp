@@ -13,9 +13,13 @@ namespace Profiler
 
 	OutputDataStream &operator << ( OutputDataStream &stream, const char* val )
 	{
-		uint32 length = (uint32)strlen(val);
+		uint32 length = val == nullptr ? 0 : (uint32)strlen(val);
 		stream << length;
-		stream.write( val, length );
+
+		if (length > 0)
+		{
+			stream.write( val, length );
+		}
 		return stream;
 	}
 

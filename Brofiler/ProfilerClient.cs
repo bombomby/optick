@@ -112,7 +112,6 @@ namespace Profiler
 					lock (criticalSection)
 					{
 						//client.Client.Shutdown(SocketShutdown.Both);
-						client.Client.Disconnect(true);
 						client = new TcpClient();
 					}
 				}

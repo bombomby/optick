@@ -9,7 +9,7 @@ namespace Profiler
 {
   public struct NetworkProtocol
   {
-    public const UInt32 NETWORK_PROTOCOL_VERSION = 2;
+    public const UInt32 NETWORK_PROTOCOL_VERSION = 3;
   }
 
   public class DataResponse
@@ -21,6 +21,7 @@ namespace Profiler
       SamplingFrame,		
       NullFrame,				
       ReportProgress,	
+			Handshake
     }
 
     public Type ResponseType { get; set; }
@@ -93,6 +94,7 @@ namespace Profiler
     Stop,
     TurnSampling,
 		SetupHook,
+		SetupWorkingThread,
   }
 
   public abstract class Message
@@ -174,6 +176,27 @@ namespace Profiler
 			base.Write(writer);
 			writer.Write(address);
 			writer.Write(isHooked);
+		}
+	}
+
+	class SetupWorkingThreadMessage : Message
+	{
+		UInt32 threadID;
+
+		public SetupWorkingThreadMessage(UInt32 threadID)
+		{
+			this.threadID = threadID;
+		}
+
+		public override Int32 GetMessageType()
+		{
+			return (Int32)MessageType.SetupWorkingThread;
+		}
+
+		public override void Write(BinaryWriter writer)
+		{
+			base.Write(writer);
+			writer.Write(threadID);
 		}
 	}
 

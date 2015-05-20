@@ -54,7 +54,7 @@ __declspec(naked) void HookFunction()
 	if (Core::frame.threadUniqueID == GetThreadUniqueID())
 	{
 		HookSlot<N>::eventData = &(Core::frame.NextEvent());
-		HookSlot<N>::eventData->description = HookSlot<N>::description;
+		HookSlot<N>::eventData->description = HookSlot<N>::description->description;
 		QueryPerformanceCounter((LARGE_INTEGER*)(&HookSlot<N>::eventData->start));
 	}
 
@@ -152,12 +152,8 @@ Hook::Hook()
 void HookDescription::Init(const Symbol& symbol)
 {
 	nameString = std::string(symbol.function.begin(), symbol.function.end());
-	name = nameString.c_str();
-
 	fileString = std::string(symbol.file.begin(),symbol.file.end()); 
-	file = fileString.c_str();
-
-	line = symbol.line;
+	description = EventDescription::Create(nameString.c_str(), fileString.c_str(), symbol.line);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool HookSlotWrapper::Clear()

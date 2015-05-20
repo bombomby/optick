@@ -10,11 +10,10 @@ struct EventDescription;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class EventDescriptionBoard
 {
-	CriticalSection lock;
 	std::vector<EventDescription*> board;
 	static EventDescriptionBoard instance;
 public:
-	uint32 Register(EventDescription& description);
+	EventDescription* CreateDescription();
 
 	static EventDescriptionBoard& Get();
 
@@ -22,6 +21,10 @@ public:
 	bool HasSamplingEvents() const;
 
 	const std::vector<EventDescription*>& GetEvents() const;
+
+	~EventDescriptionBoard();
+
+	friend OutputDataStream& operator << ( OutputDataStream& stream, const EventDescriptionBoard& ob);
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator << ( OutputDataStream& stream, const EventDescriptionBoard& ob);

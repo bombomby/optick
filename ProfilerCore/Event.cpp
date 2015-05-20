@@ -8,16 +8,18 @@
 namespace Profiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-EventDescription::EventDescription(const char* eventName, const char* fileName, const uint32 fileLine, const uint32 eventColor /*= Color::Null */) 
-	: name(eventName), file(fileName), line(fileLine), color(eventColor), isSampling(false)
+EventDescription* EventDescription::Create(const char* eventName, const char* fileName, const unsigned long fileLine, const unsigned long eventColor /*= Color::Null*/)
 {
-	index = EventDescriptionBoard::Get().Register(*this);
+	EventDescription* result = EventDescriptionBoard::Get().CreateDescription();
+	result->name = eventName;
+	result->file = fileName;
+	result->line = fileLine;
+	result->color = eventColor;
+	return result;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-EventDescription::EventDescription()
-	: name(""), file(""), line(0), color(0), isSampling(false)
+EventDescription::EventDescription() : name(""), file(""), line(0), color(0), isSampling(false)
 {
-	index = EventDescriptionBoard::Get().Register(*this);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventDescription& EventDescription::operator=(const EventDescription&)
@@ -25,35 +27,30 @@ EventDescription& EventDescription::operator=(const EventDescription&)
 	BRO_FAILED("It is pointless to copy EventDescription. Please, check you logic!"); return *this; 
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Event::Event(const EventDescription& description)
+EventData* Event::Start(const EventDescription& description)
 {
+	EventData* result = nullptr;
 	if (GetThreadUniqueID() == Core::frame.threadUniqueID)
 	{
-		data = &Core::frame.NextEvent();
-		data->description = &description;
-		data->Start();
+		result = &Core::frame.NextEvent();
+		result->description = &description;
+		result->Start();
 
 		if (description.isSampling)
 		{
 			InterlockedIncrement(&Core::frame.isSampling);
 		}
-	} 
-	else
-	{
-		data = 0;
 	}
+	return result;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Event::~Event()
+void Event::Stop(EventData& data)
 {
-	if (data)
-	{
-		data->Stop();
+	data.Stop();
 
-		if (data->description->isSampling)
-		{
-			InterlockedDecrement(&Core::frame.isSampling);
-		}
+	if (data.description->isSampling)
+	{
+		InterlockedDecrement(&Core::frame.isSampling);
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

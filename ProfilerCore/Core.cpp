@@ -26,15 +26,6 @@ DWORD WINAPI ProfilerThread(PVOID)
 	return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Core::CheckAndUpdateThreadID()
-{
-	DWORD currentThreadID = GetCurrentThreadId();
-	BRO_VERIFY(currentThreadID == mainThreadID || INVALID_THREAD_ID == mainThreadID, "Can't use PROFILER_FRAME in different threads!", return);
-	mainThreadID = currentThreadID;
-
-	frame.threadUniqueID = isActive ? GetThreadUniqueID() : nullptr;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpProgress(const char* message)
 {
 	progressReportedLastTimestampMS = GetTimeMilliSeconds();
@@ -66,6 +57,8 @@ void Core::DumpFrames()
 
 		frameList.pop_front();
 	}
+
+	frame.Clear();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpSamplingData()
@@ -88,9 +81,11 @@ Core::Core() : mainThreadID(INVALID_THREAD_ID), isActive(false), progressReporte
 	BRO_ASSERT( workerThread, "Can't create thread!" )
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Core::Update()
+void Core::Update(const FrameDescription& scope)
 {
-	if (isActive)
+	CRITICAL_SECTION(lock);
+
+	if (GetThreadUniqueID() == frame.threadUniqueID)
 	{
 		frame.frameTime.Stop();
 		frameList.push_back(FrameData());
@@ -100,17 +95,29 @@ void Core::Update()
 			DumpCapturingProgress();		
 	}
 
-	Server::Get().Update();
-	CheckAndUpdateThreadID();
+	UpdateEvents(scope);
 
-	if (isActive)
+	if (GetThreadUniqueID() == frame.threadUniqueID)
 	{
 		frame.Reset();
 		frame.frameTime.Start();
 	}
-	else
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Core::UpdateEvents(const FrameDescription& scope)
+{
+	DWORD currentThreadID = GetCurrentThreadId();
+
+	if (mainThreadID == INVALID_THREAD_ID)
+		mainThreadID = currentThreadID;
+
+	if (activeThreads.find(currentThreadID) == activeThreads.end())
+		activeThreads.insert(std::make_pair(currentThreadID, &scope));
+
+	if (currentThreadID == mainThreadID)
 	{
-		frame.Clear();
+		Server::Get().Update();
+		frame.threadUniqueID = isActive ? GetThreadUniqueID() : nullptr;
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -142,6 +149,16 @@ void Core::StartSampling()
 void Core::Activate( bool active )
 {
 	isActive = active;
+
+	if (active)
+	{
+		if (mainThreadID == INVALID_THREAD_ID && !activeThreads.empty())
+		{
+			mainThreadID = activeThreads.begin()->first;
+		}
+
+		SendHandshakeResponse();
+	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpCapturingProgress()
@@ -161,6 +178,35 @@ bool Core::IsTimeToReportProgress() const
 {
 	return GetTimeMilliSeconds() > progressReportedLastTimestampMS + 200;
 }
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool Core::SetWorkingThread(uint32 threadID)
+{
+	if (activeThreads.find(threadID) != activeThreads.end())
+	{
+		mainThreadID = threadID;
+		return true;
+	}
+
+	return false;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Core::SendHandshakeResponse()
+{
+	OutputDataStream stream;
+
+	stream << mainThreadID;
+	stream << activeThreads.size();
+	for each (auto it in activeThreads)
+	{
+		stream << it.first;
+		stream << it.second->name;
+	}
+
+	Server::Get().Send(DataResponse::Handshake, stream);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Frame Core::frame;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -188,14 +234,19 @@ PROFILER_API Frame& GetFrame()
 	return Core::GetFrame();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-PROFILER_API void NextFrame()
+PROFILER_API void NextFrame(const FrameDescription& scope)
 {
-	return Core::NextFrame();
+	return Core::NextFrame(scope);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 PROFILER_API bool IsActive()
 {
 	return Core::Get().isActive;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+PROFILER_API bool IsActiveCurrentThread()
+{
+	return Core::Get().frame.threadUniqueID == GetThreadUniqueID();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

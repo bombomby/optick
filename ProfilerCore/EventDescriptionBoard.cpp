@@ -5,12 +5,7 @@
 namespace Profiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-uint32 EventDescriptionBoard::Register(EventDescription& description)
-{ 
-	CRITICAL_SECTION(lock)
-	board.push_back(&description);
-	return board.size() - 1;
-}
+static CriticalSection lock;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventDescriptionBoard& EventDescriptionBoard::Get()
 { 
@@ -18,7 +13,8 @@ EventDescriptionBoard& EventDescriptionBoard::Get()
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void EventDescriptionBoard::SetSamplingFlag( int index, bool flag )
-{
+{ 
+	CRITICAL_SECTION(lock)
 	BRO_VERIFY(index < (int)board.size(), "Invalid EventDescription index", return);
 
 	if (index < 0)
@@ -33,6 +29,7 @@ void EventDescriptionBoard::SetSamplingFlag( int index, bool flag )
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool EventDescriptionBoard::HasSamplingEvents() const
 {
+	CRITICAL_SECTION(lock)
 	for each (const EventDescription* desc in board)
 		if (desc->isSampling)
 			return true;
@@ -45,8 +42,24 @@ const std::vector<EventDescription*>& EventDescriptionBoard::GetEvents() const
 	return board;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+EventDescriptionBoard::~EventDescriptionBoard()
+{
+	for each (EventDescription* desc in board)
+		delete desc;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+EventDescription* EventDescriptionBoard::CreateDescription()
+{
+	CRITICAL_SECTION(lock)
+	EventDescription* desc = new EventDescription();
+	desc->index = board.size();
+	board.push_back(desc);
+	return desc;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator << ( OutputDataStream& stream, const EventDescriptionBoard& ob)
 {
+	CRITICAL_SECTION(lock)
 	const std::vector<EventDescription*>& events = ob.GetEvents();
 
 	stream << events.size();
@@ -55,11 +68,6 @@ OutputDataStream& operator << ( OutputDataStream& stream, const EventDescription
 		stream << *desc;
 
 	return stream;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-PROFILER_API uint32 RegisterEventDescription(EventDescription& description)
-{
-	return EventDescriptionBoard::Get().Register(description);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Profiler::EventDescriptionBoard EventDescriptionBoard::instance;

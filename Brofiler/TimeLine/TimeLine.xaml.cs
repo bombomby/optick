@@ -48,6 +48,11 @@ namespace Profiler
       this.DataContext = frames;
 
 			warningBlock.Visibility = Visibility.Collapsed;
+			
+			ActiveThreads = new ObservableCollection<ThreadDescription>();
+			threadSelection.ItemsSource = ActiveThreads;
+
+			ActiveThreadPanel.Visibility = System.Windows.Visibility.Collapsed;
 
 			this.Loaded += new RoutedEventHandler(TimeLine_Loaded);
     }
@@ -191,6 +196,18 @@ namespace Profiler
       }
     }
 
+		public class ThreadDescription
+		{
+			public UInt32 ThreadID { get; set; }
+			public String Name { get; set; }
+
+			public override string ToString()
+			{
+				return String.Format("[{0}] {1}", ThreadID, Name);
+			}
+		}
+		public ObservableCollection<ThreadDescription> ActiveThreads { get; set; }
+
     private bool ApplyResponse(DataResponse response)
     {
       if (response.Version == NetworkProtocol.NETWORK_PROTOCOL_VERSION)
@@ -216,12 +233,31 @@ namespace Profiler
             }
             break;
 
+					case DataResponse.Type.Handshake:
+						ActiveThreads.Clear();
+
+						UInt32 mainThreadID = response.Reader.ReadUInt32();
+						int count = response.Reader.ReadInt32();
+
+						for (int i = 0; i < count; ++i)
+						{
+							UInt32 threadID = response.Reader.ReadUInt32();
+							String name = new String(response.Reader.ReadChars(response.Reader.ReadInt32()));
+							ActiveThreads.Add(new ThreadDescription() { Name = name, ThreadID = threadID });
+
+							if (threadID == mainThreadID)
+								threadSelection.SelectedIndex = i;								
+						}
+
+						ActiveThreadPanel.Visibility = System.Windows.Visibility.Visible;
+						break;
+
           default:
             StatusText.Visibility = System.Windows.Visibility.Collapsed;
             lock (frames)
             {
               frames.Add(response.ResponseType, response.Reader);
-							ScrollToEnd();
+							//ScrollToEnd();
             }
             break;
         }
@@ -251,7 +287,7 @@ namespace Profiler
 				if (response != null)
           Application.Current.Dispatcher.Invoke(new Action(() => ApplyResponse(response)));
 				else 
-					Thread.Sleep(100);
+					Thread.Sleep(1000);
       }
     }
 
@@ -310,8 +346,9 @@ namespace Profiler
 
     private void serverIP_TextChanged(object sender, TextChangedEventArgs e)
     {
-      IPAddress ip = IPAddress.Parse(serverIP.Text);
-      if (ip != null)
+			IPAddress ip = null;
+			
+			if (IPAddress.TryParse(serverIP.Text, out ip))
         ProfilerClient.Get().IpAddress = ip;
     }
 
@@ -383,15 +420,6 @@ namespace Profiler
 			ProfilerClient.Get().SendMessage(new SetupHookMessage(0, false));
 		}
 
-    private void frameNumber_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
-    {
-      if (e.Key == Key.Enter)
-      {
-        TraversalRequest down = new TraversalRequest(FocusNavigationDirection.Down);
-        frameNumber.MoveFocus(down);
-      }
-    }
-
     private void StartButton_Unchecked(object sender, System.Windows.RoutedEventArgs e)
     {
 			ProfilerClient.Get().SendMessage(new StopMessage());
@@ -416,5 +444,32 @@ namespace Profiler
 				}
 			}
     }
+
+		private void threadSelection_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (threadSelection.SelectedItem is ThreadDescription)
+			{
+				ThreadDescription desc = threadSelection.SelectedItem as ThreadDescription;
+				ProfilerClient.Get().SendMessage(new SetupWorkingThreadMessage(desc.ThreadID));
+			}
+		}
   }
+
+	public class FrameHeightConverter : IValueConverter
+	{
+		public static double Convert(double value)
+		{
+			return 2.0 * value;
+		}
+
+		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		{
+			return Convert((double)value);
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		{
+			return null;
+		}
+	}
 }

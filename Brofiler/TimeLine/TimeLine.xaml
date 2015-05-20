@@ -6,6 +6,7 @@
 	xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
 	xmlns:local="clr-namespace:Profiler"
 	xmlns:Profiler_Data="clr-namespace:Profiler.Data"
+	xmlns:System="clr-namespace:System;assembly=mscorlib"
 	mc:Ignorable="d"
 	x:Class="Profiler.TimeLine"
 	x:Name="UserControl" d:DesignWidth="822"
@@ -23,6 +24,7 @@
 			</Setter>
 		</Style>
     <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    <local:FrameHeightConverter x:Key="FrameHeightConverter"/>
 		<LinearGradientBrush x:Key="ButtonNormalBackground" EndPoint="0,1" StartPoint="0,0">
 			<GradientStop Color="#F3F3F3" Offset="0"/>
 			<GradientStop Color="#EBEBEB" Offset="0.5"/>
@@ -35,7 +37,7 @@
 		</ItemsPanelTemplate>
 		<DataTemplate x:Key="TimeLineItemTemplate">
       <Grid x:Name="rect" Background="#02FFFFFF" Height="163" Width="14" Margin="-1,0,0,0" >
-        <local:TimeLineItem x:Name="timeLineItem" Height="{Binding Duration, Mode=OneTime}" Width="Auto" VerticalAlignment="Bottom" />
+        <local:TimeLineItem x:Name="timeLineItem" Height="{Binding Duration, Converter={StaticResource FrameHeightConverter}}" Width="Auto" VerticalAlignment="Bottom" />
         <Label x:Name="frameDescriptionText" Content="{Binding Description, Mode=OneTime}" Width="Auto" VerticalAlignment="Bottom" Height="Auto" FontSize="12" Padding="0,0,0,0" Margin="-1,0,0,3" SnapsToDevicePixels="True" FontWeight="Bold" Grid.ColumnSpan="2" >
 			<Label.LayoutTransform>
 				<TransformGroup>
@@ -48,7 +50,7 @@
 		</Label>
 	  </Grid>
 	  <DataTemplate.Triggers>
-        <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ListBoxItem}}, Path=IsSelected}" Value="true">
+        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}, Mode=FindAncestor}}" Value="true">
           <Setter TargetName="timeLineItem" Property="BorderThickness" Value="2" />
         </DataTrigger>
 			</DataTemplate.Triggers>
@@ -107,7 +109,7 @@
 		</Grid.ColumnDefinitions>
     <ListBox x:Name="frameList" ItemsPanel="{DynamicResource TimeLaneLayoutTemplate}" ItemTemplate="{DynamicResource TimeLineItemTemplate}" ItemsSource="{Binding Mode=OneWay}" DataContext="{Binding Mode=OneWay}" SelectionChanged="frameList_SelectionChanged" Background="White" Grid.Row="1" Margin="0,2,0,0" d:LayoutOverrides="Width" TextOptions.TextFormattingMode="Display">
       <ListBox.Resources>
-        <Style TargetType="ListBoxItem">
+        <Style TargetType="{x:Type ListBoxItem}">
           <Style.Resources>
             <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
             <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="Transparent"/>
@@ -118,13 +120,13 @@
     <StackPanel Orientation="Horizontal" Margin="0" Grid.ColumnSpan="2" HorizontalAlignment="Left">
       <ToggleButton x:Name="StartButton" Content="ToggleButton" Width="24" Height="24" Unchecked="StartButton_Unchecked" Checked="StartButton_Checked" ToolTip="Start Profiling Session">
         		<ToggleButton.Style>
-        			<Style TargetType="ToggleButton">
+        			<Style TargetType="{x:Type ToggleButton}">
         				<Style.Triggers>
         					<Trigger Property="IsChecked" Value="False">
-                <Setter Property="ContentTemplate" Value="{StaticResource  StartButtonTemplate}" />
+                <Setter Property="ContentTemplate" Value="{StaticResource StartButtonTemplate}" />
         					</Trigger>
         					<Trigger Property="IsChecked" Value="True">
-                <Setter Property="ContentTemplate" Value="{StaticResource  StopButtonTemplate}" />
+                <Setter Property="ContentTemplate" Value="{StaticResource StopButtonTemplate}" />
         					</Trigger>
 					    	</Style.Triggers>
 					    </Style>
@@ -139,11 +141,13 @@
         	<TextBox x:Name="serverIP" Margin="5,0,0,0" Text="127.0.0.1" VerticalAlignment="Center" MaxLength="15" MaxLines="1" Width="100" TextChanged="serverIP_TextChanged" />
         	<Label Content="Port:" Margin="4,0,0,0" Padding="1" VerticalAlignment="Center"/>
         	<TextBox x:Name="serverPort" Margin="5,0,0,0" Width="45" Text="31313" VerticalAlignment="Center" MaxLines="1" TextChanged="serverPort_TextChanged" />
-        	<Label Content="Frame:" Margin="4,0,0,0" Padding="1" VerticalAlignment="Center"/>
-        	<TextBox x:Name="frameNumber" Margin="5,0,0,0" Width="45" Text="{Binding SelectedIndex, ElementName=frameList, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" VerticalAlignment="Center" MaxLines="1" TextChanged="serverPort_TextChanged" KeyDown="frameNumber_KeyDown" />
-          <StackPanel x:Name="warningBlock"  Orientation="Horizontal">
+        	<StackPanel x:Name="ActiveThreadPanel" Margin="0,3,0,3.02" Orientation="Horizontal">
+        		<Label Content="Thread:" Padding="1" VerticalAlignment="Center"/>
+        		<ComboBox x:Name="threadSelection" Margin="0" MinWidth="100" VerticalAlignment="Center" SelectionChanged="threadSelection_SelectionChanged" />
+        	</StackPanel>
+      <StackPanel x:Name="warningBlock"  Orientation="Horizontal">
             <Image x:Name="warningIcon" Source="Icons/Warning-icon.png" Margin="5,0,0,0" Width="24" Height="24" />
-            <TextBlock VerticalAlignment="Center"><Hyperlink x:Name="warningUrl" RequestNavigate="Hyperlink_RequestNavigate"><Run x:Name="warningText">ClickMe</Run></Hyperlink></TextBlock>
+            <TextBlock VerticalAlignment="Center"><Hyperlink x:Name="warningUrl" RequestNavigate="Hyperlink_RequestNavigate"><Run x:Name="warningText" Text="ClickMe"/></Hyperlink></TextBlock>
           </StackPanel>
     </StackPanel>
     <TextBlock x:Name="StatusText" TextWrapping="Wrap" Text="Capturing Frame 34" FontSize="20" TextAlignment="Center" Margin="0,2,0,0" Grid.Row="1" FontStyle="Italic" TextDecorations="{x:Null}" TextOptions.TextHintingMode="Animated" FontWeight="SemiBold" Foreground="Black" Visibility="Collapsed">

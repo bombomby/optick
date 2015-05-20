@@ -64,15 +64,18 @@ const Symbol * const SymEngine::GetSymbol(DWORD64 dwAddress)
 		symbol.line = lineInfo.LineNumber;
 	}
 
+	const size_t length = (sizeof(SYMBOL_INFOW) + MAX_SYM_NAME*sizeof(WCHAR) + sizeof(ULONG64) - 1) / sizeof(ULONG64) + 1;
+
 	// Function Name
-	ULONG64 buffer[(sizeof(SYMBOL_INFO) +	MAX_SYM_NAME*sizeof(TCHAR) + sizeof(ULONG64) - 1) / sizeof(ULONG64) + 1];
+	ULONG64 buffer[length];
 	PSYMBOL_INFOW dbgSymbol = (PSYMBOL_INFOW)buffer;
 	memset(dbgSymbol, 0, sizeof(buffer));
-	dbgSymbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+	dbgSymbol->SizeOfStruct = sizeof(SYMBOL_INFOW);
 	dbgSymbol->MaxNameLen = MAX_SYM_NAME;
 	if (SymFromAddrW(hProcess, dwAddress, &symbol.offset, dbgSymbol))
 	{
-		symbol.function = dbgSymbol->Name;
+		symbol.function.resize(dbgSymbol->NameLen);
+		memcpy(&symbol.function[0], &dbgSymbol->Name[0], sizeof(WCHAR) * dbgSymbol->NameLen);
 	}
 
 	return &symbol;

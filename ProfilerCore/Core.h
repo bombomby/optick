@@ -3,6 +3,8 @@
 #include "Serialization.h"
 #include "Sampler.h"
 #include "MemoryPool.h"
+#include "Concurrency.h"
+#include <map>
 
 namespace Profiler
 {
@@ -72,15 +74,20 @@ struct Frame
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class Core
 {
+	CriticalSection lock;
+
 	HANDLE workerThread;
 	uint32 mainThreadID;
+
+	// Usually very small array, pointless to handle it as map, so vector is my choice
+	std::map<uint32, const FrameDescription*> activeThreads;
 
 	int64 progressReportedLastTimestampMS;
 
 	std::list<FrameData> frameList;
 
-	void CheckAndUpdateThreadID();
-	void Update();
+	void UpdateEvents(const FrameDescription& scope);
+	void Update(const FrameDescription& scope);
 
 	void StoreFrame(FrameData& frameData) const;
 
@@ -88,6 +95,7 @@ class Core
 	static Core notThreadSafeInstance;
 
 	void DumpCapturingProgress();
+	void SendHandshakeResponse();
 public:
 	void Activate(bool active);
 	bool isActive;
@@ -113,11 +121,14 @@ public:
 	// Serialize and send sampling data
 	void DumpSamplingData();
 
+	// Select working thread
+	bool SetWorkingThread(uint32 threadID);
+
 	// NOT Thread Safe singleton (performance)
 	static BRO_INLINE Core& Get() { return notThreadSafeInstance; }
 
 	// Main Update Function
-	static void NextFrame() { Get().Update(); }
+	static void NextFrame(const FrameDescription& scope) { Get().Update(scope); }
 
 	// Return current frame buffer
 	static BRO_INLINE Frame& GetFrame() { return frame; }
