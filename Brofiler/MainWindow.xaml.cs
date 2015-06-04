@@ -34,12 +34,28 @@ namespace Profiler
 
 			timeLine.OnClearAllFrames += new ClearAllFramesHandler(ClearAllTabs);
 
+			frameTabs.SelectionChanged += new SelectionChangedEventHandler(frameTabs_SelectionChanged);
+
 			ParseCommandLine();
     }
+
+		void frameTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (frameTabs.SelectedItem is CloseableTabItem)
+			{
+				var dataContext = (frameTabs.SelectedItem as CloseableTabItem).DataContext;
+
+				if (dataContext is Data.EventFrame)
+				{
+					ThreadView.FocusOn(dataContext as Data.EventFrame);
+				}
+			}
+		}
 
 		private void ClearAllTabs()
 		{
 			frameTabs.Items.Clear();
+			ThreadView.Group = null;
 		}
 
 		private void CloseTab(object source, RoutedEventArgs args)
@@ -76,7 +92,7 @@ namespace Profiler
       info.SetFrame(frame);
       
       tabItem.Add(info);
-  
+
 			frameTabs.Items.Add(tabItem);
       frameTabs.SelectedItem = tabItem;
 		}

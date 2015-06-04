@@ -27,7 +27,6 @@ class MessageFactory
 		RegisterMessage<StopMessage>();
 		RegisterMessage<TurnSamplingMessage>();
 		RegisterMessage<SetupHookMessage>();
-		RegisterMessage<SetupWorkingThreadMessage>();
 
 		for (uint msg = 0; msg < IMessage::COUNT; ++msg)
 		{
@@ -117,18 +116,6 @@ IMessage* SetupHookMessage::Create(InputDataStream& stream)
 void SetupHookMessage::Apply()
 {
 	Core::Get().sampler.SetupHook(address, isHooked != 0);
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-IMessage* SetupWorkingThreadMessage::Create(InputDataStream& stream)
-{
-	SetupWorkingThreadMessage* msg = new SetupWorkingThreadMessage();
-	stream >> msg->threadID;
-	return msg;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void SetupWorkingThreadMessage::Apply()
-{
-	Core::Get().SetWorkingThread(threadID);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

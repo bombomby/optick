@@ -141,11 +141,7 @@
         	<TextBox x:Name="serverIP" Margin="5,0,0,0" Text="127.0.0.1" VerticalAlignment="Center" MaxLength="15" MaxLines="1" Width="100" TextChanged="serverIP_TextChanged" />
         	<Label Content="Port:" Margin="4,0,0,0" Padding="1" VerticalAlignment="Center"/>
         	<TextBox x:Name="serverPort" Margin="5,0,0,0" Width="45" Text="31313" VerticalAlignment="Center" MaxLines="1" TextChanged="serverPort_TextChanged" />
-        	<StackPanel x:Name="ActiveThreadPanel" Margin="0,3,0,3.02" Orientation="Horizontal">
-        		<Label Content="Thread:" Padding="1" VerticalAlignment="Center"/>
-        		<ComboBox x:Name="threadSelection" Margin="0" MinWidth="100" VerticalAlignment="Center" SelectionChanged="threadSelection_SelectionChanged" />
-        	</StackPanel>
-      <StackPanel x:Name="warningBlock"  Orientation="Horizontal">
+          <StackPanel x:Name="warningBlock"  Orientation="Horizontal">
             <Image x:Name="warningIcon" Source="Icons/Warning-icon.png" Margin="5,0,0,0" Width="24" Height="24" />
             <TextBlock VerticalAlignment="Center"><Hyperlink x:Name="warningUrl" RequestNavigate="Hyperlink_RequestNavigate"><Run x:Name="warningText" Text="ClickMe"/></Hyperlink></TextBlock>
           </StackPanel>

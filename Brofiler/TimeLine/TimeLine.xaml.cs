@@ -49,11 +49,6 @@ namespace Profiler
 
 			warningBlock.Visibility = Visibility.Collapsed;
 			
-			ActiveThreads = new ObservableCollection<ThreadDescription>();
-			threadSelection.ItemsSource = ActiveThreads;
-
-			ActiveThreadPanel.Visibility = System.Windows.Visibility.Collapsed;
-
 			this.Loaded += new RoutedEventHandler(TimeLine_Loaded);
     }
 
@@ -183,17 +178,19 @@ namespace Profiler
       return true;
     }
 
-    HashSet<DataResponse.Type> testResponses = new HashSet<DataResponse.Type>();
+		Dictionary<DataResponse.Type, int> testResponses = new Dictionary<DataResponse.Type, int>();
 
     private void SaveTestResponse(DataResponse response)
     {
-      if (!testResponses.Contains(response.ResponseType))
-      {
-        testResponses.Add(response.ResponseType);
-        String data = response.SerializeToBase64();
-        String path = response.ResponseType.ToString() + ".bin";
-        File.WriteAllText(path, data);
-      }
+			if (!testResponses.ContainsKey(response.ResponseType))
+				testResponses.Add(response.ResponseType, 0);
+
+			int count = testResponses[response.ResponseType]++;
+
+      String data = response.SerializeToBase64();
+      String path = response.ResponseType.ToString() + "_" + String.Format("{0:000}", count) + ".bin";
+      File.WriteAllText(path, data);
+			
     }
 
 		public class ThreadDescription
@@ -206,7 +203,6 @@ namespace Profiler
 				return String.Format("[{0}] {1}", ThreadID, Name);
 			}
 		}
-		public ObservableCollection<ThreadDescription> ActiveThreads { get; set; }
 
     private bool ApplyResponse(DataResponse response)
     {
@@ -234,22 +230,6 @@ namespace Profiler
             break;
 
 					case DataResponse.Type.Handshake:
-						ActiveThreads.Clear();
-
-						UInt32 mainThreadID = response.Reader.ReadUInt32();
-						int count = response.Reader.ReadInt32();
-
-						for (int i = 0; i < count; ++i)
-						{
-							UInt32 threadID = response.Reader.ReadUInt32();
-							String name = new String(response.Reader.ReadChars(response.Reader.ReadInt32()));
-							ActiveThreads.Add(new ThreadDescription() { Name = name, ThreadID = threadID });
-
-							if (threadID == mainThreadID)
-								threadSelection.SelectedIndex = i;								
-						}
-
-						ActiveThreadPanel.Visibility = System.Windows.Visibility.Visible;
 						break;
 
           default:
@@ -380,10 +360,17 @@ namespace Profiler
           FileStream stream = new FileStream(dlg.FileName, FileMode.Create);
 
           HashSet<EventDescriptionBoard> boards = new HashSet<EventDescriptionBoard>();
+					HashSet<FrameGroup> groups = new HashSet<FrameGroup>();
 
-          foreach (Frame frame in frames)
-            if (frame is EventFrame)
-              boards.Add((frame as EventFrame).DescriptionBoard);
+					foreach (Frame frame in frames)
+					{
+						if (frame is EventFrame)
+						{
+							EventFrame eventFrame = frame as EventFrame;
+							boards.Add(eventFrame.DescriptionBoard);
+							groups.Add(eventFrame.Group);
+						}
+					}
 
           foreach (EventDescriptionBoard board in boards)
           {
@@ -395,6 +382,20 @@ namespace Profiler
             DataResponse.Serialize(frame.ResponseType, frame.BaseStream, stream);
           }
 
+					foreach (FrameGroup group in groups)
+					{
+						for (int threadIndex = 0; threadIndex < group.Threads.Count; ++threadIndex)
+						{
+							if (threadIndex != group.Board.MainThreadIndex)
+							{
+								foreach (Frame frame in group.Threads[threadIndex])
+								{
+									DataResponse.Serialize(frame.ResponseType, frame.BaseStream, stream);
+								}
+							}
+						}
+					}
+						 
           stream.Close();
         }
       }
@@ -444,15 +445,6 @@ namespace Profiler
 				}
 			}
     }
-
-		private void threadSelection_SelectionChanged(object sender, SelectionChangedEventArgs e)
-		{
-			if (threadSelection.SelectedItem is ThreadDescription)
-			{
-				ThreadDescription desc = threadSelection.SelectedItem as ThreadDescription;
-				ProfilerClient.Get().SendMessage(new SetupWorkingThreadMessage(desc.ThreadID));
-			}
-		}
   }
 
 	public class FrameHeightConverter : IValueConverter

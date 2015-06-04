@@ -100,6 +100,17 @@ public:
 			func(chunk->data[i]);
 	}
 
+	template<class Func>
+	void ForEach(Func func)
+	{
+		for (Chunk* it = &root; it != chunk; it = it->next)
+			for (uint i = 0; i < SIZE; ++i)
+				func(it->data[i]);
+
+		for (uint i = 0; i < index; ++i)
+			func(chunk->data[i]);
+	}
+
 	void ToArray(T* destination) const
 	{
 		uint curIndex = 0;

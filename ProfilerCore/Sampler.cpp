@@ -202,7 +202,14 @@ OutputDataStream& Sampler::Serialize(OutputDataStream& stream)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Sampler::IsSamplingScope() const
 {
-	return Core::Get().frame.isSampling > 0;
+	const std::vector<ThreadEntry*>& threads = Core::Get().GetThreads();
+
+	for each (ThreadEntry* entry in threads)
+		if (EventStorage* storage = *entry->threadTLS)
+			if (storage->isSampling)
+				return true;
+
+	return false;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 size_t Sampler::GetCollectedCount() const

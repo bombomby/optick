@@ -5,7 +5,7 @@
 namespace Profiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-static const uint32 NETWORK_PROTOCOL_VERSION = 3;
+static const uint32 NETWORK_PROTOCOL_VERSION = 4;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct DataResponse
 {
@@ -37,7 +37,6 @@ public:
 		Stop,
 		TurnSampling,
 		SetupHook,
-		SetupWorkingThread,
 		COUNT,
 	};
 
@@ -80,14 +79,6 @@ struct SetupHookMessage : public Message<IMessage::SetupHook>
 {
 	uint64 address;
 	byte isHooked;
-
-	static IMessage* Create(InputDataStream& stream);
-	virtual void Apply() override;
-};
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct SetupWorkingThreadMessage : public Message<IMessage::SetupWorkingThread>
-{
-	uint32 threadID;
 
 	static IMessage* Create(InputDataStream& stream);
 	virtual void Apply() override;

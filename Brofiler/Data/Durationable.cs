@@ -15,11 +15,21 @@ namespace Profiler.Data
 			set { start = value; }
 		}
 
+		public double StartMS
+		{
+			get { return TicksToMs(start); }
+		}
+
 		private long finish;
 		public long Finish
 		{
 			get { return finish; }
 			set { finish = value; }
+		}
+
+		public double FinishMS
+		{
+			get { return TicksToMs(finish); }
 		}
 
 		private static double freq = 1;
@@ -36,6 +46,11 @@ namespace Profiler.Data
 		public static double TicksToMs(long duration)
 		{
 			return freq * duration;
+		}
+
+		public static long MsToTick(double ms)
+		{
+			return (long)(ms / freq);
 		}
 
 		public void ReadDurable(BinaryReader reader)

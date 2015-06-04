@@ -126,7 +126,9 @@
     <Reference Include="PresentationFramework.Aero" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -170,8 +172,14 @@
     <Compile Include="Frames\FrameInfo.xaml.cs">
       <DependentUpon>FrameInfo.xaml</DependentUpon>
     </Compile>
+    <Compile Include="SearchBox.xaml.cs">
+      <DependentUpon>SearchBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="SourceWindow.xaml.cs">
       <DependentUpon>SourceWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ThreadView.xaml.cs">
+      <DependentUpon>ThreadView.xaml</DependentUpon>
     </Compile>
     <Compile Include="TimeLine\TimeLine.xaml.cs">
       <DependentUpon>TimeLine.xaml</DependentUpon>
@@ -209,11 +217,19 @@
       <SubType>Designer</SubType>
       <ContainsDesignTimeResources>true</ContainsDesignTimeResources>
     </Page>
+    <Page Include="SearchBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="SourceWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
     <Page Include="themes\generic.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ThreadView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -308,5 +324,11 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="TimeLine\Icons\CallStack-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="TimeLine\Icons\Search-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="TimeLine\Icons\Clear-icon.png" />
   </ItemGroup>
 </Project>

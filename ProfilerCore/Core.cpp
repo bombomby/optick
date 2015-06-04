@@ -36,29 +36,78 @@ void Core::DumpProgress(const char* message)
 	Server::Get().Send(DataResponse::ReportProgress, stream);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpFrames()
 {
+	if (frames.empty() || threads.empty())
+		return;
+
 	DumpProgress("Collecting Frame Events...");
+
+	uint32 mainThreadIndex = 0;
+
+	for (size_t i = 0; i < threads.size(); ++i)
+		if (threads[i]->description.threadID == mainThreadID)
+			mainThreadIndex = (uint32)i;
+
+	EventTime timeSlice;
+	timeSlice.start = frames.front().start;
+	timeSlice.finish = frames.back().finish;
+
 	OutputDataStream boardStream;
 
-	static int boardID = 0;
-	boardStream << ++boardID;
+	static uint32 boardNumber = 0;
+	boardStream << ++boardNumber;
+	boardStream << GetFrequency();
+	boardStream << timeSlice;
+	boardStream << threads;
+	boardStream << mainThreadIndex;
 	boardStream << EventDescriptionBoard::Get();
 	Server::Get().Send(DataResponse::FrameDescriptionBoard, boardStream);
 
-	while (!frameList.empty())
+	ScopeData scope;
+	scope.header.boardNumber = (uint32)boardNumber;
+
+	for (size_t i = 0; i < threads.size(); ++i)
 	{
-		const FrameData& frameData = frameList.front();
+		ThreadEntry* entry = threads[i];
+		scope.header.threadNumber = (uint32)i;
 
-		OutputDataStream frameStream;
-		frameStream << boardID;
-		frameStream << frameData;
-		Server::Get().Send(DataResponse::EventFrame, frameStream);
+		// Events
+		if (!entry->storage.eventBuffer.IsEmpty())
+		{
+			const EventData* rootEvent = nullptr;
 
-		frameList.pop_front();
+			entry->storage.eventBuffer.ForEach([&](EventData& data)
+			{
+				if (data.finish < timeSlice.start || timeSlice.finish < data.finish)
+					data.finish = timeSlice.finish;
+
+				if (!rootEvent)
+				{
+					rootEvent = &data;
+					scope.InitRootEvent(*rootEvent);
+				}
+
+				if (rootEvent->finish < data.finish)
+				{
+					scope.Send();
+
+					rootEvent = &data;
+					scope.InitRootEvent(*rootEvent);
+				}
+				else
+				{
+					scope.AddEvent(data);
+				}
+			});
+
+			scope.Send();
+		}
 	}
 
-	frame.Clear();
+	frames.clear();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpSamplingData()
@@ -81,64 +130,36 @@ Core::Core() : mainThreadID(INVALID_THREAD_ID), isActive(false), progressReporte
 	BRO_ASSERT( workerThread, "Can't create thread!" )
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Core::Update(const FrameDescription& scope)
+void Core::Update()
 {
 	CRITICAL_SECTION(lock);
-
-	if (GetThreadUniqueID() == frame.threadUniqueID)
+	
+	if (isActive)
 	{
-		frame.frameTime.Stop();
-		frameList.push_back(FrameData());
-		StoreFrame(frameList.back());
+		if (!frames.empty())
+			frames.back().Stop();
 
 		if (IsTimeToReportProgress())
 			DumpCapturingProgress();		
 	}
 
-	UpdateEvents(scope);
+	UpdateEvents();
 
-	if (GetThreadUniqueID() == frame.threadUniqueID)
+	if (isActive)
 	{
-		frame.Reset();
-		frame.frameTime.Start();
+		frames.push_back(EventTime());
+		frames.back().Start();
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Core::UpdateEvents(const FrameDescription& scope)
+void Core::UpdateEvents()
 {
 	DWORD currentThreadID = GetCurrentThreadId();
 
 	if (mainThreadID == INVALID_THREAD_ID)
 		mainThreadID = currentThreadID;
 
-	if (activeThreads.find(currentThreadID) == activeThreads.end())
-		activeThreads.insert(std::make_pair(currentThreadID, &scope));
-
-	if (currentThreadID == mainThreadID)
-	{
-		Server::Get().Update();
-		frame.threadUniqueID = isActive ? GetThreadUniqueID() : nullptr;
-	}
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Core::StoreFrame(FrameData& frameData) const
-{
-	// Time
-	frameData.header.event = frame.frameTime;
-
-	// Categories
-	frameData.categories.reserve(frame.categoryBuffer.Size());
-	frame.categoryBuffer.ForEach([&](const EventData* data) 
-	{
-		frameData.categories.push_back(*data);
-	});
-	
-	// Events
-	if (!frame.eventBuffer.IsEmpty())
-	{
-		frameData.events.resize(frame.eventBuffer.Size());
-		frame.eventBuffer.ToArray(&(frameData.events[0]));
-	}
+	Server::Get().Update();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::StartSampling()
@@ -150,13 +171,11 @@ void Core::Activate( bool active )
 {
 	isActive = active;
 
+	for each (ThreadEntry* entry in threads)
+		entry->Activate(active);
+
 	if (active)
 	{
-		if (mainThreadID == INVALID_THREAD_ID && !activeThreads.empty())
-		{
-			mainThreadID = activeThreads.begin()->first;
-		}
-
 		SendHandshakeResponse();
 	}
 }
@@ -166,7 +185,7 @@ void Core::DumpCapturingProgress()
 	std::stringstream stream;
 
 	if (isActive)
-		stream << "Capturing Frame " << frameList.size() << std::endl;
+		stream << "Capturing Frame " << frames.size() << std::endl;
 
 	if (sampler.IsActive())
 		stream << "Sample Count " << sampler.GetCollectedCount() << std::endl;
@@ -179,64 +198,70 @@ bool Core::IsTimeToReportProgress() const
 	return GetTimeMilliSeconds() > progressReportedLastTimestampMS + 200;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Core::SetWorkingThread(uint32 threadID)
-{
-	if (activeThreads.find(threadID) != activeThreads.end())
-	{
-		mainThreadID = threadID;
-		return true;
-	}
-
-	return false;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::SendHandshakeResponse()
 {
 	OutputDataStream stream;
-
-	stream << mainThreadID;
-	stream << activeThreads.size();
-	for each (auto it in activeThreads)
-	{
-		stream << it.first;
-		stream << it.second->name;
-	}
-
 	Server::Get().Send(DataResponse::Handshake, stream);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool Core::RegisterThread(const ThreadDescription& description)
+{
+	CRITICAL_SECTION(lock);
 
+	for each (const ThreadEntry* entry in threads)
+		if (entry->description.threadID == description.threadID)
+			return false;
 
+	ThreadEntry* entry = new ThreadEntry(description, &storage);
+	threads.push_back(entry);
+	return true;
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Frame Core::frame;
+Core::~Core()
+{
+	for each (ThreadEntry* entry in threads)
+		delete entry;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+const std::vector<ThreadEntry*>& Core::GetThreads() const
+{
+	return threads;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+EventStorage* Core::storage = nullptr;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core Core::notThreadSafeInstance;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-FrameHeader::FrameHeader() : frequency(Profiler::GetFrequency())
+ScopeHeader::ScopeHeader() : threadNumber(0), boardNumber(0)
 {
 
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-OutputDataStream& operator<<(OutputDataStream& stream, const FrameHeader& header)
+OutputDataStream& operator<<(OutputDataStream& stream, const ScopeHeader& header)
 {
-	return stream << header.frequency << header.event;
+	return stream << header.boardNumber << header.threadNumber << header.event;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-OutputDataStream& operator<<(OutputDataStream& stream, const FrameData& ob)
+OutputDataStream& operator<<(OutputDataStream& stream, const ScopeData& ob)
 {
 	return stream << ob.header << ob.categories << ob.events;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-PROFILER_API Frame& GetFrame()
+OutputDataStream& operator<<(OutputDataStream& stream, const ThreadDescription& description)
 {
-	return Core::GetFrame();
+	return stream << description.threadID << description.name;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-PROFILER_API void NextFrame(const FrameDescription& scope)
+OutputDataStream& operator<<(OutputDataStream& stream, const ThreadEntry* entry)
 {
-	return Core::NextFrame(scope);
+	return stream << entry->description;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+PROFILER_API void NextFrame()
+{
+	return Core::NextFrame();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 PROFILER_API bool IsActive()
@@ -244,9 +269,35 @@ PROFILER_API bool IsActive()
 	return Core::Get().isActive;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-PROFILER_API bool IsActiveCurrentThread()
+EventStorage::EventStorage(): isSampling(0)
 {
-	return Core::Get().frame.threadUniqueID == GetThreadUniqueID();
+	 
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ThreadDescription::ThreadDescription(const char* threadName /*= "MainThread"*/) : name(threadName), threadID(GetCurrentThreadId())
+{
+	Core::Get().RegisterThread(*this);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void ThreadEntry::Activate(bool isActive)
+{
+	if (isActive)
+		storage.Clear(true);
+
+	*threadTLS = isActive ? &storage : nullptr;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void ScopeData::Send()
+{
+	if (events.empty() && categories.empty())
+		return;
+
+	OutputDataStream frameStream;
+	frameStream << *this;
+	Server::Get().Send(DataResponse::EventFrame, frameStream);
+
+	events.clear();
+	categories.clear();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

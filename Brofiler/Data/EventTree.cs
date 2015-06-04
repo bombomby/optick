@@ -133,6 +133,19 @@ namespace Profiler.Data
       }
     }
 
+		public double CalculateFilteredTime(HashSet<TDescription> filter)
+		{
+			if (filter.Contains(Description))
+				return Duration;
+
+			double sum = 0.0;
+
+			foreach (var node in Children)
+				sum += (node as TreeNode<TDescription>).CalculateFilteredTime(filter);
+
+			return sum;
+		}
+
   }
 
   public class EventNode : TreeNode<EventDescription>

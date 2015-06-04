@@ -51,9 +51,9 @@ __declspec(naked) void HookFunction()
 	_asm { pushad }
 
 	// Collecting event start time
-	if (Core::frame.threadUniqueID == GetThreadUniqueID())
+	if (EventStorage* storate = Core::storage)
 	{
-		HookSlot<N>::eventData = &(Core::frame.NextEvent());
+		HookSlot<N>::eventData = &(storate->NextEvent());
 		HookSlot<N>::eventData->description = HookSlot<N>::description->description;
 		QueryPerformanceCounter((LARGE_INTEGER*)(&HookSlot<N>::eventData->start));
 	}
@@ -75,7 +75,7 @@ __declspec(naked) void HookFunction()
 	}
 
 	// Collecting event finish time
-	if (Core::frame.threadUniqueID == GetThreadUniqueID())
+	if (Core::storage)
 	{
 		QueryPerformanceCounter((LARGE_INTEGER*)(&HookSlot<N>::eventData->finish));
 	}

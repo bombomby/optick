@@ -8,15 +8,15 @@ using System.Threading;
 
 namespace Profiler.Data
 {
-  public class FrameHeader : EventData
-  {
+	public class FrameHeader : EventData
+	{
+		public int ThreadIndex { get; private set; }
+
     public static FrameHeader Read(BinaryReader reader)
     {
       FrameHeader header = new FrameHeader();
-
-      Durable.InitFrequency(reader.ReadInt64());
+			header.ThreadIndex = reader.ReadInt32();
       header.ReadEventData(reader);
-
       return header;
     }
   }
@@ -63,6 +63,7 @@ namespace Profiler.Data
     }
 
     public EventDescriptionBoard DescriptionBoard { get; private set; }
+		public FrameGroup Group { get; private set; }
 
     private Board<EventBoardItem, EventDescription, EventNode> board;
     public Board<EventBoardItem, EventDescription, EventNode> Board
@@ -89,18 +90,23 @@ namespace Profiler.Data
 
     public List<Entry> Categories { get; private set; }
 
+		Object loading = new object();
+
     public override void Load()
     {
-      if (!IsLoaded)
-      {
-        entries = ReadEventList(reader, DescriptionBoard);
+			lock (loading)
+			{
+				if (!IsLoaded)
+				{
+					entries = ReadEventList(reader, DescriptionBoard);
 
-        root = new EventTree(this);
-        board = new Board<EventBoardItem, EventDescription, EventNode>(root);
+					root = new EventTree(this);
+					board = new Board<EventBoardItem, EventDescription, EventNode>(root);
 
-        reader = null;
-        IsLoaded = true;
-      }
+					reader = null;
+					IsLoaded = true;
+				}
+			}
     }
 
     static List<Entry> ReadEventList(BinaryReader reader, EventDescriptionBoard board)
@@ -120,10 +126,16 @@ namespace Profiler.Data
       Categories = ReadEventList(reader, DescriptionBoard);
     }
 
-    public EventFrame(BinaryReader reader, EventDescriptionBoard descriptionBoard) : base(reader.BaseStream)
+		public double CalculateFilteredTime(HashSet<EventDescription> filter)
+		{
+			return Root.CalculateFilteredTime(filter);
+		}
+
+    public EventFrame(BinaryReader reader, FrameGroup group) : base(reader.BaseStream)
     {
       this.reader = reader;
-      DescriptionBoard = descriptionBoard;
+			Group = group;
+			DescriptionBoard = group.Board;
       ReadInternal(reader);
     }
   }

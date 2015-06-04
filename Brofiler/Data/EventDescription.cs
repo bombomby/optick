@@ -54,7 +54,8 @@ namespace Profiler.Data
 
 	  private int id;
 
-    public Color Color { get; private set; }
+		public Color Color { get; private set; }
+		public Brush Brush { get; private set; }
 
 		public EventDescription() {}
     public EventDescription(String name, int id)
@@ -81,6 +82,8 @@ namespace Profiler.Data
                                   (byte)(color >> 8),
                                   (byte)(color));
 
+			desc.Brush = new SolidColorBrush(desc.Color);
+
       byte flags = reader.ReadByte();
       desc.isSampling = (flags & IS_SAMPLING_FLAG) != 0;
 
@@ -93,10 +96,30 @@ namespace Profiler.Data
 		}
 	}
 
+	public class ThreadDescription
+	{
+		public String Name { get; set; }
+		public int ThreadID { get; set; }
+
+		public static ThreadDescription Read(BinaryReader reader)
+		{
+			ThreadDescription res = new ThreadDescription();
+			res.ThreadID = reader.ReadInt32();
+			int nameLength = reader.ReadInt32();
+			res.Name = new String(reader.ReadChars(nameLength));
+			return res;
+		}
+	}
+
   public class EventDescriptionBoard
   {
-    public Stream BaseStream { get; private set; }
-    public int ID { get; private set; }
+		public Stream BaseStream { get; private set; }
+		public int ID { get; private set; }
+		public Int64 Frequency { get; private set; }
+		public Durable TimeSlice { get; private set; }
+		public int MainThreadIndex { get; private set; }
+
+		public List<ThreadDescription> Threads { get; private set; }
 
     private List<EventDescription> board = new List<EventDescription>();
 		public List<EventDescription> Board
@@ -118,7 +141,24 @@ namespace Profiler.Data
       EventDescriptionBoard desc = new EventDescriptionBoard();
       desc.BaseStream = reader.BaseStream;
       desc.ID = reader.ReadInt32();
-      int count = reader.ReadInt32();
+
+			desc.Frequency = reader.ReadInt64();
+			Durable.InitFrequency(desc.Frequency);
+
+			desc.TimeSlice = new Durable();
+			desc.TimeSlice.ReadDurable(reader);
+
+			int threadCount = reader.ReadInt32();
+			desc.Threads = new List<ThreadDescription>(threadCount);
+
+			for (int i = 0; i < threadCount; ++i)
+			{
+				desc.Threads.Add(ThreadDescription.Read(reader));
+			}
+
+			desc.MainThreadIndex = reader.ReadInt32();
+			
+			int count = reader.ReadInt32();
       for (int i = 0; i < count; ++i)
       {
         desc.board.Add(EventDescription.Read(reader, i));

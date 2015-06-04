@@ -72,14 +72,14 @@ namespace Profiler.Data
     [ColumnWidth(400)]
     public String Function { get { return Description.Name; } }
 
-    [DisplayName("Self%")]
-    public double SelfPercent { get; private set; }
+		//[DisplayName("Self%")]
+		//public double SelfPercent { get; private set; }
 		[DisplayName("Self(ms)")]
 		public double SelfTime { get { return Total - ChildTime; } }
 
 
-		[DisplayName("Total%")]
-		public double TotalPercent { get; private set; }
+		//[DisplayName("Total%")]
+		//public double TotalPercent { get; private set; }
 		[DisplayName("Total(ms)")]
 		public double Total { get; private set; }
 
@@ -98,8 +98,8 @@ namespace Profiler.Data
       MaxTime = Math.Max(MaxTime, node.Entry.Duration);
       Total += node.Entry.Duration;
       ChildTime += node.ChildrenDuration;
-      SelfPercent += node.SelfPercent;
-			TotalPercent += node.TotalPercent;
+			//SelfPercent += node.SelfPercent;
+			//TotalPercent += node.TotalPercent;
       ++Count;
     }
   }

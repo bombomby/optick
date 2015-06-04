@@ -9,51 +9,61 @@
 namespace Profiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct FrameHeader
+struct ScopeHeader
 {
 	EventTime event;
-	int64 frequency;
+	uint32 boardNumber;
+	uint32 threadNumber;
 
-	FrameHeader();
+	ScopeHeader();
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-OutputDataStream& operator << ( OutputDataStream& stream, const FrameHeader& ob);
+OutputDataStream& operator << ( OutputDataStream& stream, const ScopeHeader& ob);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct FrameData
+struct ScopeData
 {
-	FrameHeader header;
+	ScopeHeader header;
 	std::vector<EventData> categories;
 	std::vector<EventData> events;
+
+	void AddEvent(const EventData& data)
+	{
+		events.push_back(data);
+		if (data.description->color != Color::Null)
+			categories.push_back(data);
+	}
+
+	void InitRootEvent(const EventData& data)
+	{
+		header.event = data;
+		AddEvent(data);
+	}
+
+	void Send();
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-OutputDataStream& operator << ( OutputDataStream& stream, const FrameData& ob);
+OutputDataStream& operator << ( OutputDataStream& stream, const ScopeData& ob);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef MemoryPool<EventData, 1024> EventBuffer;
 typedef MemoryPool<const EventData*, 32> CategoryBuffer;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct Frame
+struct EventStorage
 {
-	const void* threadUniqueID;
-
-	EventTime		frameTime;
 	EventBuffer eventBuffer;
 	CategoryBuffer categoryBuffer; 
 
 	volatile uint isSampling;
 
-	Frame() : isSampling(0), threadUniqueID(nullptr)
-	{
-
-	}
+	EventStorage();
 
 	BRO_INLINE EventData& NextEvent() 
 	{
 		return eventBuffer.Add(); 
 	}
 
-	void RegisterCategory(const EventData& eventData) 
+	BRO_INLINE void RegisterCategory(const EventData& eventData) 
 	{ 
 		categoryBuffer.Add() = &eventData;
 	}
@@ -65,11 +75,32 @@ struct Frame
 	}
 
 	// Free all temporary memory
-	void Clear()
+	void Clear(bool preserveContent)
 	{
-		eventBuffer.Clear(false);
-		categoryBuffer.Clear(false);
+		eventBuffer.Clear(preserveContent);
+		categoryBuffer.Clear(preserveContent);
 	}
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct Frame : public EventStorage
+{
+	const void* threadUniqueID;
+	EventTime		frameTime;
+
+	Frame() : threadUniqueID(nullptr)
+	{
+
+	}
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct ThreadEntry
+{
+	ThreadDescription description;
+	EventStorage storage;
+	EventStorage** threadTLS;
+
+	ThreadEntry(const ThreadDescription& desc, EventStorage** tls) : description(desc), threadTLS(tls) {}
+	void Activate(bool isActive);
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class Core
@@ -79,19 +110,18 @@ class Core
 	HANDLE workerThread;
 	uint32 mainThreadID;
 
-	// Usually very small array, pointless to handle it as map, so vector is my choice
-	std::map<uint32, const FrameDescription*> activeThreads;
+	std::vector<ThreadEntry*> threads;
 
 	int64 progressReportedLastTimestampMS;
 
-	std::list<FrameData> frameList;
+	std::vector<EventTime> frames;
 
-	void UpdateEvents(const FrameDescription& scope);
-	void Update(const FrameDescription& scope);
-
-	void StoreFrame(FrameData& frameData) const;
+	void UpdateEvents();
+	void Update();
 
 	Core();
+	~Core();
+
 	static Core notThreadSafeInstance;
 
 	void DumpCapturingProgress();
@@ -101,10 +131,13 @@ public:
 	bool isActive;
 
 	// Active Frame (is used as buffer)
-	static Frame frame;
+	static __declspec(thread) EventStorage* storage;
 
 	// Controls sampling routine
 	Sampler sampler;
+
+	// Returns thread collection
+	const std::vector<ThreadEntry*>& GetThreads() const;
 
 	// Starts sampling process
 	void StartSampling();
@@ -121,17 +154,14 @@ public:
 	// Serialize and send sampling data
 	void DumpSamplingData();
 
-	// Select working thread
-	bool SetWorkingThread(uint32 threadID);
+	// Registers thread and create EventStorage
+	bool RegisterThread(const ThreadDescription& description);
 
 	// NOT Thread Safe singleton (performance)
 	static BRO_INLINE Core& Get() { return notThreadSafeInstance; }
 
 	// Main Update Function
-	static void NextFrame(const FrameDescription& scope) { Get().Update(scope); }
-
-	// Return current frame buffer
-	static BRO_INLINE Frame& GetFrame() { return frame; }
+	static void NextFrame() { Get().Update(); }
 
 	// Get Active ThreadID
 	static BRO_INLINE uint32 GetThreadID() { return Get().mainThreadID; }

@@ -6,13 +6,19 @@
     <Grid>
     	<Grid.RowDefinitions>
     		<RowDefinition Height="Auto"/>
-    		<RowDefinition/>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition/>
     	</Grid.RowDefinitions>
 		<Expander Header="Time Line" Margin="1" Background="{x:Null}" BorderBrush="#FF141212" VerticalContentAlignment="Stretch" UseLayoutRounding="False" IsExpanded="True">
 			<Grid>
 				<local:TimeLine Margin="2" x:Name="timeLine" />
 			</Grid>
 		</Expander>
-		<TabControl Margin="0" Grid.Row="1" Name="frameTabs" Background="{x:Null}" />
+    <Expander Header="Threads" Margin="1" Grid.Row="1" Background="{x:Null}" BorderBrush="#FF141212" VerticalContentAlignment="Stretch" UseLayoutRounding="False" IsExpanded="True">
+      <Grid>
+        <local:ThreadView x:Name="ThreadView" Height="Auto" HorizontalAlignment="Stretch" Margin="0" VerticalAlignment="Stretch" Width="Auto" />
+      </Grid>
+    </Expander>
+    <TabControl Margin="0" Grid.Row="2" Name="frameTabs" Background="{x:Null}" />
 	</Grid>
 </Window>

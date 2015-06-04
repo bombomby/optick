@@ -1,0 +1,14 @@
+﻿<UserControl x:Class="Profiler.ThreadView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:Profiler="clr-namespace:Profiler"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300" Height="Auto">
+  <StackPanel Height="Auto" Name="panel">
+    <Profiler:SearchBox Margin="0,-20,2,0" HorizontalAlignment="Right" Width="200" x:Name="search" />
+    <Canvas Name="surface" Height="Auto" />
+    <ScrollBar Orientation="Horizontal" Width="Auto" Name="scrollBar" />
+  </StackPanel>
+</UserControl>

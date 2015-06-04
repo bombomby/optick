@@ -5,6 +5,7 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
 	xmlns:Profiler_Data="clr-namespace:Profiler.Data"
+  xmlns:Profiler="clr-namespace:Profiler"
 	mc:Ignorable="d"
 	x:Class="Profiler.FrameDataTable"
 	x:Name="UserControl" d:DesignHeight="480"
@@ -23,7 +24,7 @@
 			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="413*"/>
 		</Grid.RowDefinitions>
-    <TextBox x:Name="FilterText" TextWrapping="Wrap" Text="Type function name here ..." Background="#FFB2ECFF" SnapsToDevicePixels="True" VerticalAlignment="Top" TextChanged="FilterText_TextChanged" GotFocus="FilterText_GotFocus" PreviewKeyDown="FilterText_PreviewKeyDown" Margin="1" FontWeight="Normal" />
+    <Profiler:SearchBox x:Name="FilterText" SnapsToDevicePixels="True" VerticalAlignment="Top" Margin="1" FontWeight="Normal" />
     <DataGrid VirtualizingStackPanel.IsVirtualizing="True" 
 				VirtualizingStackPanel.VirtualizationMode="Recycling" 
 				x:Name="SummaryTable" 

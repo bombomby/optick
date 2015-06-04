@@ -30,15 +30,16 @@ EventDescription& EventDescription::operator=(const EventDescription&)
 EventData* Event::Start(const EventDescription& description)
 {
 	EventData* result = nullptr;
-	if (GetThreadUniqueID() == Core::frame.threadUniqueID)
+
+	if (EventStorage* storage = Core::storage)
 	{
-		result = &Core::frame.NextEvent();
+		result = &storage->NextEvent();
 		result->description = &description;
 		result->Start();
 
 		if (description.isSampling)
 		{
-			InterlockedIncrement(&Core::frame.isSampling);
+			InterlockedIncrement(&storage->isSampling);
 		}
 	}
 	return result;
@@ -50,7 +51,8 @@ void Event::Stop(EventData& data)
 
 	if (data.description->isSampling)
 	{
-		InterlockedDecrement(&Core::frame.isSampling);
+		if (EventStorage* storage = Core::storage)
+			InterlockedDecrement(&storage->isSampling);
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -73,9 +75,8 @@ OutputDataStream& operator<<(OutputDataStream& stream, const EventData& ob)
 Category::Category(const EventDescription& description) : Event(description)
 {
 	if (data)
-	{
-		Core::frame.RegisterCategory(*data);
-	}
+		if (EventStorage* storage = Core::storage)
+			storage->RegisterCategory(*data);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
