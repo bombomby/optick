@@ -162,7 +162,7 @@ namespace Profiler.Data
   public class EventTree : EventNode 
   {
     private EventFrame frame;
-    public EventTree(EventFrame frame) : base(null, new Entry(new EventDescription("Frame", -1), frame.Start, frame.Finish))
+    public EventTree(EventFrame frame) : base(null, new Entry(null, frame.Start, frame.Finish))
     {
       this.frame = frame;
       BuildTree();

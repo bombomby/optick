@@ -265,7 +265,7 @@ namespace Profiler
         DataResponse response = ProfilerClient.Get().RecieveMessage();
 
 				if (response != null)
-          Application.Current.Dispatcher.Invoke(new Action(() => ApplyResponse(response)));
+          Application.Current.Dispatcher.BeginInvoke(new Action(() => ApplyResponse(response)));
 				else 
 					Thread.Sleep(1000);
       }
@@ -432,7 +432,7 @@ namespace Profiler
 			StartMessage message = new StartMessage();
 			if (ProfilerClient.Get().SendMessage(message))
 			{
-				Application.Current.Dispatcher.Invoke(new Action(() => 
+				Application.Current.Dispatcher.BeginInvoke(new Action(() => 
 				{ 
 					StatusText.Text = "Capturing..."; 
 					StatusText.Visibility = System.Windows.Visibility.Visible; 
