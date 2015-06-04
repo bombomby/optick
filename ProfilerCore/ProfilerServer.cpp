@@ -25,13 +25,13 @@ void Server::Update()
 	int length = -1;
 	while ( (length = socket->Receive( buffer, BIFFER_SIZE ) ) > 0 )
 	{
-		InputDataStream streamdata(buffer, length);
+		networkStream.Append(buffer, length);
+	}
 
-		if ( IMessage *message = IMessage::Create(streamdata) )
-		{
-			message->Apply();
-			delete message;
-		}
+	while (IMessage *message = IMessage::Create(networkStream))
+	{
+		message->Apply();
+		delete message;
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

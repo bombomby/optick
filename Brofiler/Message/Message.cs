@@ -73,12 +73,18 @@ namespace Profiler
 
       var reader = new BinaryReader(stream);
 
-      uint version = reader.ReadUInt32();
-      uint length = reader.ReadUInt32();
-      DataResponse.Type responseType = (DataResponse.Type)reader.ReadUInt32();
-      byte[] bytes = reader.ReadBytes((int)length);
+			try
+			{
+				uint version = reader.ReadUInt32();
+				uint length = reader.ReadUInt32();
+				DataResponse.Type responseType = (DataResponse.Type)reader.ReadUInt32();
+				byte[] bytes = reader.ReadBytes((int)length);
 
-      return new DataResponse(responseType, version, new BinaryReader(new MemoryStream(bytes)));
+				return new DataResponse(responseType, version, new BinaryReader(new MemoryStream(bytes)));
+			}
+			catch (EndOfStreamException) { }
+
+			return null;
     }
 
     public static DataResponse Create(String base64)
@@ -98,6 +104,8 @@ namespace Profiler
 
   public abstract class Message
   {
+		public static UInt32 MESSAGE_MARK = 0xB50FB50F;
+
     public abstract Int32 GetMessageType();
     public virtual void Write(BinaryWriter writer)
     {

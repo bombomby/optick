@@ -43,7 +43,33 @@ namespace Profiler
 	public:
 		bool CanRead() { return !eof(); }
 
-		InputDataStream( const char *buffer, int length );
+		InputDataStream();
+
+		void Append(const char *buffer, size_t length);
+		bool Skip(size_t length);
+		size_t Length();
+
+		template<class T>
+		bool Peek(T& data)
+		{
+			if (Length() < sizeof(T))
+				return false;
+
+			pos_type currentPos = tellg();
+			read((char*)&data, sizeof(T));
+			seekg(currentPos);
+			return true;
+		}
+
+		template<class T>
+		bool Read(T& data)
+		{
+			if (Length() < sizeof(T))
+				return false;
+
+			read((char*)&data, sizeof(T));
+			return true;
+		}
 
 		friend InputDataStream &operator >> ( InputDataStream &stream, byte &val );
 		friend InputDataStream &operator >> ( InputDataStream &stream, int32 &val );

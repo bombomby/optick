@@ -98,9 +98,20 @@ namespace Profiler
 
 				lock (criticalSection)
 				{
-					BinaryWriter writer = new BinaryWriter(client.GetStream());
-					message.Write(writer);
-					writer.Flush();
+					MemoryStream buffer = new MemoryStream();
+					message.Write(new BinaryWriter(buffer));
+					buffer.Flush();
+
+					UInt32 length = (UInt32)buffer.Length;
+
+					NetworkStream stream = client.GetStream();
+
+					BinaryWriter writer = new BinaryWriter(stream);
+					writer.Write(Message.MESSAGE_MARK);
+					writer.Write(length);
+
+					buffer.WriteTo(stream);
+					stream.Flush();
 				}
 
 				return true;

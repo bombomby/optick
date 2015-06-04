@@ -8,6 +8,18 @@
 namespace Profiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct MessageHeader
+{
+	uint32 mark;
+	uint32 length;
+
+	static const uint32 MESSAGE_MARK = 0xB50FB50F;
+
+	bool IsValid() const { return mark == MESSAGE_MARK; }
+
+	MessageHeader() : mark(0), length(0) {}
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class MessageFactory
 {
 	typedef IMessage* (*MessageCreateFunction)(InputDataStream& str);
@@ -42,12 +54,25 @@ public:
 
 	IMessage* Create(InputDataStream& str)
 	{
+		MessageHeader header;
+		str.Read(header);
+
+		size_t length = str.Length();
+
 		int32 messageType = IMessage::COUNT;
 		str >> messageType;
 
 		BRO_VERIFY( 0 <= messageType && messageType < IMessage::COUNT && factory[messageType] != nullptr, "Unknown message type!", return nullptr )
 
-		return factory[messageType](str);
+		IMessage* result = factory[messageType](str);
+
+		if (header.length + str.Length() != length)
+		{
+			BRO_FAILED("Message Stream is corrupted! Invalid Protocol?")
+			return nullptr;
+		}
+
+		return result;
 	}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -56,9 +81,28 @@ OutputDataStream& operator<<(OutputDataStream& os, const DataResponse& val)
 	return os << val.version << val.type;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 IMessage* IMessage::Create(InputDataStream& str)
 {
-	return MessageFactory::Get().Create(str);
+	MessageHeader header;
+
+	while (str.Peek(header))
+	{
+		if (header.IsValid())
+		{
+			if (str.Length() < header.length + sizeof(MessageHeader))
+				break; // Not enough data yet
+
+			return MessageFactory::Get().Create(str);
+		} 
+		else
+		{
+			// Some garbage in the stream?
+			str.Skip(1);
+		}
+	}
+
+	return nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void StartMessage::Apply()

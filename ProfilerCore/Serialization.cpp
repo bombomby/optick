@@ -113,11 +113,26 @@ namespace Profiler
 		return stream;
 	}
 
-	InputDataStream::InputDataStream( const char *buffer, int length ) :
-	std::stringstream( ios_base::in | ios_base::out )
+	InputDataStream::InputDataStream() :
+		std::stringstream( ios_base::in | ios_base::out )
+	{
+	}
+
+	void InputDataStream::Append(const char *buffer, size_t length)
 	{
 		write( buffer, length );
-		seekg(ios_base::beg);
+	}
+
+	size_t InputDataStream::Length()
+	{
+		return (size_t)(tellp() - tellg());
+	}
+
+	bool InputDataStream::Skip(size_t length)
+	{
+		bool result = Length() <= length;
+		seekg(length, ios_base::cur);
+		return result;
 	}
 
 
