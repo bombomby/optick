@@ -8,8 +8,11 @@
 namespace Profiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+static CriticalSection lock;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventDescription* EventDescription::Create(const char* eventName, const char* fileName, const unsigned long fileLine, const unsigned long eventColor /*= Color::Null*/)
 {
+	CRITICAL_SECTION(lock)
 	EventDescription* result = EventDescriptionBoard::Get().CreateDescription();
 	result->name = eventName;
 	result->file = fileName;

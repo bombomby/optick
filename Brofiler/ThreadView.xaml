@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:Profiler="clr-namespace:Profiler"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300" Height="Auto">
+             d:DesignHeight="300" d:DesignWidth="300" Height="Auto" VisualTextHintingMode="Fixed" VisualTextRenderingMode="Grayscale">
   <StackPanel Height="Auto" Name="panel">
     <Profiler:SearchBox Margin="0,-20,2,0" HorizontalAlignment="Right" Width="200" x:Name="search" />
     <Canvas Name="surface" Height="Auto" />

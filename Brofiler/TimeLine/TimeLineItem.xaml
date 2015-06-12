@@ -12,6 +12,5 @@
   Width="Auto" BorderBrush="Black">
 	
 
-	<StackPanel x:Name="LayoutRoot" RenderTransformOrigin="0.5,0.5" Background="#FFB0B0B0" >
-	</StackPanel>
+	<Grid x:Name="LayoutRoot" Background="#FFB0B0B0" VerticalAlignment="Top" />
 </UserControl>

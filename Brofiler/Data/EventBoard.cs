@@ -24,7 +24,8 @@ namespace Profiler.Data
   public interface IBoardItem
   {
     bool Match(String text);
-    List<Object> GetFilter();
+		void CollectNodeFilter(HashSet<Object> filter);
+		void CollectDescriptionFilter(HashSet<Object> filter);
   }
 
   public class BoardItem<TDesciption, TNode> : IBoardItem
@@ -42,9 +43,14 @@ namespace Profiler.Data
 			return Description.Name;
 		}
 
-    public List<Object> GetFilter() 
+    virtual public void CollectNodeFilter(HashSet<Object> filter) 
 		{
-			return new List<Object>(Nodes); 
+			filter.UnionWith(Nodes);
+		}
+
+		virtual public void CollectDescriptionFilter(HashSet<Object> filter)
+		{
+			filter.Add(Description);
 		}
 
 		public virtual void Add(TNode node)
@@ -72,8 +78,8 @@ namespace Profiler.Data
     [ColumnWidth(400)]
     public String Function { get { return Description.Name; } }
 
-		//[DisplayName("Self%")]
-		//public double SelfPercent { get; private set; }
+		[DisplayName("Self%")]
+		public double SelfPercent { get; private set; }
 		[DisplayName("Self(ms)")]
 		public double SelfTime { get { return Total - ChildTime; } }
 
@@ -98,7 +104,7 @@ namespace Profiler.Data
       MaxTime = Math.Max(MaxTime, node.Entry.Duration);
       Total += node.Entry.Duration;
       ChildTime += node.ChildrenDuration;
-			//SelfPercent += node.SelfPercent;
+			SelfPercent += node.SelfPercent;
 			//TotalPercent += node.TotalPercent;
       ++Count;
     }
@@ -127,6 +133,11 @@ namespace Profiler.Data
     public String Module { get { return Description.ModuleShortName; } }
     public String Path { get { return Description.Path.ShortPath; } }
 
+		public override void CollectDescriptionFilter(HashSet<Object> filter)
+		{
+			foreach (var node in Nodes)
+				filter.Add(node.Description);
+		}
 
     public override void Add(SamplingNode node)
     {
@@ -138,13 +149,11 @@ namespace Profiler.Data
     }
   }
 
-  public class Board<TItem, TDescription, TNode> : List<TItem> 
+	public class Board<TItem, TDescription, TNode> : List<TItem>
     where TItem : BoardItem<TDescription, TNode>, new()
 		where TNode : TreeNode<TDescription>
 		where TDescription : Description
 	{
-		public bool ShareByName { get; set; }
-
     public Board(TNode node)
     {
       Dictionary<Object, TItem> items = new Dictionary<Object, TItem>();

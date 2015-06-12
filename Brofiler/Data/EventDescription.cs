@@ -57,6 +57,8 @@ namespace Profiler.Data
 		public Color Color { get; private set; }
 		public Brush Brush { get; private set; }
 
+		public bool IsSleep { get { return Color == Colors.White; } }
+
 		public EventDescription() {}
     public EventDescription(String name, int id)
     {

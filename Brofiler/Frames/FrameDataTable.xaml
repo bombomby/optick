@@ -17,6 +17,22 @@
         <scm:SortDescription PropertyName="SelfPercent" Direction="Descending" />
       </CollectionViewSource.SortDescriptions>
     </CollectionViewSource>
+    <Style TargetType="FrameworkElement" x:Key="VisibleAnimation">
+      <Setter Property="Visibility" Value="Collapsed"/>
+      <Setter Property="Opacity" Value="0"/>
+      <Style.Triggers>
+        <Trigger Property="Visibility" Value="Visible">
+          <Trigger.EnterActions>
+            <BeginStoryboard>
+              <Storyboard>
+                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                             From="0.0" To="1.0" Duration="0:0:0.2"/>
+              </Storyboard>
+            </BeginStoryboard>
+          </Trigger.EnterActions>
+        </Trigger>
+      </Style.Triggers>
+    </Style>
   </UserControl.Resources>
   
 	<Grid x:Name="LayoutRoot" Margin="0">
@@ -54,5 +70,9 @@
         </Style>
       </DataGrid.Resources>
     </DataGrid>
+    <Grid Name="FilterSummaryControl" Style="{StaticResource VisibleAnimation}" Width="Auto" MinWidth="300"  Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="1" Margin="0,0,0,30" >
+      <Rectangle Fill="#FFBDBDBD" RadiusX="8" RadiusY="8" Stroke="Black" StrokeThickness="1" />
+      <Label Name="FilterSummaryText" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="16" FontStyle="Normal" FontStretch="Normal" />
+    </Grid>
   </Grid>
 </UserControl>

@@ -24,13 +24,19 @@ struct ScopeData
 {
 	ScopeHeader header;
 	std::vector<EventData> categories;
+	std::vector<EventData> synchronization;
 	std::vector<EventData> events;
 
 	void AddEvent(const EventData& data)
 	{
 		events.push_back(data);
 		if (data.description->color != Color::Null)
-			categories.push_back(data);
+		{
+			if (data.description->color == Color::White)
+				synchronization.push_back(data);
+			else
+				categories.push_back(data);
+		}
 	}
 
 	void InitRootEvent(const EventData& data)
@@ -40,6 +46,7 @@ struct ScopeData
 	}
 
 	void Send();
+	void Clear();
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator << ( OutputDataStream& stream, const ScopeData& ob);

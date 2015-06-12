@@ -284,4 +284,5 @@ struct PROFILER_API Category : public Event
 	#define PROFILER_INLINE_EVENT(NAME, CODE) { CODE; }
 	#define PROFILER_CATEGORY(NAME, COLOR)
 	#define PROFILER_FRAME(NAME)
+#define PROFILER_THREAD(FRAME_NAME)
 #endif

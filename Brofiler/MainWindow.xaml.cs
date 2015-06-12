@@ -47,7 +47,19 @@ namespace Profiler
 
 				if (dataContext is Data.EventFrame)
 				{
-					ThreadView.FocusOn(dataContext as Data.EventFrame);
+					Data.EventFrame frame = dataContext as Data.EventFrame;
+					ThreadView.FocusOn(frame);
+
+					//if (ThreadView.search.IsFiltering)
+					//{
+					//  String text = ThreadView.search.Text;
+
+					//  if (frameTabs.SelectedItem is CloseableTabItem)
+					//  {
+					//    CloseableTabItem item = frameTabs.SelectedItem as CloseableTabItem;
+					//    item.Add
+					//  }
+					//}
 				}
 			}
 		}

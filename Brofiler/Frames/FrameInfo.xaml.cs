@@ -27,6 +27,7 @@ namespace Profiler
 		{
 			this.InitializeComponent();
       SummaryTable.FilterApplied += new ApplyFilterEventHandler(ApplyFilterToEventTree);
+			SummaryTable.DescriptionFilterApplied += new ApplyDescriptionFilterEventHandler(ApplyDescriptionFilterToEventTree);
 		}
 
     private Data.Frame frame;
@@ -86,6 +87,32 @@ namespace Profiler
         }
       }
     }
+
+		private void ApplyDescriptionFilterToEventTree(HashSet<Object> filter)
+		{
+			if (filter == null)
+			{
+				SummaryTable.FilterSummaryControl.Visibility = Visibility.Collapsed;
+			}
+			else
+			{
+				Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+				{
+					if (frame is EventFrame)
+					{
+						double time = (frame as EventFrame).CalculateFilteredTime(filter);
+						SummaryTable.FilterSummaryText.Content = String.Format("Filter Coverage: {0:0.###}ms", time).Replace(',', '.');
+					}
+					else if (frame is SamplingFrame)
+					{
+						SamplingFrame samplingFrame = frame as SamplingFrame;
+						double count = samplingFrame.Root.CalculateFilteredTime(filter);
+						SummaryTable.FilterSummaryText.Content = String.Format("Filter Coverage: {0:0.###}% ({1}/{2})", 100.0 * count / samplingFrame.Root.Duration, count, samplingFrame.Root.Duration).Replace(',', '.');
+					}
+					SummaryTable.FilterSummaryControl.Visibility = Visibility.Visible;
+				}));
+			}
+		}
 
 		private void OnTreeViewItemMouseRightButtonDown(object sender, MouseButtonEventArgs e)
 		{

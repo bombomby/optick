@@ -71,12 +71,29 @@ namespace Profiler
 		}
 	}
 
+	struct RowRange
+	{
+		public double Offset { get; set; }
+		public double Height { get; set; }
+		public int MaxDepth { get; set; }
+
+		public double Bottom { get { return Offset + Height; } }
+
+		public bool Inside(double value)
+		{
+			return (Bottom >= value) && (value >= Offset);
+		}
+	}
+
 	public class ThreadCanvas : Adorner
 	{
-		public const int BlockHeight = 16;
-		public const int HeaderHeight = 5;
-		public const int RowHeight = 18;
+		public const int BlockHeight = 14;
+		public const int HeaderHeight = 10;
+		public const int SpaceHeight = 2;
+		public const int ThreadNameHeight = 14;
 		FrameGroup group;
+
+		List<RowRange> rows = new List<RowRange>();
 
 		Durable timeRange;
 
@@ -121,6 +138,16 @@ namespace Profiler
 						Range = 0;
 						Position = 0;
 
+						rows.Clear();
+						double rowOffset = HeaderHeight;
+						for (int threadIndex = 0; threadIndex < group.Threads.Count; ++threadIndex)
+						{
+							int maxDepth = group.Threads[threadIndex].Count > 0 ? GetRowMaxDepth(threadIndex) : -1;
+							double height = maxDepth >= 0 ? (maxDepth + 1) * BlockHeight : 0.0;
+							rows.Add(new RowRange() { Offset = rowOffset, Height = height, MaxDepth = maxDepth });
+							rowOffset += maxDepth >= 0 ? SpaceHeight + height : 0.0;
+						}
+
 						UpdateBar();
 					}
 				}
@@ -129,7 +156,7 @@ namespace Profiler
 
 		class EventFilter
 		{
-			public HashSet<EventDescription> descriptions = new HashSet<EventDescription>();
+			public HashSet<Object> descriptions = new HashSet<Object>();
 			Dictionary<EventFrame, double> durations = new Dictionary<EventFrame,double>();
 
 			HashSet<EventFrame> loading = new HashSet<EventFrame>();
@@ -191,7 +218,7 @@ namespace Profiler
 				return true;
 			}
 
-			void ProcessFrame(EventFrame frame, HashSet<EventDescription> filter)
+			void ProcessFrame(EventFrame frame, HashSet<Object> filter)
 			{
 				frame.Load();
 				double duration = frame.CalculateFilteredTime(filter);
@@ -282,7 +309,7 @@ namespace Profiler
 				if (group == null)
 					return Size.Empty;
 
-				return new Size(duration, group.Threads.Count * RowHeight + HeaderHeight);
+				return new Size(duration, rows.Count > 0.0 ? rows[rows.Count-1].Bottom : 0.0);
 			}
 		}
 		public ScrollBar Bar { get; set; }
@@ -346,6 +373,16 @@ namespace Profiler
 			selectedScopes.Add(new SelectedScope() { Start = pos, Finish = pos });
 		}
 
+		int GetThreadIndex(double offset)
+		{
+			for (int i = 0; i < rows.Count; ++i)
+			{
+				if (rows[i].Inside(offset))
+					return i;
+			}
+			return -1;
+		}
+
 		void ThreadCanvas_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
 		{
 			if (group == null)
@@ -364,9 +401,9 @@ namespace Profiler
 				}
 			}
 
-			int threadIndex = (int)((pos.Y - HeaderHeight) / RowHeight);
+			int threadIndex = GetThreadIndex(pos.Y);
 
-			if (threadIndex < group.Threads.Count)
+			if (0 <= threadIndex && threadIndex < group.Threads.Count)
 			{
 				var frames = group.Threads[threadIndex];
 
@@ -377,7 +414,7 @@ namespace Profiler
 				if (index > 0)
 				{
 					EventFrame frame = frames[index];
-					Rect rect = CalculateRect(frame.Header, threadIndex);
+					Rect rect = CalculateRect(frame.Header, rows[threadIndex].Offset, rows[threadIndex].Height);
 					if (rect.Contains(pos))
 					{
 						TimeLine.FocusFrameEventArgs args = new TimeLine.FocusFrameEventArgs(TimeLine.FocusFrameEvent, frame);
@@ -448,44 +485,71 @@ namespace Profiler
 		}
 
 		Pen borderPen = new Pen(Brushes.Black, 0.25);
-		Pen selectedPen = new Pen(Brushes.Black, 2);
-		Pen fpsPen = new Pen(Brushes.Black, 0.5);
+		Pen selectedPen = new Pen(Brushes.Black, 3);
+		Pen fpsPen = new Pen(fpsBrush, 1.5);
 		Pen selectionScopePen = new Pen(Brushes.Black, 1.5);
+		Pen threadNamePen = new Pen(Brushes.Black, 0.5);
 		
-		Vector textOffset = new Vector(1, 2);
+		Vector textOffset = new Vector(1, 0);
 
-		Typeface font = new Typeface(new FontFamily(), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
+		Typeface fontDuration = new Typeface(new FontFamily(), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
+		Typeface fontCategoryName = new Typeface(new FontFamily(), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
 
-		Rect CalculateRect(Durable time, int line)
+		Rect CalculateRect(Durable time, double rowOffset, double height)
 		{
 			double scale = AdornedElement.RenderSize.Width / Range;
-			return new Rect((time.StartMS - timeRange.StartMS - Position) * scale, line * RowHeight + HeaderHeight, time.Duration * scale, BlockHeight);
+			return new Rect((time.StartMS - timeRange.StartMS - Position) * scale, rowOffset, time.Duration * scale, height);
 		}
 
 		const double DrawThreshold = 3.0;
+		const double DrawTextThreshold = 16.0;
 		const double FPSMark = 30.0;
 		const double FPSMarkTime = 1000.0 / FPSMark;
-		const double fpsTriangleSize = 6.0;
+		const double fpsTriangleSize = 8.0;
 
-		void RenderFPSLines(System.Windows.Media.DrawingContext drawingContext)
+		static Brush fpsBrush = Brushes.DimGray;
+
+		const double RenderFPSLineLimit = 1.0;
+
+		void RenderFPSLines(System.Windows.Media.DrawingContext drawingContext, List<EventFrame> frames, KeyValuePair<int, int> interval)
 		{
-			double height = Extent.Height;
 			double scale = AdornedElement.RenderSize.Width / Range;
+
+			if (scale < RenderFPSLineLimit)
+				return;
+
+			double height = Extent.Height;
 
 			StreamGeometry geometry = new StreamGeometry();
 
 			using (StreamGeometryContext geometryContext = geometry.Open())
 			{
-				for (int i = (int)(Position / FPSMarkTime); i <= (int)((Position + Range) / FPSMarkTime); ++i)
+				for (int i = interval.Key; i <= interval.Value; ++i)
 				{
-					double posX = (i * FPSMarkTime - Position) * scale;
-					geometryContext.BeginFigure(new Point(posX, fpsTriangleSize), true, true);
+					EventFrame frame = frames[i];
+
+					double posX = (frame.Header.StartMS - timeRange.StartMS - Position) * scale;
+					Point point = new Point(posX, fpsTriangleSize);
+					geometryContext.BeginFigure(point, true, true);
 					geometryContext.LineTo(new Point(posX - fpsTriangleSize / 2, 0), false, false);
 					geometryContext.LineTo(new Point(posX + fpsTriangleSize / 2, 0), false, false);
+
+					drawingContext.DrawLine(fpsPen, new Point(posX, 0), new Point(posX, height - SpaceHeight));
+
+					double maxTextWidth = Math.Max(frame.Duration * scale - 8, 0.0);
+
+					if (maxTextWidth > DrawTextThreshold)
+					{
+						FormattedText text = new FormattedText(String.Format("{0:0.###}ms", frame.Duration).Replace(',', '.'), culture, FlowDirection.LeftToRight, fontDuration, 12, fpsBrush);
+						text.MaxLineCount = 1;
+						text.MaxTextWidth = maxTextWidth;
+						text.Trimming = TextTrimming.None;
+						drawingContext.DrawText(text, new Point(posX + maxTextWidth / 2 - text.Width / 2, -2));
+					}
 				}
 			}
 
-			drawingContext.DrawGeometry(Brushes.Gray, null, geometry);
+			drawingContext.DrawGeometry(fpsBrush, null, geometry);
 		}
 
 		class SelectedScope
@@ -496,14 +560,25 @@ namespace Profiler
 
 		List<SelectedScope> selectedScopes = new List<SelectedScope>();
 		Brush selectionScopeBackground = new SolidColorBrush(Color.FromArgb(180, 55, 55, 55));
-		CultureInfo culture = CultureInfo.GetCultureInfo("en-US");
+		Brush timingTextBackground = new SolidColorBrush(Color.FromArgb(200, 255, 255, 255));
+		CultureInfo culture = CultureInfo.InvariantCulture;
+
+		double CalculateIntersection(EventData frame, double start, double finish)
+		{
+			double left = Math.Max(frame.StartMS - timeRange.StartMS, start);
+			double right = Math.Min(frame.FinishMS - timeRange.StartMS, finish);
+
+			return Math.Max(0, right - left);
+		}
 
 		double CalculateIntersection(EventFrame frame, double start, double finish)
 		{
-			double left = Math.Max(frame.Header.StartMS - timeRange.StartMS, start);
-			double right = Math.Min(frame.Header.FinishMS - timeRange.StartMS, finish);
+			double sum = CalculateIntersection(frame.Header, start, finish);
 
-			return Math.Max(0, right - left);
+			foreach (var entry in frame.Synchronization)
+				sum -= CalculateIntersection(entry, start, finish);
+
+			return Math.Max(0, sum);
 		}
 
 		void RenderSelectedScopes(System.Windows.Media.DrawingContext drawingContext)
@@ -535,17 +610,23 @@ namespace Profiler
 				{
 					var frames = group.Threads[threadIndex];
 
-					double sum = 0;
-					for (int index = intervals[threadIndex].Key; index <= intervals[threadIndex].Value; ++index)
+					if (frames.Count > 0)
 					{
-						sum += CalculateIntersection(frames[index], pos0, pos1);
-					}
+						double sum = 0;
 
-					FormattedText text = new FormattedText(String.Format("{0:0.000}", sum).Replace(',', '.'), culture, FlowDirection.LeftToRight, font, 12, Brushes.White);
+						if (intervals[threadIndex].Key != -1 && intervals[threadIndex].Value != -1 && frames.Count > 0)
+						{
+							for (int index = intervals[threadIndex].Key; index <= intervals[threadIndex].Value; ++index)
+							{
+								sum += CalculateIntersection(frames[index], pos0, pos1);
+							}
+						}
 
-					if (text.Width < area.Width)
-					{
-						drawingContext.DrawText(text, new Point((posStart + posFinish) / 2 - text.Width / 2, HeaderHeight + threadIndex * RowHeight) + textOffset);
+						FormattedText text = new FormattedText(String.Format("{0:0.000}", sum).Replace(',', '.'), culture, FlowDirection.LeftToRight, fontDuration, 12, Brushes.White);
+						text.MaxLineCount = 1;
+						text.MaxTextWidth = area.Width;
+						text.Trimming = TextTrimming.None;
+						drawingContext.DrawText(text, new Point((posStart + posFinish) / 2 - text.Width / 2, rows[threadIndex].Offset + (rows[threadIndex].Height - text.Height) / 2.0) + textOffset);
 					}
 				}
 			}
@@ -576,6 +657,116 @@ namespace Profiler
 			return result;
 		}
 
+		const double NextLevelRatio = 0.5;
+
+		void GenerateEventNode(EventNode node, Rect frameRect, int currentLevel, int maxDepth, List<KeyValuePair<Entry, Rect>> result)
+		{
+			Rect entryRectangle = CalculateRect(node.Entry, frameRect.Top, frameRect.Height);
+
+			if (entryRectangle.Width < DrawThreshold)
+				return;
+
+			double ratio = (double)currentLevel / (maxDepth + 1);
+			double offset = ratio * entryRectangle.Height;
+
+			entryRectangle.Offset(new Vector(0, offset));
+			entryRectangle.Height = entryRectangle.Height - offset;
+
+			result.Add(new KeyValuePair<Entry, Rect>(node.Entry, entryRectangle));
+
+			if (currentLevel + 1 <= maxDepth)
+				foreach (EventNode child in node.Children)
+					GenerateEventNode(child, frameRect, currentLevel + 1, maxDepth, result);
+		}
+
+		void OnRenderFrame(System.Windows.Media.DrawingContext drawingContext, EventFrame frame, double rowOffset, int maxDepth)
+		{
+			Rect rectangle = CalculateRect(frame.Header, rowOffset, (maxDepth + 1) * BlockHeight);
+
+			bool isFilterReady = false;
+			double filteredValue = 0.0;
+
+			if (Filter != null)
+			{
+				isFilterReady = Filter.TryGetFilteredFrameTime(frame, out filteredValue);
+			}
+
+			drawingContext.DrawRectangle(Filter != null && isFilterReady ? Brushes.LimeGreen : Brushes.LightGray, null, rectangle);
+
+			if (Filter == null)
+			{
+				List<KeyValuePair<Entry, Rect>> rects = new List<KeyValuePair<Entry, Rect>>();
+
+				foreach (EventNode node in frame.CategoriesTree.Children)
+					GenerateEventNode(node, rectangle, 0, 1, rects);
+
+				if (rects.Count > 0)
+				{
+					foreach (var item in rects)
+					{
+						drawingContext.DrawRectangle(item.Key.Description.Brush, borderPen, item.Value);
+					}
+
+					foreach (Entry entry in frame.Synchronization)
+					{
+						Rect rect = CalculateRect(entry, rowOffset, rectangle.Height);
+						if (rect.Width > DrawThreshold)
+						{
+							drawingContext.DrawRectangle(entry.Description.Brush, borderPen, rect);
+						}
+					}
+
+					foreach (var item in rects)
+					{
+						if (item.Value.Width < DrawTextThreshold)
+							continue;
+
+						FormattedText categoryText = new FormattedText(item.Key.Description.Name, culture, FlowDirection.LeftToRight, fontCategoryName, 11, Brushes.Black, null, TextFormattingMode.Display);
+						categoryText.MaxTextWidth = item.Value.Width - textOffset.X;
+						categoryText.Trimming = TextTrimming.None;
+						categoryText.MaxLineCount = 1;
+						drawingContext.DrawText(categoryText, item.Value.Location + textOffset);
+					}					
+				}
+			}
+
+			if (rectangle.Width > DrawThreshold)
+			{
+				drawingContext.DrawRectangle(null, borderPen, rectangle);
+
+				double value = frame.Duration;
+
+				if (Filter != null)
+				{
+					if (isFilterReady)
+					{
+						double ratio = filteredValue / frame.Duration;
+						value = filteredValue;
+						drawingContext.DrawRectangle(Brushes.Tomato, null, new Rect(rectangle.X, rectangle.Y, rectangle.Width * ratio, rectangle.Height));
+					}
+				}
+
+				if (Filter != null)
+				{
+					FormattedText timingText = new FormattedText(String.Format("{0:0.###}ms", value).Replace(',', '.'), culture, FlowDirection.LeftToRight, fontDuration, 12, Brushes.Black);
+					timingText.MaxTextWidth = rectangle.Width;
+					timingText.MaxLineCount = 1;
+					timingText.Trimming = TextTrimming.None;
+
+					Point point = new Point(rectangle.Left + 1, rectangle.Bottom - timingText.Height + 1);
+					drawingContext.DrawText(timingText, point);
+				}
+			}
+		}
+
+		int MainMaxDepth = 1;
+		int AdditionalMaxDepth = 0;
+
+		int GetRowMaxDepth(int threadIndex)
+		{
+			return group.Board.MainThreadIndex == threadIndex ? MainMaxDepth : AdditionalMaxDepth;
+		}
+
 		protected override void OnRender(System.Windows.Media.DrawingContext drawingContext)
 		{
 			if (group == null)
@@ -589,85 +780,42 @@ namespace Profiler
 			var threads = group.Threads;
 
 			List<KeyValuePair<int, int>> intervals = CalculateFrameRange(Position, Position + Range);
-			
+
 			for (int threadIndex = 0; threadIndex < Math.Min(threads.Count, intervals.Count); ++threadIndex)
 			{
 				List<EventFrame> frames = threads[threadIndex];
+				RowRange rowRange = rows[threadIndex];
 
-				if (frames.Count > 0)
+				if (rowRange.MaxDepth >= 0 && frames.Count > 0)
 				{
 					for (int i = intervals[threadIndex].Key; i <= intervals[threadIndex].Value; ++i)
-					{
-						EventFrame frame = frames[i];
-						Rect rectangle = CalculateRect(frame.Header, threadIndex);
+						OnRenderFrame(drawingContext, frames[i], rowRange.Offset, rowRange.MaxDepth);
+				}
+			}
 
-						bool isFilterReady = false;
-						double filteredValue = 0.0;
+			int mainThreadIndex = group.Board.MainThreadIndex;
+			RenderFPSLines(drawingContext, group.Threads[mainThreadIndex], intervals[mainThreadIndex]);
 
-						if (Filter != null)
-						{
-							isFilterReady = Filter.TryGetFilteredFrameTime(frame, out filteredValue);
-						}
+			for (int threadIndex = 0; threadIndex < threads.Count; ++threadIndex)
+			{
+				FormattedText threadName = new FormattedText(group.Board.Threads[threadIndex].Name, culture, FlowDirection.LeftToRight, fontDuration, 12, Brushes.Black);
+				RowRange rowRange = rows[threadIndex];
 
-						drawingContext.DrawRectangle(Filter != null && isFilterReady ? Brushes.LimeGreen : Brushes.Gray, null, rectangle);
-
-						if (Filter == null)
-						{
-							foreach (Entry entry in frame.Categories)
-							{
-								Rect entryRectangle = CalculateRect(entry, threadIndex);
-
-								if (entryRectangle.Width < DrawThreshold)
-									continue;
-
-								drawingContext.DrawRectangle(entry.Description.Brush, null, entryRectangle);
-							}
-						}
-
-						if (rectangle.Width > DrawThreshold)
-						{
-							drawingContext.DrawRectangle(null, borderPen, rectangle);
-
-							String text = String.Empty;
-
-							if (Filter != null)
-							{
-								if (isFilterReady)
-								{
-									double ratio = filteredValue / frame.Duration;
-									text = String.Format("{0}ms", (int)filteredValue);
-									drawingContext.DrawRectangle(Brushes.Tomato, null, new Rect(rectangle.X, rectangle.Y, rectangle.Width * ratio, rectangle.Height));
-								}
-								else
-								{
-									text = "?";
-								}
-							}
-							else
-							{
-								text = String.Format("{0}ms", (int)frame.Duration);
-							}
-
-							if (!String.IsNullOrEmpty(text))
-							{
-								FormattedText timingText = new FormattedText(text, culture, FlowDirection.LeftToRight, font, 12, Brushes.Black);
-								if (timingText.Width < rectangle.Width)
-								{
-									drawingContext.DrawText(timingText, rectangle.Location + textOffset);
-								}
-							}
-						}
-					}
+				if (rowRange.MaxDepth >= 0 && group.Threads[threadIndex].Count > 0)
+				{
+					Point threadOrigin = new Point(1, rowRange.Offset + (rowRange.Height - ThreadNameHeight) * 0.5);
+					drawingContext.DrawRoundedRectangle(Brushes.White, threadNamePen, new Rect(threadOrigin.X, threadOrigin.Y, threadName.Width + 5, ThreadNameHeight), 4, 4);
+					drawingContext.DrawText(threadName, threadOrigin + new Vector(2, 0));
 				}
 			}
 
 			if (FocusedFrame != null)
 			{
-				Rect focusedRectangle = CalculateRect(FocusedFrame.Header, FocusedFrame.Header.ThreadIndex);
+				RowRange rowRange = rows[FocusedFrame.Header.ThreadIndex];
+				Rect focusedRectangle = CalculateRect(FocusedFrame.Header, rowRange.Offset, rowRange.Height);
 				drawingContext.DrawRectangle(null, selectedPen, focusedRectangle);
 			}
 
-			RenderFPSLines(drawingContext);
 			RenderSelectedScopes(drawingContext);
 
 			drawingContext.Pop();

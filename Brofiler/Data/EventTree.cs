@@ -133,7 +133,7 @@ namespace Profiler.Data
       }
     }
 
-		public double CalculateFilteredTime(HashSet<TDescription> filter)
+		public double CalculateFilteredTime(HashSet<Object> filter)
 		{
 			if (filter.Contains(Description))
 				return Duration;
@@ -162,25 +162,26 @@ namespace Profiler.Data
   public class EventTree : EventNode 
   {
     private EventFrame frame;
-    public EventTree(EventFrame frame) : base(null, new Entry(null, frame.Start, frame.Finish))
+    public EventTree(EventFrame frame, List<Entry> entries) : base(null, new Entry(null, frame.Start, frame.Finish))
     {
       this.frame = frame;
-      BuildTree();
+			BuildTree(entries);
     }
 
-    private void BuildTree()
+    private void BuildTree(List<Entry> entries)
     {
-      if (frame.Entries.Count == 0)
+			if (entries.Count == 0)
         return;
-
-      List<Entry> entries = new List<Entry>(frame.Entries);
 
       Stack<EventNode> curNodes = new Stack<EventNode>();
       curNodes.Push(this);
 
       foreach (var entry in entries)
       {
-        while (entry.Start >= curNodes.Peek().Entry.Finish)
+				if (entry.Start == entry.Finish)
+					continue;
+
+				while (entry.Start >= curNodes.Peek().Entry.Finish)
         {
 					curNodes.Pop();
         }

@@ -88,9 +88,8 @@ void Core::DumpFrames()
 				{
 					rootEvent = &data;
 					scope.InitRootEvent(*rootEvent);
-				}
-
-				if (rootEvent->finish < data.finish)
+				} 
+				else if (rootEvent->finish < data.finish)
 				{
 					scope.Send();
 
@@ -204,6 +203,8 @@ void Core::SendHandshakeResponse()
 	Server::Get().Send(DataResponse::Handshake, stream);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool InstallSynchronizationHooks(DWORD threadID);
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::RegisterThread(const ThreadDescription& description)
 {
 	CRITICAL_SECTION(lock);
@@ -214,6 +215,9 @@ bool Core::RegisterThread(const ThreadDescription& description)
 
 	ThreadEntry* entry = new ThreadEntry(description, &storage);
 	threads.push_back(entry);
+
+	InstallSynchronizationHooks(description.threadID);
+
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -246,7 +250,7 @@ OutputDataStream& operator<<(OutputDataStream& stream, const ScopeHeader& header
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const ScopeData& ob)
 {
-	return stream << ob.header << ob.categories << ob.events;
+	return stream << ob.header << ob.categories << ob.synchronization << ob.events;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const ThreadDescription& description)
@@ -287,17 +291,39 @@ void ThreadEntry::Activate(bool isActive)
 	*threadTLS = isActive ? &storage : nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool IsSleepOnlyScope(const ScopeData& scope)
+{
+	if (!scope.categories.empty() || scope.synchronization.empty())
+		return false;
+
+	for each (const EventData& data in scope.events)
+		if (data.description->color != Color::White)
+			return false;
+
+	return true;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ScopeData::Send()
 {
-	if (events.empty() && categories.empty())
-		return;
+	if (!events.empty() || !categories.empty())
+	{
+		if (!IsSleepOnlyScope(*this))
+		{
+			OutputDataStream frameStream;
+			frameStream << *this;
+			Server::Get().Send(DataResponse::EventFrame, frameStream);
+		}
+	}
 
-	OutputDataStream frameStream;
-	frameStream << *this;
-	Server::Get().Send(DataResponse::EventFrame, frameStream);
-
+	Clear();
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void ScopeData::Clear()
+{
 	events.clear();
 	categories.clear();
+	synchronization.clear();
 }
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

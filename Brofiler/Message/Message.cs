@@ -9,7 +9,7 @@ namespace Profiler
 {
   public struct NetworkProtocol
   {
-    public const UInt32 NETWORK_PROTOCOL_VERSION = 4;
+    public const UInt32 NETWORK_PROTOCOL_VERSION = 5;
   }
 
   public class DataResponse

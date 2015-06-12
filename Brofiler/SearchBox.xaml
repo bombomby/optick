@@ -17,7 +17,7 @@
       <ColumnDefinition Width="Auto" />
     </Grid.ColumnDefinitions>
     <!--<Image Width="20" Height="20" Source="/Brofiler;component/TimeLine/Icons/Search-icon.png" Stretch="Uniform" StretchDirection="Both"  />-->
-    <TextBox Width="Auto" Height="22" VerticalAlignment="Top" Text="Type here to search..." HorizontalAlignment="Stretch" Name="FilterText" Grid.Column="1" TextChanged="FilterText_TextChanged" GotFocus="FilterText_GotFocus" Background="#FFB2ECFF" />
+    <TextBox Width="Auto" Height="22" VerticalAlignment="Top" Text="Type here to search..." HorizontalAlignment="Stretch" Name="FilterText" Grid.Column="1" TextChanged="FilterText_TextChanged" GotFocus="FilterText_GotFocus" PreviewKeyDown="FilterText_PreviewKeyDown" Background="#FFB2ECFF" />
     <Button Width="14" Height="14" Grid.Column="1" HorizontalAlignment="Right" Click="Button_Click" Margin="0,0,3,0">
       <Button.Template>
         <ControlTemplate TargetType="{x:Type Button}">

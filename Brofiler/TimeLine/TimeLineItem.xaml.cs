@@ -38,13 +38,20 @@ namespace Profiler
         Data.EventFrame frame = (Data.EventFrame)DataContext;
 				LayoutRoot.Children.Clear();
 
+				double frameTime = frame.Duration;
+				double frameStartMS = frame.Header.StartMS;
 
 				foreach (var entry in frame.Categories)
 				{
 					Rectangle rect = new Rectangle();
-					rect.Width = Double.NaN;
+					rect.Width = double.NaN;
 					rect.Height = FrameHeightConverter.Convert(entry.Duration);
           rect.Fill = new SolidColorBrush(entry.Description.Color);
+
+					double startTime = (entry.StartMS - frameStartMS);
+					rect.Margin = new Thickness(0, FrameHeightConverter.Convert(startTime), 0, 0);
+					rect.VerticalAlignment = VerticalAlignment.Top;
+			
 					LayoutRoot.Children.Add(rect);
 				}
 			}

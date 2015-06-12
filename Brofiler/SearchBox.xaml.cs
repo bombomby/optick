@@ -39,12 +39,23 @@ namespace Profiler
 		}
 
 		bool isFiltering = false;
+
+		public bool IsFiltering { get { return isFiltering; } }
+
 		private void FilterText_GotFocus(object sender, RoutedEventArgs e)
 		{
 			if (!isFiltering)
 			{
 				FilterText.Text = String.Empty;
 				isFiltering = true;
+			}
+		}
+
+		private void FilterText_PreviewKeyDown(object sender, KeyEventArgs e)
+		{
+			if (e.Key == Key.Enter || e.SystemKey == Key.Enter)
+			{
+				TextEnter(FilterText.Text);
 			}
 		}
 
@@ -59,6 +70,9 @@ namespace Profiler
 
 		public delegate void DelayedTextChangedEventHandler(String text);
 		public event DelayedTextChangedEventHandler DelayedTextChanged;
+
+		public delegate void TextEnterEventHandler(String text);
+		public event TextEnterEventHandler TextEnter;
 
 		private void Button_Click(object sender, RoutedEventArgs e)
 		{

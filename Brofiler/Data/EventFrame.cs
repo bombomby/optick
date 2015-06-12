@@ -88,7 +88,9 @@ namespace Profiler.Data
       }
     }
 
-    public List<Entry> Categories { get; private set; }
+		public List<Entry> Categories { get; private set; }
+		public EventTree CategoriesTree { get; private set; }
+		public List<Entry> Synchronization { get; private set; }
 
 		Object loading = new object();
 
@@ -100,7 +102,7 @@ namespace Profiler.Data
 				{
 					entries = ReadEventList(reader, DescriptionBoard);
 
-					root = new EventTree(this);
+					root = new EventTree(this, Entries);
 					board = new Board<EventBoardItem, EventDescription, EventNode>(root);
 
 					reader = null;
@@ -120,13 +122,34 @@ namespace Profiler.Data
       return result;
     }
 
+		List<Entry> LinearizeEventList(List<Entry> events)
+		{
+			List<Entry> result = new List<Entry>(events.Count);
+			Entry currentRoot = null;
+
+			foreach (Entry entry in events)
+			{
+				if (currentRoot == null || currentRoot.Finish <= entry.Start)
+				{
+					currentRoot = entry;
+					result.Add(entry);
+				}
+			}
+
+			return result;
+		}
+
     protected void ReadInternal(BinaryReader reader)
     {
       Header = FrameHeader.Read(reader);
       Categories = ReadEventList(reader, DescriptionBoard);
+			CategoriesTree = new EventTree(this, Categories);
+
+			Synchronization = ReadEventList(reader, DescriptionBoard);
+			Synchronization = LinearizeEventList(Synchronization);
     }
 
-		public double CalculateFilteredTime(HashSet<EventDescription> filter)
+		public double CalculateFilteredTime(HashSet<Object> filter)
 		{
 			return Root.CalculateFilteredTime(filter);
 		}
