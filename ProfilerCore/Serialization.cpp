@@ -47,10 +47,9 @@ namespace Profiler
 		return stream;
 	}
 	
-	OutputDataStream & operator<<(OutputDataStream &stream, size_t val)
+	OutputDataStream & operator<<(OutputDataStream &stream, uint64 val)
 	{
-		BRO_VERIFY(val <= 0xFFFFFFFF, "Can't serialize size_t greater than uint32", return stream);
-		stream.write( (char*)&val, sizeof(uint32) );
+		stream.write( (char*)&val, sizeof(uint64) );
 		return stream;
 	}
 
@@ -62,7 +61,7 @@ namespace Profiler
 
 	OutputDataStream & operator<<(OutputDataStream &stream, const std::string& val)
 	{
-		stream << val.size();
+		stream << (uint32)val.size();
 		if (!val.empty())
 			stream.write(&val[0], sizeof(val[0]) * val.size());
 		return stream;
@@ -71,15 +70,9 @@ namespace Profiler
 	OutputDataStream & operator<<(OutputDataStream &stream, const std::wstring& val)
 	{
 		size_t count = val.size() * sizeof(wchar_t);
-		stream << count;
+		stream << (uint32)count;
 		if (!val.empty())
 			stream.write((char*)(&val[0]), count);
-		return stream;
-	}
-
-	OutputDataStream & operator<<(OutputDataStream &stream, uint64 val)
-	{
-		stream.write((char*)&val, sizeof(val));
 		return stream;
 	}
 

@@ -186,7 +186,7 @@ struct PROFILER_API ThreadDescription
 	ThreadDescription(const char* threadName = "MainThread");
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-PROFILER_API __int64 GetTime();
+extern "C" PROFILER_API __int64 GetTime();
 PROFILER_API __int64 GetTimeMicroSeconds();
 PROFILER_API void NextFrame();
 PROFILER_API bool IsActive();

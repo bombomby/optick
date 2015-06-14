@@ -52,7 +52,7 @@ EventDescription* EventDescriptionBoard::CreateDescription()
 {
 	CRITICAL_SECTION(lock)
 	EventDescription* desc = new EventDescription();
-	desc->index = board.size();
+	desc->index = (unsigned long)board.size();
 	board.push_back(desc);
 	return desc;
 }
@@ -62,7 +62,7 @@ OutputDataStream& operator << ( OutputDataStream& stream, const EventDescription
 	CRITICAL_SECTION(lock)
 	const std::vector<EventDescription*>& events = ob.GetEvents();
 
-	stream << events.size();
+	stream << (uint32)events.size();
 
 	for each ( const EventDescription *desc in events )
 		stream << *desc;

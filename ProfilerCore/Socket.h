@@ -132,14 +132,14 @@ namespace Profiler
 			acceptSocket = incomingSocket;
 		}
 
-		bool Send(const char *buf, int len)
+		bool Send(const char *buf, size_t len)
 		{
 			CRITICAL_SECTION(lock);
 
 			if (acceptSocket == INVALID_SOCKET)
 				return false;
 
-			if (::send(acceptSocket, buf, len, 0) == SOCKET_ERROR)
+			if (::send(acceptSocket, buf, (int)len, 0) == SOCKET_ERROR)
 			{
 				Disconnect();
 				return false;

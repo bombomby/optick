@@ -502,8 +502,9 @@ namespace Profiler
 		}
 
 		const double DrawThreshold = 3.0;
-		const double DrawTextThreshold = 16.0;
-		const double FPSMark = 30.0;
+		const double MinDrawTextThreshold = 16.0;
+    const double MaxDrawTextThreshold = 40000.0;
+    const double FPSMark = 30.0;
 		const double FPSMarkTime = 1000.0 / FPSMark;
 		const double fpsTriangleSize = 8.0;
 
@@ -538,7 +539,7 @@ namespace Profiler
 
 					double maxTextWidth = Math.Max(frame.Duration * scale - 8, 0.0);
 
-					if (maxTextWidth > DrawTextThreshold)
+					if (MaxDrawTextThreshold > maxTextWidth && maxTextWidth > MinDrawTextThreshold)
 					{
 						FormattedText text = new FormattedText(String.Format("{0:0.###}ms", frame.Duration).Replace(',', '.'), culture, FlowDirection.LeftToRight, fontDuration, 12, fpsBrush);
 						text.MaxLineCount = 1;
@@ -718,7 +719,7 @@ namespace Profiler
 
 					foreach (var item in rects)
 					{
-						if (item.Value.Width < DrawTextThreshold)
+						if (item.Value.Width < MinDrawTextThreshold || item.Value.Width > MaxDrawTextThreshold)
 							continue;
 
 						FormattedText categoryText = new FormattedText(item.Key.Description.Name, culture, FlowDirection.LeftToRight, fontCategoryName, 11, Brushes.Black, null, TextFormattingMode.Display);

@@ -21,7 +21,7 @@ struct CallStackTreeNode
 	CallStackTreeNode()									: dwArddress(0), invokeCount(0) {}
 	CallStackTreeNode(DWORD64 address)	: dwArddress(address), invokeCount(0) {} 
 
-	bool Merge(const CallStack& callstack, uint index)
+	bool Merge(const CallStack& callstack, size_t index)
 	{
 		++invokeCount;
 		if (index == 0)
@@ -49,7 +49,7 @@ struct CallStackTreeNode
 	{
 		stream << (uint64)dwArddress << invokeCount;
 
-		stream << children.size();
+		stream << (uint32)children.size();
 		for each (const CallStackTreeNode& node in children)
 			node.Serialize(stream);
 
@@ -74,7 +74,7 @@ bool Sampler::StopSampling()
 	CloseHandle(finishEvent);
 	finishEvent = nullptr;
 
-	targetThreadID = 0;
+	targetThreads.clear();
 
 	return true;
 }
@@ -88,12 +88,12 @@ Sampler::~Sampler()
 	StopSampling();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Sampler::StartSampling(DWORD threadID, uint samplingInterval)
+void Sampler::StartSampling(const std::vector<ThreadEntry*>& threads, uint samplingInterval)
 {
 	symEngine.Init();
 
 	intervalMicroSeconds = samplingInterval;
-	targetThreadID = threadID;
+	targetThreads = threads;
 
 	if (IsActive())
 		StopSampling();
@@ -113,49 +113,75 @@ bool Sampler::IsActive() const
 	return workerThread != nullptr || finishEvent != nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void ClearStackContext(CONTEXT& context)
+{
+	memset(&context, 0, sizeof(context));
+	context.ContextFlags = CONTEXT_FULL;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 {
 	Sampler& sampler = *(Sampler*)(lpParam);
 
-	BRO_VERIFY(sampler.targetThreadID != GetCurrentThreadId(), "It's a bad idea to sample specified thread! Deadlock will occur!", return 1);
+	std::vector<std::pair<HANDLE, ThreadEntry*>> openThreads;
+	openThreads.reserve(sampler.targetThreads.size());
 
-	HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, sampler.targetThreadID);
-	if (hThread == NULL)
+	for each (ThreadEntry* entry in sampler.targetThreads)
+	{
+		DWORD threadID = entry->description.threadID;
+		BRO_VERIFY(threadID != GetCurrentThreadId(), "It's a bad idea to sample specified thread! Deadlock will occur!", continue);
+
+		HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, threadID);
+		if (hThread == NULL)
+			continue;
+
+		openThreads.push_back(std::make_pair(hThread, entry));
+	}
+
+	if (openThreads.empty())
 		return 0;
 
-	CONTEXT context;
 	CallStackBuffer buffer;
+
+	CONTEXT context;
+
+	ClearStackContext(context);
 
 	while (WaitForSingleObject(sampler.finishEvent, 0) == WAIT_TIMEOUT)
 	{
 		SpinSleep(sampler.intervalMicroSeconds);
 
-		memset(&context, 0, sizeof(context));
-		context.ContextFlags = CONTEXT_FULL;
-
 		// Check whether we are inside sampling scope
-		if (!sampler.IsSamplingScope())
-			continue;
-
-		SuspendThread(hThread);
-
-		uint count = 0;
-
-		// Check scope again because it is possible to leave sampling scope while trying to suspend main thread
-		if (sampler.IsSamplingScope() && GetThreadContext(hThread, &context))
+		for each (const auto& entry in openThreads)
 		{
-			count = sampler.symEngine.GetCallstack(hThread, context, buffer);
-		}
+			HANDLE handle = entry.first;
+			const ThreadEntry* thread = entry.second;
 
-		ResumeThread(hThread);
+			if (!thread->storage.isSampling)
+				continue;
 
-		if (count > 0)
-		{
-			sampler.callstacks.push_back(CallStack(buffer.begin(), buffer.begin() + count));
+			SuspendThread(handle);
+
+			uint count = 0;
+			// Check scope again because it is possible to leave sampling scope while trying to suspend main thread
+			if (entry.second->storage.isSampling && GetThreadContext(handle, &context))
+			{
+				count = sampler.symEngine.GetCallstack(handle, context, buffer);
+			}
+
+			ResumeThread(handle);
+
+			if (count > 0)
+			{
+				sampler.callstacks.push_back(CallStack(buffer.begin(), buffer.begin() + count));
+			}
+
+			ClearStackContext(context);
 		}
 	}
 
-	CloseHandle(hThread);
+	for each (const auto& entry in openThreads)
+		CloseHandle(entry.first);
 
 	return 0;
 }
@@ -170,7 +196,7 @@ OutputDataStream& Sampler::Serialize(OutputDataStream& stream)
 {
 	BRO_VERIFY(!IsActive(), "Can't serialize active Sampler!", return stream);
 
-	stream << callstacks.size();
+	stream << (uint32)callstacks.size();
 
 	CallStackTreeNode tree;
 
@@ -202,10 +228,8 @@ OutputDataStream& Sampler::Serialize(OutputDataStream& stream)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Sampler::IsSamplingScope() const
 {
-	const std::vector<ThreadEntry*>& threads = Core::Get().GetThreads();
-
-	for each (ThreadEntry* entry in threads)
-		if (EventStorage* storage = *entry->threadTLS)
+	for each (const ThreadEntry* entry in targetThreads)
+		if (const EventStorage* storage = *entry->threadTLS)
 			if (storage->isSampling)
 				return true;
 
@@ -227,7 +251,20 @@ bool Sampler::SetupHook(uint64 address, bool isHooked)
 	{
 		if (const Symbol * const symbol = symEngine.GetSymbol(address))
 		{
-			return isHooked ? Hook::inst.Install(*symbol) : Hook::inst.Clear(*symbol);
+			if (isHooked)
+			{
+				std::vector<ulong> threadIDs;
+
+				const auto& threads = Core::Get().GetThreads();
+				for each (const auto& thread in threads)
+					threadIDs.push_back(thread->description.threadID);
+
+				return Hook::inst.Install(*symbol, threadIDs);
+			}
+			else
+			{
+				return Hook::inst.Clear(*symbol);
+			}
 		}
 	}
 	return false;

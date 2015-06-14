@@ -47,6 +47,9 @@
     <ClInclude Include="Types.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="HookFunction.h">
+      <Filter>Tools\EasyHook</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Tools">
@@ -88,5 +91,13 @@
     <ClCompile Include="Hook.cpp">
       <Filter>Tools\EasyHook</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="HookFunction64.asm">
+      <Filter>Tools\EasyHook</Filter>
+    </MASM>
+    <MASM Include="HookFunction32.asm">
+      <Filter>Tools\EasyHook</Filter>
+    </MASM>
   </ItemGroup>
 </Project>

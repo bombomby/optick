@@ -9,6 +9,17 @@
 
 //#include "Hook.h"
 
+extern "C" Profiler::EventData* NextEvent()
+{
+	if (Profiler::EventStorage* storage = Profiler::Core::storage)
+	{
+		return &storage->NextEvent();
+	}
+
+	return nullptr;
+}
+
+
 namespace Profiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -81,24 +92,24 @@ void Core::DumpFrames()
 
 			entry->storage.eventBuffer.ForEach([&](EventData& data)
 			{
-				if (data.finish < timeSlice.start || timeSlice.finish < data.finish)
-					data.finish = timeSlice.finish;
+				if (data.finish >= data.start && data.start >= timeSlice.start && timeSlice.finish >= data.finish)
+				{
+					if (!rootEvent)
+					{
+						rootEvent = &data;
+						scope.InitRootEvent(*rootEvent);
+					} 
+					else if (rootEvent->finish < data.finish)
+					{
+						scope.Send();
 
-				if (!rootEvent)
-				{
-					rootEvent = &data;
-					scope.InitRootEvent(*rootEvent);
-				} 
-				else if (rootEvent->finish < data.finish)
-				{
-					scope.Send();
-
-					rootEvent = &data;
-					scope.InitRootEvent(*rootEvent);
-				}
-				else
-				{
-					scope.AddEvent(data);
+						rootEvent = &data;
+						scope.InitRootEvent(*rootEvent);
+					}
+					else
+					{
+						scope.AddEvent(data);
+					}
 				}
 			});
 
@@ -163,7 +174,7 @@ void Core::UpdateEvents()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::StartSampling()
 {
-	sampler.StartSampling(mainThreadID);
+	sampler.StartSampling(threads);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::Activate( bool active )
@@ -184,10 +195,10 @@ void Core::DumpCapturingProgress()
 	std::stringstream stream;
 
 	if (isActive)
-		stream << "Capturing Frame " << frames.size() << std::endl;
+		stream << "Capturing Frame " << (uint32)frames.size() << std::endl;
 
 	if (sampler.IsActive())
-		stream << "Sample Count " << sampler.GetCollectedCount() << std::endl;
+		stream << "Sample Count " << (uint32)sampler.GetCollectedCount() << std::endl;
 
 	DumpProgress(stream.str().c_str());
 }
@@ -324,6 +335,5 @@ void ScopeData::Clear()
 	categories.clear();
 	synchronization.clear();
 }
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

@@ -87,6 +87,8 @@ DRIVER_SHARED_API(NTSTATUS, RtlGetLastError());
 
 DRIVER_SHARED_API(PWCHAR, RtlGetLastErrorString());
 
+DRIVER_SHARED_API(PWCHAR, RtlGetLastErrorStringCopy());
+
 DRIVER_SHARED_API(NTSTATUS, LhInstallHook(
             void* InEntryPoint,
             void* InHookProc,
@@ -340,8 +342,34 @@ DRIVER_SHARED_API(NTSTATUS, LhBarrierCallStackTrace(
 				UNICODE_STRING* OutNameBuffer,
 				ULONG InBufferSize,
 				ULONG* OutRequiredSize);
+    /*
+        Test API
+    */
+    typedef struct _TEST_FUNC_HOOKS_OPTIONS
+    {
+        LPSTR Filename;
+        LPSTR FilterByName;
+    } TEST_FUNC_HOOKS_OPTIONS;
 
+    typedef struct _TEST_FUNC_HOOKS_RESULT
+    {
+        LPSTR FnName;
+        LPSTR ModuleRedirect;
+        LPSTR FnRedirect;
+        void* FnAddress;
+        void* RelocAddress;
+        LPSTR EntryDisasm;
+        LPSTR RelocDisasm;
+        LPSTR Error;
+    } TEST_FUNC_HOOKS_RESULT;
 
+    EASYHOOK_NT_EXPORT TestFuncHooks(ULONG pId, 
+        PCHAR module,
+        TEST_FUNC_HOOKS_OPTIONS options,
+        TEST_FUNC_HOOKS_RESULT** outResults,
+        int* resultCount);
+
+    EASYHOOK_NT_EXPORT ReleaseTestFuncHookResults(TEST_FUNC_HOOKS_RESULT* results, int count);
 	/*
 		Injection support API.
 	*/

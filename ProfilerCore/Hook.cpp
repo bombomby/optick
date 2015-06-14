@@ -4,40 +4,46 @@
 #include "EventDescriptionBoard.h"
 #include "Core.h"
 #include "Thread.h"
+#include "HookFunction.h"
+
+extern "C"
+{
+	Profiler::HookData hookSlotData[Profiler::Hook::SLOT_COUNT];
+}
 
 namespace Profiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<uint N>
-struct HookSlot
-{
-	// Description data
-	static HookDescription* description;
-	static void* functionAddress;
-
-	// Runtime data
-	static DWORD returnAddress;
-	static EventData* eventData;
-
-	static bool Setup(HookDescription* desc, void* address)
-	{
-		description = desc;
-		functionAddress = address;
-		return true;
-	}
-};
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<uint N>
-HookDescription* HookSlot<N>::description = nullptr;
-
-template<uint N>
-void* HookSlot<N>::functionAddress = nullptr;
-
-template<uint N>
-DWORD HookSlot<N>::returnAddress = 0;
-
-template<uint N>
-EventData* HookSlot<N>::eventData = nullptr;
+//template<uint N>
+//struct HookSlot
+//{
+//	// Description data
+//	static HookDescription* description;
+//	static void* functionAddress;
+//
+//	// Runtime data
+//	static DWORD returnAddress;
+//	static EventData* eventData;
+//
+//	static bool Setup(HookDescription* desc, void* address)
+//	{
+//		description = desc;
+//		functionAddress = address;
+//		return true;
+//	}
+//};
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//template<uint N>
+//HookDescription* HookSlot<N>::description = nullptr;
+//
+//template<uint N>
+//void* HookSlot<N>::functionAddress = nullptr;
+//
+//template<uint N>
+//DWORD HookSlot<N>::returnAddress = 0;
+//
+//template<uint N>
+//EventData* HookSlot<N>::eventData = nullptr;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -45,57 +51,63 @@ EventData* HookSlot<N>::eventData = nullptr;
 // EasyHook doesn't support recursion - it is able to hook only first function in recursive call.
 // So here you won't find recursion support.
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<uint N>
-__declspec(naked) void HookFunction()
-{
-	_asm { pushad }
-
-	// Collecting event start time
-	if (EventStorage* storate = Core::storage)
-	{
-		HookSlot<N>::eventData = &(storate->NextEvent());
-		HookSlot<N>::eventData->description = HookSlot<N>::description->description;
-		QueryPerformanceCounter((LARGE_INTEGER*)(&HookSlot<N>::eventData->start));
-	}
-
-	_asm 
-	{
-		popad;
-
-		// Modification of return address to continue flow after function execution
-		pop HookSlot<N>::returnAddress;
-
-		// Call original function
-		call [HookSlot<N>::functionAddress];
-
-		// Restore return address
-		push HookSlot<N>::returnAddress;
-
-		pushad;
-	}
-
-	// Collecting event finish time
-	if (Core::storage)
-	{
-		QueryPerformanceCounter((LARGE_INTEGER*)(&HookSlot<N>::eventData->finish));
-	}
-
-	_asm 
-	{
-		popad;
-		ret;
-	}
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+//template<uint N>
+//__declspec(naked) void HookFunction()
+//{
+//	_asm { pushad }
+//
+//	// Collecting event start time
+//	if (EventStorage* storate = Core::storage)
+//	{
+//		HookSlot<N>::eventData = &(storate->NextEvent());
+//		HookSlot<N>::eventData->description = HookSlot<N>::description->description;
+//		QueryPerformanceCounter((LARGE_INTEGER*)(&HookSlot<N>::eventData->start));
+//	}
+//
+//	_asm 
+//	{
+//		popad;
+//
+//		// Modification of return address to continue flow after function execution
+//		pop HookSlot<N>::returnAddress;
+//
+//		// Call original function
+//		call [HookSlot<N>::functionAddress];
+//
+//		// Restore return address
+//		push HookSlot<N>::returnAddress;
+//
+//		pushad;
+//	}
+//
+//	// Collecting event finish time
+//	if (Core::storage)
+//	{
+//		QueryPerformanceCounter((LARGE_INTEGER*)(&HookSlot<N>::eventData->finish));
+//	}
+//
+//	_asm 
+//	{
+//		popad;
+//		ret;
+//	}
+//}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Profiler::Hook Profiler::Hook::inst;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Hook::Install(const Symbol& symbol)
+bool Hook::Install(const Symbol& symbol, const std::vector<ulong>& threadIDs)
 {
-	for (auto it = slots.begin(); it != slots.end(); ++it)
+	auto thread = threadIDs.begin();
+	for (auto it = slots.begin(); it != slots.end() && thread != threadIDs.end(); ++it)
+	{
 		if (it->IsEmpty())
-			return it->Install(symbol);
+		{
+			if (!it->Install(symbol, *thread))
+				return false;
+
+			++thread;
+		}
+	}
 
 	return false;
 }
@@ -104,11 +116,13 @@ bool Hook::Clear(const Symbol& symbol)
 {
 	void* address = (void*)(symbol.address - symbol.offset);
 
+	bool result = true;
+
 	for (auto it = slots.begin(); it != slots.end(); ++it)
 		if (!it->IsEmpty() && it->functionAddress == address)
-			return it->Clear();
+			result &= it->Clear();
 
-	return false;
+	return result;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Hook::ClearAll()
@@ -125,28 +139,13 @@ bool Hook::ClearAll()
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// HookSlot Recursive template generation
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<uint N>
-void GenerateHookFunctions(std::array<HookSlotWrapper, Hook::SLOT_COUNT>& slots)
-{
-	static_assert( 0 < N && N <= Hook::SLOT_COUNT, "Invalid hook index!" );
-	const uint index = N - 1;
-	slots[index].setupFunction = HookSlot<index>::Setup;
-	slots[index].hookFunction = HookFunction<index>;
-	GenerateHookFunctions<index>(slots);
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<>
-void GenerateHookFunctions<0>(std::array<HookSlotWrapper, Hook::SLOT_COUNT>&) {}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Hook::Hook()
 {
-	GenerateHookFunctions<SLOT_COUNT>(slots);
+	for (size_t index = 0; index < Hook::SLOT_COUNT; ++index)
+	{
+		slots[index].hookData = &hookSlotData[index];
+		slots[index].hookFunction = hookSlotFunctions[index];
+	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void HookDescription::Init(const Symbol& symbol)
@@ -168,7 +167,7 @@ bool HookSlotWrapper::Clear()
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool HookSlotWrapper::Install(const Symbol& symbol)
+bool HookSlotWrapper::Install(const Symbol& symbol, ulong threadID)
 {
 	BRO_VERIFY(IsEmpty(), "Can't install hook twice in the same slot", return false);
 
@@ -178,9 +177,9 @@ bool HookSlotWrapper::Install(const Symbol& symbol)
 	if (!NT_SUCCESS(status))
 		return false;
 
-	ULONG threadID[] = {0};
+	ULONG threadList[] = {threadID};
 
-	status = LhSetInclusiveACL(threadID, 1, &traceInfo);
+	status = LhSetInclusiveACL(threadList, 1, &traceInfo);
 	if (!NT_SUCCESS(status))
 		return false;
 
@@ -188,7 +187,7 @@ bool HookSlotWrapper::Install(const Symbol& symbol)
 	description->Init(symbol);
 
 	functionAddress = address;
-	setupFunction(description, functionAddress);
+	hookData->Setup(description->description, functionAddress);
 
 	return true;
 }
@@ -202,16 +201,19 @@ template<class TFunc>
 struct FuncOverride
 {
 	TFunc originalFunction;
+	Profiler::EventDescription* description;
+	
 	
 	std::vector<TRACED_HOOK_HANDLE> trackHandles;
 
-	FuncOverride(LPCSTR dllName, LPCSTR funcName) : originalFunction(nullptr)
+	FuncOverride(LPCSTR dllName, LPCSTR funcName) : originalFunction(nullptr), description(nullptr)
 	{
 		HMODULE module = LoadLibraryA(dllName);
 
 		if (module != nullptr)
 		{
 			originalFunction = (TFunc)GetProcAddress( module, funcName );
+			description = Profiler::EventDescription::Create(funcName, dllName, 0, (uint32)Profiler::Color::White);
 		}
 	}
 
@@ -303,4 +305,14 @@ bool InstallSynchronizationHooks(DWORD threadID)
 	return result;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+}
+
+extern "C" void* GetOrigSleepFunction()
+{
+	return Profiler::SleepOverride.originalFunction;
+}
+
+extern "C" Profiler::EventDescription* GetOrigSleepDescription()
+{
+	return Profiler::SleepOverride.description;
 }

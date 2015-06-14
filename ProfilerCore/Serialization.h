@@ -16,10 +16,9 @@ namespace Profiler
 		// It is important to make private inheritance in order to avoid collision with default operator implementation
 		friend OutputDataStream &operator << ( OutputDataStream &stream, const char* val );
 		friend OutputDataStream &operator << ( OutputDataStream &stream, int val );
-		friend OutputDataStream &operator << ( OutputDataStream &stream, size_t val );
+		friend OutputDataStream &operator << ( OutputDataStream &stream, uint64 val );
 		friend OutputDataStream &operator << ( OutputDataStream &stream, uint32 val );
 		friend OutputDataStream &operator << ( OutputDataStream &stream, int64 val );
-		friend OutputDataStream &operator << ( OutputDataStream &stream, uint64 val );
 		friend OutputDataStream &operator << ( OutputDataStream &stream, char val );
 		friend OutputDataStream &operator << ( OutputDataStream &stream, byte val );
 		friend OutputDataStream &operator << ( OutputDataStream &stream, const std::string& val );
@@ -29,7 +28,7 @@ namespace Profiler
 	template<class T>
 	OutputDataStream& operator<<(OutputDataStream &stream, const std::vector<T>& val)
 	{
-		stream << val.size();
+		stream << (uint32)val.size();
 
 		for each (const T& element in val)
 			stream << element;

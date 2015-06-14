@@ -2,17 +2,19 @@
 #include "SymEngine.h"
 #include <windows.h>
 #include <array>
+#include <vector>
 
 namespace Profiler
 {
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct ThreadEntry;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class Sampler
 {
 	SymEngine symEngine;
 
 	std::list<CallStack> callstacks;
-
-	DWORD targetThreadID;
+	std::vector<ThreadEntry*> targetThreads;
 
 	HANDLE workerThread;
 	HANDLE finishEvent;
@@ -29,7 +31,7 @@ public:
 
 	bool IsActive() const;
 
-	void StartSampling(DWORD threadID, uint samplingInterval = 300);
+	void StartSampling(const std::vector<ThreadEntry*>& threads, uint samplingInterval = 300);
 	bool StopSampling();
 
 	bool SetupHook(uint64 address, bool isHooked);
