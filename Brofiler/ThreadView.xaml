@@ -6,9 +6,18 @@
              xmlns:Profiler="clr-namespace:Profiler"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" Height="Auto" VisualTextHintingMode="Fixed" VisualTextRenderingMode="Grayscale">
-  <StackPanel Height="Auto" Name="panel">
-    <Profiler:SearchBox Margin="0,-20,2,0" HorizontalAlignment="Right" Width="200" x:Name="search" />
-    <Canvas Name="surface" Height="Auto" />
-    <ScrollBar Orientation="Horizontal" Width="Auto" Name="scrollBar" />
-  </StackPanel>
+  <Grid Height="Auto" Name="panel">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="280*" />
+      <RowDefinition Height="20*" />
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition Width="1*" />
+    </Grid.ColumnDefinitions>
+    <Profiler:SearchBox Margin="0,-20,2,0" HorizontalAlignment="Right" Width="200" x:Name="search" Grid.Column="1" VerticalAlignment="Top" />
+    <Canvas Name="surface" Height="Auto" Grid.Row="0" Grid.Column="1" />
+    <ScrollBar Orientation="Horizontal" Width="Auto" Name="scrollBar" Grid.Column="1" Grid.Row="1" />
+    <StackPanel Grid.RowSpan="1" Name="ThreadList" Margin="0,0,2,1" />
+  </Grid>
 </UserControl>

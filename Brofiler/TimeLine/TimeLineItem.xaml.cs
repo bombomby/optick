@@ -10,6 +10,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Profiler.Data;
 
 namespace Profiler
 {
@@ -31,6 +32,30 @@ namespace Profiler
 			Init();
 		}
 
+		void InitNode(EventNode node, double frameStartMS, int level)
+		{
+			double height = FrameHeightConverter.Convert(node.Entry.Duration);
+
+			if (height < 6.0 && level != 0)
+				return;
+
+			Rectangle rect = new Rectangle();
+			rect.Width = double.NaN;
+			rect.Height = height;
+			rect.Fill = new SolidColorBrush(node.Entry.Description.Color);
+
+			double startTime = (node.Entry.StartMS - frameStartMS);
+			rect.Margin = new Thickness(0, FrameHeightConverter.Convert(startTime), 0, 0);
+			rect.VerticalAlignment = VerticalAlignment.Top;
+
+			LayoutRoot.Children.Add(rect);
+
+			foreach (EventNode child in node.Children)
+			{
+				InitNode(child, frameStartMS, level + 1);
+			}
+		}
+
 		void Init()
 		{
 			if (DataContext is Data.EventFrame)
@@ -38,21 +63,11 @@ namespace Profiler
         Data.EventFrame frame = (Data.EventFrame)DataContext;
 				LayoutRoot.Children.Clear();
 
-				double frameTime = frame.Duration;
 				double frameStartMS = frame.Header.StartMS;
 
-				foreach (var entry in frame.Categories)
+				foreach (EventNode node in frame.CategoriesTree.Children)
 				{
-					Rectangle rect = new Rectangle();
-					rect.Width = double.NaN;
-					rect.Height = FrameHeightConverter.Convert(entry.Duration);
-          rect.Fill = new SolidColorBrush(entry.Description.Color);
-
-					double startTime = (entry.StartMS - frameStartMS);
-					rect.Margin = new Thickness(0, FrameHeightConverter.Convert(startTime), 0, 0);
-					rect.VerticalAlignment = VerticalAlignment.Top;
-			
-					LayoutRoot.Children.Add(rect);
+					InitNode(node, frameStartMS, 0);
 				}
 			}
 		}

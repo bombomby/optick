@@ -36,6 +36,7 @@ namespace Profiler
 				}
 
 				canvas.Group = value;
+				InitThreadList(value, canvas.Rows);
 
 				Visibility visibility = value == null ? Visibility.Collapsed : Visibility.Visible;
 
@@ -44,6 +45,36 @@ namespace Profiler
 
 				surface.Height = value == null ? 0.0 : canvas.Extent.Height;
 				
+			}
+		}
+
+		void InitThreadList(FrameGroup group, List<RowRange> rows)
+		{
+			ThreadList.Children.Clear();
+
+			if (group == null)
+				return;
+
+			int rowIndex = 0;
+
+			for (int threadIndex = 0; threadIndex < Math.Min(rows.Count, group.Board.Threads.Count); ++threadIndex)
+			{
+				RowRange range = rows[threadIndex];
+
+				if (range.MaxDepth >= 0 && group.Threads[threadIndex].Count > 0)
+				{
+					Label label = new Label() { Content = group.Board.Threads[threadIndex].Name, Height = range.Height, VerticalContentAlignment = VerticalAlignment.Center };
+					label.Margin = new Thickness(1, (threadIndex == 0 ? ThreadCanvas.HeaderHeight : 0), 0, ThreadCanvas.SpaceHeight);
+					label.Padding = new Thickness();
+					label.FontWeight = FontWeights.Bold;
+
+					if (rowIndex++ % 2 == 0)
+					{
+						label.Background = ThreadCanvas.AlternativeBackgroundColor;
+					}
+
+					ThreadList.Children.Add(label);
+				}
 			}
 		}
 
@@ -71,7 +102,7 @@ namespace Profiler
 		}
 	}
 
-	struct RowRange
+	public struct RowRange
 	{
 		public double Offset { get; set; }
 		public double Height { get; set; }
@@ -90,10 +121,10 @@ namespace Profiler
 		public const int BlockHeight = 14;
 		public const int HeaderHeight = 10;
 		public const int SpaceHeight = 2;
-		public const int ThreadNameHeight = 14;
 		FrameGroup group;
 
 		List<RowRange> rows = new List<RowRange>();
+		public List<RowRange> Rows { get { return rows; } }
 
 		Durable timeRange;
 
@@ -309,7 +340,7 @@ namespace Profiler
 				if (group == null)
 					return Size.Empty;
 
-				return new Size(duration, rows.Count > 0.0 ? rows[rows.Count-1].Bottom : 0.0);
+				return new Size(duration, rows.Count > 0.0 ? rows[rows.Count-1].Bottom + SpaceHeight: 0.0);
 			}
 		}
 		public ScrollBar Bar { get; set; }
@@ -330,9 +361,22 @@ namespace Profiler
 			Bar.Scroll += new ScrollEventHandler(Bar_Scroll);
 
 			PreviewMouseWheel += new MouseWheelEventHandler(ThreadCanvas_PreviewMouseWheel);
+
 			MouseLeftButtonUp += new MouseButtonEventHandler(ThreadCanvas_MouseLeftButtonUp);
 			MouseLeftButtonDown += new MouseButtonEventHandler(ThreadCanvas_MouseLeftButtonDown);
+
+			MouseRightButtonUp += new MouseButtonEventHandler(ThreadCanvas_MouseRightButtonUp);
+			MouseRightButtonDown += new MouseButtonEventHandler(ThreadCanvas_MouseRightButtonDown);
+
+			MouseLeave += new MouseEventHandler(ThreadCanvas_MouseLeave);
+
 			MouseMove += new MouseEventHandler(ThreadCanvas_MouseMove);
+		}
+
+		void ThreadCanvas_MouseLeave(object sender, MouseEventArgs e)
+		{
+			StopSpan();
+			isSelectionScopeDrag = false;
 		}
 
 		double DrawSpaceToTimeLine(double value)
@@ -355,10 +399,25 @@ namespace Profiler
 
 				Refresh();
 			}
+			else if (isSpanCanvas)
+			{
+				Point pos = e.GetPosition(this);
+
+				double shift = DrawSpaceToTimeLine(pos.X) - DrawSpaceToTimeLine(previousSpanPosition.X);
+				Position = Position - shift;
+
+				UpdateBar();
+				Refresh();
+
+				previousSpanPosition = pos;
+			}
 		}
 
 		bool isSelectionScopeDrag = false;
 		Point selectionScopeDragStart;
+
+		bool isSpanCanvas = false;
+		Point previousSpanPosition;
 
 		void ThreadCanvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
 		{
@@ -371,6 +430,19 @@ namespace Profiler
 				selectedScopes.Clear();
 
 			selectedScopes.Add(new SelectedScope() { Start = pos, Finish = pos });
+		}
+
+		void StopSpan()
+		{
+			isSpanCanvas = false;
+			Mouse.OverrideCursor = null;
+		}
+
+		void ThreadCanvas_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+		{
+			isSpanCanvas = true;
+			Mouse.OverrideCursor = Cursors.Hand;
+			previousSpanPosition = e.GetPosition(this);
 		}
 
 		int GetThreadIndex(double offset)
@@ -422,6 +494,11 @@ namespace Profiler
 					}
 				}
 			}
+		}
+
+		void ThreadCanvas_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+		{
+			StopSpan();
 		}
 
 		void Bar_Scroll(object sender, ScrollEventArgs e)
@@ -488,7 +565,6 @@ namespace Profiler
 		Pen selectedPen = new Pen(Brushes.Black, 3);
 		Pen fpsPen = new Pen(fpsBrush, 1.5);
 		Pen selectionScopePen = new Pen(Brushes.Black, 1.5);
-		Pen threadNamePen = new Pen(Brushes.Black, 0.5);
 		
 		Vector textOffset = new Vector(1, 0);
 
@@ -507,8 +583,12 @@ namespace Profiler
     const double FPSMark = 30.0;
 		const double FPSMarkTime = 1000.0 / FPSMark;
 		const double fpsTriangleSize = 8.0;
+		const double MinDrawFrameThreshold = 2.0;
+
 
 		static Brush fpsBrush = Brushes.DimGray;
+
+		public static Brush AlternativeBackgroundColor = Brushes.LightGray;
 
 		const double RenderFPSLineLimit = 1.0;
 
@@ -662,16 +742,16 @@ namespace Profiler
 
 		void GenerateEventNode(EventNode node, Rect frameRect, int currentLevel, int maxDepth, List<KeyValuePair<Entry, Rect>> result)
 		{
-			Rect entryRectangle = CalculateRect(node.Entry, frameRect.Top, frameRect.Height);
+			Rect entryRectangle = CalculateRect(node.Entry, frameRect.Top, BlockHeight);
 
 			if (entryRectangle.Width < DrawThreshold)
 				return;
 
 			double ratio = (double)currentLevel / (maxDepth + 1);
-			double offset = ratio * entryRectangle.Height;
+			double offset = ratio * frameRect.Height;
 
 			entryRectangle.Offset(new Vector(0, offset));
-			entryRectangle.Height = entryRectangle.Height - offset;
+			//entryRectangle.Height = BlockHeight; //entryRectangle.Height - offset;
 
 			result.Add(new KeyValuePair<Entry, Rect>(node.Entry, entryRectangle));
 
@@ -680,9 +760,11 @@ namespace Profiler
 					GenerateEventNode(child, frameRect, currentLevel + 1, maxDepth, result);
 		}
 
-		void OnRenderFrame(System.Windows.Media.DrawingContext drawingContext, EventFrame frame, double rowOffset, int maxDepth)
+		void OnRenderFrame(System.Windows.Media.DrawingContext drawingContext, EventFrame frame, double rowOffset, int maxDepth, Brush backgroundBrush)
 		{
 			Rect rectangle = CalculateRect(frame.Header, rowOffset, (maxDepth + 1) * BlockHeight);
+			if (rectangle.Width < MinDrawFrameThreshold)
+				return;
 
 			bool isFilterReady = false;
 			double filteredValue = 0.0;
@@ -692,14 +774,14 @@ namespace Profiler
 				isFilterReady = Filter.TryGetFilteredFrameTime(frame, out filteredValue);
 			}
 
-			drawingContext.DrawRectangle(Filter != null && isFilterReady ? Brushes.LimeGreen : Brushes.LightGray, null, rectangle);
+			//drawingContext.DrawRectangle(Filter != null && isFilterReady ? Brushes.LimeGreen : Brushes.Gray, null, rectangle);
 
 			if (Filter == null)
 			{
 				List<KeyValuePair<Entry, Rect>> rects = new List<KeyValuePair<Entry, Rect>>();
 
 				foreach (EventNode node in frame.CategoriesTree.Children)
-					GenerateEventNode(node, rectangle, 0, 1, rects);
+					GenerateEventNode(node, rectangle, 0, maxDepth, rects);
 
 				if (rects.Count > 0)
 				{
@@ -708,12 +790,15 @@ namespace Profiler
 						drawingContext.DrawRectangle(item.Key.Description.Brush, borderPen, item.Value);
 					}
 
-					foreach (Entry entry in frame.Synchronization)
+					if (maxDepth == 0)
 					{
-						Rect rect = CalculateRect(entry, rowOffset, rectangle.Height);
-						if (rect.Width > DrawThreshold)
+						foreach (Entry entry in frame.Synchronization)
 						{
-							drawingContext.DrawRectangle(entry.Description.Brush, borderPen, rect);
+							Rect rect = CalculateRect(entry, rowOffset + maxDepth * BlockHeight, BlockHeight);
+							if (rect.Width > DrawThreshold)
+							{
+								drawingContext.DrawRectangle(backgroundBrush, borderPen, rect);
+							}
 						}
 					}
 
@@ -782,6 +867,8 @@ namespace Profiler
 
 			List<KeyValuePair<int, int>> intervals = CalculateFrameRange(Position, Position + Range);
 
+			int rowIndex = 0;
+
 			for (int threadIndex = 0; threadIndex < Math.Min(threads.Count, intervals.Count); ++threadIndex)
 			{
 				List<EventFrame> frames = threads[threadIndex];
@@ -789,26 +876,21 @@ namespace Profiler
 
 				if (rowRange.MaxDepth >= 0 && frames.Count > 0)
 				{
+					Brush backgroundBrush = Brushes.White;
+
+					if (rowIndex++ % 2 == 0)
+					{
+						backgroundBrush = AlternativeBackgroundColor; 
+						drawingContext.DrawRectangle(AlternativeBackgroundColor, null, new Rect(0, rowRange.Offset, AdornedElement.RenderSize.Width, rowRange.Height));
+					}
+
 					for (int i = intervals[threadIndex].Key; i <= intervals[threadIndex].Value; ++i)
-						OnRenderFrame(drawingContext, frames[i], rowRange.Offset, rowRange.MaxDepth);
+						OnRenderFrame(drawingContext, frames[i], rowRange.Offset, rowRange.MaxDepth, backgroundBrush);
 				}
 			}
 
 			int mainThreadIndex = group.Board.MainThreadIndex;
 			RenderFPSLines(drawingContext, group.Threads[mainThreadIndex], intervals[mainThreadIndex]);
-
-			for (int threadIndex = 0; threadIndex < threads.Count; ++threadIndex)
-			{
-				FormattedText threadName = new FormattedText(group.Board.Threads[threadIndex].Name, culture, FlowDirection.LeftToRight, fontDuration, 12, Brushes.Black);
-				RowRange rowRange = rows[threadIndex];
-
-				if (rowRange.MaxDepth >= 0 && group.Threads[threadIndex].Count > 0)
-				{
-					Point threadOrigin = new Point(1, rowRange.Offset + (rowRange.Height - ThreadNameHeight) * 0.5);
-					drawingContext.DrawRoundedRectangle(Brushes.White, threadNamePen, new Rect(threadOrigin.X, threadOrigin.Y, threadName.Width + 5, ThreadNameHeight), 4, 4);
-					drawingContext.DrawText(threadName, threadOrigin + new Vector(2, 0));
-				}
-			}
 
 			if (FocusedFrame != null)
 			{
@@ -823,7 +905,5 @@ namespace Profiler
 
 			base.OnRender(drawingContext);
 		}
-
-		
 	}
 }
