@@ -16,31 +16,34 @@
 @FunctionBody MACRO index
 							_HookFunctionASM&index proc
 								@PushAllRegisters
-								call _NextEvent																	;Check wheter profiler is active and create new EventData
-								cmp eax, 0																			;Check for null
-								je NotActiveProlog&index												;Jump if Profiler is not active
+								call _NextEvent																														;Check wheter profiler is active and create new EventData
+								cmp eax, 0																																;Check for null
+								je NotActiveProlog&index																									;Jump if Profiler is not active
 
-								mov ebx, eax																		;Store EventData in ebx
-								call _GetTime																		;GetTime 
-								mov dword ptr[ebx], eax													;StartTime
-								mov eax, [_hookSlotData + index * 10h + 12h]			;Store description
-								mov dword ptr[ebx + 8h], eax										;EventDescription
-								mov [_hookSlotData + index * 10h + 8h], ebx			;StoreActive EventData
+								push eax
+								call _GetTime																															;GetTime 
+								pop ebx																																		;Store EventData in ebx
+								mov dword ptr[ebx], eax																										;StartTime
+								mov dword ptr[ebx + 4], edx																								;StartTime
+								mov eax, [_hookSlotData + index * HookDataSize + EventDescriptionAddress]	;Store description
+								mov dword ptr[ebx + 16], eax																							;EventDescription
+								mov [_hookSlotData + index * HookDataSize + EventDataAddress], ebx				;StoreActive EventData
 
 							NotActiveProlog&index:
 								@PopAllRegisters
 
-								pop  [_hookSlotData + index * 10h + 0h]					;Store return address
-								call [_hookSlotData + index * 10h + 4h]					;Call original function
-								push [_hookSlotData + index * 10h + 0h]					;Restore return address
+								pop  [_hookSlotData + index * HookDataSize + ReturnAddress]								;Store return address
+								call [_hookSlotData + index * HookDataSize + OriginalAddress]							;Call original function
+								push [_hookSlotData + index * HookDataSize + ReturnAddress]								;Restore return address
 
-								cmp [_hookSlotData + index * 10h + 8h], 0				;Check for active EventData
-								je NotActiveEpilog&index												;If not active go to return
+								cmp [_hookSlotData + index * HookDataSize + EventDataAddress], 0					;Check for active EventData
+								je NotActiveEpilog&index																									;If not active go to return
 					
 								@PushAllRegisters
-								call _GetTime																		;Get Finish Time
-								mov ebx, [_hookSlotData + index * 10h + 8h]			;Store EventData address
-								mov [ebx + 8h], eax															;Store FinishTime
+								call _GetTime																															;Get Finish Time
+								mov ebx, [_hookSlotData + index * HookDataSize + EventDataAddress]				;Store EventData address
+								mov [ebx + 8 ], eax																												;Store FinishTime
+								mov [ebx + 12], edx																												;Store FinishTime
 								@PopAllRegisters
 
 							NotActiveEpilog&index:
@@ -48,14 +51,19 @@
 							_HookFunctionASM&index endp
 							ENDM
 
+
 .data
 extern _NextEvent : proc
 extern _GetTime : proc
 extern _hookSlotData : dword
-; [hookSlotData + 0h ] - Return Address
-; [hookSlotData + 4h ] - Original Function Address
-; [hookSlotData + 8h ] - EventData
-; [hookSlotData + 12h] - EventDescription
+
+ReturnAddress						= 0  ; [hookSlotData + 0 ] - Return Address
+OriginalAddress					= 4	 ; [hookSlotData + 4 ] - Original Function Address
+EventDataAddress				= 8	 ; [hookSlotData + 8 ] - EventData
+EventDescriptionAddress = 12 ; [hookSlotData + 12] - EventDescription
+HookDataSize						= 16 ; Sizeof(HookData)
+									
+
 
 .code
 @FunctionBody 0

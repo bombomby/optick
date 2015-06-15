@@ -19,31 +19,31 @@
 @FunctionBody MACRO index
 							HookFunctionASM&index proc
 								@PushAllRegisters
-								call NextEvent																	;Check wheter profiler is active and create new EventData
-								cmp rax, 0																			;Check for null
-								je NotActiveProlog&index												;Jump if Profiler is not active
+								call NextEvent																														;Check wheter profiler is active and create new EventData
+								cmp rax, 0																																;Check for null
+								je NotActiveProlog&index																									;Jump if Profiler is not active
 
-								mov rbx, rax																		;Store EventData in rbx
-								call GetTime																		;GetTime 
-								mov qword ptr[rbx], rax													;StartTime
-								mov rax, [hookSlotData + index * 20h + 18h]			;Store description
-								mov qword ptr[rbx + 10h], rax										;EventDescription
-								mov [hookSlotData + index * 20h + 10h], rbx			;StoreActive EventData
+								mov rbx, rax																															;Store EventData in rbx
+								call GetTime																															;GetTime 
+								mov qword ptr[rbx], rax																										;StartTime
+								mov rax, [hookSlotData + index * HookDataSize + EventDescriptionAddress]	;Store description
+								mov qword ptr[rbx + 16], rax																							;EventDescription
+								mov [hookSlotData + index * HookDataSize + EventDataAddress], rbx					;StoreActive EventData
 
 							NotActiveProlog&index:
 								@PopAllRegisters
 
-								pop  [hookSlotData + index * 20h + 0h]					;Store return address
-								call [hookSlotData + index * 20h + 8h]					;Call original function
-								push [hookSlotData + index * 20h + 0h]					;Restore return address
+								pop  [hookSlotData + index * HookDataSize + ReturnAddress]								;Store return address
+								call [hookSlotData + index * HookDataSize + OriginalAddress]							;Call original function
+								push [hookSlotData + index * HookDataSize + ReturnAddress]								;Restore return address
 
-								cmp [hookSlotData + index * 20h + 10h], 0				;Check for active EventData
-								je NotActiveEpilog&index												;If not active go to return
+								cmp [hookSlotData + index * HookDataSize + EventDataAddress], 0						;Check for active EventData
+								je NotActiveEpilog&index																									;If not active go to return
 					
 								@PushAllRegisters
-								call GetTime																		;Get Finish Time
-								mov rbx, [hookSlotData + index * 20h + 10h]			;Store EventData address
-								mov [rbx + 8h], rax															;Store FinishTime
+								call GetTime																															;Get Finish Time
+								mov rbx, [hookSlotData + index * HookDataSize + EventDataAddress]					;Store EventData address
+								mov [rbx + 8h], rax																												;Store FinishTime
 								@PopAllRegisters
 
 							NotActiveEpilog&index:
@@ -55,10 +55,12 @@
 extern NextEvent : proc
 extern GetTime : proc
 extern hookSlotData : qword
-; [hookSlotData + 0h ] - Return Address
-; [hookSlotData + 8h ] - Original Function Address
-; [hookSlotData + 10h] - EventData
-; [hookSlotData + 18h] - EventDescription
+
+ReturnAddress						= 0  ; [hookSlotData + 0 ] - Return Address
+OriginalAddress					= 8	 ; [hookSlotData + 8 ] - Original Function Address
+EventDataAddress				= 16 ; [hookSlotData + 16] - EventData
+EventDescriptionAddress = 24 ; [hookSlotData + 24] - EventDescription
+HookDataSize						= 32 ; Sizeof(HookData)
 
 .code
 @FunctionBody 0
