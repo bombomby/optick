@@ -129,7 +129,20 @@ namespace Profiler.Data
 
 			foreach (Entry entry in events)
 			{
-				if (currentRoot == null || currentRoot.Finish <= entry.Start)
+				if (currentRoot == null)
+				{
+					currentRoot = entry;
+					result.Add(entry);
+				}
+				else if (entry.Finish <= currentRoot.Finish)
+				{
+					continue;
+				}
+				else if (Durable.TicksToMs(Math.Abs(entry.Start - currentRoot.Finish)) < 0.005)
+				{
+					currentRoot.Finish = entry.Finish;
+				}
+				else
 				{
 					currentRoot = entry;
 					result.Add(entry);

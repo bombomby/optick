@@ -33,7 +33,7 @@
 		</LinearGradientBrush>
 		<SolidColorBrush x:Key="ButtonNormalBorder" Color="#FF707070"/>
 		<ItemsPanelTemplate x:Key="TimeLaneLayoutTemplate">
-			<VirtualizingStackPanel IsItemsHost="True" Orientation="Horizontal" VerticalAlignment="Bottom"/>
+      <VirtualizingStackPanel IsItemsHost="True" Orientation="Horizontal" VerticalAlignment="Bottom" VirtualizationMode="Recycling" />
 		</ItemsPanelTemplate>
 		<DataTemplate x:Key="TimeLineItemTemplate">
       <Grid x:Name="rect" Background="#02FFFFFF" Height="163" Width="14" Margin="-1,0,0,0" >

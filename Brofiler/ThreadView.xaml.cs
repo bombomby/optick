@@ -15,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Controls.Primitives;
 using System.Globalization;
 using System.Threading;
+using System.ComponentModel;
 
 namespace Profiler
 {
@@ -57,23 +58,63 @@ namespace Profiler
 
 			int rowIndex = 0;
 
+			ThreadList.RowDefinitions.Clear();
+			ThreadList.Margin = new Thickness(0, ThreadCanvas.HeaderHeight, 3, 1);
+
+			for (int i = 1; i < ThreadList.ColumnDefinitions.Count; ++i)
+			{
+				ThreadList.ColumnDefinitions[i].SetBinding(ColumnDefinition.WidthProperty, new Binding("TimeWidth") { Source = canvas });
+			}
+
+			Label workHeader = new Label() { Content = "Work(ms)", Margin = new Thickness(0, - 2 * ThreadCanvas.HeaderHeight, 0, 0), ClipToBounds = false, FontSize = 12, FontWeight = FontWeights.Bold, VerticalAlignment = VerticalAlignment.Top };
+			Label waitHeader = new Label() { Content = "Wait(ms)", Margin = new Thickness(0, - 2 * ThreadCanvas.HeaderHeight, 0, 0), ClipToBounds = false, FontSize = 12, FontWeight = FontWeights.Bold, VerticalAlignment = VerticalAlignment.Top };
+
+			Grid.SetColumn(workHeader, 1);
+			Grid.SetRow(workHeader, 0);
+			Grid.SetColumn(waitHeader, 2);
+			Grid.SetRow(waitHeader, 0);
+
+			ThreadList.Children.Add(workHeader);
+			ThreadList.Children.Add(waitHeader);
+
 			for (int threadIndex = 0; threadIndex < Math.Min(rows.Count, group.Board.Threads.Count); ++threadIndex)
 			{
 				RowRange range = rows[threadIndex];
 
+				
 				if (range.MaxDepth >= 0 && group.Threads[threadIndex].Count > 0)
 				{
-					Label label = new Label() { Content = group.Board.Threads[threadIndex].Name, Height = range.Height, VerticalContentAlignment = VerticalAlignment.Center };
-					label.Margin = new Thickness(1, (threadIndex == 0 ? ThreadCanvas.HeaderHeight : 0), 0, ThreadCanvas.SpaceHeight);
-					label.Padding = new Thickness();
-					label.FontWeight = FontWeights.Bold;
+					ThreadList.RowDefinitions.Add(new RowDefinition());
+
+					Thickness margin = new Thickness(3, 0, 0, ThreadCanvas.SpaceHeight);
+
+					Label labelName = new Label() { Content = group.Board.Threads[threadIndex].Name, Margin = margin, Padding = new Thickness(), FontWeight = FontWeights.Bold, Height = range.Height, VerticalContentAlignment = VerticalAlignment.Center };
+
+					Label labelWork = new Label() { Margin = margin, Padding = new Thickness(), Height = range.Height, VerticalContentAlignment = VerticalAlignment.Center, DataContext = range, ContentStringFormat = "{0:0.00}" };
+					Label labelWait = new Label() { Margin = margin, Padding = new Thickness(), Height = range.Height, VerticalContentAlignment = VerticalAlignment.Center, DataContext = range, ContentStringFormat = "{0:0.00}" };
+
+					labelWork.SetBinding(Label.ContentProperty, new Binding("WorkTime") { Source = range });
+					labelWait.SetBinding(Label.ContentProperty, new Binding("WaitTime") { Source = range });
+
+					Grid.SetRow(labelName, rowIndex);
+					Grid.SetColumn(labelName, 0);
+
+					Grid.SetRow(labelWork, rowIndex);
+					Grid.SetColumn(labelWork, 1);
+
+					Grid.SetRow(labelWait, rowIndex);
+					Grid.SetColumn(labelWait, 2);
 
 					if (rowIndex++ % 2 == 0)
 					{
-						label.Background = ThreadCanvas.AlternativeBackgroundColor;
+						labelName.Background = ThreadCanvas.AlternativeBackgroundColor;
+						labelWork.Background = ThreadCanvas.AlternativeBackgroundColor;
+						labelWait.Background = ThreadCanvas.AlternativeBackgroundColor;
 					}
 
-					ThreadList.Children.Add(label);
+					ThreadList.Children.Add(labelName);
+					ThreadList.Children.Add(labelWork);
+					ThreadList.Children.Add(labelWait);
 				}
 			}
 		}
@@ -90,7 +131,17 @@ namespace Profiler
 			scrollBar.Visibility = Visibility.Collapsed;
 			search.Visibility = Visibility.Collapsed;
 
-			search.DelayedTextChanged += new SearchBox.DelayedTextChangedEventHandler(Search_DelayedTextChanged); 
+			search.DelayedTextChanged += new SearchBox.DelayedTextChangedEventHandler(Search_DelayedTextChanged);
+
+			surface.SizeChanged += new SizeChangedEventHandler(ThreadView_SizeChanged);
+		}
+
+		void ThreadView_SizeChanged(object sender, SizeChangedEventArgs e)
+		{
+			if (canvas != null)
+			{
+				canvas.OnSizeChanged(e);
+			}
 		}
 
 		void Search_DelayedTextChanged(string text)
@@ -102,11 +153,12 @@ namespace Profiler
 		}
 	}
 
-	public struct RowRange
+	public class RowRange : INotifyPropertyChanged
 	{
 		public double Offset { get; set; }
 		public double Height { get; set; }
 		public int MaxDepth { get; set; }
+		public int ThreadIndex { get; set; }
 
 		public double Bottom { get { return Offset + Height; } }
 
@@ -114,13 +166,40 @@ namespace Profiler
 		{
 			return (Bottom >= value) && (value >= Offset);
 		}
+
+
+		// Declare the event
+		public event PropertyChangedEventHandler PropertyChanged;
+		protected void OnPropertyChanged(string name)
+		{
+			PropertyChangedEventHandler handler = PropertyChanged;
+			if (handler != null)
+			{
+				handler(this, new PropertyChangedEventArgs(name));
+			}
+		}
+
+		double workTime = 0.0;
+		public double WorkTime
+		{
+			get { return workTime; }
+			set { workTime = value; OnPropertyChanged("WorkTime"); }
+		}
+
+		double waitTime = 0.0;
+		public double WaitTime
+		{
+			get { return waitTime; }
+			set { waitTime = value; OnPropertyChanged("WaitTime"); }
+		}
 	}
 
-	public class ThreadCanvas : Adorner
+	public class ThreadCanvas : Adorner, INotifyPropertyChanged
 	{
 		public const int BlockHeight = 14;
 		public const int HeaderHeight = 10;
 		public const int SpaceHeight = 2;
+		public const int SyncLineHeight = 4;
 		FrameGroup group;
 
 		List<RowRange> rows = new List<RowRange>();
@@ -150,6 +229,24 @@ namespace Profiler
 
 				if (Position + currentRange > duration)
 					Position = duration - currentRange;
+			}
+		}
+
+		double timeWidth = 0.0;
+		public double TimeWidth
+		{
+			get { return timeWidth; }
+			set { timeWidth = value; OnPropertyChanged("TimeWidth"); }
+		}
+
+		// Declare the event
+		public event PropertyChangedEventHandler PropertyChanged;
+		protected void OnPropertyChanged(string name)
+		{
+			PropertyChangedEventHandler handler = PropertyChanged;
+			if (handler != null)
+			{
+				handler(this, new PropertyChangedEventArgs(name));
 			}
 		}
 
@@ -296,6 +393,21 @@ namespace Profiler
 			Refresh();
 		}
 
+		public void OnSizeChanged(SizeChangedEventArgs e)
+		{
+			if (group != null)
+			{
+				if (e.NewSize.Width != e.PreviousSize.Width)
+				{
+					double delta = Range * (e.PreviousSize.Width - e.NewSize.Width) / e.PreviousSize.Width;
+					Range -= delta;
+					Position += delta;
+
+					UpdateBar();
+				}
+			}
+		}
+
 		const double FocusFrameExtent = 2.0;
 
 		EventFrame FocusedFrame { get; set; }
@@ -397,6 +509,7 @@ namespace Profiler
 				double pos = DrawSpaceToTimeLine(e.GetPosition(this).X);
 				scope.Finish = pos;
 
+				UpdateSelectedScopes();
 				Refresh();
 			}
 			else if (isSpanCanvas)
@@ -469,6 +582,7 @@ namespace Profiler
 				else
 				{
 					selectedScopes.Clear();
+					UpdateSelectedScopes();
 					Refresh();
 				}
 			}
@@ -662,6 +776,54 @@ namespace Profiler
 			return Math.Max(0, sum);
 		}
 
+		void UpdateSelectedScopes()
+		{
+			double width = selectedScopes.Count > 0 ? Double.PositiveInfinity : 0.0;
+			if (Math.Abs(width - TimeWidth) > 0.0001)
+				TimeWidth = width;
+
+			List<double> summed = new List<double>();
+			for (int i = 0; i < rows.Count; ++i)
+				summed.Add(0.0);
+
+			double totalTime = 0.0;
+
+			foreach (SelectedScope scope in selectedScopes)
+			{
+				double pos0 = Math.Min(scope.Start, scope.Finish);
+				double pos1 = Math.Max(scope.Start, scope.Finish);
+
+				totalTime += pos1 - pos0;
+
+				var intervals = CalculateFrameRange(pos0, pos1);
+				for (int threadIndex = 0; threadIndex < Math.Min(intervals.Count, rows.Count); ++threadIndex)
+				{
+					var frames = group.Threads[threadIndex];
+
+					double sum = 0;
+
+					if (frames.Count > 0)
+					{
+						if (intervals[threadIndex].Key != -1 && intervals[threadIndex].Value != -1 && frames.Count > 0)
+						{
+							for (int index = intervals[threadIndex].Key; index <= intervals[threadIndex].Value; ++index)
+							{
+								sum += CalculateIntersection(frames[index], pos0, pos1);
+							}
+						}
+					}
+
+					summed[threadIndex] += sum;
+				}
+			}
+
+			for (int i = 0; i < rows.Count; ++i)
+			{
+				rows[i].WorkTime = summed[i];
+				rows[i].WaitTime = totalTime - summed[i];
+			}
+		}
+
 		void RenderSelectedScopes(System.Windows.Media.DrawingContext drawingContext)
 		{
 			foreach (SelectedScope scope in selectedScopes)
@@ -685,31 +847,12 @@ namespace Profiler
 				drawingContext.DrawLine(selectionScopePen, new Point(posStart, HeaderHeight), new Point(posStart, Extent.Height));
 				drawingContext.DrawLine(selectionScopePen, new Point(posFinish, HeaderHeight), new Point(posFinish, Extent.Height));
 
+				FormattedText durationText = new FormattedText(String.Format("{0:0.000}ms", pos1 - pos0).Replace(',', '.'), culture, FlowDirection.LeftToRight, fontDuration, 18, Brushes.White);
+				durationText.MaxTextWidth = area.Width;
+				durationText.Trimming = TextTrimming.None;
+				durationText.MaxLineCount = 1;
+				drawingContext.DrawText(durationText, new Point((posStart + posFinish) / 2 - durationText.Width / 2, (Extent.Height + HeaderHeight)/2 - durationText.Height/2));
 
-				var intervals = CalculateFrameRange(pos0, pos1);
-				for (int threadIndex = 0; threadIndex < intervals.Count; ++threadIndex)
-				{
-					var frames = group.Threads[threadIndex];
-
-					if (frames.Count > 0)
-					{
-						double sum = 0;
-
-						if (intervals[threadIndex].Key != -1 && intervals[threadIndex].Value != -1 && frames.Count > 0)
-						{
-							for (int index = intervals[threadIndex].Key; index <= intervals[threadIndex].Value; ++index)
-							{
-								sum += CalculateIntersection(frames[index], pos0, pos1);
-							}
-						}
-
-						FormattedText text = new FormattedText(String.Format("{0:0.000}", sum).Replace(',', '.'), culture, FlowDirection.LeftToRight, fontDuration, 12, Brushes.White);
-						text.MaxLineCount = 1;
-						text.MaxTextWidth = area.Width;
-						text.Trimming = TextTrimming.None;
-						drawingContext.DrawText(text, new Point((posStart + posFinish) / 2 - text.Width / 2, rows[threadIndex].Offset + (rows[threadIndex].Height - text.Height) / 2.0) + textOffset);
-					}
-				}
 			}
 		}
 
@@ -790,15 +933,24 @@ namespace Profiler
 						drawingContext.DrawRectangle(item.Key.Description.Brush, borderPen, item.Value);
 					}
 
-					if (maxDepth == 0)
+
+					Brush syncBrush = backgroundBrush;
+					Pen syncPen = borderPen;
+					double syncHeight = BlockHeight;
+
+					if (maxDepth > 0)
 					{
-						foreach (Entry entry in frame.Synchronization)
+						syncBrush = Brushes.OrangeRed;
+						syncPen = null;
+						syncHeight = SyncLineHeight;
+					}
+
+					foreach (Entry entry in frame.Synchronization)
+					{
+						Rect rect = CalculateRect(entry, rowOffset, syncHeight);
+						if (rect.Width > DrawThreshold)
 						{
-							Rect rect = CalculateRect(entry, rowOffset + maxDepth * BlockHeight, BlockHeight);
-							if (rect.Width > DrawThreshold)
-							{
-								drawingContext.DrawRectangle(backgroundBrush, borderPen, rect);
-							}
+							drawingContext.DrawRectangle(syncBrush, syncPen, rect);
 						}
 					}
 
