@@ -98,6 +98,7 @@
       <OptimizeReferences>false</OptimizeReferences>
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
       <AdditionalDependencies>EasyHook32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -152,6 +153,7 @@
     <ClInclude Include="Concurrency.h" />
     <ClInclude Include="Core.h" />
     <ClInclude Include="easyhook.h" />
+    <ClInclude Include="ETW.h" />
     <ClInclude Include="Event.hpp" />
     <ClInclude Include="EventDescriptionBoard.h" />
     <ClInclude Include="Hook.h" />
@@ -171,6 +173,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core.cpp" />
+    <ClCompile Include="ETW.cpp" />
     <ClCompile Include="Event.cpp" />
     <ClCompile Include="EventDescriptionBoard.cpp" />
     <ClCompile Include="Hook.cpp" />

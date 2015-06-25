@@ -21,11 +21,12 @@ namespace Profiler.Data
     }
   }
 
-  public class EventFrame : Frame
+  public class EventFrame : Frame, ITick
   {
     public override DataResponse.Type ResponseType { get { return DataResponse.Type.EventFrame; } }
 
-    public FrameHeader Header {get; private set;}
+    public FrameHeader Header { get; private set; }
+    public long Tick { get { return Header.Start; } }
 
     private List<Entry> entries = new List<Entry>();
 
@@ -90,7 +91,7 @@ namespace Profiler.Data
 
 		public List<Entry> Categories { get; private set; }
 		public EventTree CategoriesTree { get; private set; }
-		public List<Entry> Synchronization { get; private set; }
+    public List<EventData> Synchronization { get; private set; }
 
 		Object loading = new object();
 
@@ -111,6 +112,17 @@ namespace Profiler.Data
 			}
     }
 
+    static List<EventData> ReadEventTimeList(BinaryReader reader)
+    {
+      int count = reader.ReadInt32();
+      List<EventData> result = new List<EventData>(count);
+
+      for (int i = 0; i < count; ++i)
+        result.Add(EventData.Create(reader));
+
+      return result;
+    }
+
     static List<Entry> ReadEventList(BinaryReader reader, EventDescriptionBoard board)
     {
       int count = reader.ReadInt32();
@@ -122,12 +134,12 @@ namespace Profiler.Data
       return result;
     }
 
-		List<Entry> LinearizeEventList(List<Entry> events)
+		List<EventData> LinearizeEventList(List<EventData> events)
 		{
-			List<Entry> result = new List<Entry>(events.Count);
-			Entry currentRoot = null;
+			List<EventData> result = new List<EventData>(events.Count);
+      EventData currentRoot = null;
 
-			foreach (Entry entry in events)
+      foreach (EventData entry in events)
 			{
 				if (currentRoot == null)
 				{
@@ -158,7 +170,8 @@ namespace Profiler.Data
       Categories = ReadEventList(reader, DescriptionBoard);
 			CategoriesTree = new EventTree(this, Categories);
 
-			Synchronization = ReadEventList(reader, DescriptionBoard);
+      Synchronization = ReadEventTimeList(reader);
+      Synchronization.Sort();
 			Synchronization = LinearizeEventList(Synchronization);
     }
 

@@ -8,15 +8,25 @@ using System.IO;
 
 namespace Profiler.Data
 {
+  public class ThreadData
+  {
+    public List<EventFrame> Events { get; set; }
+
+    public ThreadData()
+    {
+      Events = new List<EventFrame>();
+    }
+  }
+
 	public class FrameGroup
 	{
 		public EventDescriptionBoard Board { get; set; }
-		public List<List<EventFrame>> Threads { get; set; }
+    public List<ThreadData> Threads { get; set; }
 
 		public FrameGroup(EventDescriptionBoard board)
 		{
 			Board = board;
-			Threads = new List<List<EventFrame>>();
+      Threads = new List<ThreadData>();
 		}
 
 		public void Add(EventFrame frame)
@@ -25,10 +35,10 @@ namespace Profiler.Data
 
 			while (index >= Threads.Count)
 			{
-				Threads.Add(new List<EventFrame>());
+				Threads.Add(new ThreadData());
 			}
 
-			Threads[index].Add(frame);
+			Threads[index].Events.Add(frame);
 		}
 	}
 

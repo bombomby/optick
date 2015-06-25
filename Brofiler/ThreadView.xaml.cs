@@ -82,7 +82,7 @@ namespace Profiler
 				RowRange range = rows[threadIndex];
 
 				
-				if (range.MaxDepth >= 0 && group.Threads[threadIndex].Count > 0)
+				if (range.MaxDepth >= 0 && group.Threads[threadIndex].Events.Count > 0)
 				{
 					ThreadList.RowDefinitions.Add(new RowDefinition());
 
@@ -270,7 +270,7 @@ namespace Profiler
 						double rowOffset = HeaderHeight;
 						for (int threadIndex = 0; threadIndex < group.Threads.Count; ++threadIndex)
 						{
-							int maxDepth = group.Threads[threadIndex].Count > 0 ? GetRowMaxDepth(threadIndex) : -1;
+							int maxDepth = group.Threads[threadIndex].Events.Count > 0 ? GetRowMaxDepth(threadIndex) : -1;
 							double height = maxDepth >= 0 ? (maxDepth + 1) * BlockHeight : 0.0;
 							rows.Add(new RowRange() { Offset = rowOffset, Height = height, MaxDepth = maxDepth });
 							rowOffset += maxDepth >= 0 ? SpaceHeight + height : 0.0;
@@ -591,7 +591,7 @@ namespace Profiler
 
 			if (0 <= threadIndex && threadIndex < group.Threads.Count)
 			{
-				var frames = group.Threads[threadIndex];
+				var frames = group.Threads[threadIndex].Events;
 
 				long tick = Durable.MsToTick(timeRange.StartMS + Position + (pos.X / AdornedElement.RenderSize.Width) * Range);
 
@@ -648,7 +648,7 @@ namespace Profiler
 
 		const double ZoomSpeed = 0.01;
 
-		static int BinarySearchClosestIndex(List<EventFrame> frames, long value)
+		static int BinarySearchClosestIndex<T>(List<T> frames, long value) where T: ITick
 		{
 			if (frames.Count == 0)
 				return -1;
@@ -656,17 +656,17 @@ namespace Profiler
 			int left = 0;
 			int right = frames.Count - 1;
 
-			if (value <= frames[0].Header.Start)
+			if (value <= frames[0].Tick)
 				return left;
 
-			if (value >= frames[frames.Count - 1].Header.Start)
+      if (value >= frames[frames.Count - 1].Tick)
 				return right;
 
 			while (left != right)
 			{
 				int index = (left + right + 1) / 2;
 
-				if (frames[index].Header.Start > value)
+        if (frames[index].Tick > value)
 					right = index - 1;
 				else
 					left = index;
@@ -675,11 +675,11 @@ namespace Profiler
 			return left;
 		}
 
-		Pen borderPen = new Pen(Brushes.Black, 0.25);
+   	Pen borderPen = new Pen(Brushes.Black, 0.25);
 		Pen selectedPen = new Pen(Brushes.Black, 3);
 		Pen fpsPen = new Pen(fpsBrush, 1.5);
 		Pen selectionScopePen = new Pen(Brushes.Black, 1.5);
-		
+
 		Vector textOffset = new Vector(1, 0);
 
 		Typeface fontDuration = new Typeface(new FontFamily(), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal);
@@ -795,18 +795,18 @@ namespace Profiler
 
 				totalTime += pos1 - pos0;
 
-				var intervals = CalculateFrameRange(pos0, pos1);
-				for (int threadIndex = 0; threadIndex < Math.Min(intervals.Count, rows.Count); ++threadIndex)
+				for (int threadIndex = 0; threadIndex < rows.Count; ++threadIndex)
 				{
-					var frames = group.Threads[threadIndex];
+					var frames = group.Threads[threadIndex].Events;
 
 					double sum = 0;
 
 					if (frames.Count > 0)
 					{
-						if (intervals[threadIndex].Key != -1 && intervals[threadIndex].Value != -1 && frames.Count > 0)
+            KeyValuePair<int, int> interval = CalculateEventRange(frames, pos0, pos1);
+            if (interval.Key != -1 && interval.Value != -1)
 						{
-							for (int index = intervals[threadIndex].Key; index <= intervals[threadIndex].Value; ++index)
+              for (int index = interval.Key; index <= interval.Value; ++index)
 							{
 								sum += CalculateIntersection(frames[index], pos0, pos1);
 							}
@@ -856,30 +856,16 @@ namespace Profiler
 			}
 		}
 
-		List<KeyValuePair<int, int>> CalculateFrameRange(double left, double right)
-		{
-			List<KeyValuePair<int, int>> result = new List<KeyValuePair<int,int>>();
+    KeyValuePair<int, int> CalculateEventRange<T>(List<T> values, double left, double right) where T: ITick
+    {
+      long leftTick = Durable.MsToTick(left) + timeRange.Start;
+      long rightTick = Durable.MsToTick(right) + timeRange.Start;
 
-			if (group == null)
-				return result;
+      int leftIndex = BinarySearchClosestIndex(values, leftTick);
+      int rightIndex = BinarySearchClosestIndex(values, rightTick);
 
-			var threads = group.Threads;
-
-			long leftTick = Durable.MsToTick(left) + timeRange.Start;
-			long rightTick = Durable.MsToTick(right) + timeRange.Start;
-
-			for (int threadIndex = 0; threadIndex < threads.Count; ++threadIndex)
-			{
-				List<EventFrame> frames = threads[threadIndex];
-
-				int leftIndex = BinarySearchClosestIndex(frames, leftTick);
-				int rightIndex = BinarySearchClosestIndex(frames, rightTick);
-
-				result.Add(new KeyValuePair<int, int>(leftIndex, rightIndex));
-			}
-
-			return result;
-		}
+      return new KeyValuePair<int, int>(leftIndex, rightIndex);
+    }
 
 		const double NextLevelRatio = 0.5;
 
@@ -933,24 +919,12 @@ namespace Profiler
 						drawingContext.DrawRectangle(item.Key.Description.Brush, borderPen, item.Value);
 					}
 
-
-					Brush syncBrush = backgroundBrush;
-					Pen syncPen = borderPen;
-					double syncHeight = BlockHeight;
-
-					if (maxDepth > 0)
+					foreach (EventData entry in frame.Synchronization)
 					{
-						syncBrush = Brushes.OrangeRed;
-						syncPen = null;
-						syncHeight = SyncLineHeight;
-					}
-
-					foreach (Entry entry in frame.Synchronization)
-					{
-						Rect rect = CalculateRect(entry, rowOffset, syncHeight);
+            Rect rect = CalculateRect(entry, rowOffset, SyncLineHeight);
 						if (rect.Width > DrawThreshold)
 						{
-							drawingContext.DrawRectangle(syncBrush, syncPen, rect);
+              drawingContext.DrawRectangle(Brushes.OrangeRed, null, rect);
 						}
 					}
 
@@ -1017,17 +991,21 @@ namespace Profiler
 
 			var threads = group.Threads;
 
-			List<KeyValuePair<int, int>> intervals = CalculateFrameRange(Position, Position + Range);
-
 			int rowIndex = 0;
 
-			for (int threadIndex = 0; threadIndex < Math.Min(threads.Count, intervals.Count); ++threadIndex)
+      KeyValuePair<int, int> mainThreadInterval = new KeyValuePair<int, int>();
+
+			for (int threadIndex = 0; threadIndex < threads.Count; ++threadIndex)
 			{
-				List<EventFrame> frames = threads[threadIndex];
+				List<EventFrame> frames = threads[threadIndex].Events;
 				RowRange rowRange = rows[threadIndex];
 
 				if (rowRange.MaxDepth >= 0 && frames.Count > 0)
 				{
+          KeyValuePair<int, int> interval = CalculateEventRange(frames, Position, Position + Range);
+          if (threadIndex == group.Board.MainThreadIndex)
+            mainThreadInterval = interval;
+
 					Brush backgroundBrush = Brushes.White;
 
 					if (rowIndex++ % 2 == 0)
@@ -1036,13 +1014,15 @@ namespace Profiler
 						drawingContext.DrawRectangle(AlternativeBackgroundColor, null, new Rect(0, rowRange.Offset, AdornedElement.RenderSize.Width, rowRange.Height));
 					}
 
-					for (int i = intervals[threadIndex].Key; i <= intervals[threadIndex].Value; ++i)
+          for (int i = interval.Key; i <= interval.Value; ++i)
 						OnRenderFrame(drawingContext, frames[i], rowRange.Offset, rowRange.MaxDepth, backgroundBrush);
 				}
+
+        
 			}
 
 			int mainThreadIndex = group.Board.MainThreadIndex;
-			RenderFPSLines(drawingContext, group.Threads[mainThreadIndex], intervals[mainThreadIndex]);
+			RenderFPSLines(drawingContext, group.Threads[mainThreadIndex].Events, mainThreadInterval);
 
 			if (FocusedFrame != null)
 			{

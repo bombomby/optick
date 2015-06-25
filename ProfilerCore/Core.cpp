@@ -80,10 +80,17 @@ void Core::DumpFrames()
 	ScopeData scope;
 	scope.header.boardNumber = (uint32)boardNumber;
 
+	std::vector<EventTime> syncronization;
+
 	for (size_t i = 0; i < threads.size(); ++i)
 	{
 		ThreadEntry* entry = threads[i];
 		scope.header.threadNumber = (uint32)i;
+
+		syncronization.resize(entry->storage.synchronizationBuffer.Size());
+		entry->storage.synchronizationBuffer.ToArray(&syncronization[0]);
+
+		size_t synchronizationIndex = 0;
 
 		// Events
 		if (!entry->storage.eventBuffer.IsEmpty())
@@ -101,6 +108,7 @@ void Core::DumpFrames()
 					} 
 					else if (rootEvent->finish < data.finish)
 					{
+						synchronizationIndex = scope.AddSynchronization(syncronization, synchronizationIndex);
 						scope.Send();
 
 						rootEvent = &data;
@@ -113,6 +121,7 @@ void Core::DumpFrames()
 				}
 			});
 
+			synchronizationIndex = scope.AddSynchronization(syncronization, synchronizationIndex);
 			scope.Send();
 		}
 	}
@@ -179,15 +188,24 @@ void Core::StartSampling()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::Activate( bool active )
 {
-	isActive = active;
-
-	for each (ThreadEntry* entry in threads)
-		entry->Activate(active);
-
-	if (active)
+	if (isActive != active)
 	{
-		SendHandshakeResponse();
+		isActive = active;
+
+		for each (ThreadEntry* entry in threads)
+			entry->Activate(active);
+
+		if (active)
+		{
+			etw.Start();
+			SendHandshakeResponse();
+		}
+		else
+		{
+			etw.Stop();
+		}
 	}
+
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpCapturingProgress()

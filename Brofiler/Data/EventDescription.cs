@@ -175,7 +175,7 @@ namespace Profiler.Data
 
 		Entry() {}
 
-		public Entry(EventDescription desc, long start, long finish) : base(start, finish, String.Empty)
+		public Entry(EventDescription desc, long start, long finish) : base(start, finish)
 		{
       this.Description = desc;
 		}

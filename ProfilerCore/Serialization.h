@@ -2,6 +2,7 @@
 #include "Common.h"
 #include <vector>
 #include <sstream>
+#include "MemoryPool.h"
 
 namespace Profiler
 {
@@ -36,7 +37,19 @@ namespace Profiler
 		return stream;
 	}
 
-	
+	template<class T, size_t N>
+	OutputDataStream& operator<<(OutputDataStream &stream, const MemoryPool<T, N>& val)
+	{
+		stream << (uint32)val.Size();
+
+		val.ForEach([&](const T& data)
+		{
+			stream << data;
+		});
+
+		return stream;
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	class InputDataStream : private std::stringstream {
 	public:

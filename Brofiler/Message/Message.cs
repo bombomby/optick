@@ -21,7 +21,7 @@ namespace Profiler
       SamplingFrame,		
       NullFrame,				
       ReportProgress,	
-			Handshake
+			Handshake,
     }
 
     public Type ResponseType { get; set; }

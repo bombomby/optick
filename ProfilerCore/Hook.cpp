@@ -237,12 +237,15 @@ struct FuncOverride
 	~FuncOverride()
 	{
 		for each (TRACED_HOOK_HANDLE handle in trackHandles)
+		{
+			LhUninstallHook(handle);
 			delete handle;
+		}
 	}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef VOID (WINAPI *SleepFunction)(_In_ DWORD dwMilliseconds);
-FuncOverride<SleepFunction> SleepOverride("Kernel32.dll", "Sleep");
+static FuncOverride<SleepFunction> SleepOverride("Kernel32.dll", "Sleep");
 VOID WINAPI SleepHooked(_In_ DWORD dwMilliseconds)
 {
 	PROFILER_CATEGORY("Sleep", Profiler::Color::White)
@@ -250,7 +253,7 @@ VOID WINAPI SleepHooked(_In_ DWORD dwMilliseconds)
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef VOID (WINAPI *SleepExFunction)(_In_ DWORD dwMilliseconds, _In_ BOOL  bAlertable);
-FuncOverride<SleepExFunction> SleepExOverride("Kernel32.dll", "SleepEx");
+static FuncOverride<SleepExFunction> SleepExOverride("Kernel32.dll", "SleepEx");
 VOID WINAPI SleepExHooked(_In_ DWORD dwMilliseconds, _In_ BOOL  bAlertable)
 {
 	PROFILER_CATEGORY("SleepEx", Profiler::Color::White)
@@ -258,7 +261,7 @@ VOID WINAPI SleepExHooked(_In_ DWORD dwMilliseconds, _In_ BOOL  bAlertable)
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef DWORD (WINAPI *WaitForSingleObjectFunction)(_In_ HANDLE hHandle, _In_ DWORD  dwMilliseconds);
-FuncOverride<WaitForSingleObjectFunction> WaitForSingleObjectOverride("Kernel32.dll", "WaitForSingleObject");
+static FuncOverride<WaitForSingleObjectFunction> WaitForSingleObjectOverride("Kernel32.dll", "WaitForSingleObject");
 DWORD WINAPI WaitForSingleObjectHooked(_In_ HANDLE hHandle, _In_ DWORD  dwMilliseconds)
 {
 	PROFILER_CATEGORY("WaitForSingleObject", Profiler::Color::White)
@@ -266,7 +269,7 @@ DWORD WINAPI WaitForSingleObjectHooked(_In_ HANDLE hHandle, _In_ DWORD  dwMillis
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef DWORD (WINAPI *WaitForSingleObjectExFunction)(_In_ HANDLE hHandle, _In_ DWORD  dwMilliseconds, _In_ BOOL bAlertable);
-FuncOverride<WaitForSingleObjectExFunction> WaitForSingleObjectExOverride("Kernel32.dll", "WaitForSingleObjectEx");
+static FuncOverride<WaitForSingleObjectExFunction> WaitForSingleObjectExOverride("Kernel32.dll", "WaitForSingleObjectEx");
 DWORD WINAPI WaitForSingleObjectExHooked(_In_ HANDLE hHandle, _In_ DWORD  dwMilliseconds, _In_ BOOL bAlertable)
 {
 	PROFILER_CATEGORY("WaitForSingleObjectEx", Profiler::Color::White)
@@ -274,7 +277,7 @@ DWORD WINAPI WaitForSingleObjectExHooked(_In_ HANDLE hHandle, _In_ DWORD  dwMill
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef DWORD (WINAPI *WaitForMultipleObjectsFunction)(_In_ DWORD  nCount, _In_ const HANDLE *lpHandles, _In_ BOOL bWaitAll, _In_ DWORD dwMilliseconds);
-FuncOverride<WaitForMultipleObjectsFunction> WaitForMultipleObjectsOverride("Kernel32.dll", "WaitForMultipleObjects");
+static FuncOverride<WaitForMultipleObjectsFunction> WaitForMultipleObjectsOverride("Kernel32.dll", "WaitForMultipleObjects");
 DWORD WINAPI WaitForMultipleObjectsHooked(_In_ DWORD  nCount, _In_ const HANDLE *lpHandles, _In_ BOOL bWaitAll, _In_ DWORD dwMilliseconds)
 {
 	PROFILER_CATEGORY("WaitForMultipleObjects", Profiler::Color::White)
@@ -282,7 +285,7 @@ DWORD WINAPI WaitForMultipleObjectsHooked(_In_ DWORD  nCount, _In_ const HANDLE 
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef DWORD (WINAPI *WaitForMultipleObjectsExFunction)(_In_ DWORD  nCount, _In_ const HANDLE *lpHandles, _In_ BOOL bWaitAll, _In_ DWORD dwMilliseconds, _In_ BOOL bAlertable);
-FuncOverride<WaitForMultipleObjectsExFunction> WaitForMultipleObjectsExOverride("Kernel32.dll", "WaitForMultipleObjectsEx");
+static FuncOverride<WaitForMultipleObjectsExFunction> WaitForMultipleObjectsExOverride("Kernel32.dll", "WaitForMultipleObjectsEx");
 DWORD WINAPI WaitForMultipleObjectsExHooked(_In_ DWORD  nCount, _In_ const HANDLE *lpHandles, _In_ BOOL bWaitAll, _In_ DWORD dwMilliseconds, _In_ BOOL bAlertable)
 {
 	PROFILER_CATEGORY("WaitForMultipleObjectsEx", Profiler::Color::White)
@@ -305,14 +308,4 @@ bool InstallSynchronizationHooks(DWORD threadID)
 	return result;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-}
-
-extern "C" void* GetOrigSleepFunction()
-{
-	return Profiler::SleepOverride.originalFunction;
-}
-
-extern "C" Profiler::EventDescription* GetOrigSleepDescription()
-{
-	return Profiler::SleepOverride.description;
 }

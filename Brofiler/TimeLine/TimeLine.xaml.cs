@@ -388,7 +388,7 @@ namespace Profiler
 						{
 							if (threadIndex != group.Board.MainThreadIndex)
 							{
-								foreach (Frame frame in group.Threads[threadIndex])
+								foreach (Frame frame in group.Threads[threadIndex].Events)
 								{
 									DataResponse.Serialize(frame.ResponseType, frame.BaseStream, stream);
 								}

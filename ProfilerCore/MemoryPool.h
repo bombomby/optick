@@ -10,8 +10,9 @@ struct MemoryChunk
 {
 	BRO_ALIGN_CACHE T data[SIZE];
 	MemoryChunk* next;
+	MemoryChunk* prev;
 
-	MemoryChunk() : next(0) {}
+	MemoryChunk() : next(0), prev(0) {}
 
 	~MemoryChunk()
 	{
@@ -20,6 +21,7 @@ struct MemoryChunk
 			next->~MemoryChunk();
 			_aligned_free(next);
 			next = 0;
+			prev = 0;
 		}
 	}
 };
@@ -42,6 +44,7 @@ class MemoryPool
 		{
 			void* ptr = _aligned_malloc(sizeof(Chunk), BRO_CACHE_LINE_SIZE);
 			chunk->next = new (ptr) Chunk();
+			chunk->next->prev = chunk;
 		}
 		chunk = chunk->next;
 
@@ -56,6 +59,17 @@ public:
 			AddChunk();
 
 		return chunk->data[index++];
+	}
+
+	BRO_INLINE T* Back()
+	{
+		if (index > 0)
+			return &chunk->data[index - 1];
+
+		if (chunk->prev != nullptr)
+			return &chunk->prev->data[SIZE - 1];
+
+		return nullptr;
 	}
 
 	BRO_INLINE size_t Size() const
@@ -109,6 +123,17 @@ public:
 
 		for (uint i = 0; i < index; ++i)
 			func(chunk->data[i]);
+	}
+
+	template<class Func>
+	void ForEachChunk(Func func) const
+	{
+		for (const Chunk* it = &root; it != chunk; it = it->next)
+			for (uint i = 0; i < SIZE; ++i)
+				func(it->data, SIZE);
+
+		for (uint i = 0; i < index; ++i)
+			func(chunk->data, index);
 	}
 
 	void ToArray(T* destination) const

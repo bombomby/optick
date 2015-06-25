@@ -4,6 +4,7 @@
 #include "Sampler.h"
 #include "MemoryPool.h"
 #include "Concurrency.h"
+#include "ETW.h"
 #include <map>
 
 namespace Profiler
@@ -24,7 +25,7 @@ struct ScopeData
 {
 	ScopeHeader header;
 	std::vector<EventData> categories;
-	std::vector<EventData> synchronization;
+	std::vector<EventTime> synchronization;
 	std::vector<EventData> events;
 
 	void AddEvent(const EventData& data)
@@ -39,6 +40,19 @@ struct ScopeData
 		}
 	}
 
+	size_t AddSynchronization(const std::vector<EventTime>& syncData, size_t startIndex)
+	{
+		for (;startIndex < syncData.size(); ++startIndex)
+		{
+			if (syncData[startIndex].start > header.event.finish)
+				break;
+
+			if (syncData[startIndex].start >= header.event.start && syncData[startIndex].finish <= header.event.finish)
+				synchronization.push_back(syncData[startIndex]);
+		}
+		return startIndex;
+	}
+
 	void InitRootEvent(const EventData& data)
 	{
 		header.event = data;
@@ -51,15 +65,15 @@ struct ScopeData
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator << ( OutputDataStream& stream, const ScopeData& ob);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef MemoryPool<EventData, 1024> EventBuffer;
 typedef MemoryPool<const EventData*, 32> CategoryBuffer;
+typedef MemoryPool<EventTime, 1024> SynchronizationBuffer;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct EventStorage
 {
 	EventBuffer eventBuffer;
 	CategoryBuffer categoryBuffer; 
+	SynchronizationBuffer synchronizationBuffer;
 
 	volatile uint isSampling;
 
@@ -75,28 +89,17 @@ struct EventStorage
 		categoryBuffer.Add() = &eventData;
 	}
 
-	void Reset()
-	{
-		eventBuffer.Clear(true);
-		categoryBuffer.Clear(true);
-	}
-
 	// Free all temporary memory
 	void Clear(bool preserveContent)
 	{
 		eventBuffer.Clear(preserveContent);
 		categoryBuffer.Clear(preserveContent);
+		synchronizationBuffer.Clear(preserveContent);
 	}
-};
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct Frame : public EventStorage
-{
-	const void* threadUniqueID;
-	EventTime		frameTime;
 
-	Frame() : threadUniqueID(nullptr)
+	void Reset()
 	{
-
+		Clear(true);
 	}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -142,6 +145,9 @@ public:
 
 	// Controls sampling routine
 	Sampler sampler;
+
+	// Event Trace for Windows interface
+	ETW etw;
 
 	// Returns thread collection
 	const std::vector<ThreadEntry*>& GetThreads() const;

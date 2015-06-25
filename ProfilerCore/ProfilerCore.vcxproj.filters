@@ -50,6 +50,9 @@
     <ClInclude Include="HookFunction.h">
       <Filter>Tools\EasyHook</Filter>
     </ClInclude>
+    <ClInclude Include="ETW.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Tools">
@@ -90,6 +93,9 @@
     </ClCompile>
     <ClCompile Include="Hook.cpp">
       <Filter>Tools\EasyHook</Filter>
+    </ClCompile>
+    <ClCompile Include="ETW.cpp">
+      <Filter>Tools</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

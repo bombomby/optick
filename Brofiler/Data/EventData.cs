@@ -6,26 +6,34 @@ using System.IO;
 
 namespace Profiler.Data
 {
-	public class EventData : Durable
+  public class EventData : Durable, IComparable<EventData>
 	{
-		private String customData;
-		public String CustomData
-		{
-			get { return customData; }
-		}
-
 		public void ReadEventData(BinaryReader reader)
 		{
 			ReadDurable(reader);
 		}
 
-		public EventData(long s, long f, String customData) : base(s, f)
+    public static EventData Create(BinaryReader reader)
+    {
+      EventData result = new EventData();
+      result.ReadEventData(reader);
+      return result;
+    }
+
+		public EventData(long s, long f) : base(s, f)
 		{
-			this.customData = customData;
 		}
 
 		public EventData() { }
-	}
+
+    public int CompareTo(EventData other)
+    {
+      if (other.Start != Start)
+        return Start < other.Start ? -1 : 1;
+      else
+        return Finish == other.Finish ? 0 : Finish > other.Finish ? -1 : 1; 
+    }
+  }
 
 	public abstract class Description
 	{

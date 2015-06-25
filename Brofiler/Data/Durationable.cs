@@ -6,6 +6,11 @@ using System.IO;
 
 namespace Profiler.Data
 {
+  public interface ITick
+  {
+    long Tick { get; }
+  }
+
 	public class Durable
 	{
 		private long start;
@@ -67,4 +72,19 @@ namespace Profiler.Data
 
 		public Durable() { }
 	}
+
+  public struct Timestamp
+  {
+    long time;
+    public long Time
+    {
+      get { return time; }
+      set { time = value; }
+    }
+
+    public double TimeMS
+    {
+      get { return Durable.TicksToMs(time); }
+    }
+  }
 }
