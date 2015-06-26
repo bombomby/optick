@@ -82,7 +82,7 @@ namespace Profiler
 				RowRange range = rows[threadIndex];
 
 				
-				if (range.MaxDepth >= 0 && group.Threads[threadIndex].Events.Count > 0)
+				if (range.MaxDepth > 0 && group.Threads[threadIndex].Events.Count > 0)
 				{
 					ThreadList.RowDefinitions.Add(new RowDefinition());
 
@@ -119,10 +119,10 @@ namespace Profiler
 			}
 		}
 
-		public void FocusOn(EventFrame frame)
+		public void FocusOn(EventFrame frame, EventNode node)
 		{
 			Group = frame.Group;
-			canvas.FocusOn(frame);
+			canvas.FocusOn(frame, node);
 		}
 
 		public ThreadView()
@@ -151,7 +151,7 @@ namespace Profiler
 				canvas.SetFilter(text);
 			}
 		}
-	}
+  }
 
 	public class RowRange : INotifyPropertyChanged
 	{
@@ -270,10 +270,10 @@ namespace Profiler
 						double rowOffset = HeaderHeight;
 						for (int threadIndex = 0; threadIndex < group.Threads.Count; ++threadIndex)
 						{
-							int maxDepth = group.Threads[threadIndex].Events.Count > 0 ? GetRowMaxDepth(threadIndex) : -1;
-							double height = maxDepth >= 0 ? (maxDepth + 1) * BlockHeight : 0.0;
+							int maxDepth = GetRowMaxDepth(threadIndex);
+							double height = maxDepth * BlockHeight;
 							rows.Add(new RowRange() { Offset = rowOffset, Height = height, MaxDepth = maxDepth });
-							rowOffset += maxDepth >= 0 ? SpaceHeight + height : 0.0;
+							rowOffset += maxDepth > 0 ? SpaceHeight + height : 0.0;
 						}
 
 						UpdateBar();
@@ -411,6 +411,7 @@ namespace Profiler
 		const double FocusFrameExtent = 2.0;
 
 		EventFrame FocusedFrame { get; set; }
+    EventNode  FocusedNode { get; set; }
 
 		bool IsFrameVisible(EventFrame frame)
 		{
@@ -418,7 +419,7 @@ namespace Profiler
 			return Position < framePos && framePos < Position + Range;
 		}
 
-		public void FocusOn(EventFrame frame)
+		public void FocusOn(EventFrame frame, EventNode node)
 		{
 			if (!IsFrameVisible(frame))
 			{
@@ -433,6 +434,7 @@ namespace Profiler
 			}
 
 			FocusedFrame = frame;
+      FocusedNode = node;
 
 			UpdateBar();
 			Refresh();
@@ -876,7 +878,7 @@ namespace Profiler
 			if (entryRectangle.Width < DrawThreshold)
 				return;
 
-			double ratio = (double)currentLevel / (maxDepth + 1);
+			double ratio = (double)currentLevel / (maxDepth);
 			double offset = ratio * frameRect.Height;
 
 			entryRectangle.Offset(new Vector(0, offset));
@@ -884,14 +886,14 @@ namespace Profiler
 
 			result.Add(new KeyValuePair<Entry, Rect>(node.Entry, entryRectangle));
 
-			if (currentLevel + 1 <= maxDepth)
+			if (currentLevel + 1 < maxDepth)
 				foreach (EventNode child in node.Children)
 					GenerateEventNode(child, frameRect, currentLevel + 1, maxDepth, result);
 		}
 
 		void OnRenderFrame(System.Windows.Media.DrawingContext drawingContext, EventFrame frame, double rowOffset, int maxDepth, Brush backgroundBrush)
 		{
-			Rect rectangle = CalculateRect(frame.Header, rowOffset, (maxDepth + 1) * BlockHeight);
+			Rect rectangle = CalculateRect(frame.Header, rowOffset, maxDepth * BlockHeight);
 			if (rectangle.Width < MinDrawFrameThreshold)
 				return;
 
@@ -971,12 +973,14 @@ namespace Profiler
 			}
 		}
 
-		int MainMaxDepth = 1;
-		int AdditionalMaxDepth = 0;
-
 		int GetRowMaxDepth(int threadIndex)
 		{
-			return group.Board.MainThreadIndex == threadIndex ? MainMaxDepth : AdditionalMaxDepth;
+      int depth = 0;
+
+      foreach (EventFrame frame in group.Threads[threadIndex].Events)
+        depth = Math.Max(frame.CategoriesTree.Depth, depth);
+       
+			return depth;
 		}
 
 		protected override void OnRender(System.Windows.Media.DrawingContext drawingContext)
@@ -1000,7 +1004,7 @@ namespace Profiler
 				List<EventFrame> frames = threads[threadIndex].Events;
 				RowRange rowRange = rows[threadIndex];
 
-				if (rowRange.MaxDepth >= 0 && frames.Count > 0)
+				if (rowRange.MaxDepth > 0 && frames.Count > 0)
 				{
           KeyValuePair<int, int> interval = CalculateEventRange(frames, Position, Position + Range);
           if (threadIndex == group.Board.MainThreadIndex)
@@ -1027,7 +1031,10 @@ namespace Profiler
 			if (FocusedFrame != null)
 			{
 				RowRange rowRange = rows[FocusedFrame.Header.ThreadIndex];
-				Rect focusedRectangle = CalculateRect(FocusedFrame.Header, rowRange.Offset, rowRange.Height);
+
+        Durable interval = FocusedNode != null ? FocusedNode.Entry as Durable : FocusedFrame.Header as Durable;
+
+        Rect focusedRectangle = CalculateRect(interval, rowRange.Offset, rowRange.Height);
 				drawingContext.DrawRectangle(null, selectedPen, focusedRectangle);
 			}
 
@@ -1037,5 +1044,10 @@ namespace Profiler
 
 			base.OnRender(drawingContext);
 		}
-	}
+
+    internal void Select(EventNode eventNode)
+    {
+      throw new NotImplementedException();
+    }
+  }
 }

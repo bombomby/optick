@@ -48,18 +48,7 @@ namespace Profiler
 				if (dataContext is Data.EventFrame)
 				{
 					Data.EventFrame frame = dataContext as Data.EventFrame;
-					ThreadView.FocusOn(frame);
-
-					//if (ThreadView.search.IsFiltering)
-					//{
-					//  String text = ThreadView.search.Text;
-
-					//  if (frameTabs.SelectedItem is CloseableTabItem)
-					//  {
-					//    CloseableTabItem item = frameTabs.SelectedItem as CloseableTabItem;
-					//    item.Add
-					//  }
-					//}
+					ThreadView.FocusOn(frame, null);
 				}
 			}
 		}
@@ -101,13 +90,22 @@ namespace Profiler
 
       FrameInfo info = new FrameInfo() { Height = Double.NaN, Width = Double.NaN, DataContext = null };
       info.DataContextChanged += new DependencyPropertyChangedEventHandler((object sender, DependencyPropertyChangedEventArgs e) => {tabItem.Header = frame.Description;});
+      info.SelectedTreeNodeChanged += new SelectedTreeNodeChangedHandler(FrameInfo_OnSelectedTreeNodeChanged);
       info.SetFrame(frame);
-      
+
       tabItem.Add(info);
 
 			frameTabs.Items.Add(tabItem);
       frameTabs.SelectedItem = tabItem;
 		}
+
+    void FrameInfo_OnSelectedTreeNodeChanged(Data.Frame frame, BaseTreeNode node)
+    {
+      if (node is EventNode && frame is EventFrame)
+      {
+        ThreadView.FocusOn(frame as EventFrame, node as EventNode);
+      }
+    }
 
 		protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
 		{

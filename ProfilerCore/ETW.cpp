@@ -67,7 +67,7 @@ ETW::ETW() : isActive(false), sessionHandle(INVALID_TRACEHANDLE), openedHandle(I
 	sessionProperties =(EVENT_TRACE_PROPERTIES*) malloc(bufferSize);
 }
 
-bool ETW::Start()
+ETW::Status ETW::Start()
 {
 	if (!isActive) 
 	{
@@ -91,7 +91,19 @@ bool ETW::Start()
 		// ERROR_DISK_FULL(112)
 		ULONG status = StartTrace(&sessionHandle, KERNEL_LOGGER_NAME, sessionProperties);
 		if (status != ERROR_SUCCESS)
-			return false;
+		{
+			switch (status)
+			{
+			case ERROR_ALREADY_EXISTS:
+				return ETW_ERROR_ALREADY_EXISTS;
+
+			case ERROR_ACCESS_DENIED:
+				return ETW_ERROR_ACCESS_DENIED;
+
+			default:
+				return ETW_FAILED;
+			}
+		}
 
 		ZeroMemory(&logFile, sizeof(EVENT_TRACE_LOGFILE));
 
@@ -101,16 +113,15 @@ bool ETW::Start()
 
 		openedHandle = OpenTrace(&logFile);
 		if (openedHandle == INVALID_TRACEHANDLE)
-			return false;
+			return ETW_FAILED;
 
 		DWORD threadID;
 		processThreadHandle = CreateThread(0, 0, RunProcessTraceThreadFunction, this, 0, &threadID);
 		
 		isActive = true;
-		return true;
 	}
 
-	return false;
+	return ETW_OK;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool ETW::Stop()

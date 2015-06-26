@@ -50,6 +50,11 @@ namespace Profiler
 			warningBlock.Visibility = Visibility.Collapsed;
 			
 			this.Loaded += new RoutedEventHandler(TimeLine_Loaded);
+
+
+      statusToError.Add(ETWStatus.ETW_ERROR_ACCESS_DENIED, new KeyValuePair<string, string>("ETW can't start: launch your game As Administrator to collect Context Switches", "https://github.com/bombomby/brofiler/wiki/Event-Tracing-for-Windows"));
+      statusToError.Add(ETWStatus.ETW_ERROR_ALREADY_EXISTS, new KeyValuePair<string, string>("ETW session already started (Reboot should help)", "https://github.com/bombomby/brofiler/wiki/Event-Tracing-for-Windows"));
+      statusToError.Add(ETWStatus.ETW_FAILED, new KeyValuePair<string, string>("ETW session failed", "https://github.com/bombomby/brofiler/wiki/Event-Tracing-for-Windows"));
     }
 
 		Version CurrentVersion { get { return Assembly.GetExecutingAssembly().GetName().Version; } }
@@ -204,6 +209,16 @@ namespace Profiler
 			}
 		}
 
+    enum ETWStatus
+    {
+      ETW_OK = 0,
+      ETW_ERROR_ALREADY_EXISTS = 1,
+      ETW_ERROR_ACCESS_DENIED = 2,
+      ETW_FAILED = 3,
+    }
+
+    Dictionary<ETWStatus, KeyValuePair<String, String>> statusToError = new Dictionary<ETWStatus, KeyValuePair<String, String>>();
+
     private bool ApplyResponse(DataResponse response)
     {
       if (response.Version == NetworkProtocol.NETWORK_PROTOCOL_VERSION)
@@ -230,6 +245,13 @@ namespace Profiler
             break;
 
 					case DataResponse.Type.Handshake:
+            ETWStatus status = (ETWStatus)response.Reader.ReadUInt32();
+
+            KeyValuePair<string, string> warning;
+            if (statusToError.TryGetValue(status, out warning))
+            {
+              ShowWarning(warning.Key, warning.Value);
+            }
 						break;
 
           default:

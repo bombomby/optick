@@ -55,11 +55,21 @@ namespace Profiler.Data
       }
     }
 
+    public double SynchronizationDuration { get; set; }
+
     public override string Description
     {
       get
       {
         return String.Format("{0:0} ms", Header.Duration);
+      }
+    }
+
+    public string DeatiledDescription
+    {
+      get
+      {
+        return String.Format("Work: {0:0.###}ms   Wait: {1:0.###}ms", Duration - SynchronizationDuration, SynchronizationDuration).Replace(',', '.');
       }
     }
 
@@ -173,6 +183,12 @@ namespace Profiler.Data
       Synchronization = ReadEventTimeList(reader);
       Synchronization.Sort();
 			Synchronization = LinearizeEventList(Synchronization);
+
+      SynchronizationDuration = 0.0;
+      foreach (EventData interval in Synchronization)
+      {
+        SynchronizationDuration += interval.Duration;
+      }
     }
 
 		public double CalculateFilteredTime(HashSet<Object> filter)

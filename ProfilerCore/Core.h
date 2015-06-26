@@ -135,7 +135,7 @@ class Core
 	static Core notThreadSafeInstance;
 
 	void DumpCapturingProgress();
-	void SendHandshakeResponse();
+	void SendHandshakeResponse(ETW::Status status);
 public:
 	void Activate(bool active);
 	bool isActive;

@@ -18,7 +18,10 @@ using System.Diagnostics;
 
 namespace Profiler
 {
-	/// <summary>
+
+  public delegate void SelectedTreeNodeChangedHandler(Data.Frame frame, BaseTreeNode node);
+	
+  /// <summary>
 	/// Interaction logic for FrameInfo.xaml
 	/// </summary>
 	public partial class FrameInfo : UserControl
@@ -28,6 +31,8 @@ namespace Profiler
 			this.InitializeComponent();
       SummaryTable.FilterApplied += new ApplyFilterEventHandler(ApplyFilterToEventTree);
 			SummaryTable.DescriptionFilterApplied += new ApplyDescriptionFilterEventHandler(ApplyDescriptionFilterToEventTree);
+
+      EventTreeView.SelectedItemChanged += new RoutedPropertyChangedEventHandler<object>(EventTreeView_SelectedItemChanged);
 		}
 
     private Data.Frame frame;
@@ -113,6 +118,17 @@ namespace Profiler
 				}));
 			}
 		}
+
+    public event SelectedTreeNodeChangedHandler SelectedTreeNodeChanged;
+
+    void EventTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+    {
+      if (e.NewValue is BaseTreeNode && DataContext is Data.Frame)
+      {
+        SelectedTreeNodeChanged(DataContext as Data.Frame, e.NewValue as BaseTreeNode);
+      }
+    }
+
 
 		private void OnTreeViewItemMouseRightButtonDown(object sender, MouseButtonEventArgs e)
 		{

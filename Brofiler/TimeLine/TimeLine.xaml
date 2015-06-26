@@ -143,7 +143,7 @@
         	<TextBox x:Name="serverPort" Margin="5,0,0,0" Width="45" Text="31313" VerticalAlignment="Center" MaxLines="1" TextChanged="serverPort_TextChanged" />
           <StackPanel x:Name="warningBlock"  Orientation="Horizontal">
             <Image x:Name="warningIcon" Source="Icons/Warning-icon.png" Margin="5,0,0,0" Width="24" Height="24" />
-            <TextBlock VerticalAlignment="Center"><Hyperlink x:Name="warningUrl" RequestNavigate="Hyperlink_RequestNavigate"><Run x:Name="warningText" Text="ClickMe"/></Hyperlink></TextBlock>
+            <TextBlock VerticalAlignment="Center" TextTrimming="WordEllipsis" Width="Auto"><Hyperlink x:Name="warningUrl" RequestNavigate="Hyperlink_RequestNavigate"><Run x:Name="warningText" Text="ClickMe"/></Hyperlink></TextBlock>
           </StackPanel>
     </StackPanel>
     <TextBlock x:Name="StatusText" TextWrapping="Wrap" Text="Capturing Frame 34" FontSize="20" TextAlignment="Center" Margin="0,2,0,0" Grid.Row="1" FontStyle="Italic" TextDecorations="{x:Null}" TextOptions.TextHintingMode="Animated" FontWeight="SemiBold" Foreground="Black" Visibility="Collapsed">

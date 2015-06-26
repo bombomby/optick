@@ -161,11 +161,17 @@ namespace Profiler.Data
 
   public class EventTree : EventNode 
   {
+    private int depth = 1;
     private EventFrame frame;
     public EventTree(EventFrame frame, List<Entry> entries) : base(null, new Entry(null, frame.Start, frame.Finish))
     {
       this.frame = frame;
 			BuildTree(entries);
+    }
+
+    public int Depth
+    {
+      get { return depth - 1; }
     }
 
     private void BuildTree(List<Entry> entries)
@@ -175,6 +181,7 @@ namespace Profiler.Data
 
       Stack<EventNode> curNodes = new Stack<EventNode>();
       curNodes.Push(this);
+      depth = curNodes.Count;
 
       foreach (var entry in entries)
       {
@@ -190,6 +197,7 @@ namespace Profiler.Data
 
 				curNodes.Peek().AddChild(node);
         curNodes.Push(node);
+        depth = Math.Max(depth, curNodes.Count);
       }
 
 			while (curNodes.Count > 0)

@@ -197,8 +197,8 @@ void Core::Activate( bool active )
 
 		if (active)
 		{
-			etw.Start();
-			SendHandshakeResponse();
+			ETW::Status status = etw.Start();
+			SendHandshakeResponse(status);
 		}
 		else
 		{
@@ -226,9 +226,10 @@ bool Core::IsTimeToReportProgress() const
 	return GetTimeMilliSeconds() > progressReportedLastTimestampMS + 200;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Core::SendHandshakeResponse()
+void Core::SendHandshakeResponse(ETW::Status status)
 {
 	OutputDataStream stream;
+	stream << (uint32)status;
 	Server::Get().Send(DataResponse::Handshake, stream);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
