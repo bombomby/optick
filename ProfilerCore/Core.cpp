@@ -1,7 +1,6 @@
 #include "Common.h"
 #include "Core.h"
 #include "Event.h"
-#include "Event.hpp"
 #include "ProfilerServer.h"
 #include "EventDescriptionBoard.h"
 #include "Thread.h"
@@ -88,7 +87,9 @@ void Core::DumpFrames()
 		scope.header.threadNumber = (uint32)i;
 
 		syncronization.resize(entry->storage.synchronizationBuffer.Size());
-		entry->storage.synchronizationBuffer.ToArray(&syncronization[0]);
+
+		if (!syncronization.empty())
+			entry->storage.synchronizationBuffer.ToArray(&syncronization[0]);
 
 		size_t synchronizationIndex = 0;
 

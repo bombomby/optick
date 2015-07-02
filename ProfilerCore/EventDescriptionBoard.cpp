@@ -1,6 +1,5 @@
 #include "EventDescriptionBoard.h"
 #include "Event.h"
-#include "Event.hpp"
 
 namespace Profiler
 {

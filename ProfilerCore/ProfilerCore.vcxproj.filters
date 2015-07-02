@@ -26,7 +26,6 @@
       <Filter>Tools</Filter>
     </ClInclude>
     <ClInclude Include="Sampler.h" />
-    <ClInclude Include="Event.hpp" />
     <ClInclude Include="EventDescriptionBoard.h" />
     <ClInclude Include="Profiler.h">
       <Filter>API</Filter>
@@ -53,6 +52,7 @@
     <ClInclude Include="ETW.h">
       <Filter>Tools</Filter>
     </ClInclude>
+    <ClInclude Include="Event.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Tools">

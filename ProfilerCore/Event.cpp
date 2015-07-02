@@ -1,6 +1,6 @@
-#include "Event.hpp"
 #include <cstring>
 #include <windows.h>
+#include "Event.h"
 #include "Core.h"
 #include "Thread.h"
 #include "EventDescriptionBoard.h"

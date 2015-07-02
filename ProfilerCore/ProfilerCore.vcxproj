@@ -154,7 +154,7 @@
     <ClInclude Include="Core.h" />
     <ClInclude Include="easyhook.h" />
     <ClInclude Include="ETW.h" />
-    <ClInclude Include="Event.hpp" />
+    <ClInclude Include="Event.h" />
     <ClInclude Include="EventDescriptionBoard.h" />
     <ClInclude Include="Hook.h" />
     <ClInclude Include="HookFunction.h" />

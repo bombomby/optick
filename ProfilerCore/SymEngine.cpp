@@ -87,7 +87,7 @@ void SymEngine::Init()
 	{
 		hProcess = GetCurrentProcess();
 		SymSetOptions(SymGetOptions() | SYMOPT_LOAD_LINES | SYMOPT_DEFERRED_LOADS | SYMOPT_UNDNAME | SYMOPT_INCLUDE_32BIT_MODULES | SYMOPT_LOAD_ANYTHING);
-		if (!SymInitialize(hProcess, "http://msdl.microsoft.com/download/symbols", TRUE))
+		if (!SymInitialize(hProcess, NULL /*"http://msdl.microsoft.com/download/symbols"*/, TRUE))
 			hProcess = nullptr;
 		else
 			isInitialized = true;
