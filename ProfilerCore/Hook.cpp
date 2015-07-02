@@ -14,84 +14,89 @@ extern "C"
 namespace Profiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//template<uint N>
-//struct HookSlot
-//{
-//	// Description data
-//	static HookDescription* description;
-//	static void* functionAddress;
-//
-//	// Runtime data
-//	static DWORD returnAddress;
-//	static EventData* eventData;
-//
-//	static bool Setup(HookDescription* desc, void* address)
-//	{
-//		description = desc;
-//		functionAddress = address;
-//		return true;
-//	}
-//};
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//template<uint N>
-//HookDescription* HookSlot<N>::description = nullptr;
-//
-//template<uint N>
-//void* HookSlot<N>::functionAddress = nullptr;
-//
-//template<uint N>
-//DWORD HookSlot<N>::returnAddress = 0;
-//
-//template<uint N>
-//EventData* HookSlot<N>::eventData = nullptr;
+// EasyHook wrapper for Static Linking
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class EasyHook
+{
+	#if defined(_WIN64)
+		#define EASYHOOK_CALL_CONVENTION
+	#else
+		#define EASYHOOK_CALL_CONVENTION __stdcall
+	#endif
 
+	typedef LONG (EASYHOOK_CALL_CONVENTION *Function_LhWaitForPendingRemovals)();
+	Function_LhWaitForPendingRemovals function_LhWaitForPendingRemovals;
+
+	typedef LONG (EASYHOOK_CALL_CONVENTION *Function_LhUninstallAllHooks)();
+	Function_LhUninstallAllHooks function_LhUninstallAllHooks;
+
+	typedef LONG (EASYHOOK_CALL_CONVENTION *Function_LhUninstallHook)(TRACED_HOOK_HANDLE InHandle);
+	Function_LhUninstallHook function_LhUninstallHook;
+
+	typedef LONG (EASYHOOK_CALL_CONVENTION *Function_LhSetInclusiveACL)(ULONG* InProcessIdList, ULONG InProcessCount, TRACED_HOOK_HANDLE InHandle);
+	Function_LhSetInclusiveACL function_LhSetInclusiveACL;
+
+	typedef LONG (EASYHOOK_CALL_CONVENTION *Function_LhInstallHook)(void* InEntryPoint, void* InHookProc, void* InCallback, TRACED_HOOK_HANDLE OutHandle);
+	Function_LhInstallHook function_LhInstallHook;
+	
+public:
+	EasyHook() 
+		: function_LhWaitForPendingRemovals(nullptr), 
+			function_LhUninstallAllHooks(nullptr),
+			function_LhUninstallHook(nullptr), 
+			function_LhSetInclusiveACL(nullptr), 
+			function_LhInstallHook(nullptr)
+	{
+		
+
+		#if defined(_WIN64)
+			if (HMODULE module = LoadLibrary("EasyHook64.dll"))
+			{
+				function_LhWaitForPendingRemovals = (Function_LhWaitForPendingRemovals)GetProcAddress(module, "LhWaitForPendingRemovals");
+				function_LhUninstallAllHooks = (Function_LhUninstallAllHooks)GetProcAddress(module, "LhUninstallAllHooks");
+				function_LhUninstallHook = (Function_LhUninstallHook)GetProcAddress(module, "LhUninstallHook");
+				function_LhSetInclusiveACL = (Function_LhSetInclusiveACL)GetProcAddress(module, "LhSetInclusiveACL");
+				function_LhInstallHook = (Function_LhInstallHook)GetProcAddress(module, "LhInstallHook");
+			}
+		#else
+			if (HMODULE module = LoadLibrary("EasyHook32.dll"))
+			{
+				function_LhWaitForPendingRemovals = (Function_LhWaitForPendingRemovals)GetProcAddress(module, "_LhWaitForPendingRemovals@0");
+				function_LhUninstallAllHooks = (Function_LhUninstallAllHooks)GetProcAddress(module, "_LhUninstallAllHooks@0");
+				function_LhUninstallHook = (Function_LhUninstallHook)GetProcAddress(module, "_LhUninstallHook@4");
+				function_LhSetInclusiveACL = (Function_LhSetInclusiveACL)GetProcAddress(module, "_LhSetInclusiveACL@12");
+				function_LhInstallHook = (Function_LhInstallHook)GetProcAddress(module, "_LhInstallHook@16");
+			}
+		#endif
+	}
+
+	LONG LhWaitForPendingRemovals()
+	{
+		return function_LhWaitForPendingRemovals ? function_LhWaitForPendingRemovals() : 0;
+	}
+
+	LONG LhUninstallAllHooks()
+	{
+		return function_LhUninstallAllHooks ? function_LhUninstallAllHooks() : 0;
+	}
+
+	LONG LhUninstallHook(TRACED_HOOK_HANDLE InHandle)
+	{
+		return function_LhUninstallHook ? function_LhUninstallHook(InHandle) : 0;
+	}
+
+	LONG LhSetInclusiveACL(ULONG* InProcessIdList, ULONG InProcessCount, TRACED_HOOK_HANDLE InHandle)
+	{
+		return function_LhSetInclusiveACL ? function_LhSetInclusiveACL(InProcessIdList, InProcessCount, InHandle) : 0;
+	}
+
+	LONG LhInstallHook(void* InEntryPoint, void* InHookProc, void* InCallback, TRACED_HOOK_HANDLE OutHandle)
+	{
+		return function_LhInstallHook ? function_LhInstallHook(InEntryPoint, InHookProc, InCallback, OutHandle) : 0;
+	}
+};
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// This Function is set as hook through EasyHook library. 
-// EasyHook doesn't support recursion - it is able to hook only first function in recursive call.
-// So here you won't find recursion support.
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//template<uint N>
-//__declspec(naked) void HookFunction()
-//{
-//	_asm { pushad }
-//
-//	// Collecting event start time
-//	if (EventStorage* storate = Core::storage)
-//	{
-//		HookSlot<N>::eventData = &(storate->NextEvent());
-//		HookSlot<N>::eventData->description = HookSlot<N>::description->description;
-//		QueryPerformanceCounter((LARGE_INTEGER*)(&HookSlot<N>::eventData->start));
-//	}
-//
-//	_asm 
-//	{
-//		popad;
-//
-//		// Modification of return address to continue flow after function execution
-//		pop HookSlot<N>::returnAddress;
-//
-//		// Call original function
-//		call [HookSlot<N>::functionAddress];
-//
-//		// Restore return address
-//		push HookSlot<N>::returnAddress;
-//
-//		pushad;
-//	}
-//
-//	// Collecting event finish time
-//	if (Core::storage)
-//	{
-//		QueryPerformanceCounter((LARGE_INTEGER*)(&HookSlot<N>::eventData->finish));
-//	}
-//
-//	_asm 
-//	{
-//		popad;
-//		ret;
-//	}
-//}
+EasyHook easyHook;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Profiler::Hook Profiler::Hook::inst;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -130,10 +135,10 @@ bool Hook::ClearAll()
 	for (auto it = slots.begin(); it != slots.end(); ++it)
 		it->Clear();
 
-	if (!NT_SUCCESS(LhUninstallAllHooks()))
+	if (!NT_SUCCESS(easyHook.LhUninstallAllHooks()))
 		return false;
 
-	if (!NT_SUCCESS(LhWaitForPendingRemovals()))
+	if (!NT_SUCCESS(easyHook.LhWaitForPendingRemovals()))
 		return false;
 
 	return true;
@@ -159,7 +164,7 @@ bool HookSlotWrapper::Clear()
 {
 	if (!IsEmpty())
 	{
-		LhUninstallHook(&traceInfo);
+		easyHook.LhUninstallHook(&traceInfo);
 		traceInfo.Link = nullptr;
 		functionAddress = nullptr;
 	}
@@ -173,13 +178,13 @@ bool HookSlotWrapper::Install(const Symbol& symbol, ulong threadID)
 
 	void* address = (void*)(symbol.address - symbol.offset);
 
-	NTSTATUS status = LhInstallHook( address, hookFunction, nullptr, &traceInfo);
+	NTSTATUS status = easyHook.LhInstallHook( address, hookFunction, nullptr, &traceInfo);
 	if (!NT_SUCCESS(status))
 		return false;
 
 	ULONG threadList[] = {threadID};
 
-	status = LhSetInclusiveACL(threadList, 1, &traceInfo);
+	status = easyHook.LhSetInclusiveACL(threadList, 1, &traceInfo);
 	if (!NT_SUCCESS(status))
 		return false;
 
@@ -224,12 +229,12 @@ struct FuncOverride
 
 		trackHandle->Link = 0;
 		
-		NTSTATUS status = LhInstallHook( originalFunction, overrideFunction, nullptr, trackHandle );
+		NTSTATUS status = easyHook.LhInstallHook( originalFunction, overrideFunction, nullptr, trackHandle );
 		if (status != 0)
 			return false;
 		
 		DWORD threads[] = {threadID};
-		status = LhSetInclusiveACL(threads, 1, trackHandle);
+		status = easyHook.LhSetInclusiveACL(threads, 1, trackHandle);
 
 		return status == 0;
 	}
@@ -238,7 +243,7 @@ struct FuncOverride
 	{
 		for each (TRACED_HOOK_HANDLE handle in trackHandles)
 		{
-			LhUninstallHook(handle);
+			easyHook.LhUninstallHook(handle);
 			delete handle;
 		}
 	}

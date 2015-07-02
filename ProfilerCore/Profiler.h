@@ -10,7 +10,7 @@
 #ifdef PROFILER_EXPORTS
 #define PROFILER_API __declspec(dllexport)
 #else
-#define PROFILER_API __declspec(dllimport)
+#define PROFILER_API //__declspec(dllimport)
 #endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define BRO_CONCAT_IMPL(x, y) x##y

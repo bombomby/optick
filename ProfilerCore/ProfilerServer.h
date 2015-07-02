@@ -15,19 +15,19 @@ class Server
 	static const int BIFFER_SIZE = 1024;
 	char buffer[BIFFER_SIZE];
 
-	std::auto_ptr<Socket> socket;
+	Socket* socket;
 
 	CriticalSection lock;
-
-	static Server instance;
+	
 	Server( short port );
+	~Server();
 public:
 	bool Connect();
 
 	void Send(DataResponse::Type type, OutputDataStream& stream = OutputDataStream::Empty);
 	void Update();
 
-	static Server &Get() { return instance; }
+	static Server &Get();
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
