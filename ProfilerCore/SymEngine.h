@@ -29,6 +29,11 @@ class SymEngine
 	SymbolCache cache;
 
 	bool isInitialized;
+
+	bool needRestorePreviousSettings;
+	DWORD previousOptions;
+	static const size_t MAX_SEARCH_PATH_LENGTH = 2048;
+	char previousSearchPath[MAX_SEARCH_PATH_LENGTH];
 public:
 	SymEngine();
 	~SymEngine();

@@ -19,9 +19,8 @@ void ReportLastError()
 	LocalFree(lpMsgBuf);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-SymEngine::SymEngine() : isInitialized(false), hProcess(0)
+SymEngine::SymEngine() : isInitialized(false), hProcess(GetCurrentProcess()), needRestorePreviousSettings(false), previousOptions(0)
 {
-
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 SymEngine::~SymEngine()
@@ -31,8 +30,6 @@ SymEngine::~SymEngine()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const Symbol * const SymEngine::GetSymbol(DWORD64 dwAddress)
 {
-	Init();
-
 	if (dwAddress == 0)
 		return nullptr;
 
@@ -40,6 +37,9 @@ const Symbol * const SymEngine::GetSymbol(DWORD64 dwAddress)
 
 	if (symbol.address != 0)
 		return &symbol;
+
+	if (!isInitialized)
+		return nullptr;
 
 	symbol.address = dwAddress;
 
@@ -81,25 +81,50 @@ const Symbol * const SymEngine::GetSymbol(DWORD64 dwAddress)
 	return &symbol;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// const char* USER_SYMBOL_SEARCH_PATH = "http://msdl.microsoft.com/download/symbols";
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void SymEngine::Init()
 {
 	if (!isInitialized)
 	{
-		hProcess = GetCurrentProcess();
+		previousOptions = SymGetOptions();
+
+		memset(previousSearchPath, 0, MAX_SEARCH_PATH_LENGTH);
+		SymGetSearchPath(hProcess, previousSearchPath, MAX_SEARCH_PATH_LENGTH);
+
 		SymSetOptions(SymGetOptions() | SYMOPT_LOAD_LINES | SYMOPT_DEFERRED_LOADS | SYMOPT_UNDNAME | SYMOPT_INCLUDE_32BIT_MODULES | SYMOPT_LOAD_ANYTHING);
-		if (!SymInitialize(hProcess, NULL /*"http://msdl.microsoft.com/download/symbols"*/, TRUE))
-			hProcess = nullptr;
+		if (!SymInitialize(hProcess, NULL, TRUE))
+		{
+			needRestorePreviousSettings = true;
+			SymCleanup(hProcess);
+
+			if (SymInitialize(hProcess, NULL, TRUE))
+				isInitialized = true;
+		}
 		else
+		{
 			isInitialized = true;
+		}
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void SymEngine::Close()
 {
-	if (isInitialized && hProcess != nullptr)
+	if (isInitialized)
 	{
 		SymCleanup(hProcess);
-		hProcess = nullptr;
+		isInitialized = false;
+	}
+
+	if (needRestorePreviousSettings)
+	{
+		HANDLE currentProcess = GetCurrentProcess();
+
+		SymSetOptions(previousOptions);
+		SymSetSearchPath(currentProcess, previousSearchPath);
+		SymInitialize(currentProcess, NULL, TRUE);
+
+		needRestorePreviousSettings = false;
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
