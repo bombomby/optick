@@ -12,5 +12,5 @@
   Width="Auto" BorderBrush="Black">
 	
 
-	<Grid x:Name="LayoutRoot" Background="#FFB0B0B0" VerticalAlignment="Top" />
+	<Grid x:Name="LayoutRoot" Background="#FFB0B0B0" VerticalAlignment="Stretch" />
 </UserControl>

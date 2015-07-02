@@ -975,10 +975,12 @@ namespace Profiler
 
 		int GetRowMaxDepth(int threadIndex)
 		{
-      int depth = 0;
+      int depth = group.Threads[threadIndex].Events.Count > 0 ? 1 : 0;
 
       foreach (EventFrame frame in group.Threads[threadIndex].Events)
+      {
         depth = Math.Max(frame.CategoriesTree.Depth, depth);
+      }
        
 			return depth;
 		}
