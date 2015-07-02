@@ -1,8 +1,8 @@
 #include "TestEngine.h"
+#include "..\ProfilerCore\Types.h"
 #include "..\ProfilerCore\Profiler.h"
 #include <math.h>
 #include <vector>
-#include "..\ProfilerCore\Core.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
