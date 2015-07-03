@@ -11,7 +11,7 @@ namespace Test
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 DWORD WINAPI WorkerThread(PVOID params)
 {
-	PROFILER_THREAD("Worker")
+	BROFILER_THREAD("Worker")
 	Engine* engine = (Engine*)params;
 
 	while (engine->IsAlive())
@@ -52,7 +52,7 @@ void SlowFunction2()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Engine::Update()
-{ PROFILER_FRAME("MainThread")
+{ BROFILER_FRAME("MainThread")
 	UpdateInput();
 
 	UpdateMessages();
@@ -69,32 +69,32 @@ bool Engine::Update()
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdateInput()
-{ PROFILER_CATEGORY( "UpdateInput", Profiler::Color::SteelBlue )
+{ BROFILER_CATEGORY( "UpdateInput", Profiler::Color::SteelBlue )
 	SlowFunction2();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdateMessages()
-{ PROFILER_CATEGORY( "UpdateMessages", Profiler::Color::Orange )
+{ BROFILER_CATEGORY( "UpdateMessages", Profiler::Color::Orange )
 	SlowFunction<REPEAT_COUNT>();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdateLogic()
-{ PROFILER_CATEGORY( "UpdateLogic", Profiler::Color::Orchid )
+{ BROFILER_CATEGORY( "UpdateLogic", Profiler::Color::Orchid )
 	SlowFunction<REPEAT_COUNT>();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdateScene()
-{ PROFILER_CATEGORY( "UpdateScene", Profiler::Color::SkyBlue )
+{ BROFILER_CATEGORY( "UpdateScene", Profiler::Color::SkyBlue )
 	SlowFunction<REPEAT_COUNT>();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::Draw()
-{ PROFILER_CATEGORY( "Draw", Profiler::Color::Salmon )
+{ BROFILER_CATEGORY( "Draw", Profiler::Color::Salmon )
 	SlowFunction<REPEAT_COUNT>();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdatePhysics()
-{ PROFILER_CATEGORY( "UpdatePhysics", Profiler::Color::Wheat )
+{ BROFILER_CATEGORY( "UpdatePhysics", Profiler::Color::Wheat )
 	int64 time = Profiler::GetTimeMicroSeconds();
 	while (Profiler::GetTimeMicroSeconds() - time < 20 * 1000) {}
 }
