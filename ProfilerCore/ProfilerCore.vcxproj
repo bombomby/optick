@@ -321,7 +321,7 @@
     <ClInclude Include="Common.h" />
     <ClInclude Include="HPTimer.h" />
     <ClInclude Include="Message.h" />
-    <ClInclude Include="Profiler.h" />
+    <ClInclude Include="Brofiler.h" />
     <ClInclude Include="ProfilerServer.h" />
     <ClInclude Include="Sampler.h" />
     <ClInclude Include="Serialization.h" />
