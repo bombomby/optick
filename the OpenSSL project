@@ -1,0 +1,39 @@
+OpenSSL Security Advisory</title>
+<link>
+http://blog.bitbucket.org/2015/03/19/openssl-security-advisory/
+</link>
+<comments>
+http://blog.bitbucket.org/2015/03/19/openssl-security-advisory/#comments
+</comments>
+<pubDate>Thu, 19 Mar 2015 22:34:22 +0000</pubDate>
+<dc:creator>
+<![CDATA[ Dennis Kromhout van der Meer ]]>
+</dc:creator>
+<category>
+<![CDATA[ bitbucket ]]>
+</category>
+<category>
+<![CDATA[ security ]]>
+</category>
+<guid isPermaLink="false">https://blog.bitbucket.org/?p=2451</guid>
+<description>
+<![CDATA[
+Bitbucket is not affected by the vulnerabilities announced by the OpenSSL project today. Two high severity security vulnerabilities CVE-2015-0291 and CVE-2015-0204 have been announced: The CVE-2015-0291 vulnerability results in a potential denial of service attack against a server that requests a client’s certificate, which is not something that would happen in most circumstances as it is usually the client that requests the server’s certificate. The CVE-2015-0204 vulnerability is a reclassification of the existing and well known FREAK vulnerability (CVE-2015-0204 &#38; CVE-2015-1637), which allows an attacker to intercept HTTPS connections between vulnerable clients and servers and force them to use weakened encryption, which the attacker can break to steal or manipulate sensitive data. Both vulnerabilities described in the OpenSSL security advisory posted at https://www.openssl.org/news/secadv_20150319.txt do not affect Bitbucket.
+]]>
+</description>
+<content:encoded>
+<![CDATA[
+<p>Bitbucket is not affected by the vulnerabilities announced by the OpenSSL project today. Two high severity security vulnerabilities <a href="http://www.openssl.org/news/secadv_20150319.txt">CVE-2015-0291 and CVE-2015-0204</a> have been announced:</p> <p>The <strong>CVE-2015-0291</strong> vulnerability results in a potential denial of service attack against a server that requests a client’s certificate, which is not something that would happen in most circumstances as it is usually the client that requests the server’s certificate.</p> <p>The <strong>CVE-2015-0204</strong> vulnerability is a reclassification of the existing and well known <a href="https://freakattack.com/" target="_blank">FREAK vulnerability</a> (CVE-2015-0204 &amp; CVE-2015-1637), which allows an attacker to intercept HTTPS connections between vulnerable clients and servers and force them to use weakened encryption, which the attacker can break to steal or manipulate sensitive data.</p> <p>Both vulnerabilities described in the OpenSSL security advisory posted at <a href="https://www.openssl.org/news/secadv_20150319.txt" target="_blank">https://www.openssl.org/news/secadv_20150319.txt</a> do not affect Bitbucket.</p>
+]]>
+</content:encoded>
+<wfw:commentRss>
+http://blog.bitbucket.org/2015/03/19/openssl-security-advisory/feed/
+</wfw:commentRss>
+<slash:comments>0</slash:comments>
+</item>
+<item>
+<title>
+Snippets for teams are here with a rich set of APIs
+</title>
+<link>
+http://blog.bitbucket.org/2015/03/18/snippets-for-teams-are-here-with-a-rich-set-of-apis/
