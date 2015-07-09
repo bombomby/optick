@@ -5,6 +5,7 @@
 #include "MemoryPool.h"
 #include "Concurrency.h"
 #include "ETW.h"
+//#include "Graphics.h"
 #include <map>
 
 namespace Profiler
@@ -117,7 +118,6 @@ class Core
 {
 	CriticalSection lock;
 
-	HANDLE workerThread;
 	uint32 mainThreadID;
 
 	std::vector<ThreadEntry*> threads;
@@ -145,6 +145,9 @@ public:
 
 	// Controls sampling routine
 	Sampler sampler;
+
+	// Controls GPU activity
+	// Graphics graphics;
 
 	// Event Trace for Windows interface
 	ETW etw;

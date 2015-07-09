@@ -12,7 +12,7 @@ namespace Profiler
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static const short DEFAULT_PORT = 31313;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Server::Server(short port) : socket(new Socket())
+Server::Server(short port) : socket(new Socket()), acceptThread(0)
 {
 	socket->Bind(port, 8);
 	socket->Listen();
@@ -21,6 +21,8 @@ Server::Server(short port) : socket(new Socket())
 void Server::Update()
 {
 	CRITICAL_SECTION(lock);
+
+	InitConnection();
 
 	int length = -1;
 	while ( (length = socket->Receive( buffer, BIFFER_SIZE ) ) > 0 )
@@ -46,14 +48,26 @@ void Server::Send(DataResponse::Type type, OutputDataStream& stream)
 	socket->Send(data.c_str(), data.size());
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Server::Connect()
+bool Server::InitConnection()
 {
-	socket->Accept();
-	return true;
+	if (!acceptThread)
+	{
+		acceptThread = CreateThread(NULL, 0, &Server::AsyncAccept, this, 0, NULL);
+		return true;
+	}
+	return false;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Server::~Server()
 {
+	if (acceptThread)
+	{
+		TerminateThread(acceptThread, 0);
+		WaitForSingleObject(acceptThread, INFINITE);
+		CloseHandle(acceptThread);
+		acceptThread = 0;
+	}
+
 	if (socket)
 	{
 		delete socket;
@@ -67,4 +81,23 @@ Server & Server::Get()
 	return instance;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool Server::Accept()
+{
+	socket->Accept();
+	return true;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+DWORD WINAPI Server::AsyncAccept( LPVOID lpParam )
+{
+	Server* server = (Server*)lpParam;
+
+	while (server->Accept())
+	{
+		Sleep(1000);
+	}
+
+	return 0;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 }
