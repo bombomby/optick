@@ -170,12 +170,14 @@ uint SymEngine::GetCallstack(HANDLE hThread, CONTEXT& context, CallStackBuffer& 
 		if (!dwAddress)
 			break;
 
-		++index;
-
 		if (index == callstack.size())
 			return 0; // Too long callstack - possible error, let's skip it
 
+		if (index > 0 && callstack[index - 1] == dwAddress)
+			continue;
+
 		callstack[index] = dwAddress;
+		++index;
 	}
 
 	return index;

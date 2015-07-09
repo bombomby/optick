@@ -160,16 +160,21 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 			if (!thread->storage.isSampling)
 				continue;
 
-			SuspendThread(handle);
-
 			uint count = 0;
-			// Check scope again because it is possible to leave sampling scope while trying to suspend main thread
-			if (entry.second->storage.isSampling && GetThreadContext(handle, &context))
-			{
-				count = sampler.symEngine.GetCallstack(handle, context, buffer);
-			}
 
-			ResumeThread(handle);
+			DWORD suspendedStatus = SuspendThread(handle);
+
+			if (suspendedStatus != (DWORD)-1)
+			{
+				// Check scope again because it is possible to leave sampling scope while trying to suspend main thread
+				if (entry.second->storage.isSampling && GetThreadContext(handle, &context))
+				{
+					count = sampler.symEngine.GetCallstack(handle, context, buffer);
+				}
+
+				ClearStackContext(context);
+				ResumeThread(handle);
+			}
 
 			if (count > 0)
 			{
