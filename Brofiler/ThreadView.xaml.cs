@@ -914,7 +914,7 @@ namespace Profiler
 				foreach (EventNode node in frame.CategoriesTree.Children)
 					GenerateEventNode(node, rectangle, 0, maxDepth, rects);
 
-				if (rects.Count > 0)
+				if (rects.Count > 0 || frame.Synchronization.Count > 0)
 				{
 					foreach (var item in rects)
 					{
