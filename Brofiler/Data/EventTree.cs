@@ -88,6 +88,7 @@ namespace Profiler.Data
     }
 
     public abstract void ApplyFilter(HashSet<Object> roof, HashSet<Object> nodes, FilterMode mode);
+    public abstract void CalculateRecursiveExcludeFlag(Dictionary<Object, int> parentCallStorage);
   }
 
   public abstract class TreeNode<TDescription> : BaseTreeNode
@@ -97,6 +98,8 @@ namespace Profiler.Data
 
 		public override String Path { get { return Description.Path.ToString(); } }
 		public override String Name { get { return Description.Name; } }
+
+    public bool ExcludeFromTotal { get; private set; }
 
     public TreeNode(TreeNode<TDescription> root, TDescription desc, double duration)
       : base(root, duration)
@@ -146,6 +149,35 @@ namespace Profiler.Data
 			return sum;
 		}
 
+    public override void CalculateRecursiveExcludeFlag(Dictionary<Object, int> parentCallStorage)
+    {
+      Object key = Description != null ? Description.GetSharedKey() : null;
+
+      if (key == null)
+      {
+        foreach (var node in Children)
+          node.CalculateRecursiveExcludeFlag(parentCallStorage);
+      }
+      else
+      {
+        int count = 0;
+        if (parentCallStorage.TryGetValue(key, out count))
+        {
+          ExcludeFromTotal = count > 0;
+          parentCallStorage[Description] = count + 1;
+        }
+        else
+        {
+          ExcludeFromTotal = false;
+          parentCallStorage.Add(key, 1);
+        }
+
+        foreach (var node in Children)
+          node.CalculateRecursiveExcludeFlag(parentCallStorage);
+
+        parentCallStorage[key]--;
+      }
+    }
   }
 
   public class EventNode : TreeNode<EventDescription>
@@ -167,6 +199,7 @@ namespace Profiler.Data
     {
       this.frame = frame;
 			BuildTree(entries);
+      CalculateRecursiveExcludeFlag(new Dictionary<Object, int>());
     }
 
     public int Depth

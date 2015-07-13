@@ -81,7 +81,7 @@ namespace Profiler.Data
 		[DisplayName("Self%")]
 		public double SelfPercent { get; private set; }
 		[DisplayName("Self(ms)")]
-		public double SelfTime { get { return Total - ChildTime; } }
+		public double SelfTime { get; private set; }
 
 
 		//[DisplayName("Total%")]
@@ -102,10 +102,16 @@ namespace Profiler.Data
     {
 			base.Add(node);
       MaxTime = Math.Max(MaxTime, node.Entry.Duration);
-      Total += node.Entry.Duration;
       ChildTime += node.ChildrenDuration;
 			SelfPercent += node.SelfPercent;
-			//TotalPercent += node.TotalPercent;
+      SelfTime += node.SelfDuration;
+
+      if (!node.ExcludeFromTotal)
+      {
+        Total += node.Entry.Duration;
+        //TotalPercent += node.TotalPercent;
+      }
+
       ++Count;
     }
   }
@@ -143,9 +149,13 @@ namespace Profiler.Data
     {
 			base.Add(node);
       Self += node.Sampled;
-      Total += node.Passed;
       SelfPercent += node.SelfPercent;
-      TotalPercent += node.TotalPercent;
+
+      if (!node.ExcludeFromTotal)
+      {
+        Total += node.Passed;
+        TotalPercent += node.TotalPercent;
+      }
     }
   }
 

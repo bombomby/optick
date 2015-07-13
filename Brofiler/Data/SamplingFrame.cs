@@ -202,6 +202,7 @@ namespace Profiler.Data
       {
         DescriptionBoard = SamplingDescriptionBoard.Create(Reader);
         root = SamplingNode.Create(Reader, DescriptionBoard, null);
+        root.CalculateRecursiveExcludeFlag(new Dictionary<Object, int>());
 
         board = new Board<SamplingBoardItem, SamplingDescription, SamplingNode>(root);
 
