@@ -423,14 +423,18 @@ namespace Profiler
       }
     }
 
+	private void ClearAllFrames()
+	{
+		lock (frames)
+		{
+			frames.Clear();
+		}
+		OnClearAllFrames();
+	}
+
     private void ClearButton_Click(object sender, System.Windows.RoutedEventArgs e)
     {
-      lock (frames)
-      {
-        frames.Clear();
-      }
-      
-			OnClearAllFrames();
+		ClearAllFrames();
     }
 
     private void ClearSamplingButton_Click(object sender, System.Windows.RoutedEventArgs e)
@@ -450,7 +454,13 @@ namespace Profiler
 
     private void StartButton_Checked(object sender, System.Windows.RoutedEventArgs e)
     {
-
+		if ( ClearSessionOnRecordStartCheckBox.IsChecked.HasValue )
+		{
+			if ( ClearSessionOnRecordStartCheckBox.IsChecked.Value )
+			{
+				ClearAllFrames();
+			}
+		}
 			StartMessage message = new StartMessage();
 			if (ProfilerClient.Get().SendMessage(message))
 			{

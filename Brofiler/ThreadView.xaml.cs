@@ -36,8 +36,11 @@ namespace Profiler
 					AdornerLayer.GetAdornerLayer(surface).Add(canvas);
 				}
 
-				canvas.Group = value;
-				InitThreadList(value, canvas.Rows);
+				if ( canvas != null && value != null )
+				{
+					canvas.Group = value;
+					InitThreadList( value, canvas.Rows );
+				}
 
 				Visibility visibility = value == null ? Visibility.Collapsed : Visibility.Visible;
 
