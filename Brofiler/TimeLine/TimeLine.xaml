@@ -141,6 +141,7 @@
         	<TextBox x:Name="serverIP" Margin="5,0,0,0" Text="127.0.0.1" VerticalAlignment="Center" MaxLength="15" MaxLines="1" Width="100" TextChanged="serverIP_TextChanged" />
         	<Label Content="Port:" Margin="4,0,0,0" Padding="1" VerticalAlignment="Center"/>
         	<TextBox x:Name="serverPort" Margin="5,0,0,0" Width="45" Text="31313" VerticalAlignment="Center" MaxLines="1" TextChanged="serverPort_TextChanged" />
+            <CheckBox x:Name="ClearSessionOnRecordStartCheckBox" Margin="5,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Center" IsChecked="True" Content="Clear session on record start" />
           <StackPanel x:Name="warningBlock"  Orientation="Horizontal">
             <Image x:Name="warningIcon" Source="Icons/Warning-icon.png" Margin="5,0,0,0" Width="24" Height="24" />
             <TextBlock VerticalAlignment="Center" TextTrimming="WordEllipsis" Width="Auto"><Hyperlink x:Name="warningUrl" RequestNavigate="Hyperlink_RequestNavigate"><Run x:Name="warningText" Text="ClickMe"/></Hyperlink></TextBlock>
