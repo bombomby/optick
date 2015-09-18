@@ -5,3 +5,4 @@ ipch/
 *.sdf
 *.suo
 *.vcxproj.user
+*.csproj.user
