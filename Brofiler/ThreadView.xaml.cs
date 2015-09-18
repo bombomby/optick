@@ -131,9 +131,10 @@ namespace Profiler
 			scrollBar.Visibility = Visibility.Collapsed;
 			search.Visibility = Visibility.Collapsed;
 
-			search.DelayedTextChanged += new SearchBox.DelayedTextChangedEventHandler(Search_DelayedTextChanged);
+			search.DelayedTextChanged += Search_DelayedTextChanged;
+			search.TextEnter += Search_TextEnter;
 
-			surface.SizeChanged += new SizeChangedEventHandler(ThreadView_SizeChanged);
+			surface.SizeChanged += ThreadView_SizeChanged;
 		}
 
 		void ThreadView_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -150,6 +151,11 @@ namespace Profiler
 			{
 				canvas.SetFilter(text);
 			}
+		}
+
+		void Search_TextEnter( string text )
+		{
+			Search_DelayedTextChanged( text );
 		}
   }
 
