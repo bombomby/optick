@@ -1,5 +1,11 @@
 #pragma once
 
+#ifdef LINUX64
+#include "Linux/PublicCommonLinux.h"
+#else
+#include "Windows/PublicCommonWindows.h"
+#endif
+
 #if !defined(USE_PROFILER) && (!defined(_FINALRELEASE) || defined(EMULATE_DEVELOPER_FINAL_RELEASE))
 	#define USE_PROFILER 1
 #endif
@@ -16,7 +22,6 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define BRO_CONCAT_IMPL(x, y) x##y
 #define BRO_CONCAT(x, y) BRO_CONCAT_IMPL(x, y)
-#define BRO_INLINE __forceinline
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma region Colors.h

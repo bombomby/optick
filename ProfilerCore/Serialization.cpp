@@ -1,5 +1,6 @@
 #include "Common.h"
 #include "Serialization.h"
+#include <cstring>
 
 namespace Profiler
 {
@@ -29,12 +30,6 @@ namespace Profiler
 		return stream;
 	}
 
-	OutputDataStream &operator << ( OutputDataStream &stream, int64 val )
-	{
-		stream.write( (char*)&val, sizeof(int64) );
-		return stream;
-	}
-
 	OutputDataStream &operator << ( OutputDataStream &stream, char val )
 	{
 		stream.write( (char*)&val, sizeof(char) );
@@ -46,7 +41,13 @@ namespace Profiler
 		stream.write( (char*)&val, sizeof(byte) );
 		return stream;
 	}
-	
+
+	OutputDataStream &operator << ( OutputDataStream &stream, int64 val )
+	{
+		stream.write( (char*)&val, sizeof(int64) );
+		return stream;
+	}
+
 	OutputDataStream & operator<<(OutputDataStream &stream, uint64 val)
 	{
 		stream.write( (char*)&val, sizeof(uint64) );
@@ -88,6 +89,12 @@ namespace Profiler
 		return stream;
 	}
 
+	InputDataStream & operator>>( InputDataStream &stream, uint64 &val )
+	{
+		stream.read( (char*)&val, sizeof(uint64) );
+		return stream;
+	}
+
 	InputDataStream & operator>>( InputDataStream &stream, byte &val )
 	{
 		stream.read( (char*)&val, sizeof(byte) );
@@ -97,12 +104,6 @@ namespace Profiler
 	InputDataStream & operator>>( InputDataStream &stream, uint32 &val )
 	{
 		stream.read( (char*)&val, sizeof(uint32) );
-		return stream;
-	}
-
-	InputDataStream & operator>>( InputDataStream &stream, uint64 &val )
-	{
-		stream.read( (char*)&val, sizeof(uint64) );
 		return stream;
 	}
 

@@ -1,12 +1,13 @@
-#include "Common.h"
-#include "Hook.h"
-#include "Event.h"
-#include "Core.h"
-#include "Serialization.h"
-#include "Sampler.h"
+#include "../Common.h"
+#include "../Hook.h"
+#include "../Event.h"
+#include "../Core.h"
+#include "../Serialization.h"
+#include "../Sampler.h"
 #include <DbgHelp.h>
 #include <hash_set>
-#include "HPTimer.h"
+#include "../HPTimer.h"
+#include <windows.h>
 
 namespace Profiler
 {

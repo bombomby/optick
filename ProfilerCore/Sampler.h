@@ -1,6 +1,5 @@
 #pragma once
 #include "SymEngine.h"
-#include <windows.h>
 #include <array>
 #include <vector>
 

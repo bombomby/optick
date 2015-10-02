@@ -1,5 +1,11 @@
-#include "Core.h"
-#include "ETW.h"
+#include "../Core.h"
+#define INITGUID  // Causes definition of SystemTraceControlGuid in evntrace.h.
+#include <windows.h>
+#include <strsafe.h>
+#include <wmistr.h>
+#include <evntrace.h>
+#include <evntcons.h>
+#include "../ETW.h"
 
 namespace Profiler
 {

@@ -4,6 +4,7 @@
 #include "Message.h"
 #include "ProfilerServer.h"
 #include "EventDescriptionBoard.h"
+#include <cstring>
 
 namespace Profiler
 {

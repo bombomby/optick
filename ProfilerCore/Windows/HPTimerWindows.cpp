@@ -1,4 +1,4 @@
-#include "HPTimer.h"
+#include "../HPTimer.h"
 #include <windows.h>
 
 namespace Profiler

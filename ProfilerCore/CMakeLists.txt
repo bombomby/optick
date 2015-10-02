@@ -1,7 +1,29 @@
+IF (WIN32)
+add_definitions(-DWIN32)
+file(GLOB Platform_SRC
+    "Windows/*.h"
+    "Windows/*.cpp"
+)
+ELIF(WIN64)
+add_definitions(-DWIN64)
+file(GLOB Platform_SRC
+    "Windows/*.h"
+    "Windows/*.cpp"
+)
+ELSE()
+add_definitions(-DLINUX64)
+file(GLOB Platform_SRC
+    "Linux/*.h"
+    "Linux/*.cpp"
+)
+ENDIF()
+
 file(GLOB Common_SRC
     "*.h"
     "*.cpp"
 )
 
-add_library (ProfilerCore ${Common_SRC})
+set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -std=c++11" )
+
+add_library (ProfilerCore ${Common_SRC} ${Platform_SRC})
 target_include_directories (ProfilerCore PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

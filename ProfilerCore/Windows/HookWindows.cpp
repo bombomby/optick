@@ -1,10 +1,10 @@
-#include "Hook.h"
+#include "../Hook.h"
 #include <windows.h>
 #include <string>
-#include "EventDescriptionBoard.h"
-#include "Core.h"
-#include "Thread.h"
-#include "HookFunction.h"
+#include "../EventDescriptionBoard.h"
+#include "../Core.h"
+#include "../Thread.h"
+#include "../HookFunction.h"
 
 extern "C"
 {

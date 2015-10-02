@@ -141,7 +141,7 @@ public:
 	bool isActive;
 
 	// Active Frame (is used as buffer)
-	static __declspec(thread) EventStorage* storage;
+	static THREAD_LOCAL_VARIABLE EventStorage* storage;
 
 	// Controls sampling routine
 	Sampler sampler;

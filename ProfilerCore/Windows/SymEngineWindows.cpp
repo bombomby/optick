@@ -1,7 +1,9 @@
-#include "SymEngine.h"
+#include "../SymEngine.h"
 
+#include <windows.h>
 #include <DbgHelp.h>
 #pragma comment( lib, "DbgHelp.Lib" )
+
 
 namespace Profiler
 {
@@ -21,6 +23,7 @@ namespace Profiler
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 SymEngine::SymEngine() : isInitialized(false), hProcess(GetCurrentProcess()), needRestorePreviousSettings(false), previousOptions(0)
 {
+	static_assert(sizeof(hProcess) >= sizeof(HANDLE), "Too small hProcess type");
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 SymEngine::~SymEngine()

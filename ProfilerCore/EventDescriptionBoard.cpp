@@ -18,8 +18,10 @@ void EventDescriptionBoard::SetSamplingFlag( int index, bool flag )
 
 	if (index < 0)
 	{
-		for each (EventDescription* desc in board)
-			desc->isSampling = flag;
+		for (auto desc = board.begin() ; desc != board.end() ; ++desc)
+		{
+			(*desc)->isSampling = flag;
+		}
 	} else
 	{
 		board[index]->isSampling = flag;
@@ -29,9 +31,13 @@ void EventDescriptionBoard::SetSamplingFlag( int index, bool flag )
 bool EventDescriptionBoard::HasSamplingEvents() const
 {
 	CRITICAL_SECTION(lock)
-	for each (const EventDescription* desc in board)
-		if (desc->isSampling)
+	for (auto desc = board.cbegin() ; desc != board.cend() ; ++desc)
+	{
+		if ((*desc)->isSampling)
+		{
 			return true;
+		}
+	}
 
 	return false;
 }
@@ -43,8 +49,10 @@ const std::vector<EventDescription*>& EventDescriptionBoard::GetEvents() const
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventDescriptionBoard::~EventDescriptionBoard()
 {
-	for each (EventDescription* desc in board)
-		delete desc;
+	for (auto desc = board.begin() ; desc != board.end() ; ++desc)
+	{
+		delete *desc;
+	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventDescription* EventDescriptionBoard::CreateDescription()
@@ -63,8 +71,10 @@ OutputDataStream& operator << ( OutputDataStream& stream, const EventDescription
 
 	stream << (uint32)events.size();
 
-	for each ( const EventDescription *desc in events )
-		stream << *desc;
+	for ( auto desc = events.cbegin() ; desc != events.cend() ; ++desc )
+	{
+		stream << (**desc);
+	}
 
 	return stream;
 }

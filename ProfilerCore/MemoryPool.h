@@ -19,7 +19,7 @@ struct MemoryChunk
 		if (next)
 		{
 			next->~MemoryChunk();
-			_aligned_free(next);
+			FREE_ALIGN(next);
 			next = 0;
 			prev = 0;
 		}
@@ -42,7 +42,7 @@ class MemoryPool
 		index = 0;
 		if (!chunk->next)
 		{
-			void* ptr = _aligned_malloc(sizeof(Chunk), BRO_CACHE_LINE_SIZE);
+			void* ptr = MALLOC_ALIGN(sizeof(Chunk), BRO_CACHE_LINE_SIZE);
 			chunk->next = new (ptr) Chunk();
 			chunk->next->prev = chunk;
 		}
@@ -94,7 +94,7 @@ public:
 			if (root.next)
 			{
 				root.next->~MemoryChunk();
-				_aligned_free(root.next);
+				FREE_ALIGN(root.next);
 				root.next = 0;
 			}
 		}
