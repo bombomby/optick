@@ -1,13 +1,15 @@
 #pragma once
-#include <windows.h>
+#include "../ProfilerCore/Types.h"
+#include "../ProfilerCore/Thread.h"
 #include <vector>
+#include <cstdint>
 
 namespace Test
 {
 	// Test engine: emulates some hard CPU work.
 	class Engine
 	{
-		std::vector<HANDLE> workers;
+		std::vector<Profiler::SystemThread> workers;
 		bool isAlive;
 
 		void UpdateInput();

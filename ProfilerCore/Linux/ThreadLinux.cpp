@@ -6,9 +6,9 @@ namespace Profiler
 {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BRO_INLINE const void* GetThreadUniqueID()
+DWORD CurrentThreadID()
 {
-	return pthread_self();
+	return pthread_self();	
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -17,22 +17,22 @@ void ThreadSleep(DWORD milliseconds)
 	struct timespec sleepTime;
 	sleepTime.tv_sec = milliseconds / 1000;
 	sleepTime.tv_nsec = (milliseconds % 1000) * 1000000; 
-	nanosleep(sleepTime);
+	nanosleep(&sleepTime, nullptr);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BRO_INLINE void AtomicIncrement(volatile uint* value)
+void AtomicIncrement(volatile uint* value)
 {
 	__sync_fetch_and_add(value, 1);
 }
 
-BRO_INLINE void AtomicDecrement(volatile uint* value)
+void AtomicDecrement(volatile uint* value)
 {
 	__sync_fetch_and_add(value, -1);	
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool SystemThread::Create( DWORD WINAPI Action( LPVOID lpParam ), LPVOID lpParam )
 {
-	int result = pthread_create(&threadId, NULL, Action, lpParam);
+	int result = pthread_create(&threadId, NULL, (void* (*)(void*))Action, lpParam);
 	if (result == 0)
 	{
 		threadId = 0;

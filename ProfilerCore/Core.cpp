@@ -163,7 +163,7 @@ void Core::Update()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::UpdateEvents()
 {
-	DWORD currentThreadID = GetCurrentThreadId();
+	DWORD currentThreadID = CurrentThreadID();
 
 	if (mainThreadID == INVALID_THREAD_ID)
 		mainThreadID = currentThreadID;
@@ -182,8 +182,10 @@ void Core::Activate( bool active )
 	{
 		isActive = active;
 
-		for each (ThreadEntry* entry in threads)
-			entry->Activate(active);
+		for (auto entry = threads.begin() ; entry != threads.end() ; ++entry)
+		{
+			(*entry)->Activate(active);
+		}
 
 		if (active)
 		{
@@ -229,9 +231,13 @@ bool Core::RegisterThread(const ThreadDescription& description)
 {
 	CRITICAL_SECTION(lock);
 
-	for each (const ThreadEntry* entry in threads)
-		if (entry->description.threadID == description.threadID)
+	for (auto entry = threads.begin() ; entry != threads.end() ; ++entry)
+	{
+		if ((*entry)->description.threadID == description.threadID)
+		{
 			return false;
+		}
+	}
 
 	ThreadEntry* entry = new ThreadEntry(description, &storage);
 	threads.push_back(entry);
@@ -243,8 +249,10 @@ bool Core::RegisterThread(const ThreadDescription& description)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core::~Core()
 {
-	for each (ThreadEntry* entry in threads)
-		delete entry;
+	for (auto entry = threads.begin() ; entry != threads.end() ; ++entry)
+	{
+		delete *entry;
+	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const std::vector<ThreadEntry*>& Core::GetThreads() const
@@ -252,7 +260,7 @@ const std::vector<ThreadEntry*>& Core::GetThreads() const
 	return threads;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-EventStorage* Core::storage = nullptr;
+THREAD_LOCAL_VARIABLE EventStorage* Core::storage = nullptr;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core Core::notThreadSafeInstance;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -298,7 +306,7 @@ EventStorage::EventStorage(): isSampling(0)
 	 
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-ThreadDescription::ThreadDescription(const char* threadName /*= "MainThread"*/) : name(threadName), threadID(GetCurrentThreadId())
+ThreadDescription::ThreadDescription(const char* threadName /*= "MainThread"*/) : name(threadName), threadID(CurrentThreadID())
 {
 	Core::Get().RegisterThread(*this);
 }
@@ -306,7 +314,9 @@ ThreadDescription::ThreadDescription(const char* threadName /*= "MainThread"*/) 
 void ThreadEntry::Activate(bool isActive)
 {
 	if (isActive)
+	{
 		storage.Clear(true);
+	}
 
 	*threadTLS = isActive ? &storage : nullptr;
 }
@@ -314,11 +324,17 @@ void ThreadEntry::Activate(bool isActive)
 bool IsSleepOnlyScope(const ScopeData& scope)
 {
 	if (!scope.categories.empty() || scope.synchronization.empty())
+	{
 		return false;
+	}
 
-	for each (const EventData& data in scope.events)
-		if (data.description->color != Color::White)
+	for (auto data = scope.events.cbegin() ; data != scope.events.cend() ; ++data)
+	{
+		if (data->description->color != Color::White)
+		{
 			return false;
+		}
+	}
 
 	return true;
 }

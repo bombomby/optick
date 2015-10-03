@@ -1,13 +1,10 @@
-#include "../Common.h"
-#include "../Hook.h"
-#include "../Event.h"
-#include "../Core.h"
-#include "../Serialization.h"
-#include "../Sampler.h"
-#include <DbgHelp.h>
-#include <hash_set>
-#include "../HPTimer.h"
-#include <windows.h>
+#include "Common.h"
+#include "Event.h"
+#include "Core.h"
+#include "Serialization.h"
+#include "Sampler.h"
+#include <unordered_set>
+#include "HPTimer.h"
 
 namespace Profiler
 {
@@ -39,11 +36,11 @@ struct CallStackTreeNode
 		return children.back().Merge(callstack, index - 1); 
 	}
 
-	void CollectAddresses(std::hash_set<DWORD64>& addresses) const
+	void CollectAddresses(std::unordered_set<DWORD64>& addresses) const
 	{
 		addresses.insert(dwArddress);
-		for each (const auto& node in children)
-			node.CollectAddresses(addresses);
+		for (auto node = children.cbegin() ; node != children.cend() ; ++node)
+			node->CollectAddresses(addresses);
 	}
 
 	OutputDataStream& Serialize(OutputDataStream& stream) const
@@ -51,8 +48,8 @@ struct CallStackTreeNode
 		stream << (uint64)dwArddress << invokeCount;
 
 		stream << (uint32)children.size();
-		for each (const CallStackTreeNode& node in children)
-			node.Serialize(stream);
+		for (auto node = children.cbegin() ; node != children.cend() ; ++node)
+			node->Serialize(stream);
 
 		return stream;
 	}
@@ -208,18 +205,18 @@ OutputDataStream& Sampler::Serialize(OutputDataStream& stream)
 
 	Core::Get().DumpProgress("Merging CallStacks...");
 
-	for each (const CallStack& callstack in callstacks)
-		if (!callstack.empty())
-			tree.Merge(callstack, callstack.size() - 1);
+	for (auto callstack = callstacks.cbegin() ; callstack != callstacks.cend() ; ++callstack)
+		if (!callstack->empty())
+			tree.Merge(*callstack, callstack->size() - 1);
 
-	std::hash_set<DWORD64> addresses;
+	std::unordered_set<DWORD64> addresses;
 	tree.CollectAddresses(addresses);
 
 	Core::Get().DumpProgress("Resolving Symbols...");
 
 	std::vector<const Symbol * const> symbols;
-	for each (DWORD64 address in addresses)
-		if (const Symbol * const symbol = symEngine.GetSymbol(address))
+	for (auto address = addresses.begin() ; address != addresses.cend() ; ++address )
+		if (const Symbol * const symbol = symEngine.GetSymbol(*address))
 			symbols.push_back(symbol);
 
 	stream << symbols;
@@ -234,8 +231,8 @@ OutputDataStream& Sampler::Serialize(OutputDataStream& stream)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Sampler::IsSamplingScope() const
 {
-	for each (const ThreadEntry* entry in targetThreads)
-		if (const EventStorage* storage = *entry->threadTLS)
+	for (auto entry = targetThreads.begin() ; entry != targetThreads.end() ; ++entry )
+		if (const EventStorage* storage = (**entry)->threadTLS)
 			if (storage->isSampling)
 				return true;
 

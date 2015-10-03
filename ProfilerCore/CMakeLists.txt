@@ -1,17 +1,14 @@
 IF (WIN32)
-add_definitions(-DWIN32)
 file(GLOB Platform_SRC
     "Windows/*.h"
     "Windows/*.cpp"
 )
 ELIF(WIN64)
-add_definitions(-DWIN64)
 file(GLOB Platform_SRC
     "Windows/*.h"
     "Windows/*.cpp"
 )
 ELSE()
-add_definitions(-DLINUX64)
 file(GLOB Platform_SRC
     "Linux/*.h"
     "Linux/*.cpp"

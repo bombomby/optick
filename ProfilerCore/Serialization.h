@@ -31,7 +31,7 @@ namespace Profiler
 	{
 		stream << (uint32)val.size();
 
-		for (auto element = val.begin() ; element != val.end() ; ++val)
+		for (auto element = val.begin() ; element != val.end() ; ++element)
 		{
 			stream << *element;
 		}

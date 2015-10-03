@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
 #include <new>
+#include <cstring>
 
 namespace Profiler
 {

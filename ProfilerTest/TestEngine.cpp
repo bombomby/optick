@@ -1,8 +1,14 @@
 #include "TestEngine.h"
-#include "..\ProfilerCore\Types.h"
-#include "..\ProfilerCore\Brofiler.h"
+#include "../ProfilerCore/Brofiler.h"
 #include <math.h>
 #include <vector>
+
+#if defined(WIN32) || defined(WIN64)
+#include <windows.h>
+#elif defined(LINUX64)
+#else
+#error "Wrong OS type"
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -17,7 +23,7 @@ DWORD WINAPI WorkerThread(PVOID params)
 	while (engine->IsAlive())
 	{
 		// Emulate "wait for events" message
-		Sleep(5); 
+		Profiler::ThreadSleep(5); 
 		engine->UpdatePhysics();
 	}
 
@@ -104,7 +110,10 @@ const size_t WORKER_THREAD_COUNT = 2;
 Engine::Engine() : isAlive(true)
 {
 	for (size_t i = 0; i < WORKER_THREAD_COUNT; ++i)
-		workers.push_back(CreateThread(0, 0, WorkerThread, this, 0, 0));
+	{
+		workers.push_back(Profiler::SystemThread());
+		workers.back().Create( WorkerThread, this );
+	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Engine::~Engine()
@@ -112,7 +121,9 @@ Engine::~Engine()
 	isAlive = false;
 
 	for (size_t i = 0; i < workers.size(); ++i)
-		TerminateThread(workers[i], 1);
+	{
+		workers[i].Terminate();
+	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
