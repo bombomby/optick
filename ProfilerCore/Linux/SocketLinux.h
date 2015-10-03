@@ -28,7 +28,7 @@ namespace Profiler
 		{
 			if (listenSocket != 0)
 			{
-				::closesocket(listenSocket);
+				shutdown(listenSocket, 2);
 				listenSocket = 0;
 			}
 		}
@@ -39,7 +39,7 @@ namespace Profiler
 			address.sin_addr.s_addr = INADDR_ANY;
 			address.sin_port        = htons(port);
 
-			if (::bind(listenSocket, (sockaddr *)&address, sizeof(address)) == 0)
+			if (bind(listenSocket, (sockaddr *)&address, sizeof(address)) == 0)
 				return 0;
 
 			return errno;
@@ -56,14 +56,13 @@ namespace Profiler
 
 			if (acceptSocket != 0)
 			{
-				::closesocket(acceptSocket);
+				shutdown(acceptSocket, 2);
 				acceptSocket = 0;
 			}
 		}
 	public:
 		Socket() : listenSocket(0), acceptSocket(0), host(0)
 		{
-			Wsa::Init();
 			listenSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 			BRO_VERIFY(listenSocket >= 0, "Can't create socket", GetErrorMessage());
 		}
@@ -99,7 +98,7 @@ namespace Profiler
 
 		void Accept()
 		{ 
-			SOCKET incomingSocket = accept(listenSocket, nullptr, nullptr);
+			int incomingSocket = accept(listenSocket, nullptr, nullptr);
 			BRO_VERIFY(incomingSocket != 0, "Can't accept socket", GetErrorMessage());
 
 			CRITICAL_SECTION(lock);
@@ -113,7 +112,7 @@ namespace Profiler
 			if (acceptSocket == 0)
 				return false;
 
-			if (::send(acceptSocket, buf, (int)len, 0) != 0)
+			if (send(acceptSocket, buf, (int)len, 0) != 0)
 			{
 				Disconnect();
 				return false;
@@ -129,13 +128,13 @@ namespace Profiler
 			if (acceptSocket == 0)
 				return 0;
 
-			recieveSet.fd_count = 1;
-			recieveSet.fd_array[0] = acceptSocket;
+			FD_ZERO(&recieveSet);
+			FD_SET(acceptSocket, &recieveSet);
 
 			static timeval lim = {0};
 
 			if (select(0, &recieveSet, nullptr, nullptr, &lim) == 1)
-				return ::recv(acceptSocket, buf, len, 0);
+				return recv(acceptSocket, buf, len, 0);
 
 			return 0;
 		}

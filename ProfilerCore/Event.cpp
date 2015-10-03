@@ -1,5 +1,4 @@
 #include <cstring>
-#include <windows.h>
 #include "Event.h"
 #include "Core.h"
 #include "Thread.h"
@@ -42,7 +41,7 @@ EventData* Event::Start(const EventDescription& description)
 
 		if (description.isSampling)
 		{
-			InterlockedIncrement(&storage->isSampling);
+			AtomicIncrement(&storage->isSampling);
 		}
 	}
 	return result;
@@ -55,7 +54,7 @@ void Event::Stop(EventData& data)
 	if (data.description->isSampling)
 	{
 		if (EventStorage* storage = Core::storage)
-			InterlockedDecrement(&storage->isSampling);
+			AtomicDecrement(&storage->isSampling);
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

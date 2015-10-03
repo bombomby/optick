@@ -2,7 +2,6 @@
 #include "ProfilerServer.h"
 
 #include "Socket.h"
-#include <winbase.h>
 #include "Message.h"
 
 #pragma comment( lib, "ws2_32.lib" )
@@ -12,7 +11,7 @@ namespace Profiler
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static const short DEFAULT_PORT = 31313;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Server::Server(short port) : socket(new Socket()), acceptThread(0)
+Server::Server(short port) : socket(new Socket())
 {
 	socket->Bind(port, 8);
 	socket->Listen();
@@ -52,7 +51,7 @@ bool Server::InitConnection()
 {
 	if (!acceptThread)
 	{
-		acceptThread = CreateThread(NULL, 0, &Server::AsyncAccept, this, 0, NULL);
+		acceptThread.Create(&Server::AsyncAccept, this);
 		return true;
 	}
 	return false;
@@ -60,13 +59,7 @@ bool Server::InitConnection()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Server::~Server()
 {
-	if (acceptThread)
-	{
-		TerminateThread(acceptThread, 0);
-		WaitForSingleObject(acceptThread, INFINITE);
-		CloseHandle(acceptThread);
-		acceptThread = 0;
-	}
+	acceptThread.Terminate();
 
 	if (socket)
 	{
@@ -93,7 +86,7 @@ DWORD WINAPI Server::AsyncAccept( LPVOID lpParam )
 
 	while (server->Accept())
 	{
-		Sleep(1000);
+		ThreadSleep(1000);
 	}
 
 	return 0;

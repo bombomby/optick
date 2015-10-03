@@ -1,0 +1,47 @@
+#include "../Thread.h"
+#include <winnt.h>
+
+namespace Profiler
+{
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+BRO_INLINE const void* GetThreadUniqueID()
+{
+	return NtCurrentTeb();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void ThreadSleep(DWORD milliseconds)
+{
+	Sleep(milliseconds);	
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+BRO_INLINE void AtomicIncrement(volatile uint* value)
+{
+	InterlockedIncrement(value);
+}
+
+BRO_INLINE void AtomicDecrement(volatile uint* value)
+{
+	InterlockedDecrement(value);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+bool SystemThread::Create( DWORD WINAPI Action( LPVOID lpParam ), LPVOID lpParam )
+{
+	threadId = CreateThread(NULL, 0, Action, lpParam, 0, NULL);
+	return threadId != 0;
+}
+
+void SystemThread::Terminate()
+{
+	if (threadId)
+	{
+		TerminateThread(threadId, 0);
+		WaitForSingleObject(threadId, INFINITE);
+		CloseHandle(threadId);
+		threadId = 0;
+	}
+}
+
+}

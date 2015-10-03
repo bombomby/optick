@@ -2,6 +2,7 @@
 
 #include "Concurrency.h"
 #include "Message.h"
+#include "Thread.h"
 
 namespace Profiler
 {
@@ -15,7 +16,7 @@ class Server
 	static const int BIFFER_SIZE = 1024;
 	char buffer[BIFFER_SIZE];
 
-	HANDLE acceptThread;
+	SystemThread acceptThread;
 	Socket* socket;
 
 	CriticalSection lock;
