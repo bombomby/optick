@@ -2,6 +2,7 @@
 #include <execinfo.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "../Thread.h"
 
 namespace Profiler
 {
@@ -19,7 +20,7 @@ namespace Profiler
 //	LocalFree(lpMsgBuf);
 //}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-SymEngine::SymEngine() : isInitialized(false), hProcess(GetCurrentProcess()), needRestorePreviousSettings(false), previousOptions(0)
+SymEngine::SymEngine() : isInitialized(false), hProcess(CurrentThreadID()), needRestorePreviousSettings(false), previousOptions(0)
 {
 	static_assert(sizeof(hProcess) >= sizeof(HANDLE), "Too small hProcess type");
 }
@@ -39,15 +40,18 @@ const Symbol * const SymEngine::GetSymbol(DWORD64 dwAddress)
 	if (symbol.address != 0)
 		return &symbol;
 
-	void *functionAddress = dwAddress;
+	static_assert(sizeof(void*) >= sizeof(DWORD64), "Downcast otherwise occurs here!");
+	void *functionAddress[1] = { (void *)dwAddress };
 	char **functionName = nullptr;
 
 	functionName = backtrace_symbols(functionAddress, 1);
 
 	if ( functionName != nullptr )
 	{
+		wchar_t widestringBuffer[1024];
+		swprintf(widestringBuffer, 100, L"%hs", functionName[0]);
 		symbol.address = dwAddress;
-		symbol.function = functionName;
+		symbol.function = widestringBuffer;
 		free(functionName);
 	}
 
@@ -78,7 +82,8 @@ uint SymEngine::GetCallstack(HANDLE hThread, CONTEXT& context, CallStackBuffer& 
 	int index = 0;
 	for ( ; index < nptrs; index++)
 	{
-		DWORD64 dwAddress = buffer[j];
+		static_assert(sizeof(DWORD64) >= sizeof(void*), "Information lost may occur otherwise");
+		DWORD64 dwAddress = (DWORD64)buffer[index];
 		if (!dwAddress)
 			break;
 

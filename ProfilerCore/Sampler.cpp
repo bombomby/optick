@@ -3,6 +3,7 @@
 #include "Core.h"
 #include "Serialization.h"
 #include "Sampler.h"
+#include "SymEngine.h"
 #include <unordered_set>
 #include "HPTimer.h"
 
@@ -104,12 +105,6 @@ bool Sampler::IsActive() const
 	return (bool)workerThread;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void ClearStackContext(CONTEXT& context)
-{
-	memset(&context, 0, sizeof(context));
-	context.ContextFlags = CONTEXT_FULL;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 {
 	Sampler& sampler = *(Sampler*)(lpParam);
@@ -123,8 +118,8 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 		DWORD threadID = entry->description.threadID;
 		BRO_VERIFY(threadID != GetCurrentThreadId(), "It's a bad idea to sample specified thread! Deadlock will occur!", continue);
 
-		HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, threadID);
-		if (hThread == NULL)
+		HANDLE hThread = GetThreadHandleByThreadID(threadID);
+		if (hThread == 0)
 			continue;
 
 		openThreads.push_back(std::make_pair(hThread, entry));
@@ -136,8 +131,6 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 	CallStackBuffer buffer;
 
 	CONTEXT context;
-
-	ClearStackContext(context);
 
 	while ( sampler.finishEvent.WaitForEvent(sampler.intervalMicroSeconds) )
 	{
@@ -152,31 +145,25 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 
 			uint count = 0;
 
-			DWORD suspendedStatus = SuspendThread(handle);
-
-			if (suspendedStatus != (DWORD)-1)
+			if (PauseThread(handle))
 			{
 				// Check scope again because it is possible to leave sampling scope while trying to suspend main thread
-				if (thread->storage.isSampling && GetThreadContext(handle, &context))
+				if (thread->storage.isSampling && RetrieveThreadContext(handle, context))
 				{
 					count = sampler.symEngine.GetCallstack(handle, context, buffer);
 				}
-
-				ClearStackContext(context);
-				ResumeThread(handle);
+				ContinueThread(handle);
 			}
 
 			if (count > 0)
 			{
 				sampler.callstacks.push_back(CallStack(buffer.begin(), buffer.begin() + count));
 			}
-
-			ClearStackContext(context);
 		}
 	}
 
 	for (auto entry = openThreads.begin() ; entry != openThreads.end() ; ++entry)
-		CloseHandle(entry.first);
+		ReleaseThreadHandle(entry->first);
 
 	return 0;
 }
@@ -206,9 +193,9 @@ OutputDataStream& Sampler::Serialize(OutputDataStream& stream)
 
 	Core::Get().DumpProgress("Resolving Symbols...");
 
-	std::vector<const Symbol * const> symbols;
+	std::vector<const Symbol *> symbols;
 	for (auto address = addresses.begin() ; address != addresses.cend() ; ++address )
-		if (const Symbol * const symbol = symEngine.GetSymbol(*address))
+		if ( const Symbol * symbol = const_cast<const Symbol *>( symEngine.GetSymbol(*address) ) )
 			symbols.push_back(symbol);
 
 	stream << symbols;
@@ -224,7 +211,7 @@ OutputDataStream& Sampler::Serialize(OutputDataStream& stream)
 bool Sampler::IsSamplingScope() const
 {
 	for (auto entry = targetThreads.begin() ; entry != targetThreads.end() ; ++entry )
-		if (const EventStorage* storage = (**entry)->threadTLS)
+		if (const EventStorage* storage = *(*entry)->threadTLS)
 			if (storage->isSampling)
 				return true;
 
@@ -240,7 +227,7 @@ bool Sampler::SetupHook(uint64 address, bool isHooked)
 {
 	if (!isHooked && address == 0)
 	{
-		return Hook::inst.ClearAll();
+		//return Hook::inst.ClearAll();
 	} 
 	else
 	{
@@ -251,14 +238,14 @@ bool Sampler::SetupHook(uint64 address, bool isHooked)
 				std::vector<ulong> threadIDs;
 
 				const auto& threads = Core::Get().GetThreads();
-				for each (const auto& thread in threads)
-					threadIDs.push_back(thread->description.threadID);
+				for (auto thread = threads.cbegin() ; thread != threads.cend() ; ++thread)
+					threadIDs.push_back((*thread)->description.threadID);
 
-				return Hook::inst.Install(*symbol, threadIDs);
+				//return Hook::inst.Install(*symbol, threadIDs);
 			}
 			else
 			{
-				return Hook::inst.Clear(*symbol);
+				//return Hook::inst.Clear(*symbol);
 			}
 		}
 	}
