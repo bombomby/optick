@@ -16,24 +16,4 @@ namespace Profiler
 		~CriticalSection() { DeleteCriticalSection( &sect ); }
 		friend class CriticalSectionScope;
 	};
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	class CriticalSectionScope
-	{
-		CriticalSection &section;
-	private:
-		CriticalSectionScope &operator=( CriticalSectionScope& ) {}
-	public:
-		CriticalSectionScope( CriticalSection& _lock ) : section(_lock) 
-		{
-			section.Enter(); 
-		}
-
-		~CriticalSectionScope() 
-		{ 
-			section.Leave(); 
-		}
-	};
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	#define CRITICAL_SECTION(criticalSection) CriticalSectionScope generatedCriticalSectionScope##__LINE__(criticalSection); 
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
