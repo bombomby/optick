@@ -1,6 +1,9 @@
 #include "../Thread.h"
 #include <pthread.h>
 #include <time.h>
+#include <condition_variable>
+#include <thread>
+#include <chrono>
 
 namespace Profiler
 {
@@ -40,7 +43,14 @@ bool SystemThread::Create( DWORD WINAPI Action( LPVOID lpParam ), LPVOID lpParam
 	return result != 0;
 }
 
-void SystemThread::Terminate()
+bool SystemThread::Join()
+{
+	void* retval;
+	pthread_join(threadId, &retval);
+	return true;
+}
+
+bool SystemThread::Terminate()
 {
 	if (threadId)
 	{
@@ -52,6 +62,43 @@ void SystemThread::Terminate()
 		}
 		threadId = 0;
 	}
+	return true;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+SystemSyncEvent::SystemSyncEvent()
+{
+	static_assert(sizeof(std::condition_variable) <= sizeof(eventHandler) * sizeof(eventHandler[0]), "Increase size of eventHandler");
+	static_assert(sizeof(std::mutex) <= sizeof(eventHandlerMutex) * sizeof(eventHandlerMutex[0]), "Increase size of eventHandlerMutex");
+	new (reinterpret_cast<void*>(&eventHandlerMutex[0])) std::mutex;
+	new (reinterpret_cast<void*>(&eventHandler[0])) std::condition_variable;
+}
+
+SystemSyncEvent::~SystemSyncEvent()
+{
+	reinterpret_cast<std::mutex*>(&eventHandlerMutex[0])->~mutex();
+	reinterpret_cast<std::condition_variable*>(&eventHandler[0])->~condition_variable();
 }
 	
+void SystemSyncEvent::Notify()
+{
+	std::condition_variable *event = reinterpret_cast<std::condition_variable*>(&eventHandler[0]);
+	event->notify_all();
+}
+
+bool SystemSyncEvent::WaitForEvent( int millisecondsTimeout )
+{
+	std::unique_lock<std::mutex> mutexLock(*reinterpret_cast<std::mutex*>(&eventHandlerMutex[0]));
+	std::condition_variable *event = reinterpret_cast<std::condition_variable*>(&eventHandler[0]);
+	if( event->wait_for(mutexLock, std::chrono::milliseconds(millisecondsTimeout), [](){
+		return i == 1;
+	}))
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

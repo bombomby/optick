@@ -1,5 +1,6 @@
 #pragma once
 #include "SymEngine.h"
+#include "Thread.h"
 #include <array>
 #include <vector>
 
@@ -16,8 +17,8 @@ class Sampler
 	std::list<CallStack> callstacks;
 	std::vector<ThreadEntry*> targetThreads;
 
-	HANDLE workerThread;
-	HANDLE finishEvent;
+	SystemThread workerThread;
+	SystemSyncEvent finishEvent;
 
 	uint intervalMicroSeconds;
 

@@ -60,24 +60,22 @@ bool Sampler::StopSampling()
 	if (!IsActive())
 		return false;
 
-	SetEvent(finishEvent);
-
-	DWORD result = WaitForSingleObject(workerThread, INFINITE);
+	finishEvent.Notify();
+	
+	bool result = workerThread.Join();
 	BRO_UNUSED(result);
-	BRO_ASSERT(result == WAIT_OBJECT_0, "Can't stop sampling thread!");
-
-	CloseHandle(workerThread);
-	workerThread = nullptr;
-
-	CloseHandle(finishEvent);
-	finishEvent = nullptr;
+	BRO_ASSERT(result, "Can't stop sampling thread!");
+	
+	result = workerThread.Terminate();
+	BRO_UNUSED(result);
+	BRO_ASSERT(result, "Can't stop sampling thread!");
 
 	targetThreads.clear();
 
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Sampler::Sampler() : workerThread(nullptr), finishEvent(nullptr), intervalMicroSeconds(300)
+Sampler::Sampler() : intervalMicroSeconds(300)
 {
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -98,17 +96,12 @@ void Sampler::StartSampling(const std::vector<ThreadEntry*>& threads, uint sampl
 
 	callstacks.clear();
 
-	BRO_VERIFY(finishEvent == nullptr && workerThread == nullptr, "Can't start sampling!", return);
-
-	finishEvent = CreateEvent(NULL, false, false, 0);
-	workerThread = CreateThread(NULL, 0, &Sampler::AsyncUpdate, this, 0, NULL);
-
-	BRO_ASSERT(finishEvent && workerThread, "Sampling was not started!")
+	workerThread.Create( &Sampler::AsyncUpdate, this );
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Sampler::IsActive() const
 {
-	return workerThread != nullptr || finishEvent != nullptr;
+	return (bool)workerThread;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ClearStackContext(CONTEXT& context)
@@ -124,8 +117,9 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 	std::vector<std::pair<HANDLE, ThreadEntry*>> openThreads;
 	openThreads.reserve(sampler.targetThreads.size());
 
-	for each (ThreadEntry* entry in sampler.targetThreads)
+	for (auto entryIterator = sampler.targetThreads.begin() ; entryIterator != sampler.targetThreads.end() ; ++entryIterator)
 	{
+		ThreadEntry* entry = *entryIterator;
 		DWORD threadID = entry->description.threadID;
 		BRO_VERIFY(threadID != GetCurrentThreadId(), "It's a bad idea to sample specified thread! Deadlock will occur!", continue);
 
@@ -145,15 +139,13 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 
 	ClearStackContext(context);
 
-	while (WaitForSingleObject(sampler.finishEvent, 0) == WAIT_TIMEOUT)
+	while ( sampler.finishEvent.WaitForEvent(sampler.intervalMicroSeconds) )
 	{
-		SpinSleep(sampler.intervalMicroSeconds);
-
 		// Check whether we are inside sampling scope
-		for each (const auto& entry in openThreads)
+		for (auto entry = openThreads.cbegin() ; entry != openThreads.cend() ; ++entry)
 		{
-			HANDLE handle = entry.first;
-			const ThreadEntry* thread = entry.second;
+			HANDLE handle = entry->first;
+			const ThreadEntry* thread = entry->second;
 
 			if (!thread->storage.isSampling)
 				continue;
@@ -165,7 +157,7 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 			if (suspendedStatus != (DWORD)-1)
 			{
 				// Check scope again because it is possible to leave sampling scope while trying to suspend main thread
-				if (entry.second->storage.isSampling && GetThreadContext(handle, &context))
+				if (thread->storage.isSampling && GetThreadContext(handle, &context))
 				{
 					count = sampler.symEngine.GetCallstack(handle, context, buffer);
 				}
@@ -183,7 +175,7 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 		}
 	}
 
-	for each (const auto& entry in openThreads)
+	for (auto entry = openThreads.begin() ; entry != openThreads.end() ; ++entry)
 		CloseHandle(entry.first);
 
 	return 0;

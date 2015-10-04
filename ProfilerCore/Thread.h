@@ -12,9 +12,10 @@ public:
 	SystemThread() : threadId(0) {}
 
 	bool Create( DWORD WINAPI Action( LPVOID lpParam ), LPVOID lpParam );
-	void Terminate();
+	bool Terminate();
+	bool Join();
 
-	operator bool() { return threadId != 0; }
+	operator bool() const { return threadId != 0; }
 private:
 	uint64 threadId;
 };
@@ -24,6 +25,19 @@ void ThreadSleep(DWORD milliseconds);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void AtomicIncrement(volatile uint* value);
 void AtomicDecrement(volatile uint* value);
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class SystemSyncEvent
+{
+private:
+	uint64 eventHandlerMutex[4];
+	uint64 eventHandler[4];
+public:
+	SystemSyncEvent();
+	~SystemSyncEvent();
 
+	void Notify();
+	bool WaitForEvent( int millisecondsTimeout );
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 }
