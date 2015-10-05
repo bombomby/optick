@@ -9,6 +9,6 @@ ELSE()
 add_definitions(-DLINUX64)
 ENDIF()
 
-set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -std=c++11 -pthread" )
+set( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -std=c++11 -pthread -g" )
 add_subdirectory (ProfilerCore)
 add_subdirectory (ProfilerTest)

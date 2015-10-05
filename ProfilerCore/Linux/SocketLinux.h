@@ -9,6 +9,7 @@
 #include <sys/types.h> 
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <fcntl.h>
 
 namespace Profiler
 {
@@ -18,6 +19,7 @@ namespace Profiler
 		int listenSocket;
 		u_long host;
 		sockaddr_in address;
+		sockaddr acceptedAddress;
 
 		fd_set recieveSet;
 
@@ -35,6 +37,7 @@ namespace Profiler
 
 		int Bind(short port)
 		{
+			bzero((char *) &address, sizeof(address));
 			address.sin_family      = AF_INET;
 			address.sin_addr.s_addr = INADDR_ANY;
 			address.sin_port        = htons(port);
@@ -63,7 +66,7 @@ namespace Profiler
 	public:
 		Socket() : listenSocket(0), acceptSocket(0), host(0)
 		{
-			listenSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+			listenSocket = socket(AF_INET, SOCK_STREAM, 0 /*IPPROTO_TCP*/);
 			BRO_VERIFY(listenSocket >= 0, "Can't create socket", GetErrorMessage());
 		}
 
@@ -91,15 +94,17 @@ namespace Profiler
 
 		void Listen()
 		{
-			int result = listen(listenSocket, 4096);
+			int result = listen(listenSocket, 8);
 			BRO_UNUSED(result);
 			BRO_VERIFY(result == 0, "Can't start listening", GetErrorMessage());
 		}
 
 		void Accept()
-		{ 
-			int incomingSocket = accept(listenSocket, nullptr, nullptr);
+		{
+			socklen_t acceptedAddressLen = sizeof(sockaddr);
+			int incomingSocket = accept(listenSocket, &acceptedAddress, &acceptedAddressLen);
 			BRO_VERIFY(incomingSocket != 0, "Can't accept socket", GetErrorMessage());
+			fcntl(incomingSocket, F_SETFL, O_NONBLOCK);
 
 			CRITICAL_SECTION(lock);
 			acceptSocket = incomingSocket;
@@ -112,7 +117,7 @@ namespace Profiler
 			if (acceptSocket == 0)
 				return false;
 
-			if (send(acceptSocket, buf, (int)len, 0) != 0)
+			if (read(acceptSocket, const_cast<char*>(buf), (int)len) < 0)
 			{
 				Disconnect();
 				return false;
@@ -133,8 +138,8 @@ namespace Profiler
 
 			static timeval lim = {0};
 
-			if (select(0, &recieveSet, nullptr, nullptr, &lim) == 1)
-				return recv(acceptSocket, buf, len, 0);
+			if (select(1, &recieveSet, nullptr, nullptr, &lim) >= 0)
+				return write(acceptSocket, buf, len);
 
 			return 0;
 		}
