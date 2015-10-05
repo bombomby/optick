@@ -186,7 +186,7 @@ namespace Profiler
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct BROFILER_API ThreadDescription
 {
-	unsigned long threadID;
+	HANDLE threadID;
 	const char* name;
 
 	ThreadDescription(const char* threadName = "MainThread");
@@ -224,9 +224,9 @@ struct BROFILER_API EventDescription
 
 	const char* name;
 	const char* file;
-	unsigned long line;
-	unsigned long index;
-	unsigned long color;
+	uint32 line;
+	uint32 index;
+	uint32 color;
 
 	static EventDescription* Create(const char* eventName, const char* fileName, const unsigned long fileLine, const unsigned long eventColor = Color::Null);
 private:

@@ -13,8 +13,8 @@ namespace Profiler
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 DWORD CurrentThreadID()
 {
-	static_assert(sizeof(DWORD) >= sizeof(pthread_t), "Information will be lost otherwise");
-	return pthread_self();	
+	//static_assert(sizeof(DWORD) >= sizeof(pthread_t), "Information will be lost otherwise");
+	return (DWORD)pthread_self();	
 }
 
 HANDLE GetThreadHandleByThreadID(DWORD threadId)
