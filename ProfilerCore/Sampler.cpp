@@ -6,6 +6,7 @@
 #include "SymEngine.h"
 #include <unordered_set>
 #include "HPTimer.h"
+#include "Hook.h"
 
 namespace Profiler
 {
@@ -227,7 +228,7 @@ bool Sampler::SetupHook(uint64 address, bool isHooked)
 {
 	if (!isHooked && address == 0)
 	{
-		//return Hook::inst.ClearAll();
+		return Hook::inst.ClearAll();
 	} 
 	else
 	{
@@ -241,11 +242,11 @@ bool Sampler::SetupHook(uint64 address, bool isHooked)
 				for (auto thread = threads.cbegin() ; thread != threads.cend() ; ++thread)
 					threadIDs.push_back((*thread)->description.threadID);
 
-				//return Hook::inst.Install(*symbol, threadIDs);
+				return Hook::inst.Install(*symbol, threadIDs);
 			}
 			else
 			{
-				//return Hook::inst.Clear(*symbol);
+				return Hook::inst.Clear(*symbol);
 			}
 		}
 	}

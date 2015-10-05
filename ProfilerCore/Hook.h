@@ -1,7 +1,6 @@
 #pragma once
 #include "Common.h"
 #include "MemoryPool.h"
-#include "easyhook.h"
 #include "SymEngine.h"
 #include "Event.h"
 #include <vector>
@@ -39,6 +38,9 @@ struct HookData
 		eventData = nullptr;
 	}
 };
+#ifdef LINUX64
+typedef uint64 HOOK_TRACE_INFO;
+#endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct HookSlotWrapper
 {
@@ -53,7 +55,7 @@ struct HookSlotWrapper
 	bool Clear();
 	bool Install(const Symbol& symbol, unsigned long threadID);
 
-	HookSlotWrapper();
+	HookSlotWrapper() {}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class Hook

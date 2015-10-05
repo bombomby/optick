@@ -1,3 +1,4 @@
+#include "../easyhook.h"
 #include "../Hook.h"
 #include <windows.h>
 #include <string>
