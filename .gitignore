@@ -3,3 +3,11 @@ CMakeFiles/
 Makefile
 cmake_install.cmake
 *.a
+ProfilerTest/ProfilerTest
+Debug/
+Release/
+*.opensdf
+*.sdf
+*.vcxproj.user
+*.suo
+ipch/

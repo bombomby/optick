@@ -186,7 +186,7 @@ namespace Profiler
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct BROFILER_API ThreadDescription
 {
-	HANDLE threadID;
+	uint32 threadID;
 	const char* name;
 
 	ThreadDescription(const char* threadName = "MainThread");

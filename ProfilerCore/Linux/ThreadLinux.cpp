@@ -11,7 +11,7 @@ namespace Profiler
 {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DWORD CurrentThreadID()
+DWORD CalculateCurrentThreadID()
 {
 	//static_assert(sizeof(DWORD) >= sizeof(pthread_t), "Information will be lost otherwise");
 	return (DWORD)pthread_self();	

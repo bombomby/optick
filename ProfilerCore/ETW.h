@@ -2,6 +2,11 @@
 
 #include "Types.h"
 #include "MemoryPool.h"
+#ifdef WINDOWS
+#define INITGUID  // Causes definition of SystemTraceControlGuid in evntrace.h.
+#include <Wmistr.h>
+#include <evntrace.h>
+#endif
 
 namespace Profiler
 {

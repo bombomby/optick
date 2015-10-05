@@ -20,7 +20,7 @@ namespace Profiler
 //	LocalFree(lpMsgBuf);
 //}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-SymEngine::SymEngine() : isInitialized(false), hProcess(CurrentThreadID()), needRestorePreviousSettings(false), previousOptions(0)
+SymEngine::SymEngine() : isInitialized(false), hProcess(CalculateCurrentThreadID()), needRestorePreviousSettings(false), previousOptions(0)
 {
 	static_assert(sizeof(hProcess) >= sizeof(HANDLE), "Too small hProcess type");
 }

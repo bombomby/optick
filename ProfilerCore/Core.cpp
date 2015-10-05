@@ -163,7 +163,7 @@ void Core::Update()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::UpdateEvents()
 {
-	DWORD currentThreadID = CurrentThreadID();
+	DWORD currentThreadID = CalculateCurrentThreadID();
 
 	if (mainThreadID == INVALID_THREAD_ID)
 		mainThreadID = currentThreadID;
@@ -306,7 +306,7 @@ EventStorage::EventStorage(): isSampling(0)
 	 
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-ThreadDescription::ThreadDescription(const char* threadName /*= "MainThread"*/) : name(threadName), threadID(CurrentThreadID())
+ThreadDescription::ThreadDescription(const char* threadName /*= "MainThread"*/) : name(threadName), threadID(CalculateCurrentThreadID())
 {
 	Core::Get().RegisterThread(*this);
 }

@@ -53,6 +53,18 @@
     <ClInclude Include="Brofiler.h">
       <Filter>API</Filter>
     </ClInclude>
+    <ClInclude Include="Windows\CommonWindows.h">
+      <Filter>Windows Only</Filter>
+    </ClInclude>
+    <ClInclude Include="Windows\ConcurrencyWindows.h">
+      <Filter>Windows Only</Filter>
+    </ClInclude>
+    <ClInclude Include="Windows\PublicCommonWindows.h">
+      <Filter>Windows Only</Filter>
+    </ClInclude>
+    <ClInclude Include="Windows\SocketWindows.h">
+      <Filter>Windows Only</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Tools">
@@ -70,6 +82,9 @@
     <Filter Include="API">
       <UniqueIdentifier>{dc758cc4-b3eb-4a77-b9fe-e4cab1ce173d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Windows Only">
+      <UniqueIdentifier>{d2d3ce43-275d-457a-beb6-bbc8c8805e38}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ProfilerServer.cpp">
@@ -81,21 +96,24 @@
     <ClCompile Include="Serialization.cpp">
       <Filter>Tools</Filter>
     </ClCompile>
-    <ClCompile Include="SymEngine.cpp">
-      <Filter>Tools</Filter>
-    </ClCompile>
     <ClCompile Include="Sampler.cpp" />
     <ClCompile Include="EventDescriptionBoard.cpp" />
     <ClCompile Include="Core.cpp" />
     <ClCompile Include="Event.cpp" />
-    <ClCompile Include="HPTimer.cpp">
-      <Filter>Tools</Filter>
+    <ClCompile Include="Windows\ETWWindows.cpp">
+      <Filter>Windows Only</Filter>
     </ClCompile>
-    <ClCompile Include="Hook.cpp">
-      <Filter>Tools\EasyHook</Filter>
+    <ClCompile Include="Windows\HookWindows.cpp">
+      <Filter>Windows Only</Filter>
     </ClCompile>
-    <ClCompile Include="ETW.cpp">
-      <Filter>Tools</Filter>
+    <ClCompile Include="Windows\HPTimerWindows.cpp">
+      <Filter>Windows Only</Filter>
+    </ClCompile>
+    <ClCompile Include="Windows\SymEngineWindows.cpp">
+      <Filter>Windows Only</Filter>
+    </ClCompile>
+    <ClCompile Include="Windows\ThreadWindows.cpp">
+      <Filter>Windows Only</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

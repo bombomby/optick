@@ -3,9 +3,8 @@
 #include <math.h>
 #include <vector>
 
-#if defined(WIN32) || defined(WIN64)
+#if defined(WINDOWS)
 #include <windows.h>
-#elif defined(LINUX64)
 #else
 #error "Wrong OS type"
 #endif
