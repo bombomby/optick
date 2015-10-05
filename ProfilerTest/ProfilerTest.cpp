@@ -11,7 +11,7 @@ int main(int, char **)
 	cout << "Engine successfully created." << endl;
 
 	cout << "Starting main loop update." << endl;
-	while( engine.Update() ) { cout<<'.'; }
+	while( engine.Update() ) { cout<<'.'; cout.flush(); }
 	
 	return 0;
 }
