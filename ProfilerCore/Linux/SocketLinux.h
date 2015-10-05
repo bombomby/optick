@@ -117,7 +117,7 @@ namespace Profiler
 			if (acceptSocket == 0)
 				return false;
 
-			if (read(acceptSocket, const_cast<char*>(buf), (int)len) < 0)
+			if (write(acceptSocket, buf, len) < 0)
 			{
 				Disconnect();
 				return false;
@@ -139,7 +139,7 @@ namespace Profiler
 			static timeval lim = {0};
 
 			if (select(1, &recieveSet, nullptr, nullptr, &lim) >= 0)
-				return write(acceptSocket, buf, len);
+				return read(acceptSocket, buf, len);
 
 			return 0;
 		}
