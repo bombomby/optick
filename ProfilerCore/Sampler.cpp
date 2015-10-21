@@ -5,7 +5,7 @@
 #include "Serialization.h"
 #include "Sampler.h"
 #include <DbgHelp.h>
-#include <hash_set>
+#include <unordered_set>
 #include "HPTimer.h"
 
 namespace Profiler
@@ -38,7 +38,7 @@ struct CallStackTreeNode
 		return children.back().Merge(callstack, index - 1); 
 	}
 
-	void CollectAddresses(std::hash_set<DWORD64>& addresses) const
+	void CollectAddresses(std::unordered_set<DWORD64>& addresses) const
 	{
 		addresses.insert(dwArddress);
 		for each (const auto& node in children)
@@ -211,12 +211,12 @@ OutputDataStream& Sampler::Serialize(OutputDataStream& stream)
 		if (!callstack.empty())
 			tree.Merge(callstack, callstack.size() - 1);
 
-	std::hash_set<DWORD64> addresses;
+	std::unordered_set<DWORD64> addresses;
 	tree.CollectAddresses(addresses);
 
 	Core::Get().DumpProgress("Resolving Symbols...");
 
-	std::vector<const Symbol * const> symbols;
+	std::vector<const Symbol *> symbols;
 	for each (DWORD64 address in addresses)
 		if (const Symbol * const symbol = symEngine.GetSymbol(address))
 			symbols.push_back(symbol);
