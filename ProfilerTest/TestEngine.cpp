@@ -5,7 +5,7 @@
 
 #if defined(WINDOWS)
 #include <windows.h>
-#else
+#elif !defined(LINUX64)
 #error "Wrong OS type"
 #endif
 
