@@ -13,6 +13,35 @@
 
 namespace Test
 {
+
+namespace
+{
+void ThreadSleep(int milliseconds)
+{
+#if defined(WINDOWS)
+	Sleep(milliseconds);
+#elif defined(LINUX64)
+	Profiler::ThreadSleep(5);
+#else
+#error "Wrong OS type"
+#endif
+}
+
+
+void ThreadTerminate( ThreadID& threadId )
+{
+#if defined(WINDOWS)
+	::TerminateThread(threadId, 0);
+	DWORD resultCode = WaitForSingleObject((HANDLE)threadId, INFINITE);
+	CloseHandle((HANDLE)threadId);
+#elif defined(LINUX64)
+	threadId.Terminate();
+#else
+#error "Wrong OS type"
+#endif
+}
+
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 DWORD WINAPI WorkerThread(PVOID params)
 {
@@ -22,7 +51,7 @@ DWORD WINAPI WorkerThread(PVOID params)
 	while (engine->IsAlive())
 	{
 		// Emulate "wait for events" message
-		Profiler::ThreadSleep(5); 
+		ThreadSleep(5); 
 		engine->UpdatePhysics();
 	}
 
@@ -110,8 +139,15 @@ Engine::Engine() : isAlive(true)
 {
 	for (size_t i = 0; i < WORKER_THREAD_COUNT; ++i)
 	{
+#if defined(WINDOWS)
+		workers.push_back( CreateThread(NULL, 0, WorkerThread, this, 0, NULL) );
+#elif defined(LINUX64)
 		workers.push_back(Profiler::SystemThread());
 		workers.back().Create( WorkerThread, this );
+#else
+#error "Wrong OS type"
+#endif
+		
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -121,7 +157,7 @@ Engine::~Engine()
 
 	for (size_t i = 0; i < workers.size(); ++i)
 	{
-		workers[i].Terminate();
+		ThreadTerminate( workers[i] );
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
