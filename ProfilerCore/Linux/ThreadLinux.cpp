@@ -63,11 +63,11 @@ void AtomicDecrement(volatile uint* value)
 bool SystemThread::Create( DWORD WINAPI Action( LPVOID lpParam ), LPVOID lpParam )
 {
 	int result = pthread_create(&threadId, NULL, (void* (*)(void*))Action, lpParam);
-	if (result == 0)
+	if (result != 0)
 	{
 		threadId = 0;
 	}
-	return result != 0;
+	return result == 0;
 }
 
 bool SystemThread::Join()

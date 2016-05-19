@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Types.h"
+
 #ifdef LINUX64
 #include "Linux/PublicCommonLinux.h"
 #else
