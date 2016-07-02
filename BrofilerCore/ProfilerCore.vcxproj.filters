@@ -1,0 +1,109 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="Common.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="HPTimer.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryPool.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Concurrency.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="ProfilerServer.h">
+      <Filter>Communication</Filter>
+    </ClInclude>
+    <ClInclude Include="Message.h">
+      <Filter>Communication</Filter>
+    </ClInclude>
+    <ClInclude Include="Serialization.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="SymEngine.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Sampler.h" />
+    <ClInclude Include="EventDescriptionBoard.h" />
+    <ClInclude Include="Core.h" />
+    <ClInclude Include="Thread.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Hook.h">
+      <Filter>Tools\EasyHook</Filter>
+    </ClInclude>
+    <ClInclude Include="easyhook.h">
+      <Filter>Tools\EasyHook</Filter>
+    </ClInclude>
+    <ClInclude Include="Socket.h">
+      <Filter>Communication</Filter>
+    </ClInclude>
+    <ClInclude Include="Types.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="HookFunction.h">
+      <Filter>Tools\EasyHook</Filter>
+    </ClInclude>
+    <ClInclude Include="ETW.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Event.h" />
+    <ClInclude Include="Brofiler.h">
+      <Filter>API</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Tools">
+      <UniqueIdentifier>{d6ce7e19-b049-4bb8-8e04-023a1a640de0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common">
+      <UniqueIdentifier>{0db01aef-f5ad-4b09-97a5-596c4f7a33bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Communication">
+      <UniqueIdentifier>{c33f957a-bb02-4e7c-80bf-402019bd604a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tools\EasyHook">
+      <UniqueIdentifier>{75ea5a1e-b4df-417c-933a-96fa1bff54d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="API">
+      <UniqueIdentifier>{dc758cc4-b3eb-4a77-b9fe-e4cab1ce173d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ProfilerServer.cpp">
+      <Filter>Communication</Filter>
+    </ClCompile>
+    <ClCompile Include="Message.cpp">
+      <Filter>Communication</Filter>
+    </ClCompile>
+    <ClCompile Include="Serialization.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="SymEngine.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Sampler.cpp" />
+    <ClCompile Include="EventDescriptionBoard.cpp" />
+    <ClCompile Include="Core.cpp" />
+    <ClCompile Include="Event.cpp" />
+    <ClCompile Include="HPTimer.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Hook.cpp">
+      <Filter>Tools\EasyHook</Filter>
+    </ClCompile>
+    <ClCompile Include="ETW.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="HookFunction64.asm">
+      <Filter>Tools\EasyHook</Filter>
+    </MASM>
+    <MASM Include="HookFunction32.asm">
+      <Filter>Tools\EasyHook</Filter>
+    </MASM>
+  </ItemGroup>
+</Project>
