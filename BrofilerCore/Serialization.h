@@ -4,7 +4,7 @@
 #include <sstream>
 #include "MemoryPool.h"
 
-namespace Profiler
+namespace Brofiler
 {
 	class OutputDataStream : private std::ostringstream 
 	{

@@ -1,5 +1,4 @@
 #include "Common.h"
-#include "Hook.h"
 #include "Event.h"
 #include "Core.h"
 #include "Serialization.h"
@@ -8,7 +7,7 @@
 #include <hash_set>
 #include "HPTimer.h"
 
-namespace Profiler
+namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct CallStackTreeNode
@@ -244,35 +243,6 @@ bool Sampler::IsSamplingScope() const
 size_t Sampler::GetCollectedCount() const
 {
 	return callstacks.size();
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Sampler::SetupHook(uint64 address, bool isHooked)
-{
-	if (!isHooked && address == 0)
-	{
-		return Hook::inst.ClearAll();
-	} 
-	else
-	{
-		if (const Symbol * const symbol = symEngine.GetSymbol(address))
-		{
-			if (isHooked)
-			{
-				std::vector<ulong> threadIDs;
-
-				const auto& threads = Core::Get().GetThreads();
-				for each (const auto& thread in threads)
-					threadIDs.push_back(thread->description.threadID);
-
-				return Hook::inst.Install(*symbol, threadIDs);
-			}
-			else
-			{
-				return Hook::inst.Clear(*symbol);
-			}
-		}
-	}
-	return false;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

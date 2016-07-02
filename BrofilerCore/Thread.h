@@ -2,7 +2,7 @@
 #include "Common.h"
 #include <winnt.h>
 
-namespace Profiler
+namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Returns current Thread Environment Block (Extremely fast approach to get Thread Unique ID)

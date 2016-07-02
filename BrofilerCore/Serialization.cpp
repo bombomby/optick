@@ -1,7 +1,7 @@
 #include "Common.h"
 #include "Serialization.h"
 
-namespace Profiler
+namespace Brofiler
 {
 	std::string OutputDataStream::GetData()
 	{
@@ -9,7 +9,7 @@ namespace Profiler
 		return str();
 	}
 
-	Profiler::OutputDataStream OutputDataStream::Empty;
+	Brofiler::OutputDataStream OutputDataStream::Empty;
 
 	OutputDataStream &operator << ( OutputDataStream &stream, const char* val )
 	{

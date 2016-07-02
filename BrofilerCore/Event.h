@@ -3,7 +3,7 @@
 #include <string>
 #include "Serialization.h"
 
-namespace Profiler
+namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream &operator << ( OutputDataStream &stream, const EventDescription &ob);

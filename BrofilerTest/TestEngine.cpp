@@ -1,6 +1,6 @@
 #include "TestEngine.h"
-#include "..\ProfilerCore\Types.h"
-#include "..\ProfilerCore\Brofiler.h"
+#include "Types.h"
+#include "Brofiler.h"
 #include <math.h>
 #include <vector>
 
@@ -49,7 +49,6 @@ void SlowFunction2()
 		values[i] -= i;
 	}
 }
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Engine::Update()
 { BROFILER_FRAME("MainThread")
@@ -69,34 +68,34 @@ bool Engine::Update()
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdateInput()
-{ BROFILER_CATEGORY( "UpdateInput", Profiler::Color::SteelBlue )
+{ BROFILER_CATEGORY( "UpdateInput", Brofiler::Color::SteelBlue )
 	SlowFunction2();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdateMessages()
-{ BROFILER_CATEGORY( "UpdateMessages", Profiler::Color::Orange )
+{ BROFILER_CATEGORY( "UpdateMessages", Brofiler::Color::Orange )
 	SlowFunction<REPEAT_COUNT>();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdateLogic()
-{ BROFILER_CATEGORY( "UpdateLogic", Profiler::Color::Orchid )
+{ BROFILER_CATEGORY( "UpdateLogic", Brofiler::Color::Orchid )
 	SlowFunction<REPEAT_COUNT>();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdateScene()
-{ BROFILER_CATEGORY( "UpdateScene", Profiler::Color::SkyBlue )
+{ BROFILER_CATEGORY( "UpdateScene", Brofiler::Color::SkyBlue )
 	SlowFunction<REPEAT_COUNT>();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::Draw()
-{ BROFILER_CATEGORY( "Draw", Profiler::Color::Salmon )
+{ BROFILER_CATEGORY( "Draw", Brofiler::Color::Salmon )
 	SlowFunction<REPEAT_COUNT>();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdatePhysics()
-{ BROFILER_CATEGORY( "UpdatePhysics", Profiler::Color::Wheat )
-	int64 time = Profiler::GetTimeMicroSeconds();
-	while (Profiler::GetTimeMicroSeconds() - time < 20 * 1000) {}
+{ BROFILER_CATEGORY( "UpdatePhysics", Brofiler::Color::Wheat )
+	int64 time = Brofiler::GetTimeMicroSeconds();
+	while (Brofiler::GetTimeMicroSeconds() - time < 20 * 1000) {}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const size_t WORKER_THREAD_COUNT = 2;

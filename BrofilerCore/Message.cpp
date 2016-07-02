@@ -5,7 +5,7 @@
 #include "ProfilerServer.h"
 #include "EventDescriptionBoard.h"
 
-namespace Profiler
+namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct MessageHeader
@@ -38,7 +38,6 @@ class MessageFactory
 		RegisterMessage<StartMessage>();
 		RegisterMessage<StopMessage>();
 		RegisterMessage<TurnSamplingMessage>();
-		RegisterMessage<SetupHookMessage>();
 
 		for (uint msg = 0; msg < IMessage::COUNT; ++msg)
 		{
@@ -149,18 +148,4 @@ void TurnSamplingMessage::Apply()
 	EventDescriptionBoard::Get().SetSamplingFlag(index, isSampling != 0);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-IMessage* SetupHookMessage::Create(InputDataStream& stream)
-{
-	SetupHookMessage* msg = new SetupHookMessage();
-	stream >> msg->address;
-	stream >> msg->isHooked;
-	return msg;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void SetupHookMessage::Apply()
-{
-	Core::Get().sampler.SetupHook(address, isHooked != 0);
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 }

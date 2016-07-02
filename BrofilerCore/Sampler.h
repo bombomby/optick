@@ -4,7 +4,7 @@
 #include <array>
 #include <vector>
 
-namespace Profiler
+namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct ThreadEntry;
@@ -33,8 +33,6 @@ public:
 
 	void StartSampling(const std::vector<ThreadEntry*>& threads, uint samplingInterval = 300);
 	bool StopSampling();
-
-	bool SetupHook(uint64 address, bool isHooked);
 
 	size_t GetCollectedCount() const;
 	OutputDataStream& Serialize(OutputDataStream& stream);

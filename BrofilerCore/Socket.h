@@ -7,7 +7,7 @@
 //#include <winsock2.h>
 //#endif
 
-namespace Profiler
+namespace Brofiler
 {
 	class Wsa
 	{
@@ -45,7 +45,7 @@ namespace Profiler
 		fd_set recieveSet;
 
 		CriticalSection lock;
-		std::string errorMessage;
+		std::wstring errorMessage;
 
 		void Close()
 		{
@@ -70,8 +70,8 @@ namespace Profiler
 
 		void GetErrorMessage()
 		{
-			LPSTR errString = NULL;  
-			FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, WSAGetLastError(), 0, (LPSTR)&errString, 0, 0 );
+			LPWSTR errString = NULL;  
+			FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, WSAGetLastError(), 0, (LPWSTR)&errString, 0, 0 );
 			errorMessage = errString;
 			LocalFree( errString );
 		}

@@ -6,11 +6,9 @@
 #include "Thread.h"
 #include "HPTimer.h"
 
-//#include "Hook.h"
-
-extern "C" Profiler::EventData* NextEvent()
+extern "C" Brofiler::EventData* NextEvent()
 {
-	if (Profiler::EventStorage* storage = Profiler::Core::storage)
+	if (Brofiler::EventStorage* storage = Brofiler::Core::storage)
 	{
 		return &storage->NextEvent();
 	}
@@ -19,7 +17,7 @@ extern "C" Profiler::EventData* NextEvent()
 }
 
 
-namespace Profiler
+namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static const uint32 INVALID_THREAD_ID = (uint32)-1;
@@ -223,8 +221,6 @@ void Core::SendHandshakeResponse(ETW::Status status)
 	Server::Get().Send(DataResponse::Handshake, stream);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool InstallSynchronizationHooks(DWORD threadID);
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::RegisterThread(const ThreadDescription& description)
 {
 	CRITICAL_SECTION(lock);
@@ -235,8 +231,6 @@ bool Core::RegisterThread(const ThreadDescription& description)
 
 	ThreadEntry* entry = new ThreadEntry(description, &storage);
 	threads.push_back(entry);
-
-	InstallSynchronizationHooks(description.threadID);
 
 	return true;
 }

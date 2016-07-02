@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="API">
+      <UniqueIdentifier>{FFD1870B-6BDB-877C-F456-9E7C605F937C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{2EB4837C-1AEB-840D-C3D7-6A10AFED000F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Network">
+      <UniqueIdentifier>{8F6A0D6C-FB49-8C07-0462-17DE70C0F268}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System">
+      <UniqueIdentifier>{6AD049D2-5672-74A8-3F2D-88FC2B6EFBF8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\BrofilerCore\Brofiler.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\BrofilerCore\Common.h">
+      <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\BrofilerCore\Concurrency.h">
+      <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\BrofilerCore\Core.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\BrofilerCore\ETW.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\BrofilerCore\Event.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\BrofilerCore\EventDescriptionBoard.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\BrofilerCore\HPTimer.h">
+      <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\BrofilerCore\MemoryPool.h">
+      <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\BrofilerCore\Message.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\BrofilerCore\ProfilerServer.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\BrofilerCore\Sampler.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\BrofilerCore\Serialization.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\BrofilerCore\Socket.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\BrofilerCore\SymEngine.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\BrofilerCore\Thread.h">
+      <Filter>System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\BrofilerCore\Types.h">
+      <Filter>System</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\BrofilerCore\Core.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\BrofilerCore\ETW.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\BrofilerCore\Event.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\BrofilerCore\EventDescriptionBoard.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\BrofilerCore\HPTimer.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\BrofilerCore\Message.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\BrofilerCore\ProfilerServer.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\BrofilerCore\Sampler.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\BrofilerCore\Serialization.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\BrofilerCore\SymEngine.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

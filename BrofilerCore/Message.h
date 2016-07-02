@@ -2,7 +2,7 @@
 #include "Common.h"
 #include "Serialization.h"
 
-namespace Profiler
+namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static const uint32 NETWORK_PROTOCOL_VERSION = 5;
@@ -36,7 +36,6 @@ public:
 		Start,
 		Stop,
 		TurnSampling,
-		SetupHook,
 		COUNT,
 	};
 
@@ -70,15 +69,6 @@ struct TurnSamplingMessage : public Message<IMessage::TurnSampling>
 {
 	int32 index;
 	byte isSampling;
-
-	static IMessage* Create(InputDataStream& stream);
-	virtual void Apply() override;
-};
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct SetupHookMessage : public Message<IMessage::SetupHook>
-{
-	uint64 address;
-	byte isHooked;
 
 	static IMessage* Create(InputDataStream& stream);
 	virtual void Apply() override;
