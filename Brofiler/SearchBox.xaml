@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             d:DesignHeight="22" d:DesignWidth="300">
+             d:DesignHeight="20" d:DesignWidth="300">
   <UserControl.Resources>
     <DataTemplate x:Key="ClearButtonTemplate">
       <Image Source="TimeLine/Icons/Clear-icon.png"/>
@@ -16,8 +16,8 @@
       <ColumnDefinition Width="1*" />
       <ColumnDefinition Width="Auto" />
     </Grid.ColumnDefinitions>
-    <!--<Image Width="20" Height="20" Source="/Brofiler;component/TimeLine/Icons/Search-icon.png" Stretch="Uniform" StretchDirection="Both"  />-->
-    <TextBox Width="Auto" Height="22" VerticalAlignment="Top" Text="Type here to search..." HorizontalAlignment="Stretch" Name="FilterText" Grid.Column="1" TextChanged="FilterText_TextChanged" GotFocus="FilterText_GotFocus" PreviewKeyDown="FilterText_PreviewKeyDown" />
+    <Image Width="18" Height="18" Source="/Brofiler;component/TimeLine/Icons/Search-icon.png" Stretch="Uniform" StretchDirection="Both" Margin="2,0,2,0"  />
+    <TextBox Width="Auto" Height="20" VerticalAlignment="Top" Text="Type here to search..." HorizontalAlignment="Stretch" Name="FilterText" Grid.Column="1" TextChanged="FilterText_TextChanged" GotFocus="FilterText_GotFocus" PreviewKeyDown="FilterText_PreviewKeyDown" />
     <Button Width="14" Height="14" Grid.Column="1" HorizontalAlignment="Right" Click="Button_Click" Margin="0,0,3,0">
       <Button.Template>
         <ControlTemplate TargetType="{x:Type Button}">

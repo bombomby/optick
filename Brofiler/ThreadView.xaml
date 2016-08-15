@@ -16,7 +16,7 @@
       <ColumnDefinition Width="Auto" />
       <ColumnDefinition Width="1*" />
     </Grid.ColumnDefinitions>
-    <Profiler:SearchBox Margin="0,-20,2,0" HorizontalAlignment="Right" Width="200" x:Name="search" Grid.Column="1" VerticalAlignment="Top" />
+    <Profiler:SearchBox Margin="0,-22,2,0" HorizontalAlignment="Right" Width="200" x:Name="search" Grid.Column="1" VerticalAlignment="Top" />
     <DX:DirectXCanvas x:Name="surface" Height="Auto" Grid.Row="0" Grid.Column="1" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" />
     <ScrollBar Orientation="Horizontal" Width="Auto" x:Name="scrollBar" Grid.Column="1" Grid.Row="1" />
     <Grid Grid.RowSpan="1" x:Name="ThreadList" ClipToBounds="False">
