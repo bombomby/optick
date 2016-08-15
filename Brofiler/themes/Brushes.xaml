@@ -1,0 +1,22 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--<SolidColorBrush x:Key="BroBackground" Color="#FF252526" />
+    <SolidColorBrush x:Key="BroBackgroundActive" Color="#FFDD0000" />
+    <SolidColorBrush x:Key="BroControlBackground" Color="#FF3F3F46" />
+    <SolidColorBrush x:Key="BroForeground" Color="#FFE4E4E4" />
+    <SolidColorBrush x:Key="BroForegroundDim" Color="#FFB1B1B1" />
+    <SolidColorBrush x:Key="BroBorder" Color="Black" />
+    <SolidColorBrush x:Key="BroBorderInactive" Color="Black" />
+    <Color x:Key="BroAccentColor">#087099</Color>
+    <SolidColorBrush x:Key="BroAccent" Color="{StaticResource BroAccentColor}" />
+
+
+    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Orange" />
+    <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="Green" />
+    <SolidColorBrush x:Key="{x:Static SystemColors.ActiveCaptionBrush}" Color="Green" />-->
+
+    <SolidColorBrush x:Key="BroForeground" Color="#FF171717" />
+    <SolidColorBrush x:Key="BroAlternative" Color="LightGray" />
+    <SolidColorBrush x:Key="BroFrameSelection" Color="Black" />
+    <SolidColorBrush x:Key="BroFrameHover" Color="Black" />
+</ResourceDictionary>

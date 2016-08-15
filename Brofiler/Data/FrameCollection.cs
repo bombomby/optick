@@ -22,6 +22,7 @@ namespace Profiler.Data
 	{
 		public EventDescriptionBoard Board { get; set; }
     public List<ThreadData> Threads { get; set; }
+        public ThreadData MainThread { get { return Threads[Board.MainThreadIndex]; } }
 
 		public FrameGroup(EventDescriptionBoard board)
 		{

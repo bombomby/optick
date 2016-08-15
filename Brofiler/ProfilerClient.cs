@@ -20,13 +20,29 @@ namespace Profiler
     public IPAddress IpAddress
     {
       get { return ipAddress; }
-      set { ipAddress = value; }
+      set
+        {
+            if (ipAddress != value)
+            {
+               ipAddress = value;
+                if (client.Client.Connected)
+                    client.Client.Disconnect(true);
+            }
+        }
     }
 
     public int Port
     {
       get { return port; }
-      set { port = value; }
+      set
+            {
+                if (port != value)
+                {
+                    port = value;
+                    if (client.Client.Connected)
+                        client.Client.Disconnect(true);
+                }
+            }
     }
 
     public static ProfilerClient Get() { return profilerClient; }

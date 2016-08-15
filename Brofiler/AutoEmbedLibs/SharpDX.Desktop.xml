@@ -1,0 +1,469 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SharpDX.Desktop</name>
+    </assembly>
+    <members>
+        <member name="T:SharpDX.Diagnostics.VSGraphicsDebugger">
+            <summary>
+            Helper class to allow programmatic capturing of graphics information that can be loaded later in Visual Studio.
+            This is a managed implementation of the VsDbg class (http://msdn.microsoft.com/en-us/library/vstudio/dn440549.aspx).
+            Requires to have installed VS Remote Tools.
+            http://msdn.microsoft.com/en-us/library/vstudio/hh708963.aspx
+            http://msdn.microsoft.com/en-us/library/vstudio/hh780905.aspx
+            </summary>
+        </member>
+        <member name="T:SharpDX.Diagnostics.VSGraphicsDebugger.CaptureToken">
+            <summary>
+            Helper structure to ease the begin/end graphics capturing
+            </summary>
+            <example>
+            var debugger = new VSGraphicsDebugger();
+            using(debugger.BeginCapture())
+            {
+                ...
+            }
+            </example>
+        </member>
+        <member name="M:SharpDX.Diagnostics.VSGraphicsDebugger.CaptureToken.#ctor(SharpDX.Diagnostics.VSGraphicsDebugger)">
+            <summary>
+            Creates a new instance of the <see cref="T:SharpDX.Diagnostics.VSGraphicsDebugger.CaptureToken"/> structure.
+            </summary>
+            <param name="debugger">The attanched graphics debugger.</param>
+        </member>
+        <member name="M:SharpDX.Diagnostics.VSGraphicsDebugger.CaptureToken.Dispose">
+            <summary>
+            Ends the capture by calling <see cref="M:SharpDX.Diagnostics.VSGraphicsDebugger.EndCapture"/>.
+            </summary>
+        </member>
+        <member name="M:SharpDX.Diagnostics.VSGraphicsDebugger.#ctor(System.String)">
+            <summary>
+            Creates a new instance of the <see cref="T:SharpDX.Diagnostics.VSGraphicsDebugger"/> class and prepares the in-app component of graphics diagnostics to actively capture and record graphics information..
+            </summary>
+            <param name="logFileName">The destination filename for log writing.</param>
+        </member>
+        <member name="M:SharpDX.Diagnostics.VSGraphicsDebugger.CopyLogFile(System.String)">
+            <summary>
+            Copies the contents of the active graphics log (.vsglog) file into a new file.
+            </summary>
+            <param name="destinationFileName">The new log file name.</param>
+        </member>
+        <member name="M:SharpDX.Diagnostics.VSGraphicsDebugger.ToggleHUD">
+            <summary>
+            Toggles the graphics diagnostics HUD overlay on or off.
+            </summary>
+        </member>
+        <member name="M:SharpDX.Diagnostics.VSGraphicsDebugger.AddHUDMessage(System.String)">
+            <summary>
+            Adds a custom message to the graphics diagnostics HUD (Head-Up Display).
+            </summary>
+            <param name="message">The message to add.</param>
+        </member>
+        <member name="M:SharpDX.Diagnostics.VSGraphicsDebugger.CaptureCurrentFrame">
+            <summary>
+            Captures the remainder of the current frame to the graphics log file.
+            </summary>
+        </member>
+        <member name="M:SharpDX.Diagnostics.VSGraphicsDebugger.BeginCapture">
+            <summary>
+            Begins a capture interval that will end with <see cref="M:SharpDX.Diagnostics.VSGraphicsDebugger.EndCapture"/>.
+            </summary>
+            <returns>A <see cref="T:SharpDX.Diagnostics.VSGraphicsDebugger.CaptureToken"/> instance that once disposed, calls automatically the <see cref="M:SharpDX.Diagnostics.VSGraphicsDebugger.EndCapture"/> method.</returns>
+        </member>
+        <member name="M:SharpDX.Diagnostics.VSGraphicsDebugger.EndCapture">
+            <summary>
+            Ends a capture interval that was started with <see cref="M:SharpDX.Diagnostics.VSGraphicsDebugger.BeginCapture"/>.
+            </summary>
+        </member>
+        <member name="M:SharpDX.Diagnostics.VSGraphicsDebugger.Dispose(System.Boolean)">
+            <summary>
+            Finalizes the graphics log file, closes it, and frees resources that were used while the app was actively recording graphics information.
+            </summary>
+            <param name="disposing">Ignored.</param>
+        </member>
+        <member name="T:SharpDX.Direct3D.PixHelper">
+            <summary>
+            Helper class for PIX.
+            </summary>
+        </member>
+        <member name="M:SharpDX.Direct3D.PixHelper.BeginEvent(SharpDX.Mathematics.Interop.RawColorBGRA,System.String)">
+            <summary>
+            Marks the beginning of a user-defined event. PIX can use this event to trigger an action.
+            </summary>
+            <param name="color">The Event color.</param>
+            <param name="name">The Event Name.</param>
+            <returns>The zero-based level of the hierarchy that this event is starting in. If an error occurs, the return value will be negative.</returns>
+            <unmanaged>D3DPERF_BeginEvent</unmanaged>
+        </member>
+        <member name="M:SharpDX.Direct3D.PixHelper.BeginEvent(SharpDX.Mathematics.Interop.RawColorBGRA,System.String,System.Object[])">
+            <summary>
+            Marks the beginning of a user-defined event. PIX can use this event to trigger an action.
+            </summary>
+            <param name="color">The Event color.</param>
+            <param name="name">The Event formatted Name.</param>
+            <param name="parameters">The parameters to use for the formatted name.</param>
+            <returns>
+            The zero-based level of the hierarchy that this event is starting in. If an error occurs, the return value will be negative.
+            </returns>
+            <unmanaged>D3DPERF_BeginEvent</unmanaged>
+        </member>
+        <member name="M:SharpDX.Direct3D.PixHelper.EndEvent">
+            <summary>
+            Mark the end of a user-defined event. PIX can use this event to trigger an action.
+            </summary>
+            <returns>The level of the hierarchy in which the event is ending. If an error occurs, this value is negative.</returns>
+            <unmanaged>D3DPERF_EndEvent</unmanaged>
+        </member>
+        <member name="M:SharpDX.Direct3D.PixHelper.SetMarker(SharpDX.Mathematics.Interop.RawColorBGRA,System.String)">
+            <summary>
+            Mark an instantaneous event. PIX can use this event to trigger an action.
+            </summary>
+            <param name="color">The color.</param>
+            <param name="name">The name.</param>
+            <unmanaged>D3DPERF_SetMarker</unmanaged>
+        </member>
+        <member name="M:SharpDX.Direct3D.PixHelper.SetMarker(SharpDX.Mathematics.Interop.RawColorBGRA,System.String,System.Object[])">
+            <summary>
+            Mark an instantaneous event. PIX can use this event to trigger an action.
+            </summary>
+            <param name="color">The color.</param>
+            <param name="name">The name to format.</param>
+            <param name="parameters">The parameters to use to format the name.</param>
+            <unmanaged>D3DPERF_SetMarker</unmanaged>
+        </member>
+        <member name="M:SharpDX.Direct3D.PixHelper.AllowProfiling(System.Boolean)">
+            <summary>
+            Set this to false to notify PIX that the target program does not give permission to be profiled.
+            </summary>
+            <param name="enableFlag">if set to <c>true</c> PIX profiling is authorized. Default to true.</param>
+            <unmanaged>D3DPERF_SetOptions</unmanaged>
+        </member>
+        <member name="P:SharpDX.Direct3D.PixHelper.IsCurrentlyProfiled">
+            <summary>
+            Gets a value indicating whether this instance is currently profiled by PIX.
+            </summary>
+            <value>
+            <c>true</c> if this instance is currently profiled; otherwise, <c>false</c>.
+            </value>
+            <unmanaged>D3DPERF_GetStatus</unmanaged>
+        </member>
+        <member name="T:SharpDX.MessageFilterHook">
+            <summary>
+            Provides a hook to WndProc of an existing window handle using <see cref="T:System.Windows.Forms.IMessageFilter"/>.
+            </summary>
+        </member>
+        <member name="M:SharpDX.MessageFilterHook.#ctor(System.IntPtr)">
+            <summary>
+            Initializes a new instance of the <see cref="!:Win32.MessageFilterHook" /> class.
+            </summary>
+            <param name="hwnd">The HWND.</param>
+        </member>
+        <member name="M:SharpDX.MessageFilterHook.AddMessageFilter(System.IntPtr,System.Windows.Forms.IMessageFilter)">
+            <summary>
+            Adds a message filter to a window.
+            </summary>
+            <param name="hwnd">The handle of the window.</param>
+            <param name="messageFilter">The message filter.</param>
+        </member>
+        <member name="M:SharpDX.MessageFilterHook.RemoveMessageFilter(System.IntPtr,System.Windows.Forms.IMessageFilter)">
+            <summary>
+            Removes a message filter associated with a window.
+            </summary>
+            <param name="hwnd">The handle of the window.</param>
+            <param name="messageFilter">The message filter.</param>
+        </member>
+        <member name="T:SharpDX.Desktop.Properties.Resources">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:SharpDX.Desktop.Properties.Resources.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:SharpDX.Desktop.Properties.Resources.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:SharpDX.Desktop.Properties.Resources.logo">
+            <summary>
+              Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
+            </summary>
+        </member>
+        <member name="T:SharpDX.Windows.RenderControl">
+            <summary>
+            A Renderable UserControl.
+            </summary>
+        </member>
+        <member name="M:SharpDX.Windows.RenderControl.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:SharpDX.Windows.RenderForm"/> class.
+            </summary>
+        </member>
+        <member name="M:SharpDX.Windows.RenderControl.OnPaintBackground(System.Windows.Forms.PaintEventArgs)">
+            <summary>
+            Paints the background of the control.
+            </summary>
+            <param name="e">A <see cref="T:System.Windows.Forms.PaintEventArgs"/> that contains the event data.</param>
+        </member>
+        <member name="M:SharpDX.Windows.RenderControl.OnPaint(System.Windows.Forms.PaintEventArgs)">
+            <summary>
+            Raises the <see cref="E:System.Windows.Forms.Control.Paint"/> event.
+            </summary>
+            <param name="e">A <see cref="T:System.Windows.Forms.PaintEventArgs"/> that contains the event data.</param>
+        </member>
+        <member name="T:SharpDX.Windows.RenderForm">
+            <summary>
+            Default Rendering Form.
+            </summary>
+        </member>
+        <member name="M:SharpDX.Windows.RenderForm.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:SharpDX.Windows.RenderForm"/> class.
+            </summary>
+        </member>
+        <member name="M:SharpDX.Windows.RenderForm.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:SharpDX.Windows.RenderForm"/> class.
+            </summary>
+            <param name="text">The text.</param>
+        </member>
+        <member name="E:SharpDX.Windows.RenderForm.AppActivated">
+            <summary>
+            Occurs when [app activated].
+            </summary>
+        </member>
+        <member name="E:SharpDX.Windows.RenderForm.AppDeactivated">
+            <summary>
+            Occurs when [app deactivated].
+            </summary>
+        </member>
+        <member name="E:SharpDX.Windows.RenderForm.MonitorChanged">
+            <summary>
+            Occurs when [monitor changed].
+            </summary>
+        </member>
+        <member name="E:SharpDX.Windows.RenderForm.PauseRendering">
+            <summary>
+            Occurs when [pause rendering].
+            </summary>
+        </member>
+        <member name="E:SharpDX.Windows.RenderForm.ResumeRendering">
+            <summary>
+            Occurs when [resume rendering].
+            </summary>
+        </member>
+        <member name="E:SharpDX.Windows.RenderForm.Screensaver">
+            <summary>
+            Occurs when [screensaver].
+            </summary>
+        </member>
+        <member name="E:SharpDX.Windows.RenderForm.SystemResume">
+            <summary>
+            Occurs when [system resume].
+            </summary>
+        </member>
+        <member name="E:SharpDX.Windows.RenderForm.SystemSuspend">
+            <summary>
+            Occurs when [system suspend].
+            </summary>
+        </member>
+        <member name="E:SharpDX.Windows.RenderForm.UserResized">
+            <summary>
+            Occurs when [user resized].
+            </summary>
+        </member>
+        <member name="P:SharpDX.Windows.RenderForm.AllowUserResizing">
+            <summary>
+            Gets or sets a value indicating whether this form can be resized by the user. See remarks.
+            </summary>
+            <remarks>
+            This property alters <see cref="P:System.Windows.Forms.Form.FormBorderStyle"/>, 
+            for <c>true</c> value it is <see cref="F:System.Windows.Forms.FormBorderStyle.Sizable"/>, 
+            for <c>false</c> - <see cref="F:System.Windows.Forms.FormBorderStyle.FixedSingle"/>.
+            </remarks>
+            <value><c>true</c> if this form can be resized by the user (by default); otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:SharpDX.Windows.RenderForm.IsFullscreen">
+            <summary>
+            Gets or sets a value indicationg whether the current render form is in fullscreen mode. See remarks.
+            </summary>
+            <remarks>
+            If Toolkit is used, this property is set automatically,
+            otherwise user should maintain it himself as it affects the behavior of <see cref="P:SharpDX.Windows.RenderForm.AllowUserResizing"/> property.
+            </remarks>
+        </member>
+        <member name="M:SharpDX.Windows.RenderForm.OnResizeBegin(System.EventArgs)">
+            <summary>
+            Raises the <see cref="E:System.Windows.Forms.Form.ResizeBegin"/> event.
+            </summary>
+            <param name="e">A <see cref="T:System.EventArgs"/> that contains the event data.</param>
+        </member>
+        <member name="M:SharpDX.Windows.RenderForm.OnResizeEnd(System.EventArgs)">
+            <summary>
+            Raises the <see cref="E:System.Windows.Forms.Form.ResizeEnd"/> event.
+            </summary>
+            <param name="e">A <see cref="T:System.EventArgs"/> that contains the event data.</param>
+        </member>
+        <member name="M:SharpDX.Windows.RenderForm.OnLoad(System.EventArgs)">
+            <summary>
+            Raises the <see cref="E:System.Windows.Forms.Form.Load"/> event.
+            </summary>
+            <param name="e">An <see cref="T:System.EventArgs"/> that contains the event data.</param>
+        </member>
+        <member name="M:SharpDX.Windows.RenderForm.OnPaintBackground(System.Windows.Forms.PaintEventArgs)">
+            <summary>
+            Paints the background of the control.
+            </summary>
+            <param name="e">A <see cref="T:System.Windows.Forms.PaintEventArgs"/> that contains the event data.</param>
+        </member>
+        <member name="M:SharpDX.Windows.RenderForm.OnPauseRendering(System.EventArgs)">
+            <summary>
+            Raises the Pause Rendering event.
+            </summary>
+            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="M:SharpDX.Windows.RenderForm.OnResumeRendering(System.EventArgs)">
+            <summary>
+            Raises the Resume Rendering event.
+            </summary>
+            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="M:SharpDX.Windows.RenderForm.OnUserResized(System.EventArgs)">
+            <summary>
+            Raises the User resized event.
+            </summary>
+            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="M:SharpDX.Windows.RenderForm.OnAppActivated(System.EventArgs)">
+            <summary>
+            Raises the On App Activated event.
+            </summary>
+            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="M:SharpDX.Windows.RenderForm.OnAppDeactivated(System.EventArgs)">
+            <summary>
+            Raises the App Deactivated event
+            </summary>
+            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="M:SharpDX.Windows.RenderForm.OnSystemSuspend(System.EventArgs)">
+            <summary>
+            Raises the System Suspend event
+            </summary>
+            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="M:SharpDX.Windows.RenderForm.OnSystemResume(System.EventArgs)">
+            <summary>
+            Raises the System Resume event
+            </summary>
+            <param name="e">The <see cref="T:System.EventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="M:SharpDX.Windows.RenderForm.OnScreensaver(System.ComponentModel.CancelEventArgs)">
+            <summary>
+            Raises the <see cref="E:Screensaver"/> event.
+            </summary>
+            <param name="e">The <see cref="T:System.ComponentModel.CancelEventArgs"/> instance containing the event data.</param>
+        </member>
+        <member name="M:SharpDX.Windows.RenderForm.WndProc(System.Windows.Forms.Message@)">
+            <summary>
+            Override windows message loop handling.
+            </summary>
+            <param name="m">The Windows <see cref="T:System.Windows.Forms.Message"/> to process.</param>
+        </member>
+        <member name="T:SharpDX.Windows.RenderLoop">
+            <summary>
+            RenderLoop provides a rendering loop infrastructure. See remarks for usage. 
+            </summary>
+            <remarks>
+            Use static <see cref="!:Run(System.Windows.Forms.Control,SharpDX.Windows.RenderLoop.RenderCallback)"/>  
+            method to directly use a renderloop with a render callback or use your own loop:
+            <code>
+            control.Show();
+            using (var loop = new RenderLoop(control))
+            {
+                while (loop.NextFrame())
+                {
+                   // Perform draw operations here.
+                }
+            }
+            </code>
+            Note that the main control can be changed at anytime inside the loop.
+            </remarks>
+        </member>
+        <member name="M:SharpDX.Windows.RenderLoop.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:SharpDX.Windows.RenderLoop"/> class.
+            </summary>
+        </member>
+        <member name="M:SharpDX.Windows.RenderLoop.#ctor(System.Windows.Forms.Control)">
+            <summary>
+            Initializes a new instance of the <see cref="T:SharpDX.Windows.RenderLoop"/> class.
+            </summary>
+        </member>
+        <member name="P:SharpDX.Windows.RenderLoop.Control">
+            <summary>
+            Gets or sets the control to associate with the current render loop.
+            </summary>
+            <value>The control.</value>
+            <exception cref="T:System.InvalidOperationException">Control is already disposed</exception>
+        </member>
+        <member name="P:SharpDX.Windows.RenderLoop.UseApplicationDoEvents">
+            <summary>
+            Gets or sets a value indicating whether the render loop should use the default <see cref="M:System.Windows.Forms.Application.DoEvents"/> instead of a custom window message loop lightweight for GC. Default is false.
+            </summary>
+            <value><c>true</c> if the render loop should use the default <see cref="M:System.Windows.Forms.Application.DoEvents"/> instead of a custom window message loop (default false); otherwise, <c>false</c>.</value>
+            <remarks>By default, RenderLoop is using a custom window message loop that is more lightweight than <see cref="M:System.Windows.Forms.Application.DoEvents" /> to process windows event message. 
+            Set this parameter to true to use the default <see cref="M:System.Windows.Forms.Application.DoEvents"/>.</remarks>
+        </member>
+        <member name="M:SharpDX.Windows.RenderLoop.NextFrame">
+            <summary>
+            Calls this method on each frame.
+            </summary>
+            <returns><c>true</c> if if the control is still active, <c>false</c> otherwise.</returns>
+            <exception cref="T:System.InvalidOperationException">An error occured </exception>
+        </member>
+        <member name="M:SharpDX.Windows.RenderLoop.Dispose">
+            <summary>
+            Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+            </summary>
+        </member>
+        <member name="T:SharpDX.Windows.RenderLoop.RenderCallback">
+            <summary>
+            Delegate for the rendering loop.
+            </summary>
+        </member>
+        <member name="M:SharpDX.Windows.RenderLoop.Run(System.Windows.Forms.ApplicationContext,SharpDX.Windows.RenderLoop.RenderCallback)">
+            <summary>
+            Runs the specified main loop in the specified context.
+            </summary>
+        </member>
+        <member name="M:SharpDX.Windows.RenderLoop.Run(System.Windows.Forms.Control,SharpDX.Windows.RenderLoop.RenderCallback,System.Boolean)">
+            <summary>
+            Runs the specified main loop for the specified windows form.
+            </summary>
+            <param name="form">The form.</param>
+            <param name="renderCallback">The rendering callback.</param>
+            <param name="useApplicationDoEvents">if set to <c>true</c> indicating whether the render loop should use the default <see cref="M:System.Windows.Forms.Application.DoEvents"/> instead of a custom window message loop lightweight for GC. Default is false.</param>
+            <exception cref="T:System.ArgumentNullException">form
+            or
+            renderCallback</exception>
+        </member>
+        <member name="P:SharpDX.Windows.RenderLoop.IsIdle">
+            <summary>
+            Gets a value indicating whether this instance is application idle.
+            </summary>
+            <value>
+            	<c>true</c> if this instance is application idle; otherwise, <c>false</c>.
+            </value>
+        </member>
+        <member name="T:SharpDX.Win32Native">
+            <summary>
+            Internal class to interact with Native Message
+            </summary>
+        </member>
+    </members>
+</doc>

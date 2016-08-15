@@ -4,8 +4,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:Profiler="clr-namespace:Profiler"
+             xmlns:DX="clr-namespace:Profiler.DirectX"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300" Height="Auto" VisualTextHintingMode="Fixed" VisualTextRenderingMode="Grayscale">
+             d:DesignHeight="300" d:DesignWidth="300" Height="Auto">
   <Grid Height="Auto" Name="panel">
     <Grid.RowDefinitions>
       <RowDefinition Height="280*" />
@@ -16,12 +17,10 @@
       <ColumnDefinition Width="1*" />
     </Grid.ColumnDefinitions>
     <Profiler:SearchBox Margin="0,-20,2,0" HorizontalAlignment="Right" Width="200" x:Name="search" Grid.Column="1" VerticalAlignment="Top" />
-    <Canvas Name="surface" Height="Auto" Grid.Row="0" Grid.Column="1" />
-    <ScrollBar Orientation="Horizontal" Width="Auto" Name="scrollBar" Grid.Column="1" Grid.Row="1" />
-    <Grid Grid.RowSpan="1" Name="ThreadList" ClipToBounds="False">
+    <DX:DirectXCanvas x:Name="surface" Height="Auto" Grid.Row="0" Grid.Column="1" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" />
+    <ScrollBar Orientation="Horizontal" Width="Auto" x:Name="scrollBar" Grid.Column="1" Grid.Row="1" />
+    <Grid Grid.RowSpan="1" x:Name="ThreadList" ClipToBounds="False">
       <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="Auto" />
-        <ColumnDefinition Width="Auto" />
         <ColumnDefinition Width="Auto" />
       </Grid.ColumnDefinitions>
     </Grid>

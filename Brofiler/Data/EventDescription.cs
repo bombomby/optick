@@ -102,6 +102,7 @@ namespace Profiler.Data
 	{
 		public String Name { get; set; }
 		public int ThreadID { get; set; }
+        public int MaxDepth { get; set; }
 
 		public static ThreadDescription Read(BinaryReader reader)
 		{
@@ -109,6 +110,7 @@ namespace Profiler.Data
 			res.ThreadID = reader.ReadInt32();
 			int nameLength = reader.ReadInt32();
 			res.Name = new String(reader.ReadChars(nameLength));
+            res.MaxDepth = 1; // TODO: reader.ReadInt32();
 			return res;
 		}
 	}

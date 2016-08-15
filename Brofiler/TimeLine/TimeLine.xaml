@@ -36,7 +36,7 @@
       <VirtualizingStackPanel IsItemsHost="True" Orientation="Horizontal" VerticalAlignment="Bottom" VirtualizationMode="Recycling" />
 		</ItemsPanelTemplate>
 		<DataTemplate x:Key="TimeLineItemTemplate">
-      <Grid x:Name="rect" Background="#02FFFFFF" Height="163" Width="14" Margin="-1,0,0,0" >
+      <Grid x:Name="rect" Height="163" Width="14" Margin="-4.25,0,-4.25,0" >
         <local:TimeLineItem x:Name="timeLineItem" Height="{Binding Duration, Converter={StaticResource FrameHeightConverter}}" Width="Auto" VerticalAlignment="Bottom" />
         <Label x:Name="frameDescriptionText" Content="{Binding Description, Mode=OneTime}" Width="Auto" VerticalAlignment="Bottom" Height="Auto" FontSize="12" Padding="0,0,0,0" Margin="-1,0,0,3" SnapsToDevicePixels="True" FontWeight="Bold" Grid.ColumnSpan="2" >
 			<Label.LayoutTransform>
@@ -54,30 +54,6 @@
           <Setter TargetName="timeLineItem" Property="BorderThickness" Value="2" />
         </DataTrigger>
 			</DataTemplate.Triggers>
-		</DataTemplate>
-		<DataTemplate x:Key="PlayButtonResource">
-			<Image Source="Icons/Play-icon.png" />
-		</DataTemplate>
-		<DataTemplate x:Key="StopButtonResource">
-      <Image Source="Icons/Pause-icon.png" />
-		</DataTemplate>
-		<DataTemplate x:Key="SaveButtonResource">
-      <Image Source="Icons/Save-icon.png" />
-		</DataTemplate>
-		<DataTemplate x:Key="ClearButtonResource">
-      <Image Source="Icons/Trash2-icon.png" Margin="-1"/>
-		</DataTemplate>
-		<DataTemplate x:Key="ClearSamplingButton">
-      <Image Source="Icons/ClearSampling-icon.png" />
-		</DataTemplate>
-    <DataTemplate x:Key="ClearHooksButton">
-      <Image Source="Icons/Hook-icon.png" />
-    </DataTemplate>
-    <DataTemplate x:Key="StartButtonTemplate">
-      <Image Source="Icons/Play-icon.png"/>
-		</DataTemplate>
-		<DataTemplate x:Key="StopButtonTemplate">
-      <Image Source="Icons/Stop-icon.ico"/>
 		</DataTemplate>
 		<Storyboard x:Key="OnLoaded1" RepeatBehavior="Forever">
 			<PointAnimationUsingKeyFrames Storyboard.TargetProperty="(TextElement.Background).(LinearGradientBrush.StartPoint)" Storyboard.TargetName="StatusText">
@@ -107,44 +83,25 @@
 			<ColumnDefinition Width="0.299*"/>
 			<ColumnDefinition Width="Auto"/>
 		</Grid.ColumnDefinitions>
-    <ListBox x:Name="frameList" ItemsPanel="{DynamicResource TimeLaneLayoutTemplate}" ItemTemplate="{DynamicResource TimeLineItemTemplate}" ItemsSource="{Binding Mode=OneWay}" DataContext="{Binding Mode=OneWay}" SelectionChanged="frameList_SelectionChanged" Background="White" Grid.Row="1" Margin="0,2,0,0" d:LayoutOverrides="Width" TextOptions.TextFormattingMode="Display">
-      <ListBox.Resources>
-        <Style TargetType="{x:Type ListBoxItem}">
-          <Style.Resources>
-            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Transparent"/>
-            <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="Transparent"/>
-          </Style.Resources>
-        </Style>
-      </ListBox.Resources>
-    </ListBox>
+    <ListBox x:Name="frameList" ItemsPanel="{DynamicResource TimeLaneLayoutTemplate}" ItemTemplate="{DynamicResource TimeLineItemTemplate}" ItemsSource="{Binding Mode=OneWay}" DataContext="{Binding Mode=OneWay}" SelectionChanged="frameList_SelectionChanged" Grid.Row="1" Margin="0,2,0,0" d:LayoutOverrides="Width" TextOptions.TextFormattingMode="Display" />
     <StackPanel Orientation="Horizontal" Margin="0" Grid.ColumnSpan="2" HorizontalAlignment="Left">
-      <ToggleButton x:Name="StartButton" Content="ToggleButton" Width="24" Height="24" Unchecked="StartButton_Unchecked" Checked="StartButton_Checked" ToolTip="Start Profiling Session">
-        		<ToggleButton.Style>
-        			<Style TargetType="{x:Type ToggleButton}">
-        				<Style.Triggers>
-        					<Trigger Property="IsChecked" Value="False">
-                <Setter Property="ContentTemplate" Value="{StaticResource StartButtonTemplate}" />
-        					</Trigger>
-        					<Trigger Property="IsChecked" Value="True">
-                <Setter Property="ContentTemplate" Value="{StaticResource StopButtonTemplate}" />
-        					</Trigger>
-					    	</Style.Triggers>
-					    </Style>
-        		</ToggleButton.Style>
-			    </ToggleButton>
-        	<!--<Button x:Name="StartButton" Click="StartButton_Click" HorizontalAlignment="Left" Width="24" Height="24" VerticalAlignment="Top" ToolTip="Start Profiling Session" ContentTemplate="{DynamicResource PlayButtonResource}" Margin="1,0,0,0" />-->
-        	<Button x:Name="SaveButton" Click="SaveButton_Click" HorizontalAlignment="Left" Width="24" Height="24" VerticalAlignment="Center" ToolTip="Save Active Session" ContentTemplate="{DynamicResource SaveButtonResource}" Margin="1,0,0,0" />
-        	<Button x:Name="ClearButton" Click="ClearButton_Click" HorizontalAlignment="Left" Width="24" Height="24" VerticalAlignment="Center" ToolTip="Clear Active Session" ContentTemplate="{DynamicResource ClearButtonResource}" Margin="1,0,0,0" />
-        	<Button x:Name="ClearSampling" Click="ClearSamplingButton_Click" HorizontalAlignment="Left" Width="24" Height="24" VerticalAlignment="Center" ToolTip="Clear All Sampling Flags" ContentTemplate="{DynamicResource ClearSamplingButton}" Margin="1,0,0,0" />
-          <Button x:Name="ClearHooks" Click="ClearHooksButton_Click" HorizontalAlignment="Left" Width="24" Height="24" VerticalAlignment="Center" ToolTip="Clear All Hooked Functions" ContentTemplate="{DynamicResource ClearHooksButton}" Margin="1,0,0,0" />
-        	<Label Content="IP Address:" Margin="4,0,0,0" d:LayoutOverrides="Height" Padding="1" VerticalAlignment="Center"/>
-        	<TextBox x:Name="serverIP" Margin="5,0,0,0" Text="127.0.0.1" VerticalAlignment="Center" MaxLength="15" MaxLines="1" Width="100" TextChanged="serverIP_TextChanged" />
-        	<Label Content="Port:" Margin="4,0,0,0" Padding="1" VerticalAlignment="Center"/>
-        	<TextBox x:Name="serverPort" Margin="5,0,0,0" Width="45" Text="31313" VerticalAlignment="Center" MaxLines="1" TextChanged="serverPort_TextChanged" />
-          <StackPanel x:Name="warningBlock"  Orientation="Horizontal">
+        <ToggleButton x:Name="StartButton" Width="24" Height="24" Unchecked="StartButton_Unchecked" Checked="StartButton_Checked" ToolTip="Start Profiling Session" Padding="-6">
+                <ContentControl Style="{StaticResource appbar_control_play}" />
+            </ToggleButton>
+            <Button x:Name="SaveButton" Click="SaveButton_Click" HorizontalAlignment="Left" Width="24" Height="24" VerticalAlignment="Center" ToolTip="Save Active Session" Margin="1,0,0,0" Padding="-6">
+                <ContentControl Style="{StaticResource appbar_save}" />
+            </Button>
+            <Button x:Name="ClearButton" Click="ClearButton_Click" HorizontalAlignment="Left" Width="24" Height="24" VerticalAlignment="Center" ToolTip="Clear Active Session" Margin="1,0,0,0" Padding="-6">
+                <ContentControl Style="{StaticResource appbar_delete}" />
+            </Button>
+            <Button x:Name="ClearSampling" Click="ClearSamplingButton_Click" HorizontalAlignment="Left" Width="24" Height="24" VerticalAlignment="Center" ToolTip="Clear All Sampling Flags" Margin="1,0,0,0" Padding="-6">
+                <ContentControl Style="{StaticResource appbar_clean}" />
+            </Button>
+            <local:PlatformSelector x:Name="PlatformCombo" Margin="4,0,0,0" VerticalAlignment="Center" />
+        <StackPanel x:Name="warningBlock"  Orientation="Horizontal">
             <Image x:Name="warningIcon" Source="Icons/Warning-icon.png" Margin="5,0,0,0" Width="24" Height="24" />
             <TextBlock VerticalAlignment="Center" TextTrimming="WordEllipsis" Width="Auto"><Hyperlink x:Name="warningUrl" RequestNavigate="Hyperlink_RequestNavigate"><Run x:Name="warningText" Text="ClickMe"/></Hyperlink></TextBlock>
-          </StackPanel>
+        </StackPanel>
     </StackPanel>
     <TextBlock x:Name="StatusText" TextWrapping="Wrap" Text="Capturing Frame 34" FontSize="20" TextAlignment="Center" Margin="0,2,0,0" Grid.Row="1" FontStyle="Italic" TextDecorations="{x:Null}" TextOptions.TextHintingMode="Animated" FontWeight="SemiBold" Foreground="Black" Visibility="Collapsed">
     	<TextBlock.Background>

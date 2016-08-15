@@ -78,7 +78,7 @@
 			<ColumnDefinition Width="2*"/>
 			<ColumnDefinition Width="3*"/>
 		</Grid.ColumnDefinitions>
-		<TreeView Grid.Row="1" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling" x:Name="EventTreeView" DataContext="{Binding Root}" ItemsSource="{Binding Children}" Background="{x:Null}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="0" >
+		<TreeView Grid.Row="1" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling" x:Name="EventTreeView" DataContext="{Binding Root}" ItemsSource="{Binding Children}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="0" >
 			<TreeView.Resources>
 				<HierarchicalDataTemplate DataType="{x:Type Profiler_Data:BaseTreeNode}" ItemsSource="{Binding Children}">
 					<Grid Width="Auto" Margin="1">
@@ -136,18 +136,18 @@
       </Grid.ColumnDefinitions>
       <Label Content="{Binding DeatiledDescription}" Grid.Column="0" FontWeight="Bold" />
       <StackPanel x:Name="TreeToolPanel" VerticalAlignment="Center" Orientation="Horizontal" HorizontalAlignment="Right" Opacity="0.5" Grid.Column="1">
-        <ToggleButton x:Name="FilterByTime" VerticalAlignment="Top" IsChecked="True" Height="24" Padding="1,-4,1,-1" ToolTip="Hides all nodes with small time" FontWeight="Bold" Width="24" Click="RefreshFilter" Margin="1,1,0,1">
-          <Image Height="20" Width="20" Margin="0,3,0,0" Source="/Brofiler;component/TimeLine/Icons/Timer-icon.png" Stretch="Fill"/>
+        <ToggleButton x:Name="FilterByTime" VerticalAlignment="Top" IsChecked="True" Height="24" ToolTip="Hides all nodes with small time" FontWeight="Bold" Width="24" Click="RefreshFilter" Margin="1,1,0,1">
+            <ContentControl Style="{StaticResource appbar_timer}" Margin="-6"/>
         </ToggleButton>
         <TextBox x:Name="TimeLimit" Width="45" Text="0.001" FontWeight="Bold" Margin="0,0,1,0" VerticalAlignment="Center" BorderThickness="2,1,2,2" />
-        <ToggleButton x:Name="FocusCallStack" VerticalAlignment="Top" Height="24" Padding="1,-4,1,-1" ToolTip="Focus on callstacks" FontWeight="Bold" Width="24" Click="RefreshFilter" Margin="1,1,0,1">
-          <Image Height="24" Width="24" Margin="-3,2,0,0" Source="/Brofiler;component/TimeLine/Icons/CallStack-icon.png" Stretch="Fill"/>
+        <ToggleButton x:Name="FocusCallStack" VerticalAlignment="Top" Height="24" ToolTip="Focus on callstacks" FontWeight="Bold" Width="24" Click="RefreshFilter" Margin="1,1,0,1">
+            <ContentControl Style="{StaticResource appbar_crosshair}" Margin="-6"/>
         </ToggleButton>
         <ToggleButton x:Name="ShowPercentButton" Content="%" VerticalAlignment="Top" Height="24" FontSize="18.667" Padding="1,-4,1,-1" ToolTip="Show events in percent" FontWeight="Bold" Width="24" Margin="1,1,0,1" Foreground="#FF333333"/>
-        <ToggleButton x:Name="ShowPathButton" VerticalAlignment="Top" Height="24" FontSize="18.667" Padding="1,-4,1,-1" ToolTip="Show source path" FontWeight="Bold" Width="24" Margin="1">
-      	  <Image Height="20" Width="20" Margin="-1,2,0,0" Source="/Brofiler;component/TimeLine/Icons/Source-icon.png" Stretch="Fill"/>
+        <ToggleButton x:Name="ShowPathButton" VerticalAlignment="Top" Height="24" ToolTip="Show source path" FontWeight="Bold" Width="24" Margin="1">
+            <ContentControl Style="{StaticResource appbar_folder}" Margin="-6"/>
         </ToggleButton>
-		  </StackPanel>
+        </StackPanel>
     </Grid>
   </Grid>
 </UserControl>

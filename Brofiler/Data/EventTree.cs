@@ -89,6 +89,15 @@ namespace Profiler.Data
 
     public abstract void ApplyFilter(HashSet<Object> roof, HashSet<Object> nodes, FilterMode mode);
     public abstract void CalculateRecursiveExcludeFlag(Dictionary<Object, int> parentCallStorage);
+
+        public delegate bool TreeNodeDelegate(BaseTreeNode node, int level);
+        public void ForEach(TreeNodeDelegate action, int level = 0)
+        {
+            if (!action(this, level))
+                return;
+
+            Children.ForEach(node => node.ForEach(action, level + 1));
+        }
   }
 
   public abstract class TreeNode<TDescription> : BaseTreeNode
@@ -238,5 +247,10 @@ namespace Profiler.Data
 				curNodes.Pop();
 			}
     }
+
+        public void ForEachChild(TreeNodeDelegate action)
+        {
+            Children.ForEach(node => node.ForEach(action));
+        }
   }
 }

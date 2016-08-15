@@ -6,35 +6,33 @@ using System.IO;
 
 namespace Profiler.Data
 {
-  public interface ITick
-  {
-    long Tick { get; }
-  }
+    public interface ITick
+    {
+        long Start { get; }
+    }
 
-	public class Durable
-	{
-		private long start;
-		public long Start
-		{
-			get { return start; }
-			set { start = value; }
-		}
+    public interface IDurable : ITick
+    {
+        long Finish { get; }
+    }
 
-		public double StartMS
-		{
-			get { return TicksToMs(start); }
-		}
+    public class Tick : ITick
+    {
+        public long Start { get; set; }
+    }
 
-		private long finish;
-		public long Finish
+    public class Durable :  IDurable
+    {
+        public long Start { get; set; }
+        public long Finish { get; set; }
+        public double StartMS
 		{
-			get { return finish; }
-			set { finish = value; }
+			get { return TicksToMs(Start); }
 		}
 
 		public double FinishMS
 		{
-			get { return TicksToMs(finish); }
+			get { return TicksToMs(Finish); }
 		}
 
 		private static double freq = 1;
@@ -45,29 +43,45 @@ namespace Profiler.Data
 
 		public double Duration
 		{
-			get { return TicksToMs(finish - start); }
+			get { return TicksToMs(Finish - Start); }
 		}
 
-		public static double TicksToMs(long duration)
+        public String DurationF1
+        {
+            get { return Duration.ToString("F1", System.Globalization.CultureInfo.InvariantCulture); }
+        }
+
+        public String DurationF3
+        {
+            get { return Duration.ToString("F3", System.Globalization.CultureInfo.InvariantCulture); }
+        }
+
+
+        public static double TicksToMs(long duration)
 		{
 			return freq * duration;
 		}
 
-		public static long MsToTick(double ms)
+        internal bool Intersect(long value)
+        {
+            return Start <= value && value <= Finish;
+        }
+
+        public static long MsToTick(double ms)
 		{
 			return (long)(ms / freq);
 		}
 
 		public void ReadDurable(BinaryReader reader)
 		{
-			start = reader.ReadInt64();
-			finish = reader.ReadInt64();
+			Start = reader.ReadInt64();
+			Finish = reader.ReadInt64();
 		}
 
 		public Durable(long s, long f)
 		{
-			this.start = s;
-			this.finish = f;
+			this.Start = s;
+			this.Finish = f;
 		}
 
 		public Durable() { }

@@ -1,24 +1,31 @@
 ﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="clr-namespace:Profiler" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="Profiler.MainWindow"
-        Title="What the hell is going on?" Height="700" Width="900" Background="White" Drop="Window_Drop" DragEnter="Window_DragEnter" AllowDrop="True" TextOptions.TextFormattingMode="Display">
+        xmlns:local="clr-namespace:Profiler" 
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="Profiler.MainWindow"
+        Title="What the hell is going on?" 
+        Height="700" Width="900" 
+        Drop="Window_Drop" DragEnter="Window_DragEnter" 
+        AllowDrop="True"
+        Icon="icon.ico" TextOptions.TextFormattingMode="Display"
+    >
+
     <Grid>
     	<Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
     		<RowDefinition Height="Auto"/>
-        <RowDefinition Height="Auto"/>
-        <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
     	</Grid.RowDefinitions>
-		<Expander Header="Time Line" Margin="1" Background="{x:Null}" BorderBrush="#FF141212" VerticalContentAlignment="Stretch" UseLayoutRounding="False" IsExpanded="True">
-			<Grid>
-				<local:TimeLine Margin="2" x:Name="timeLine" />
-			</Grid>
-		</Expander>
-    <Expander Header="Threads" Margin="1" Grid.Row="1" Background="{x:Null}" BorderBrush="#FF141212" VerticalContentAlignment="Stretch" UseLayoutRounding="False" IsExpanded="True">
+        <!--<c:WindowHeader Title="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=Title}" Icon="icon.ico" />-->
+        <Border Grid.Row="1">
+			<local:TimeLine Margin="2" x:Name="timeLine" />
+	    </Border>
+    <Expander Header="Threads" Margin="1" Grid.Row="2" VerticalContentAlignment="Stretch" UseLayoutRounding="False" IsExpanded="True">
       <Grid>
-        <local:ThreadView x:Name="ThreadView" Height="Auto" HorizontalAlignment="Stretch" Margin="0" VerticalAlignment="Stretch" Width="Auto" />
+        <local:ThreadView x:Name="ThreadView" Height="Auto" MinHeight="1" HorizontalAlignment="Stretch" Margin="0" VerticalAlignment="Stretch" Width="Auto" />
       </Grid>
     </Expander>
-    <TabControl Margin="0" Grid.Row="2" Name="frameTabs" Background="{x:Null}" />
+    <TabControl Margin="0" Grid.Row="3" Name="frameTabs" />
 	</Grid>
 </Window>
