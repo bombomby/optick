@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Release|Win32">
@@ -20,73 +20,73 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{830934D9-6F6C-C37D-18F2-FB3304348F00}</ProjectGuid>
-    <Keyword>Win32Proj</Keyword>
     <RootNamespace>BrofilerCore</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
-  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>..\..\Bin\</OutDir>
+    <OutDir>..\..\Bin\x32\Release\</OutDir>
     <IntDir>Temp\x32\Release\BrofilerCore\</IntDir>
     <TargetName>BrofilerCore</TargetName>
     <TargetExt>.lib</TargetExt>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>..\..\Bin\</OutDir>
+    <OutDir>..\..\Bin\x64\Release\</OutDir>
     <IntDir>Temp\x64\Release\BrofilerCore\</IntDir>
     <TargetName>BrofilerCore</TargetName>
     <TargetExt>.lib</TargetExt>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>..\..\Bin\</OutDir>
+    <OutDir>..\..\Bin\x32\Debug\</OutDir>
     <IntDir>Temp\x32\Debug\BrofilerCore\</IntDir>
     <TargetName>BrofilerCore</TargetName>
     <TargetExt>.lib</TargetExt>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>..\..\Bin\</OutDir>
+    <OutDir>..\..\Bin\x64\Debug\</OutDir>
     <IntDir>Temp\x64\Debug\BrofilerCore\</IntDir>
     <TargetName>BrofilerCore</TargetName>
     <TargetExt>.lib</TargetExt>
@@ -94,20 +94,26 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level4</WarningLevel>
-      <PreprocessorDefinitions>NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalOptions>/wd4127 /wd4250  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MaxSpeed</Optimization>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <FloatingPointModel>Fast</FloatingPointModel>
-      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
-      <AdditionalOptions>/wd4127 /wd4250 %(AdditionalOptions)</AdditionalOptions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader></PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ProgramDataBaseFileName>$(OutDir)BrofilerCore.pdb</ProgramDataBaseFileName>
     </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  <Lib>
+    <OutputFile>$(OutDir)BrofilerCore.lib</OutputFile>
+    <TargetMachine>MachineX86</TargetMachine>
+  </Lib>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -117,19 +123,26 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level4</WarningLevel>
-      <PreprocessorDefinitions>NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalOptions>/wd4127 /wd4250  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MaxSpeed</Optimization>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <FloatingPointModel>Fast</FloatingPointModel>
-      <AdditionalOptions>/wd4127 %(AdditionalOptions)</AdditionalOptions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader></PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ProgramDataBaseFileName>$(OutDir)BrofilerCore.pdb</ProgramDataBaseFileName>
     </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  <Lib>
+    <OutputFile>$(OutDir)BrofilerCore.lib</OutputFile>
+    <TargetMachine>MachineX64</TargetMachine>
+  </Lib>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -139,17 +152,26 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level4</WarningLevel>
-      <PreprocessorDefinitions>_DEBUG;_CRTDBG_MAP_ALLOC;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <AdditionalOptions>/wd4127 /wd4250  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_CRTDBG_MAP_ALLOC;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <FloatingPointModel>Fast</FloatingPointModel>
-      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
-      <AdditionalOptions>/wd4127 /wd4250 %(AdditionalOptions)</AdditionalOptions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader></PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <ProgramDataBaseFileName>$(OutDir)BrofilerCore.pdb</ProgramDataBaseFileName>
     </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;_CRTDBG_MAP_ALLOC;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  <Lib>
+    <OutputFile>$(OutDir)BrofilerCore.lib</OutputFile>
+    <TargetMachine>MachineX86</TargetMachine>
+  </Lib>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -157,16 +179,26 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level4</WarningLevel>
-      <PreprocessorDefinitions>_DEBUG;_CRTDBG_MAP_ALLOC;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalOptions>/wd4127 /wd4250  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_DEBUG;_CRTDBG_MAP_ALLOC;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <FloatingPointModel>Fast</FloatingPointModel>
-      <AdditionalOptions>/wd4127 %(AdditionalOptions)</AdditionalOptions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader></PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ProgramDataBaseFileName>$(OutDir)BrofilerCore.pdb</ProgramDataBaseFileName>
     </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;_CRTDBG_MAP_ALLOC;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+  <Lib>
+    <OutputFile>$(OutDir)BrofilerCore.lib</OutputFile>
+    <TargetMachine>MachineX64</TargetMachine>
+  </Lib>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -192,16 +224,36 @@
     <ClInclude Include="..\..\BrofilerCore\Types.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\BrofilerCore\Core.cpp" />
-    <ClCompile Include="..\..\BrofilerCore\ETW.cpp" />
-    <ClCompile Include="..\..\BrofilerCore\Event.cpp" />
-    <ClCompile Include="..\..\BrofilerCore\EventDescriptionBoard.cpp" />
-    <ClCompile Include="..\..\BrofilerCore\HPTimer.cpp" />
-    <ClCompile Include="..\..\BrofilerCore\Message.cpp" />
-    <ClCompile Include="..\..\BrofilerCore\ProfilerServer.cpp" />
-    <ClCompile Include="..\..\BrofilerCore\Sampler.cpp" />
-    <ClCompile Include="..\..\BrofilerCore\Serialization.cpp" />
-    <ClCompile Include="..\..\BrofilerCore\SymEngine.cpp" />
+    <ClCompile Include="..\..\BrofilerCore\Core.cpp">
+      <ObjectFileName>$(IntDir)BrofilerCore\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\BrofilerCore\ETW.cpp">
+      <ObjectFileName>$(IntDir)BrofilerCore\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\BrofilerCore\Event.cpp">
+      <ObjectFileName>$(IntDir)BrofilerCore\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\BrofilerCore\EventDescriptionBoard.cpp">
+      <ObjectFileName>$(IntDir)BrofilerCore\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\BrofilerCore\HPTimer.cpp">
+      <ObjectFileName>$(IntDir)BrofilerCore\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\BrofilerCore\Message.cpp">
+      <ObjectFileName>$(IntDir)BrofilerCore\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\BrofilerCore\ProfilerServer.cpp">
+      <ObjectFileName>$(IntDir)BrofilerCore\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\BrofilerCore\Sampler.cpp">
+      <ObjectFileName>$(IntDir)BrofilerCore\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\BrofilerCore\Serialization.cpp">
+      <ObjectFileName>$(IntDir)BrofilerCore\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\BrofilerCore\SymEngine.cpp">
+      <ObjectFileName>$(IntDir)BrofilerCore\</ObjectFileName>
+    </ClCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

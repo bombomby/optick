@@ -1,9 +1,10 @@
 #include <iostream>
 #include "TestEngine.h"
+#include "Brofiler.h"
 
 using namespace std;
 
-int main(int, char **)
+int wmain()
 {
 	cout << "Starting profiler test." << endl;
 
@@ -11,7 +12,16 @@ int main(int, char **)
 	cout << "Engine successfully created." << endl;
 
 	cout << "Starting main loop update." << endl;
-	while( engine.Update() ) { cout<<'.'; }
-	
+
+	while( true ) 
+	{
+		BROFILER_FRAME("MainThread");
+		
+		if (!engine.Update())
+			break;
+
+		cout<<'.'; 
+	}
+
 	return 0;
 }

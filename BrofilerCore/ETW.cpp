@@ -3,6 +3,8 @@
 
 namespace Brofiler
 {
+#if USE_BROFILER_ETW
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const byte SWITCH_CONTEXT_INSTRUCTION_OPCODE = 36;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -89,21 +91,33 @@ ETW::Status ETW::Start()
 		// ERROR_INVALID_PARAMETER(87)
 		// ERROR_BAD_PATHNAME(161)
 		// ERROR_DISK_FULL(112)
-		ULONG status = StartTrace(&sessionHandle, KERNEL_LOGGER_NAME, sessionProperties);
-		if (status != ERROR_SUCCESS)
+		int retryCount = 2;
+		ULONG status = ETW_OK;
+
+		while (--retryCount >= 0)
 		{
+			status = StartTrace(&sessionHandle, KERNEL_LOGGER_NAME, sessionProperties);
+
 			switch (status)
 			{
 			case ERROR_ALREADY_EXISTS:
-				return ETW_ERROR_ALREADY_EXISTS;
+				ControlTrace(0, KERNEL_LOGGER_NAME, sessionProperties, EVENT_TRACE_CONTROL_STOP);
+				break;
 
 			case ERROR_ACCESS_DENIED:
 				return ETW_ERROR_ACCESS_DENIED;
+
+			case ERROR_SUCCESS:
+				retryCount = 0;
+				break;
 
 			default:
 				return ETW_FAILED;
 			}
 		}
+
+		if (status != ERROR_SUCCESS)
+			return ETW_FAILED;
 
 		ZeroMemory(&logFile, sizeof(EVENT_TRACE_LOGFILE));
 
@@ -153,4 +167,19 @@ ETW::~ETW()
 	delete sessionProperties;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#else
+ETW::ETW() {}
+ETW::~ETW() {}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ETW::Status ETW::Start() 
+{
+	return Status::ETW_FAILED;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool ETW::Stop()
+{
+	return true;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#endif
 }

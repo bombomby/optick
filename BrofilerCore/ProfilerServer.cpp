@@ -12,7 +12,7 @@ namespace Brofiler
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static const short DEFAULT_PORT = 31313;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Server::Server(short port) : socket(new Socket()), acceptThread(0)
+Server::Server(short port) : socket(new Socket())
 {
 	socket->Bind(port, 8);
 	socket->Listen();
@@ -50,9 +50,9 @@ void Server::Send(DataResponse::Type type, OutputDataStream& stream)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Server::InitConnection()
 {
-	if (!acceptThread)
+	if (!acceptThread.joinable())
 	{
-		acceptThread = CreateThread(NULL, 0, &Server::AsyncAccept, this, 0, NULL);
+		acceptThread = std::thread(Server::AsyncAccept, this);
 		return true;
 	}
 	return false;
@@ -60,13 +60,7 @@ bool Server::InitConnection()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Server::~Server()
 {
-	if (acceptThread)
-	{
-		TerminateThread(acceptThread, 0);
-		WaitForSingleObject(acceptThread, INFINITE);
-		CloseHandle(acceptThread);
-		acceptThread = 0;
-	}
+	acceptThread.join();
 
 	if (socket)
 	{
@@ -87,16 +81,12 @@ bool Server::Accept()
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DWORD WINAPI Server::AsyncAccept( LPVOID lpParam )
+void Server::AsyncAccept( Server* server )
 {
-	Server* server = (Server*)lpParam;
-
 	while (server->Accept())
 	{
 		Sleep(1000);
 	}
-
-	return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

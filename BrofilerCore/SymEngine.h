@@ -44,8 +44,10 @@ public:
 	// Get Symbol from PDB file
 	const Symbol * const GetSymbol(DWORD64 dwAddress);
 
+#if USE_BROFILER_SAMPLING
 	// Collects Callstack
 	uint GetCallstack(HANDLE hThread, CONTEXT& context, CallStackBuffer& callstack);
+#endif
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

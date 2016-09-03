@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2015
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BrofilerTest", "BrofilerTest.vcxproj", "{9A313DD9-8694-CC7D-2F1A-05341B5C9800}"
 	ProjectSection(ProjectDependencies) = postProject
 		{830934D9-6F6C-C37D-18F2-FB3304348F00} = {830934D9-6F6C-C37D-18F2-FB3304348F00}

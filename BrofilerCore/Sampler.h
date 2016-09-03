@@ -21,8 +21,10 @@ class Sampler
 
 	uint intervalMicroSeconds;
 
+#if USE_BROFILER_SAMPLING
 	// Called from worker thread
 	static DWORD WINAPI AsyncUpdate( LPVOID lpParam );
+#endif
 public:
 	Sampler();
 	~Sampler();

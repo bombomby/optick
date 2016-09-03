@@ -1,5 +1,7 @@
 #pragma once
 
+#include <thread>
+
 #include "Concurrency.h"
 #include "Message.h"
 
@@ -15,7 +17,7 @@ class Server
 	static const int BIFFER_SIZE = 1024;
 	char buffer[BIFFER_SIZE];
 
-	HANDLE acceptThread;
+	std::thread acceptThread;
 	Socket* socket;
 
 	CriticalSection lock;
@@ -25,7 +27,7 @@ class Server
 
 	bool InitConnection();
 
-	static DWORD WINAPI AsyncAccept( LPVOID lpParam );
+	static void AsyncAccept(Server* server);
 	bool Accept();
 public:
 	void Send(DataResponse::Type type, OutputDataStream& stream = OutputDataStream::Empty);

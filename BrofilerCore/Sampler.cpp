@@ -4,7 +4,7 @@
 #include "Serialization.h"
 #include "Sampler.h"
 #include <DbgHelp.h>
-#include <hash_set>
+#include <unordered_set>
 #include "HPTimer.h"
 
 namespace Brofiler
@@ -37,7 +37,7 @@ struct CallStackTreeNode
 		return children.back().Merge(callstack, index - 1); 
 	}
 
-	void CollectAddresses(std::hash_set<DWORD64>& addresses) const
+	void CollectAddresses(std::unordered_set<DWORD64>& addresses) const
 	{
 		addresses.insert(dwArddress);
 		for each (const auto& node in children)
@@ -89,6 +89,10 @@ Sampler::~Sampler()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Sampler::StartSampling(const std::vector<ThreadEntry*>& threads, uint samplingInterval)
 {
+	threads;
+	samplingInterval;
+
+#if USE_BROFILER_SAMPLING
 	symEngine.Init();
 
 	intervalMicroSeconds = samplingInterval;
@@ -105,6 +109,7 @@ void Sampler::StartSampling(const std::vector<ThreadEntry*>& threads, uint sampl
 	workerThread = CreateThread(NULL, 0, &Sampler::AsyncUpdate, this, 0, NULL);
 
 	BRO_ASSERT(finishEvent && workerThread, "Sampling was not started!")
+#endif
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Sampler::IsActive() const
@@ -118,6 +123,7 @@ void ClearStackContext(CONTEXT& context)
 	context.ContextFlags = CONTEXT_FULL;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#if USE_BROFILER_SAMPLING
 DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 {
 	Sampler& sampler = *(Sampler*)(lpParam);
@@ -189,6 +195,7 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 
 	return 0;
 }
+#endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& os, const Symbol * const symbol)
 {
@@ -210,14 +217,14 @@ OutputDataStream& Sampler::Serialize(OutputDataStream& stream)
 		if (!callstack.empty())
 			tree.Merge(callstack, callstack.size() - 1);
 
-	std::hash_set<DWORD64> addresses;
+	std::unordered_set<DWORD64> addresses;
 	tree.CollectAddresses(addresses);
 
 	Core::Get().DumpProgress("Resolving Symbols...");
 
-	std::vector<const Symbol * const> symbols;
+	std::vector<const Symbol*> symbols;
 	for each (DWORD64 address in addresses)
-		if (const Symbol * const symbol = symEngine.GetSymbol(address))
+		if (const Symbol* symbol = symEngine.GetSymbol(address))
 			symbols.push_back(symbol);
 
 	stream << symbols;

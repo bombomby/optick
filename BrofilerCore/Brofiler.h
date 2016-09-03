@@ -4,6 +4,9 @@
 	#define USE_BROFILER 1
 #endif
 
+#define USE_BROFILER_SAMPLING (USE_BROFILER && !BRO_UWP)
+#define USE_BROFILER_ETW	  (USE_BROFILER && !BRO_UWP)
+
 #if USE_BROFILER
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // EXPORTS 

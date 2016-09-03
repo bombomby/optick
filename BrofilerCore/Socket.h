@@ -1,11 +1,12 @@
 #pragma once
 #include "Common.h"
 #include <string>
-#include <windows.h>
+
+#if BRO_UWP
+#include <WinSock2.h>
+#else
 #include <winsock.h>
-//#ifndef __WINSOCK2_H
-//#include <winsock2.h>
-//#endif
+#endif
 
 namespace Brofiler
 {
@@ -70,10 +71,9 @@ namespace Brofiler
 
 		void GetErrorMessage()
 		{
-			LPWSTR errString = NULL;  
-			FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, 0, WSAGetLastError(), 0, (LPWSTR)&errString, 0, 0 );
-			errorMessage = errString;
-			LocalFree( errString );
+			wchar_t buffer[512];
+			FormatMessage( FORMAT_MESSAGE_FROM_SYSTEM, 0, WSAGetLastError(), 0, buffer, 512, 0 );
+			errorMessage = buffer;
 		}
 
 		void Disconnect()

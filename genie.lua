@@ -1,51 +1,65 @@
+newoption {
+	trigger = "UWP",
+	description = "Generates Universal Windows Platform application type",
+}
+
 if not _ACTION then
 	_ACTION="vs2012"
 end
 
-isPosix = false
 isVisualStudio = false
-isOSX = false
+isUWP = false
 
-if _ACTION == "vs2002" or _ACTION == "vs2003" or _ACTION == "vs2005" or _ACTION == "vs2008" or _ACTION == "vs2010" or _ACTION == "vs2012" then
+if _ACTION == "vs2010" or _ACTION == "vs2012" or _ACTION == "vs2015" then
 	isVisualStudio = true
 end
 
-if _ACTION == "codeblocks" or _ACTION == "gmake"
-then
-	isPosix = true
+if _OPTIONS["UWP"] then
+	isUWP = true
 end
 
-if _ACTION == "xcode3" or os.is("macosx")
-then
-	isOSX = true
+if isUWP then
+	premake.vstudio.toolset = "v140"
+	premake.vstudio.storeapp = "10.0"
 end
 
-	
+outputFolder = "Build/" .. _ACTION
+
+if isUWP then
+	outputFolder = outputFolder .. "_UWP"
+end
+
 solution "Brofiler"
-
 	language "C++"
+	startproject "BrofilerTest"
 
-	location ( "Build/" .. _ACTION )
-	flags {"NoManifest", "ExtraWarnings", "StaticRuntime", "NoMinimalRebuild", "FloatFast", "EnableSSE2" }
+	location ( outputFolder )
+	flags { "NoManifest", "ExtraWarnings", "Unicode" }
 	optimization_flags = { "OptimizeSpeed" }
 	targetdir("Bin")
 
-if isPosix or isOSX then
-	defines { "_XOPEN_SOURCE=600" }
+if isVisualStudio then
+-- Compiler Warning (level 4) C4127. Conditional expression is constant
+-- Compiler Warning 		  C4250. inherits 'std::basic_ostream'
+    buildoptions { "/wd4127", "/wd4250" }
 end
-
+	
 if isVisualStudio then
 	debugdir ("Bin")
 end
 
+if isUWP then
+	defines { "BRO_UWP=1" }
+end
 
 	local config_list = {
 		"Release",
 		"Debug",
 	}
+
 	local platform_list = {
 		"x32",
-		"x64"
+		"x64",
 	}
 
 	configurations(config_list)
@@ -62,50 +76,13 @@ configuration "Debug"
 	defines { "_DEBUG", "_CRTDBG_MAP_ALLOC"}
 	flags { "Symbols" }
 
-configuration "x32"
-if isVisualStudio then
--- Compiler Warning (level 4) C4127. Conditional expression is constant
--- Compiler Warning 		  C4250. inherits 'std::basic_ostream'
-        buildoptions { "/wd4127", "/wd4250" }
-else
-	buildoptions { "-std=c++11" }
-  if isPosix then
-  	linkoptions { "-rdynamic" }
-  	if isOSX then
-		buildoptions { "-Wno-invalid-offsetof -Wno-deprecated-declarations -fsanitize=address -fno-omit-frame-pointer" }
-		linkoptions { "-fsanitize=address" }
-	else
-		buildoptions { "-Wno-invalid-offsetof -fsanitize=undefined -fPIE -g -fno-omit-frame-pointer" }
-  		linkoptions { "-fsanitize=undefined -pie" }
-  	end
-  end
-end
-
-configuration "x64"
-if isVisualStudio then
--- Compiler Warning (level 4) C4127. Conditional expression is constant
-        buildoptions { "/wd4127"  }
-else
-	buildoptions { "-std=c++11" }
-  if isPosix then
-  	linkoptions { "-rdynamic" }
-  	if isOSX then
-		buildoptions { "-Wno-invalid-offsetof -Wno-deprecated-declarations -fsanitize=address -fno-omit-frame-pointer" }
-		linkoptions { "-fsanitize=address" }
-	else
-		buildoptions { "-Wno-invalid-offsetof -fsanitize=undefined -fPIE -g -fno-omit-frame-pointer" }
-  		linkoptions { "-fsanitize=undefined -pie" }
-  	end
-  end
-end
-
-
 --  give each configuration/platform a unique output directory
 
 for _, config in ipairs(config_list) do
 	for _, plat in ipairs(platform_list) do
 		configuration { config, plat }
-		objdir    ( "Build/" .. _ACTION .. "/Temp/" )
+		objdir    ( outputFolder .. "/Temp/" )
+		targetdir ("Bin/" .. plat .. "/" .. config)
 	end
 end
 
@@ -115,6 +92,7 @@ os.mkdir("./Bin")
 
 project "BrofilerCore"
 	kind "StaticLib"
+	uuid "830934D9-6F6C-C37D-18F2-FB3304348F00"
 	defines { "_CRT_SECURE_NO_WARNINGS" }
 	files {
 		"BrofilerCore/**.cpp",
@@ -162,11 +140,15 @@ project "BrofilerCore"
 
 project "BrofilerTest"
  	flags {"NoPCH"}
- 	kind "ConsoleApp"
+ 	kind "StaticLib"
+	uuid "9A313DD9-8694-CC7D-2F1A-05341B5C9800"
  	files {
-		"BrofilerTest/**.h", 
- 		"BrofilerTest/**.cpp", 
+		"BrofilerTest/**.*", 
  	}
+	
+	vpaths { 
+		["*"] = "BrofilerTest" 
+	}
 
 	includedirs
 	{
@@ -176,4 +158,39 @@ project "BrofilerTest"
 	links {
 		"BrofilerCore"
 	}
+	
+if isUWP then
+-- Genie can't generate proper UWP application
+-- It's a dummy project to match existing project file
+project "BrofilerDurangoTest"
+	location( "BrofilerDurangoTest" )
+ 	kind "WindowedApp"
+	uuid "5CA6AF66-C2CB-412E-B335-B34357F2FBB6"
+	files {
+		"BrofilerDurangoTest/**.*", 
+ 	}
+else
+project "BrofilerWindowsTest"
+ 	flags {"NoPCH"}
+ 	kind "ConsoleApp"
+	uuid "C50A1240-316C-EF4D-BAD9-3500263A260D"
+ 	files {
+		"BrofilerWindowsTest/**.*", 
+ 	}
+	
+	vpaths { 
+		["*"] = "BrofilerWindowsTest" 
+	}
+
+	includedirs
+	{
+		"BrofilerCore",
+		"BrofilerTest"
+	}
+	
+	links {
+		"BrofilerCore",
+		"BrofilerTest"
+	}
+end
 

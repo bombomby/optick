@@ -1,13 +1,14 @@
 #pragma once
 #include <windows.h>
 #include <vector>
+#include <thread>
 
 namespace Test
 {
 	// Test engine: emulates some hard CPU work.
 	class Engine
 	{
-		std::vector<HANDLE> workers;
+		std::vector<std::thread> workers;
 		bool isAlive;
 
 		void UpdateInput();

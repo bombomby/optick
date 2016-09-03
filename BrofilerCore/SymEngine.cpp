@@ -1,7 +1,9 @@
 #include "SymEngine.h"
 
+#if USE_BROFILER_SAMPLING
 #include <DbgHelp.h>
 #pragma comment( lib, "DbgHelp.Lib" )
+#endif
 
 namespace Brofiler
 {
@@ -30,6 +32,8 @@ SymEngine::~SymEngine()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const Symbol * const SymEngine::GetSymbol(DWORD64 dwAddress)
 {
+	dwAddress;
+#if USE_BROFILER_SAMPLING
 	if (dwAddress == 0)
 		return nullptr;
 
@@ -79,6 +83,9 @@ const Symbol * const SymEngine::GetSymbol(DWORD64 dwAddress)
 	}
 
 	return &symbol;
+#else
+	return nullptr;
+#endif
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // const char* USER_SYMBOL_SEARCH_PATH = "http://msdl.microsoft.com/download/symbols";
@@ -87,6 +94,7 @@ void SymEngine::Init()
 {
 	if (!isInitialized)
 	{
+#if USE_BROFILER_SAMPLING
 		previousOptions = SymGetOptions();
 
 		memset(previousSearchPath, 0, MAX_SEARCH_PATH_LENGTH);
@@ -105,11 +113,13 @@ void SymEngine::Init()
 		{
 			isInitialized = true;
 		}
+#endif
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void SymEngine::Close()
 {
+#if USE_BROFILER_SAMPLING
 	if (isInitialized)
 	{
 		SymCleanup(hProcess);
@@ -126,8 +136,10 @@ void SymEngine::Close()
 
 		needRestorePreviousSettings = false;
 	}
+#endif
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#if USE_BROFILER_SAMPLING
 uint SymEngine::GetCallstack(HANDLE hThread, CONTEXT& context, CallStackBuffer& callstack) 
 {
 	// We can't initialize dbghelp.dll here => http://microsoft.public.windbg.narkive.com/G2WkSt2k/stackwalk64-performance-problems
@@ -182,5 +194,6 @@ uint SymEngine::GetCallstack(HANDLE hThread, CONTEXT& context, CallStackBuffer& 
 
 	return index;
 }
+#endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
