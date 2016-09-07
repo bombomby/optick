@@ -13,8 +13,8 @@ namespace Profiler
 {
     public struct Interval
     {
-        public double Left { get; set; }
-        public double Width { get; set; }
+        public double Left;
+        public double Width;
 
         public double Right { get { return Left + Width; } }
 
