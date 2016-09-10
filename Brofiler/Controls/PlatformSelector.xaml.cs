@@ -5,6 +5,10 @@ using System.Windows.Controls;
 
 using System.Net;
 using System.ComponentModel;
+using System.Collections.ObjectModel;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
+using System.Threading.Tasks;
 
 namespace Profiler
 {
@@ -64,20 +68,72 @@ namespace Profiler
             }
         }
 
-        List<PlatformDescription> platforms = new List<PlatformDescription>();
+        ObservableCollection<PlatformDescription> platforms = new ObservableCollection<PlatformDescription>();
 
         public PlatformSelector()
         {
             InitializeComponent();
 
-            platforms.Add(new PlatformDescription() { Name = Environment.MachineName, IP = Platform.GetPCAddress(), Icon = "appbar_os_windows_8" });
+            IPAddress ip = Platform.GetPCAddress();
+
+            platforms.Add(new PlatformDescription() { Name = Environment.MachineName, IP = ip, Icon = "appbar_os_windows_8" });
             platforms.Add(new PlatformDescription() { Name = "PS4", IP = Platform.GetPS4Address(),  Icon = "appbar_social_playstation" });
             platforms.Add(new PlatformDescription() { Name = "Xbox", IP = Platform.GetXONEAddress(), Icon = "appbar_controller_xbox" });
             platforms.Add(new PlatformDescription() { Name = "Network", IP = IPAddress.Loopback, Icon = "appbar_network", Detailed = true });
 
             comboBox.ItemsSource = platforms;
 
+            ScanNetworkForCompatibleDevices(ip);
         }
+
+        private String GetIconByComputerName(String name)
+        {
+            String result = "appbar_os_windows_8";
+
+            if (name.IndexOf("xbox", StringComparison.OrdinalIgnoreCase) != -1)
+                result = "appbar_controller_xbox";
+            else if (name.IndexOf("ps4", StringComparison.OrdinalIgnoreCase) != -1)
+                result = "appbar_social_playstation";
+
+            return result;
+        }
+
+        private void ScanNetworkForCompatibleDevices(IPAddress startAddress)
+        {
+            byte[] address = startAddress.GetAddressBytes();
+            byte originalIndex = address[address.Length-1];
+            for (byte i = 0; i < 255; ++i)
+            {
+                if (i != originalIndex)
+                {
+                    address[address.Length-1] = i;
+                    IPAddress ip = new IPAddress(address);
+                    Task.Run(() =>
+                    {
+                        PingReply reply = new Ping().Send(ip, 16);
+
+                        if (reply.Status == IPStatus.Success)
+                        {
+                            String name = reply.Address.ToString();
+
+                            try
+                            {
+                                IPHostEntry entry = Dns.GetHostEntry(reply.Address);
+                                if (entry != null)
+                                    name = entry.HostName;
+                            }
+                            catch (SocketException ex) { }
+
+                            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                platforms.Add(new PlatformDescription() { Name = name, IP = reply.Address, Icon = GetIconByComputerName(name) });
+                            }));
+                        }
+                    });
+                }
+            }
+        }
+            
 
         private void comboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {

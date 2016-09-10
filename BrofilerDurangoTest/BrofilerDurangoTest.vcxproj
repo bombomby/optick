@@ -104,28 +104,28 @@
     <PackageCertificateKeyFile>BrofilerDurangoTest_TemporaryKey.pfx</PackageCertificateKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>..\Bin\$(Platform)\$(Configuration)</OutDir>
+    <OutDir>..\Bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>..\Build\vs2015_UWP\Temp\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IntDir>..\Build\vs2015_UWP\Temp\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <OutDir>..\Bin\$(Platform)\$(Configuration)</OutDir>
+    <OutDir>..\Bin\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <IntDir>..\Build\vs2015_UWP\Temp\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <OutDir>..\Bin\$(Platform)\$(Configuration)</OutDir>
+    <OutDir>..\Bin\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IntDir>..\Build\vs2015_UWP\Temp\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <OutDir>..\Bin\$(Platform)\$(Configuration)</OutDir>
+    <OutDir>..\Bin\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <IntDir>..\Build\vs2015_UWP\Temp\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <OutDir>..\Bin\$(Platform)\$(Configuration)</OutDir>
+    <OutDir>..\Bin\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IntDir>..\Build\vs2015_UWP\Temp\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <OutDir>..\Bin\$(Platform)\$(Configuration)</OutDir>
+    <OutDir>..\Bin\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <Link>
@@ -187,6 +187,7 @@
     <Link>
       <AdditionalDependencies>d2d1.lib; d3d11.lib; dxgi.lib; windowscodecs.lib; dwrite.lib; %(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories); $(VCInstallDir)\lib\store\amd64; $(VCInstallDir)\lib\amd64</AdditionalLibraryDirectories>
+      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
     </Link>
     <ClCompile>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>

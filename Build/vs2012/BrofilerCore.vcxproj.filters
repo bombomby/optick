@@ -63,15 +63,15 @@
     <ClInclude Include="..\..\BrofilerCore\Thread.h">
       <Filter>System</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\BrofilerCore\Tracer.h">
+      <Filter>Core</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\BrofilerCore\Types.h">
       <Filter>System</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\BrofilerCore\Core.cpp">
-      <Filter>Core</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\BrofilerCore\ETW.cpp">
       <Filter>Core</Filter>
     </ClCompile>
     <ClCompile Include="..\..\BrofilerCore\Event.cpp">
@@ -96,6 +96,9 @@
       <Filter>Network</Filter>
     </ClCompile>
     <ClCompile Include="..\..\BrofilerCore\SymEngine.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\BrofilerCore\Tracer.cpp">
       <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>

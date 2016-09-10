@@ -106,7 +106,6 @@ project "BrofilerCore"
 			"BrofilerCore/Core.h",
 			"BrofilerCore/Core.cpp",
 			"BrofilerCore/ETW.h",
-			"BrofilerCore/ETW.cpp",
 			"BrofilerCore/Event.h",
 			"BrofilerCore/Event.cpp",
 			"BrofilerCore/EventDescription.h",
@@ -117,6 +116,8 @@ project "BrofilerCore"
 			"BrofilerCore/Sampler.cpp",
 			"BrofilerCore/SymEngine.h",
 			"BrofilerCore/SymEngine.cpp",
+			"BrofilerCore/Tracer.h",
+			"BrofilerCore/Tracer.cpp",
 		},
 		["Network"] = {
 			"BrofilerCore/Message.h", 

@@ -4,7 +4,7 @@
 #include "Sampler.h"
 #include "MemoryPool.h"
 #include "Concurrency.h"
-#include "ETW.h"
+#include "Tracer.h"
 //#include "Graphics.h"
 #include <map>
 

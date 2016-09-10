@@ -231,13 +231,11 @@
     <ClInclude Include="..\..\BrofilerCore\Socket.h" />
     <ClInclude Include="..\..\BrofilerCore\SymEngine.h" />
     <ClInclude Include="..\..\BrofilerCore\Thread.h" />
+    <ClInclude Include="..\..\BrofilerCore\Tracer.h" />
     <ClInclude Include="..\..\BrofilerCore\Types.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\BrofilerCore\Core.cpp">
-      <ObjectFileName>$(IntDir)BrofilerCore\</ObjectFileName>
-    </ClCompile>
-    <ClCompile Include="..\..\BrofilerCore\ETW.cpp">
       <ObjectFileName>$(IntDir)BrofilerCore\</ObjectFileName>
     </ClCompile>
     <ClCompile Include="..\..\BrofilerCore\Event.cpp">
@@ -262,6 +260,9 @@
       <ObjectFileName>$(IntDir)BrofilerCore\</ObjectFileName>
     </ClCompile>
     <ClCompile Include="..\..\BrofilerCore\SymEngine.cpp">
+      <ObjectFileName>$(IntDir)BrofilerCore\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\BrofilerCore\Tracer.cpp">
       <ObjectFileName>$(IntDir)BrofilerCore\</ObjectFileName>
     </ClCompile>
   </ItemGroup>

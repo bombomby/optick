@@ -1,5 +1,5 @@
 #include "Core.h"
-#include "ETW.h"
+#include "Tracer.h"
 
 namespace Brofiler
 {
