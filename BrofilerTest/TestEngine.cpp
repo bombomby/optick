@@ -1,5 +1,4 @@
 #include "TestEngine.h"
-#include "Types.h"
 #include "Brofiler.h"
 #include <math.h>
 #include <vector>
@@ -21,15 +20,15 @@ void WorkerThread(Engine* engine)
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-static const uint REPEAT_COUNT = 128 * 1024;
+static const unsigned long REPEAT_COUNT = 128 * 1024;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<uint N>
+template<unsigned long N>
 void SlowFunction()
 { PROFILE
 	// Make it static to fool compiler and prevent it from skipping
 	static float value = 0.0f;
 	
-	for (uint i = 0; i < N; ++i)
+	for (unsigned long i = 0; i < N; ++i)
 		value = (value + sin((float)i)) * 0.5f;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -47,6 +46,44 @@ void SlowFunction2()
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#if BRO_FIBERS
+template<unsigned long N>
+struct SimpleTask
+{
+	MT_DECLARE_TASK(SimpleTask, MT::StackRequirements::STANDARD, MT::TaskPriority::NORMAL, MT::Color::Blue);
+
+	float value;
+
+	SimpleTask() : value(0.0f) {}
+
+	void Do(MT::FiberContext&)
+	{
+		for (unsigned long i = 0; i < N; ++i)
+			value = (value + sin((float)i)) * 0.5f;
+	}
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<unsigned long CHILDREN_COUNT>
+struct RootTask
+{
+	MT_DECLARE_TASK(RootTask, MT::StackRequirements::STANDARD, MT::TaskPriority::NORMAL, MT::Color::BurlyWood);
+
+	float value;
+
+	RootTask() : value(0.0f) {}
+
+	void Do(MT::FiberContext& context)
+	{
+		MT::Thread::SpinSleepMilliSeconds(1);
+
+		SimpleTask<REPEAT_COUNT> children[CHILDREN_COUNT];
+		context.RunSubtasksAndYield(MT::TaskGroup::Default(), children, CHILDREN_COUNT);
+
+		MT::Thread::SpinSleepMilliSeconds(1);
+	}
+};
+#endif
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Engine::Update()
 { 
 	UpdateInput();
@@ -54,6 +91,10 @@ bool Engine::Update()
 	UpdateMessages();
 
 	UpdateLogic();
+
+#if BRO_FIBERS
+	UpdateTasks();
+#endif
 
 	UpdateScene();
 
@@ -79,6 +120,15 @@ void Engine::UpdateLogic()
 	SlowFunction<REPEAT_COUNT>();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#if BRO_FIBERS
+void Engine::UpdateTasks()
+{ BROFILER_CATEGORY( "UpdateTasks", Brofiler::Color::SkyBlue )
+	RootTask<4> task;
+	scheduler.RunAsync(MT::TaskGroup::Default(), &task, 1);
+	scheduler.WaitAll(INFINITE);
+}
+#endif
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdateScene()
 { BROFILER_CATEGORY( "UpdateScene", Brofiler::Color::SkyBlue )
 	SlowFunction<REPEAT_COUNT>();
@@ -91,7 +141,7 @@ void Engine::Draw()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdatePhysics()
 { BROFILER_CATEGORY( "UpdatePhysics", Brofiler::Color::Wheat )
-	int64 time = Brofiler::GetTimeMicroSeconds();
+	long long time = Brofiler::GetTimeMicroSeconds();
 	while (Brofiler::GetTimeMicroSeconds() - time < 20 * 1000) {}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

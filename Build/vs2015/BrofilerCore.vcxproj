@@ -97,7 +97,7 @@
     <ClCompile>
       <AdditionalOptions>/wd4127 /wd4250  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MaxSpeed</Optimization>
-      <PreprocessorDefinitions>NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_BROFILER=1;NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -109,7 +109,7 @@
       <ProgramDataBaseFileName>$(OutDir)BrofilerCore.pdb</ProgramDataBaseFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_BROFILER=1;NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   <Lib>
     <OutputFile>$(OutDir)BrofilerCore.lib</OutputFile>
@@ -126,7 +126,7 @@
     <ClCompile>
       <AdditionalOptions>/wd4127 /wd4250  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MaxSpeed</Optimization>
-      <PreprocessorDefinitions>NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_BROFILER=1;NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -138,7 +138,7 @@
       <ProgramDataBaseFileName>$(OutDir)BrofilerCore.pdb</ProgramDataBaseFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_BROFILER=1;NDEBUG;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   <Lib>
     <OutputFile>$(OutDir)BrofilerCore.lib</OutputFile>
@@ -155,7 +155,7 @@
     <ClCompile>
       <AdditionalOptions>/wd4127 /wd4250  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_CRTDBG_MAP_ALLOC;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_BROFILER=1;_DEBUG;_CRTDBG_MAP_ALLOC;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -167,7 +167,7 @@
       <ProgramDataBaseFileName>$(OutDir)BrofilerCore.pdb</ProgramDataBaseFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>_DEBUG;_CRTDBG_MAP_ALLOC;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_BROFILER=1;_DEBUG;_CRTDBG_MAP_ALLOC;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   <Lib>
     <OutputFile>$(OutDir)BrofilerCore.lib</OutputFile>
@@ -182,7 +182,7 @@
     <ClCompile>
       <AdditionalOptions>/wd4127 /wd4250  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_CRTDBG_MAP_ALLOC;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_BROFILER=1;_DEBUG;_CRTDBG_MAP_ALLOC;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -194,7 +194,7 @@
       <ProgramDataBaseFileName>$(OutDir)BrofilerCore.pdb</ProgramDataBaseFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>_DEBUG;_CRTDBG_MAP_ALLOC;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_BROFILER=1;_DEBUG;_CRTDBG_MAP_ALLOC;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   <Lib>
     <OutputFile>$(OutDir)BrofilerCore.lib</OutputFile>

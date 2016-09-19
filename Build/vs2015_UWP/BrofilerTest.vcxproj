@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Release|Win32">
@@ -21,13 +21,12 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9A313DD9-8694-CC7D-2F1A-05341B5C9800}</ProjectGuid>
     <RootNamespace>BrofilerTest</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.10240.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
     <DefaultLanguage>en-US</DefaultLanguage>
     <AppContainerApplication>true</AppContainerApplication>
     <MinimumVisualStudioVersion>12.0</MinimumVisualStudioVersion>
     <ApplicationType>Windows Store</ApplicationType>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
-    <WindowsTargetPlatformMinVersion>10.0.0.0</WindowsTargetPlatformMinVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -103,26 +102,25 @@
       <AdditionalOptions>/wd4127 /wd4250  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MaxSpeed</Optimization>
       <AdditionalIncludeDirectories>..\..\BrofilerCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>BRO_UWP=1;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BRO_UWP=1;USE_BROFILER=1;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ProgramDataBaseFileName>$(OutDir)BrofilerTest.pdb</ProgramDataBaseFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>BRO_UWP=1;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BRO_UWP=1;USE_BROFILER=1;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\BrofilerCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
-    <Lib>
-      <OutputFile>$(OutDir)BrofilerTest.lib</OutputFile>
-      <TargetMachine>MachineX86</TargetMachine>
-    </Lib>
+  <Lib>
+    <OutputFile>$(OutDir)BrofilerTest.lib</OutputFile>
+    <TargetMachine>MachineX86</TargetMachine>
+  </Lib>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -135,26 +133,25 @@
       <AdditionalOptions>/wd4127 /wd4250  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MaxSpeed</Optimization>
       <AdditionalIncludeDirectories>..\..\BrofilerCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>BRO_UWP=1;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BRO_UWP=1;USE_BROFILER=1;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ProgramDataBaseFileName>$(OutDir)BrofilerTest.pdb</ProgramDataBaseFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>BRO_UWP=1;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BRO_UWP=1;USE_BROFILER=1;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\BrofilerCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
-    <Lib>
-      <OutputFile>$(OutDir)BrofilerTest.lib</OutputFile>
-      <TargetMachine>MachineX64</TargetMachine>
-    </Lib>
+  <Lib>
+    <OutputFile>$(OutDir)BrofilerTest.lib</OutputFile>
+    <TargetMachine>MachineX64</TargetMachine>
+  </Lib>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -167,26 +164,25 @@
       <AdditionalOptions>/wd4127 /wd4250  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\..\BrofilerCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>BRO_UWP=1;_DEBUG;_CRTDBG_MAP_ALLOC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BRO_UWP=1;USE_BROFILER=1;_DEBUG;_CRTDBG_MAP_ALLOC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <ProgramDataBaseFileName>$(OutDir)BrofilerTest.pdb</ProgramDataBaseFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>BRO_UWP=1;_DEBUG;_CRTDBG_MAP_ALLOC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BRO_UWP=1;USE_BROFILER=1;_DEBUG;_CRTDBG_MAP_ALLOC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\BrofilerCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
-    <Lib>
-      <OutputFile>$(OutDir)BrofilerTest.lib</OutputFile>
-      <TargetMachine>MachineX86</TargetMachine>
-    </Lib>
+  <Lib>
+    <OutputFile>$(OutDir)BrofilerTest.lib</OutputFile>
+    <TargetMachine>MachineX86</TargetMachine>
+  </Lib>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -197,26 +193,25 @@
       <AdditionalOptions>/wd4127 /wd4250  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\..\BrofilerCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>BRO_UWP=1;_DEBUG;_CRTDBG_MAP_ALLOC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BRO_UWP=1;USE_BROFILER=1;_DEBUG;_CRTDBG_MAP_ALLOC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader></PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <ProgramDataBaseFileName>$(OutDir)BrofilerTest.pdb</ProgramDataBaseFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>BRO_UWP=1;_DEBUG;_CRTDBG_MAP_ALLOC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BRO_UWP=1;USE_BROFILER=1;_DEBUG;_CRTDBG_MAP_ALLOC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\BrofilerCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
-    <Lib>
-      <OutputFile>$(OutDir)BrofilerTest.lib</OutputFile>
-      <TargetMachine>MachineX64</TargetMachine>
-    </Lib>
+  <Lib>
+    <OutputFile>$(OutDir)BrofilerTest.lib</OutputFile>
+    <TargetMachine>MachineX64</TargetMachine>
+  </Lib>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>

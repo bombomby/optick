@@ -67,6 +67,11 @@ namespace Profiler.Data
             return Start <= value && value <= Finish;
         }
 
+        internal bool Intersect(Durable other)
+        {
+            return Start <= other.Finish && Finish >= other.Start;
+        }
+
         public static long MsToTick(double ms)
 		{
 			return (long)(ms / freq);

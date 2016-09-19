@@ -100,8 +100,8 @@
     <ClCompile>
       <AdditionalOptions>/wd4127 /wd4250  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories>..\..\BrofilerCore;..\..\BrofilerTest;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\TaskScheduler\Include;..\..\BrofilerCore;..\..\BrofilerTest;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USE_BROFILER=1;BRO_FIBERS=1;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -113,8 +113,8 @@
       <ProgramDataBaseFileName>$(OutDir)BrofilerWindowsTest.pdb</ProgramDataBaseFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\BrofilerCore;..\..\BrofilerTest;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USE_BROFILER=1;BRO_FIBERS=1;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\TaskScheduler\Include;..\..\BrofilerCore;..\..\BrofilerTest;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -130,8 +130,8 @@
     <ClCompile>
       <AdditionalOptions>/wd4127 /wd4250  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories>..\..\BrofilerCore;..\..\BrofilerTest;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\TaskScheduler\Include;..\..\BrofilerCore;..\..\BrofilerTest;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USE_BROFILER=1;BRO_FIBERS=1;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -143,8 +143,8 @@
       <ProgramDataBaseFileName>$(OutDir)BrofilerWindowsTest.pdb</ProgramDataBaseFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\BrofilerCore;..\..\BrofilerTest;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USE_BROFILER=1;BRO_FIBERS=1;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\TaskScheduler\Include;..\..\BrofilerCore;..\..\BrofilerTest;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -160,8 +160,8 @@
     <ClCompile>
       <AdditionalOptions>/wd4127 /wd4250  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\BrofilerCore;..\..\BrofilerTest;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_DEBUG;_CRTDBG_MAP_ALLOC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\TaskScheduler\Include;..\..\BrofilerCore;..\..\BrofilerTest;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USE_BROFILER=1;BRO_FIBERS=1;_DEBUG;_CRTDBG_MAP_ALLOC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -173,8 +173,8 @@
       <ProgramDataBaseFileName>$(OutDir)BrofilerWindowsTest.pdb</ProgramDataBaseFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>_DEBUG;_CRTDBG_MAP_ALLOC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\BrofilerCore;..\..\BrofilerTest;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USE_BROFILER=1;BRO_FIBERS=1;_DEBUG;_CRTDBG_MAP_ALLOC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\TaskScheduler\Include;..\..\BrofilerCore;..\..\BrofilerTest;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -188,8 +188,8 @@
     <ClCompile>
       <AdditionalOptions>/wd4127 /wd4250  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\BrofilerCore;..\..\BrofilerTest;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_DEBUG;_CRTDBG_MAP_ALLOC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\TaskScheduler\Include;..\..\BrofilerCore;..\..\BrofilerTest;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USE_BROFILER=1;BRO_FIBERS=1;_DEBUG;_CRTDBG_MAP_ALLOC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -201,8 +201,8 @@
       <ProgramDataBaseFileName>$(OutDir)BrofilerWindowsTest.pdb</ProgramDataBaseFileName>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>_DEBUG;_CRTDBG_MAP_ALLOC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\BrofilerCore;..\..\BrofilerTest;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USE_BROFILER=1;BRO_FIBERS=1;_DEBUG;_CRTDBG_MAP_ALLOC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\TaskScheduler\Include;..\..\BrofilerCore;..\..\BrofilerTest;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -218,6 +218,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="TaskScheduler.vcxproj">
+      <Project>{172AD4F7-83EA-4F2E-4C25-99ABB8A4940A}</Project>
+    </ProjectReference>
     <ProjectReference Include="BrofilerCore.vcxproj">
       <Project>{830934D9-6F6C-C37D-18F2-FB3304348F00}</Project>
     </ProjectReference>

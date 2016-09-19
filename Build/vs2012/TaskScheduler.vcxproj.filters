@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Include">
+      <UniqueIdentifier>{6917EFFE-D5F6-6D9A-DE0E-F9704A6DD4FB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Platform">
+      <UniqueIdentifier>{0A97BCEC-F68F-DB3E-1FC2-C0C30B1ABB4A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Platform\Common">
+      <UniqueIdentifier>{EFC2AC1E-5BFA-F4B5-6404-59D9D0BA1BAF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Platform\Posix">
+      <UniqueIdentifier>{F94DD901-E547-0254-CEB4-9864BA4D68C0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Platform\Windows">
+      <UniqueIdentifier>{D116E0E9-BD3B-2F6A-E686-14FAD20A2E88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Scopes">
+      <UniqueIdentifier>{B2CAF73F-9E98-EB45-872C-5C6C7399C7AA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{56EB95D1-428D-C0A7-2B48-D4FB178947F8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\TaskScheduler\README.txt" />
+    <None Include="..\..\TaskScheduler\Include\MTFiberContext.inl">
+      <Filter>Include</Filter>
+    </None>
+    <None Include="..\..\TaskScheduler\Include\MTScheduler.inl">
+      <Filter>Include</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\TaskScheduler\Include\MTAppInterop.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\MTArrayView.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\MTAtomic.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\MTColorTable.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\MTConcurrentRingBuffer.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\MTConfig.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\MTDebug.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\MTFiberContext.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\MTGroupedTask.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\MTPlatform.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\MTProfilerEventListener.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\MTQueueMPMC.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\MTScheduler.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\MTStackRequirements.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\MTStaticVector.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\MTTaskBucket.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\MTTaskDesc.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\MTTaskGroup.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\MTTaskPool.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\MTTaskQueue.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\MTThreadContext.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\MTTools.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\MTTypes.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Common\MTAtomic.h">
+      <Filter>Include\Platform\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Common\MTThread.h">
+      <Filter>Include\Platform\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Posix\MTAtomic.h">
+      <Filter>Include\Platform\Posix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Posix\MTCommon.h">
+      <Filter>Include\Platform\Posix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Posix\MTEvent.h">
+      <Filter>Include\Platform\Posix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Posix\MTFiber.h">
+      <Filter>Include\Platform\Posix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Posix\MTMemory.h">
+      <Filter>Include\Platform\Posix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Posix\MTMutex.h">
+      <Filter>Include\Platform\Posix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Posix\MTThread.h">
+      <Filter>Include\Platform\Posix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Posix\MTUtils.h">
+      <Filter>Include\Platform\Posix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Windows\MicroWindows.h">
+      <Filter>Include\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Windows\MTAtomic.h">
+      <Filter>Include\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Windows\MTCommon.h">
+      <Filter>Include\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Windows\MTEvent.h">
+      <Filter>Include\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Windows\MTFiber.h">
+      <Filter>Include\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Windows\MTFiberDefault.h">
+      <Filter>Include\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Windows\MTFiberOptimized.h">
+      <Filter>Include\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Windows\MTMemory.h">
+      <Filter>Include\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Windows\MTMutex.h">
+      <Filter>Include\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Windows\MTThread.h">
+      <Filter>Include\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Windows\MTUtils.h">
+      <Filter>Include\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\TaskScheduler\Include\Scopes\MTScopes.h">
+      <Filter>Include\Scopes</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\TaskScheduler\Include\Platform\Windows\MicroWindows.cpp">
+      <Filter>Include\Platform\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\TaskScheduler\Source\MTDefaultAppInterop.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\TaskScheduler\Source\MTFiberContext.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\TaskScheduler\Source\MTScheduler.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\TaskScheduler\Source\MTThreadContext.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

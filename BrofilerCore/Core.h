@@ -26,7 +26,6 @@ struct ScopeData
 {
 	ScopeHeader header;
 	std::vector<EventData> categories;
-	std::vector<EventTime> synchronization;
 	std::vector<EventData> events;
 
 	void AddEvent(const EventData& data)
@@ -34,24 +33,8 @@ struct ScopeData
 		events.push_back(data);
 		if (data.description->color != Color::Null)
 		{
-			if (data.description->color == Color::White)
-				synchronization.push_back(data);
-			else
-				categories.push_back(data);
+			categories.push_back(data);
 		}
-	}
-
-	size_t AddSynchronization(const std::vector<EventTime>& syncData, size_t startIndex)
-	{
-		for (;startIndex < syncData.size(); ++startIndex)
-		{
-			if (syncData[startIndex].start > header.event.finish)
-				break;
-
-			if (syncData[startIndex].start >= header.event.start && syncData[startIndex].finish <= header.event.finish)
-				synchronization.push_back(syncData[startIndex]);
-		}
-		return startIndex;
 	}
 
 	void InitRootEvent(const EventData& data)
@@ -68,7 +51,7 @@ OutputDataStream& operator << ( OutputDataStream& stream, const ScopeData& ob);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef MemoryPool<EventData, 1024> EventBuffer;
 typedef MemoryPool<const EventData*, 32> CategoryBuffer;
-typedef MemoryPool<EventTime, 1024> SynchronizationBuffer;
+typedef MemoryPool<SyncData, 1024> SynchronizationBuffer;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct EventStorage
 {
@@ -104,6 +87,14 @@ struct EventStorage
 	}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct ThreadDescription
+{
+	unsigned long threadID;
+	const char* name;
+
+	ThreadDescription(const char* threadName, unsigned long id) : name(threadName), threadID(id) {}
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct ThreadEntry
 {
 	ThreadDescription description;
@@ -121,6 +112,7 @@ class Core
 	uint32 mainThreadID;
 
 	std::vector<ThreadEntry*> threads;
+	std::vector<ThreadEntry*> fibers;
 
 	int64 progressReportedLastTimestampMS;
 
@@ -136,6 +128,8 @@ class Core
 
 	void DumpCapturingProgress();
 	void SendHandshakeResponse(ETW::Status status);
+
+	void DumpThread(const ThreadEntry& entry, const EventTime& timeSlice, ScopeData& scope);
 public:
 	void Activate(bool active);
 	bool isActive;
@@ -171,7 +165,10 @@ public:
 	void DumpSamplingData();
 
 	// Registers thread and create EventStorage
-	bool RegisterThread(const ThreadDescription& description);
+	bool RegisterThread(const ThreadDescription& description, EventStorage** slot);
+
+	// Registers finer and create EventStorage
+	bool RegisterFiber(const ThreadDescription& description, EventStorage** slot);
 
 	// NOT Thread Safe singleton (performance)
 	static BRO_INLINE Core& Get() { return notThreadSafeInstance; }

@@ -22,5 +22,29 @@ namespace Profiler.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.0.0.0")]
+        public string DefaultIP {
+            get {
+                return ((string)(this["DefaultIP"]));
+            }
+            set {
+                this["DefaultIP"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("31313")]
+        public short DefaultPort {
+            get {
+                return ((short)(this["DefaultPort"]));
+            }
+            set {
+                this["DefaultPort"] = value;
+            }
+        }
     }
 }

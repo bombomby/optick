@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{172AD4F7-83EA-4F2E-4C25-99ABB8A4940A}</ProjectGuid>
+    <RootNamespace>TaskScheduler</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>..\..\Bin\x32\Release\</OutDir>
+    <IntDir>Temp\x32\Release\TaskScheduler\</IntDir>
+    <TargetName>TaskScheduler</TargetName>
+    <TargetExt>.lib</TargetExt>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>..\..\Bin\x64\Release\</OutDir>
+    <IntDir>Temp\x64\Release\TaskScheduler\</IntDir>
+    <TargetName>TaskScheduler</TargetName>
+    <TargetExt>.lib</TargetExt>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>..\..\Bin\x32\Debug\</OutDir>
+    <IntDir>Temp\x32\Debug\TaskScheduler\</IntDir>
+    <TargetName>TaskScheduler</TargetName>
+    <TargetExt>.lib</TargetExt>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>..\..\Bin\x64\Debug\</OutDir>
+    <IntDir>Temp\x64\Debug\TaskScheduler\</IntDir>
+    <TargetName>TaskScheduler</TargetName>
+    <TargetExt>.lib</TargetExt>
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/wd4127 /wd4250  %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>MaxSpeed</Optimization>
+      <AdditionalIncludeDirectories>..\..\TaskScheduler\Include;..\..\BrofilerCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USE_BROFILER=1;BRO_FIBERS=1;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader></PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ProgramDataBaseFileName>$(OutDir)TaskScheduler.pdb</ProgramDataBaseFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>USE_BROFILER=1;BRO_FIBERS=1;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\TaskScheduler\Include;..\..\BrofilerCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  <Lib>
+    <OutputFile>$(OutDir)TaskScheduler.lib</OutputFile>
+    <TargetMachine>MachineX86</TargetMachine>
+  </Lib>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalOptions>/wd4127 /wd4250  %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>MaxSpeed</Optimization>
+      <AdditionalIncludeDirectories>..\..\TaskScheduler\Include;..\..\BrofilerCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USE_BROFILER=1;BRO_FIBERS=1;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader></PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ProgramDataBaseFileName>$(OutDir)TaskScheduler.pdb</ProgramDataBaseFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>USE_BROFILER=1;BRO_FIBERS=1;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\TaskScheduler\Include;..\..\BrofilerCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  <Lib>
+    <OutputFile>$(OutDir)TaskScheduler.lib</OutputFile>
+    <TargetMachine>MachineX64</TargetMachine>
+  </Lib>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalOptions>/wd4127 /wd4250  %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\TaskScheduler\Include;..\..\BrofilerCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USE_BROFILER=1;BRO_FIBERS=1;_DEBUG;_CRTDBG_MAP_ALLOC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader></PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <ProgramDataBaseFileName>$(OutDir)TaskScheduler.pdb</ProgramDataBaseFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>USE_BROFILER=1;BRO_FIBERS=1;_DEBUG;_CRTDBG_MAP_ALLOC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\TaskScheduler\Include;..\..\BrofilerCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  <Lib>
+    <OutputFile>$(OutDir)TaskScheduler.lib</OutputFile>
+    <TargetMachine>MachineX86</TargetMachine>
+  </Lib>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalOptions>/wd4127 /wd4250  %(AdditionalOptions)</AdditionalOptions>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\TaskScheduler\Include;..\..\BrofilerCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>USE_BROFILER=1;BRO_FIBERS=1;_DEBUG;_CRTDBG_MAP_ALLOC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader></PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ProgramDataBaseFileName>$(OutDir)TaskScheduler.pdb</ProgramDataBaseFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>USE_BROFILER=1;BRO_FIBERS=1;_DEBUG;_CRTDBG_MAP_ALLOC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\TaskScheduler\Include;..\..\BrofilerCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  <Lib>
+    <OutputFile>$(OutDir)TaskScheduler.lib</OutputFile>
+    <TargetMachine>MachineX64</TargetMachine>
+  </Lib>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\TaskScheduler\Include\MTAppInterop.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\MTArrayView.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\MTAtomic.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\MTColorTable.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\MTConcurrentRingBuffer.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\MTConfig.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\MTDebug.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\MTFiberContext.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\MTGroupedTask.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\MTPlatform.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\MTProfilerEventListener.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\MTQueueMPMC.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\MTScheduler.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\MTStackRequirements.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\MTStaticVector.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\MTTaskBucket.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\MTTaskDesc.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\MTTaskGroup.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\MTTaskPool.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\MTTaskQueue.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\MTThreadContext.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\MTTools.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\MTTypes.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Common\MTAtomic.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Common\MTThread.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Posix\MTAtomic.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Posix\MTCommon.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Posix\MTEvent.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Posix\MTFiber.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Posix\MTMemory.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Posix\MTMutex.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Posix\MTThread.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Posix\MTUtils.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Windows\MicroWindows.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Windows\MTAtomic.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Windows\MTCommon.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Windows\MTEvent.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Windows\MTFiber.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Windows\MTFiberDefault.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Windows\MTFiberOptimized.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Windows\MTMemory.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Windows\MTMutex.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Windows\MTThread.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\Platform\Windows\MTUtils.h" />
+    <ClInclude Include="..\..\TaskScheduler\Include\Scopes\MTScopes.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\TaskScheduler\Include\Platform\Windows\MicroWindows.cpp">
+      <ObjectFileName>$(IntDir)TaskScheduler\Include\Platform\Windows\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\TaskScheduler\Source\MTDefaultAppInterop.cpp">
+      <ObjectFileName>$(IntDir)TaskScheduler\Source\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\TaskScheduler\Source\MTFiberContext.cpp">
+      <ObjectFileName>$(IntDir)TaskScheduler\Source\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\TaskScheduler\Source\MTScheduler.cpp">
+      <ObjectFileName>$(IntDir)TaskScheduler\Source\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\TaskScheduler\Source\MTThreadContext.cpp">
+      <ObjectFileName>$(IntDir)TaskScheduler\Source\</ObjectFileName>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\TaskScheduler\README.txt" />
+    <None Include="..\..\TaskScheduler\Include\MTFiberContext.inl" />
+    <None Include="..\..\TaskScheduler\Include\MTScheduler.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="BrofilerCore.vcxproj">
+      <Project>{830934D9-6F6C-C37D-18F2-FB3304348F00}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

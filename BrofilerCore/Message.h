@@ -5,18 +5,19 @@
 namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-static const uint32 NETWORK_PROTOCOL_VERSION = 5;
+static const uint32 NETWORK_PROTOCOL_VERSION = 6;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct DataResponse
 {
 	enum Type
 	{
-		FrameDescriptionBoard = 0,	// DescriptionBoard for Instrumental Frames
-		EventFrame = 1,							// Instrumental Data
-		SamplingFrame = 2,					// Sampling Data
-		NullFrame = 3,							// Last Fame Mark
-		ReportProgress = 4,					// Report Current Progress
-		Handshake = 5,							// Handshake Response
+		FrameDescriptionBoard,			// DescriptionBoard for Instrumental Frames
+		EventFrame,						// Instrumental Data
+		SamplingFrame,					// Sampling Data
+		Synchronization,				// SwitchContext Data
+		NullFrame,						// Last Fame Mark
+		ReportProgress,					// Report Current Progress
+		Handshake,						// Handshake Response
 	};
 
 	uint32 version;

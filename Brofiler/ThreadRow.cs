@@ -220,10 +220,21 @@ namespace Profiler
                 foreach (EventNode node in frame.CategoriesTree.Children)
                     BuildMeshNode(builder, scroll, node, 0);
 
-                foreach (EventData sync in frame.Synchronization)
+                Interval frameInterval = scroll.TimeToUnit(frame.Header);
+
+                double start = frameInterval.Left;
+
+                if (frame.Synchronization != null)
                 {
-                    Interval syncInterval = scroll.TimeToUnit(sync);
-                    syncBuilder.AddRect(new Rect(syncInterval.Left, BaseMargin / Height, syncInterval.Width, SyncLineHeight / Height), SynchronizationColor);
+                    foreach (Durable sync in frame.Synchronization)
+                    {
+                        Interval syncInterval = scroll.TimeToUnit(sync);
+
+                        if (start < syncInterval.Left)
+                            syncBuilder.AddRect(new Rect(start, BaseMargin / Height, syncInterval.Left - start, SyncLineHeight / Height), SynchronizationColor);
+
+                        start = Math.Max(syncInterval.Right, start);
+                    }
                 }
             }
 
@@ -276,9 +287,12 @@ namespace Profiler
                         intervalPx.Left = 0.0;
                     }
 
+                    double lum = DirectX.Utils.GetLuminance(entry.Description.Color);
+                    Color color = lum < 0.33 ? Colors.White : Colors.Black;
+
                     canvas.Text.Draw(new Point(intervalPx.Left + TextDrawOffset, Offset + level * BaseHeight), 
                                      entry.Description.Name, 
-                                     System.Windows.Media.Colors.Black,
+                                     color,
                                      TextAlignment.Left,
                                      intervalPx.Width - TextDrawOffset);
 

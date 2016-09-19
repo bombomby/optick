@@ -59,6 +59,24 @@ void Event::Stop(EventData& data)
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void SyncData::StartWork(EventStorage* storage, unsigned long core)
+{
+	if (storage)
+	{
+		SyncData& data = storage->synchronizationBuffer.Add();
+		data.Start();
+		data.finish = LLONG_MAX;
+		data.core = core;
+	}
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void SyncData::StopWork(EventStorage* storage)
+{
+	if (storage)
+		if (SyncData* syncData = storage->synchronizationBuffer.Back())
+			syncData->Stop();
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream & operator<<(OutputDataStream &stream, const EventDescription &ob)
 {
 	byte flags = (ob.isSampling ? 0x1 : 0);
@@ -73,6 +91,11 @@ OutputDataStream& operator<<(OutputDataStream& stream, const EventTime& ob)
 OutputDataStream& operator<<(OutputDataStream& stream, const EventData& ob)
 {
 	return stream << (EventTime)(ob) << ob.description->index;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+OutputDataStream& operator<<(OutputDataStream& stream, const SyncData& ob)
+{
+	return stream << (EventTime)(ob) << ob.core;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Category::Category(const EventDescription& description) : Event(description)

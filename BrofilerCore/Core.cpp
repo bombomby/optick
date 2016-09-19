@@ -32,7 +32,48 @@ void Core::DumpProgress(const char* message)
 	Server::Get().Send(DataResponse::ReportProgress, stream);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Core::DumpThread(const ThreadEntry& entry, const EventTime& timeSlice, ScopeData& scope)
+{
+	// Events
+	if (!entry.storage.eventBuffer.IsEmpty())
+	{
+		const EventData* rootEvent = nullptr;
 
+		entry.storage.eventBuffer.ForEach([&](const EventData& data)
+		{
+			if (data.finish >= data.start && data.start >= timeSlice.start && timeSlice.finish >= data.finish)
+			{
+				if (!rootEvent)
+				{
+					rootEvent = &data;
+					scope.InitRootEvent(*rootEvent);
+				} 
+				else if (rootEvent->finish < data.finish)
+				{
+					scope.Send();
+
+					rootEvent = &data;
+					scope.InitRootEvent(*rootEvent);
+				}
+				else
+				{
+					scope.AddEvent(data);
+				}
+			}
+		});
+
+		scope.Send();
+	}
+
+	if (!entry.storage.synchronizationBuffer.IsEmpty())
+	{
+		OutputDataStream synchronizationStream;
+		synchronizationStream << scope.header.boardNumber;
+		synchronizationStream << scope.header.threadNumber;
+		synchronizationStream << entry.storage.synchronizationBuffer;
+		Server::Get().Send(DataResponse::Synchronization, synchronizationStream);
+	}
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpFrames()
 {
@@ -61,6 +102,7 @@ void Core::DumpFrames()
 	boardStream << GetFrequency();
 	boardStream << timeSlice;
 	boardStream << threads;
+	boardStream << fibers;
 	boardStream << mainThreadIndex;
 	boardStream << EventDescriptionBoard::Get();
 	Server::Get().Send(DataResponse::FrameDescriptionBoard, boardStream);
@@ -68,52 +110,16 @@ void Core::DumpFrames()
 	ScopeData scope;
 	scope.header.boardNumber = (uint32)boardNumber;
 
-	std::vector<EventTime> syncronization;
-
 	for (size_t i = 0; i < threads.size(); ++i)
 	{
-		ThreadEntry* entry = threads[i];
 		scope.header.threadNumber = (uint32)i;
+		DumpThread(*threads[i], timeSlice, scope);
+	}
 
-		syncronization.resize(entry->storage.synchronizationBuffer.Size());
-
-		if (!syncronization.empty())
-			entry->storage.synchronizationBuffer.ToArray(&syncronization[0]);
-
-		size_t synchronizationIndex = 0;
-
-		// Events
-		if (!entry->storage.eventBuffer.IsEmpty())
-		{
-			const EventData* rootEvent = nullptr;
-
-			entry->storage.eventBuffer.ForEach([&](EventData& data)
-			{
-				if (data.finish >= data.start && data.start >= timeSlice.start && timeSlice.finish >= data.finish)
-				{
-					if (!rootEvent)
-					{
-						rootEvent = &data;
-						scope.InitRootEvent(*rootEvent);
-					} 
-					else if (rootEvent->finish < data.finish)
-					{
-						synchronizationIndex = scope.AddSynchronization(syncronization, synchronizationIndex);
-						scope.Send();
-
-						rootEvent = &data;
-						scope.InitRootEvent(*rootEvent);
-					}
-					else
-					{
-						scope.AddEvent(data);
-					}
-				}
-			});
-
-			synchronizationIndex = scope.AddSynchronization(syncronization, synchronizationIndex);
-			scope.Send();
-		}
+	for (size_t i = 0; i < fibers.size(); ++i)
+	{
+		scope.header.threadNumber = (uint32)(i + threads.size());
+		DumpThread(*fibers[i], timeSlice, scope);
 	}
 
 	frames.clear();
@@ -183,6 +189,9 @@ void Core::Activate( bool active )
 		for each (ThreadEntry* entry in threads)
 			entry->Activate(active);
 
+		for each (ThreadEntry* entry in fibers)
+			entry->Activate(active);
+
 		if (active)
 		{
 			ETW::Status status = etw.Start();
@@ -221,23 +230,26 @@ void Core::SendHandshakeResponse(ETW::Status status)
 	Server::Get().Send(DataResponse::Handshake, stream);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Core::RegisterThread(const ThreadDescription& description)
+bool Core::RegisterThread(const ThreadDescription& description, EventStorage** slot)
 {
 	CRITICAL_SECTION(lock);
-
-	for each (const ThreadEntry* entry in threads)
-		if (entry->description.threadID == description.threadID)
-			return false;
-
-	ThreadEntry* entry = new ThreadEntry(description, &storage);
-	threads.push_back(entry);
-
+	threads.push_back(new ThreadEntry(description, slot));
+	return true;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool Core::RegisterFiber(const ThreadDescription& description, EventStorage** slot)
+{
+	CRITICAL_SECTION(lock);
+	fibers.push_back(new ThreadEntry(description, slot));
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core::~Core()
 {
 	for each (ThreadEntry* entry in threads)
+		delete entry;
+
+	for each (ThreadEntry* entry in fibers)
 		delete entry;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -264,7 +276,7 @@ OutputDataStream& operator<<(OutputDataStream& stream, const ScopeHeader& header
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const ScopeData& ob)
 {
-	return stream << ob.header << ob.categories << ob.synchronization << ob.events;
+	return stream << ob.header << ob.categories << ob.events;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const ThreadDescription& description)
@@ -287,14 +299,24 @@ BROFILER_API bool IsActive()
 	return Core::Get().isActive;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+BROFILER_API EventStorage** GetEventStorageSlot()
+{
+	return &Core::Get().storage;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+BROFILER_API bool RegisterThread(const char* name)
+{
+	return Core::Get().RegisterThread(ThreadDescription(name, GetCurrentThreadId()), &Core::storage);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+BROFILER_API bool RegisterFiber(const char* name, EventStorage** slot)
+{
+	return Core::Get().RegisterFiber(ThreadDescription(name, (unsigned long)-1), slot);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventStorage::EventStorage(): isSampling(0)
 {
 	 
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-ThreadDescription::ThreadDescription(const char* threadName /*= "MainThread"*/) : name(threadName), threadID(GetCurrentThreadId())
-{
-	Core::Get().RegisterThread(*this);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ThreadEntry::Activate(bool isActive)
@@ -307,7 +329,7 @@ void ThreadEntry::Activate(bool isActive)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool IsSleepOnlyScope(const ScopeData& scope)
 {
-	if (!scope.categories.empty() || scope.synchronization.empty())
+	if (!scope.categories.empty())
 		return false;
 
 	for each (const EventData& data in scope.events)
@@ -336,7 +358,6 @@ void ScopeData::Clear()
 {
 	events.clear();
 	categories.clear();
-	synchronization.clear();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

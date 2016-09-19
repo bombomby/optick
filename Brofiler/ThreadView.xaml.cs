@@ -94,12 +94,12 @@ namespace Profiler
                 TextColor = Colors.Black
             });
 
-            for (int i = 0; i < group.Board.Threads.Count; ++i)
+            for (int i = 0; i < Math.Min(group.Board.Threads.Count, group.Threads.Count); ++i)
             {
                 ThreadDescription thread = group.Board.Threads[i];
                 ThreadData data = group.Threads[i];
 
-                if (data.Events.Count > 0)
+                if (data.Events.Count > 0 && !thread.IsFiber)
                 {
                     EventsThreadRow row = new EventsThreadRow(group, thread, data);
                     rows.Add(row);

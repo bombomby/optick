@@ -193,6 +193,7 @@
     <Compile Include="Data\Frame.cs" />
     <Compile Include="Data\SamplingFrame.cs" />
     <Compile Include="Data\SourceView.cs" />
+    <Compile Include="Data\Synchronization.cs" />
     <Compile Include="Data\Utils.cs" />
     <Compile Include="DirectX\DirectXCanvas.xaml.cs">
       <DependentUpon>DirectXCanvas.xaml</DependentUpon>

@@ -19,6 +19,15 @@ namespace Profiler.Data
             header.ReadEventData(reader);
             return header;
         }
+
+        public FrameHeader() { }
+
+        public FrameHeader(int index, IDurable duration)
+        {
+            ThreadIndex = index;
+            Start = duration.Start;
+            Finish = duration.Finish;
+        }
     }
 
 
@@ -49,14 +58,14 @@ namespace Profiler.Data
     }
 
 
-    public class EventFrame : Frame, IDurable
+    public class EventFrame : Frame, IDurable, IComparable<EventFrame>
     {
         public override DataResponse.Type ResponseType { get { return DataResponse.Type.EventFrame; } }
 
         public FrameHeader Header { get; private set; }
         public long Tick { get { return Header.Start; } }
 
-        private List<Entry> entries = new List<Entry>();
+        private List<Entry> entries;
 
         private EventTree root = null;
         public Profiler.Data.EventTree Root
@@ -101,7 +110,7 @@ namespace Profiler.Data
             }
         }
 
-        public EventDescriptionBoard DescriptionBoard { get; private set; }
+        public EventDescriptionBoard DescriptionBoard { get { return Group.Board; } }
         public FrameGroup Group { get; private set; }
 
         private Board<EventBoardItem, EventDescription, EventNode> board;
@@ -143,7 +152,7 @@ namespace Profiler.Data
 
         public List<Entry> Categories { get; private set; }
         public EventTree CategoriesTree { get; private set; }
-        public List<EventData> Synchronization { get; private set; }
+        public List<Durable> Synchronization { get; private set; }
 
         long IDurable.Finish
         {
@@ -172,7 +181,7 @@ namespace Profiler.Data
                 {
                     entries = ReadEventList(reader, DescriptionBoard);
 
-                    root = new EventTree(this, Entries);
+                    root = new EventTree(this, entries);
                     board = new Board<EventBoardItem, EventDescription, EventNode>(root);
 
                     reader = null;
@@ -239,15 +248,7 @@ namespace Profiler.Data
             Categories = ReadEventList(reader, DescriptionBoard);
             CategoriesTree = new EventTree(this, Categories);
 
-            Synchronization = ReadEventTimeList(reader);
-            Synchronization.Sort();
-            Synchronization = LinearizeEventList(Synchronization);
-
-            SynchronizationDuration = 0.0;
-            foreach (EventData interval in Synchronization)
-            {
-                SynchronizationDuration += interval.Duration;
-            }
+            Synchronization = new List<Durable>();
         }
 
         public double CalculateFilteredTime(HashSet<Object> filter)
@@ -255,12 +256,37 @@ namespace Profiler.Data
             return Root.CalculateFilteredTime(filter);
         }
 
+        public int CompareTo(EventFrame other)
+        {
+            return Start.CompareTo(other.Start);
+        }
+
         public EventFrame(BinaryReader reader, FrameGroup group) : base(reader.BaseStream)
         {
             this.reader = reader;
             Group = group;
-            DescriptionBoard = group.Board;
             ReadInternal(reader);
+        }
+
+        public EventFrame(FrameHeader header, List<Entry> entries, FrameGroup group) : base(null)
+        {
+            Header = header;
+            Group = group;
+            Categories = new List<Entry>();
+
+            this.entries = entries;
+            foreach (Entry entry in entries)
+                if (entry.Description.Color.A != 0)
+                    Categories.Add(entry);
+
+            CategoriesTree = new EventTree(this, Categories);
+
+            root = new EventTree(this, Entries);
+            board = new Board<EventBoardItem, EventDescription, EventNode>(root);
+
+            Synchronization = new List<Durable>();
+
+            IsLoaded = true;
         }
     }
 }

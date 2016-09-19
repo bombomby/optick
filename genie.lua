@@ -9,9 +9,14 @@ end
 
 isVisualStudio = false
 isUWP = false
+isUsingFibers = false
 
 if _ACTION == "vs2010" or _ACTION == "vs2012" or _ACTION == "vs2015" then
 	isVisualStudio = true
+end
+
+if _ACTION == "vs2012" then
+isUsingFibers = true
 end
 
 if _OPTIONS["UWP"] then
@@ -50,6 +55,12 @@ end
 
 if isUWP then
 	defines { "BRO_UWP=1" }
+end
+
+	defines { "USE_BROFILER=1"}
+
+if isUsingFibers then
+	defines { "BRO_FIBERS=1"}
 end
 
 	local config_list = {
@@ -138,6 +149,32 @@ project "BrofilerCore"
 			"BrofilerCore/Types.h",
 		},
 	}
+	
+if isUsingFibers then
+project "TaskScheduler"
+    kind "StaticLib"
+ 	flags {"NoPCH"}
+	defines {"USE_BROFILER=1"}
+ 	files {
+ 		"TaskScheduler/**.*", 
+ 	}
+
+	includedirs
+	{
+		"TaskScheduler/Include",
+		"BrofilerCore"
+	}
+
+	excludes { "Src/Platform/Posix/**.*" }
+	
+	vpaths { 
+		["*"] = "TaskScheduler" 
+	}
+	
+	links {
+		"BrofilerCore",
+	}
+end
 
 project "BrofilerTest"
  	flags {"NoPCH"}
@@ -146,11 +183,19 @@ project "BrofilerTest"
  	files {
 		"BrofilerTest/**.*", 
  	}
-	
-	vpaths { 
-		["*"] = "BrofilerTest" 
-	}
 
+if isUsingFibers then	
+	includedirs
+	{
+		"BrofilerCore",
+		"TaskScheduler/Include"
+	}
+	
+	links {
+		"BrofilerCore",
+		"TaskScheduler"
+	}
+else
 	includedirs
 	{
 		"BrofilerCore"
@@ -159,6 +204,7 @@ project "BrofilerTest"
 	links {
 		"BrofilerCore"
 	}
+end
 	
 if isUWP then
 -- Genie can't generate proper UWP application
@@ -183,8 +229,16 @@ project "BrofilerWindowsTest"
 		["*"] = "BrofilerWindowsTest" 
 	}
 
-	includedirs
-	{
+if isUsingFibers then
+	includedirs {
+		"TaskScheduler/Include"
+	}
+	links {
+		"TaskScheduler"
+	}
+end
+
+	includedirs {
 		"BrofilerCore",
 		"BrofilerTest"
 	}

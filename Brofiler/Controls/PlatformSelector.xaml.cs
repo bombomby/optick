@@ -50,7 +50,7 @@ namespace Profiler
                 }
             }
 
-            const short DEFAULT_PORT = 31313;
+            public const short DEFAULT_PORT = 31313;
 
             public event PropertyChangedEventHandler PropertyChanged;
 
@@ -83,6 +83,12 @@ namespace Profiler
 
             comboBox.ItemsSource = platforms;
 
+            IPAddress savedIP = ip;
+            short savedPort = Properties.Settings.Default.DefaultPort;
+            IPAddress.TryParse(Properties.Settings.Default.DefaultIP, out savedIP);
+
+            AddPlatform(savedIP, savedPort, true);
+
             ScanNetworkForCompatibleDevices(ip);
         }
 
@@ -98,6 +104,53 @@ namespace Profiler
             return result;
         }
 
+        private void AddPlatform(IPAddress ip, short port, bool autofocus)
+        {
+            if (ip.Equals(IPAddress.None) || ip.Equals(IPAddress.Any) || ip.Equals(IPAddress.Loopback))
+                return;
+
+            Task.Run(() =>
+            {
+                PingReply reply = new Ping().Send(ip, 16);
+
+                if (reply.Status == IPStatus.Success)
+                {
+                    String name = reply.Address.ToString();
+
+                    try
+                    {
+                        IPHostEntry entry = Dns.GetHostEntry(reply.Address);
+                        if (entry != null)
+                            name = entry.HostName;
+                    }
+                    catch (SocketException) { }
+
+                    Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        var newPlatform = new PlatformDescription() { Name = name, IP = reply.Address, Port = port, Icon = GetIconByComputerName(name) };
+
+                        bool needAdd = true;
+
+                        foreach (PlatformDescription platform in platforms)
+                        {
+                            if (platform.IP.Equals(reply.Address) && platform.Port == port)
+                            {
+                                newPlatform = platform;
+                                needAdd = false;
+                                break;
+                            }
+                        }
+
+                        if (needAdd)
+                            platforms.Add(newPlatform);
+
+                        if (autofocus)
+                            comboBox.SelectedItem = newPlatform;
+                    }));
+                }
+            });
+        }
+
         private void ScanNetworkForCompatibleDevices(IPAddress startAddress)
         {
             byte[] address = startAddress.GetAddressBytes();
@@ -108,28 +161,8 @@ namespace Profiler
                 {
                     address[address.Length-1] = i;
                     IPAddress ip = new IPAddress(address);
-                    Task.Run(() =>
-                    {
-                        PingReply reply = new Ping().Send(ip, 16);
 
-                        if (reply.Status == IPStatus.Success)
-                        {
-                            String name = reply.Address.ToString();
-
-                            try
-                            {
-                                IPHostEntry entry = Dns.GetHostEntry(reply.Address);
-                                if (entry != null)
-                                    name = entry.HostName;
-                            }
-                            catch (SocketException ex) { }
-
-                            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-                            {
-                                platforms.Add(new PlatformDescription() { Name = name, IP = reply.Address, Icon = GetIconByComputerName(name) });
-                            }));
-                        }
-                    });
+                    AddPlatform(new IPAddress(address), PlatformDescription.DEFAULT_PORT, false);
                 }
             }
         }

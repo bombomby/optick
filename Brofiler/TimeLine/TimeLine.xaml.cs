@@ -437,6 +437,10 @@ namespace Profiler
             if (platform == null)
                 return;
 
+            Properties.Settings.Default.DefaultIP = platform.IP.ToString();
+            Properties.Settings.Default.DefaultPort = platform.Port;
+            Properties.Settings.Default.Save();
+
             ProfilerClient.Get().IpAddress = platform.IP;
             ProfilerClient.Get().Port = platform.Port;
 

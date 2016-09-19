@@ -40,15 +40,20 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 	{
 		ThreadEntry* entry = threads[i];
 
+		if (entry->description.threadID == pSwitchEvent->OldThreadId)
+		{
+			if (SyncData* time = entry->storage.synchronizationBuffer.Back())
+			{
+				time->finish = eventRecord->EventHeader.TimeStamp.QuadPart;
+			}
+		}
+
 		if (entry->description.threadID == pSwitchEvent->NewThreadId)
 		{
-			if (EventTime* time = entry->storage.synchronizationBuffer.Back())
-				time->finish = eventRecord->EventHeader.TimeStamp.QuadPart;
-		}
-		else if (entry->description.threadID == pSwitchEvent->OldThreadId)
-		{
-			EventTime& time = entry->storage.synchronizationBuffer.Add();
+			SyncData& time = entry->storage.synchronizationBuffer.Add();
 			time.start = eventRecord->EventHeader.TimeStamp.QuadPart;
+			time.finish = time.start;
+			time.core = 0; // TODO: find hardware thread ID
 		}
 	}
 }
