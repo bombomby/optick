@@ -162,7 +162,9 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 			HANDLE handle = entry.first;
 			const ThreadEntry* thread = entry.second;
 
-			if (!thread->storage.isSampling)
+			// Get storage from TLS slot (it can be replaced by Fibers)
+			EventStorage* storage = *thread->threadTLS;
+			if (!storage || !storage->isSampling)
 				continue;
 
 			uint count = 0;
@@ -172,7 +174,7 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 			if (suspendedStatus != (DWORD)-1)
 			{
 				// Check scope again because it is possible to leave sampling scope while trying to suspend main thread
-				if (entry.second->storage.isSampling && GetThreadContext(handle, &context))
+				if (storage->isSampling && GetThreadContext(handle, &context))
 				{
 					count = sampler.symEngine.GetCallstack(handle, context, buffer);
 				}

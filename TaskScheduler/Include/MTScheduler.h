@@ -135,7 +135,12 @@ namespace MT
 #define MT_DECLARE_TASK(TYPE, STACK_REQUIREMENTS, TASK_PRIORITY, DEBUG_COLOR) \
 	static Brofiler::EventDescription* GetEventDescription() \
 	{ \
-		return Brofiler::EventDescription::Create( MT_TEXT( #TYPE ), __FILE__, __LINE__, (uint32)DEBUG_COLOR); \
+		static Brofiler::EventDescription* desc = nullptr; \
+		if (desc == nullptr) \
+		{ \
+			desc = Brofiler::EventDescription::Create( MT_TEXT( #TYPE ), __FILE__, __LINE__, (uint32)DEBUG_COLOR); \
+		} \
+		return desc; \
 	} \
 	\
 	static MT::Color::Type GetDebugColor() \
