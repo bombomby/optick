@@ -258,7 +258,7 @@ namespace Profiler
                         StatusText.Visibility = System.Windows.Visibility.Collapsed;
                         lock (frames)
                         {
-                            frames.Add(response.ResponseType, response.Reader);
+                            frames.Add(response);
                             //ScrollToEnd();
                         }
                         break;
@@ -382,21 +382,18 @@ namespace Profiler
                     }
 
                     foreach (Frame frame in frames)
-                    {
-                        DataResponse.Serialize(frame.ResponseType, frame.BaseStream, stream);
-                    }
+                        frame.Response.Serialize(stream);
 
                     foreach (FrameGroup group in groups)
                     {
                         for (int threadIndex = 0; threadIndex < group.Threads.Count; ++threadIndex)
                         {
                             if (threadIndex != group.Board.MainThreadIndex)
-                            {
                                 foreach (Frame frame in group.Threads[threadIndex].Events)
-                                {
-                                    DataResponse.Serialize(frame.ResponseType, frame.BaseStream, stream);
-                                }
-                            }
+                                    frame.Response?.Serialize(stream);
+
+                            Synchronization sync = group.Threads[threadIndex].Sync;
+                            sync?.Response.Serialize(stream);
                         }
                     }
 

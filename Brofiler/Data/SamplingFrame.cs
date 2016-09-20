@@ -210,10 +210,10 @@ namespace Profiler.Data
       }
     }
 
-    public SamplingFrame(BinaryReader reader) : base(reader.BaseStream)
+    public SamplingFrame(DataResponse response) : base(response)
     {
-      Reader = reader;
-			SampleCount = reader.ReadUInt32();
+      Reader = response.Reader;
+	  SampleCount = Reader.ReadUInt32();
     }
   }
 }

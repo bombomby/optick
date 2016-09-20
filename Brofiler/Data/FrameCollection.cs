@@ -135,22 +135,22 @@ namespace Profiler.Data
             groups.Clear();
         }
 
-        public void Add(DataResponse.Type dataType, BinaryReader reader)
+        public void Add(DataResponse response)
         {
-            switch (dataType)
+            switch (response.ResponseType)
             {
                 case DataResponse.Type.FrameDescriptionBoard:
                     {
-                        EventDescriptionBoard board = EventDescriptionBoard.Read(reader);
+                        EventDescriptionBoard board = EventDescriptionBoard.Read(response.Reader);
                         groups[board.ID] = new FrameGroup(board);
                         break;
                     }
 
                 case DataResponse.Type.EventFrame:
                     {
-                        int id = reader.ReadInt32();
+                        int id = response.Reader.ReadInt32();
                         FrameGroup group = groups[id];
-                        EventFrame frame = new EventFrame(reader, group);
+                        EventFrame frame = new EventFrame(response, group);
 
                         group.Add(frame);
 
@@ -162,16 +162,16 @@ namespace Profiler.Data
 
                 case DataResponse.Type.SamplingFrame:
                     {
-                        Add(new SamplingFrame(reader));
+                        Add(new SamplingFrame(response));
                         break;
                     }
 
                 case DataResponse.Type.Synchronization:
                     {
-                        int id = reader.ReadInt32();
+                        int id = response.Reader.ReadInt32();
                         FrameGroup group = groups[id];
 
-                        group.Add(new Synchronization(reader, group));
+                        group.Add(new Synchronization(response, group));
 
                         break;
                     }
@@ -205,16 +205,16 @@ namespace Profiler.Data
         public TestFrameCollection()
         {
             DataResponse descriptionResponse = DataResponse.Create(descriptionBoard);
-            Add(descriptionResponse.ResponseType, descriptionResponse.Reader);
+            Add(descriptionResponse);
 
             for (int i = 0; i < 32; ++i)
             {
                 DataResponse eventResponse = DataResponse.Create(eventFrame);
-                Add(eventResponse.ResponseType, eventResponse.Reader);
+                Add(eventResponse);
             }
 
             DataResponse samplingResponse = DataResponse.Create(samplingFrame);
-            Add(samplingResponse.ResponseType, samplingResponse.Reader);
+            Add(samplingResponse);
         }
     }
 

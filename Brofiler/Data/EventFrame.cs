@@ -261,9 +261,9 @@ namespace Profiler.Data
             return Start.CompareTo(other.Start);
         }
 
-        public EventFrame(BinaryReader reader, FrameGroup group) : base(reader.BaseStream)
+        public EventFrame(DataResponse response, FrameGroup group) : base(response)
         {
-            this.reader = reader;
+            reader = response.Reader;
             Group = group;
             ReadInternal(reader);
         }

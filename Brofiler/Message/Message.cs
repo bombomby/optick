@@ -67,6 +67,19 @@ namespace Profiler
             data.Seek(position, SeekOrigin.Begin);
         }
 
+        public void Serialize(Stream result)
+        {
+            BinaryWriter writer = new BinaryWriter(result);
+            writer.Write((UInt32)Version);
+            writer.Write((UInt32)Reader.BaseStream.Length);
+            writer.Write((UInt32)ResponseType);
+
+            long position = Reader.BaseStream.Position;
+            Reader.BaseStream.Seek(0, SeekOrigin.Begin);
+            Reader.BaseStream.CopyTo(result);
+            Reader.BaseStream.Seek(position, SeekOrigin.Begin);
+        }
+
         public static DataResponse Create(Stream stream)
         {
             if (stream == null || !stream.CanRead)
