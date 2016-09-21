@@ -390,10 +390,12 @@ namespace Profiler
                         {
                             if (threadIndex != group.Board.MainThreadIndex)
                                 foreach (Frame frame in group.Threads[threadIndex].Events)
-                                    frame.Response?.Serialize(stream);
+                                    if (frame.Response != null)
+                                        frame.Response.Serialize(stream);
 
                             Synchronization sync = group.Threads[threadIndex].Sync;
-                            sync?.Response.Serialize(stream);
+                            if (sync != null)
+                                sync.Response.Serialize(stream);
                         }
                     }
 
