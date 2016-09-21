@@ -1,7 +1,7 @@
 # [Brofiler: C++ Profiler For Games](http://brofiler.com)
 
 ## Build status
-![Appveyor build status](https://ci.appveyor.com/api/projects/status/mtqxnprvm1iara74?svg=true)
+[![Build status](https://ci.appveyor.com/api/projects/status/bu5smbuh1d2lcsf6?svg=true)](https://ci.appveyor.com/project/bombomby/brofiler)
 
 ## [Tutorial](https://github.com/bombomby/brofiler/wiki)   
 ![](http://brofiler.com/images/screenshots/Screen0.png)
