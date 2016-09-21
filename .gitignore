@@ -1,0 +1,5 @@
+Bin/
+Brofiler/obj/
+Build/
+*.suo
+*.user
