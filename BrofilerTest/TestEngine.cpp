@@ -148,6 +148,8 @@ class Profiler : public MT::IProfilerEventListener
 	Brofiler::EventStorage** eventStorageSlots[MT::MT_MAX_THREAD_COUNT];
 	MT::ThreadId threadIds[MT::MT_MAX_THREAD_COUNT];
 
+	static mt_thread_local Brofiler::EventStorage* restoreStorage;
+
 public:
 	virtual void OnFibersCreated(uint32 fibersCount) override
 	{
@@ -173,20 +175,44 @@ public:
 		// from current thread
 		if (threadIndex == 0xFFFFFFFF)
 		{
-			return;
+			Brofiler::EventStorage** threadStorageSlot = Brofiler::GetEventStorageSlot();
+
+			// Save storage for the first time
+			if (!restoreStorage)
+				restoreStorage = *threadStorageSlot;
+
+			*threadStorageSlot = eventStorages[fiberIndex];
+			Brofiler::SyncData::StartWork(*threadStorageSlot, (uint32)MT::ThreadId::Self().AsUInt64() );
 		}
+		else
+		{
+			Brofiler::EventStorage** & eventStorageSlot = eventStorageSlots[threadIndex];
+			MT::ThreadId & threadId = threadIds[threadIndex];
+			Brofiler::EventStorage* & eventStorage = eventStorages[fiberIndex];
 
-		Brofiler::EventStorage** & eventStorageSlot = eventStorageSlots[threadIndex];
-		MT::ThreadId & threadId = threadIds[threadIndex];
-		Brofiler::EventStorage* & eventStorage = eventStorages[fiberIndex];
+			Brofiler::EventStorage* previousStorage = *eventStorageSlot;
+			Brofiler::SyncData::StopWork(previousStorage);
 
-		Brofiler::EventStorage* previousStorage = *eventStorageSlot;
-		Brofiler::SyncData::StopWork(previousStorage);
+			// If we have an active storage - put current storage into the slot
+			*eventStorageSlot = eventStorage;
 
-		// If we have an active storage - put current storage into the slot
-		*eventStorageSlot = eventStorage;
+			Brofiler::SyncData::StartWork(eventStorage, (uint32)threadId.AsUInt64() );
+		}
+	}
 
-		Brofiler::SyncData::StartWork(eventStorage, (uint32)threadId.AsUInt64() );
+
+	virtual void OnThreadAssignedToFiber(uint32 threadIndex, uint32 fiberIndex) override
+	{
+		MT_UNUSED(fiberIndex);
+		MT_ASSERT(threadIndex == 0xFFFFFFFF, "Can't make assignment from another thread!");
+
+		if (restoreStorage)
+		{
+			// Restore original storage
+			Brofiler::EventStorage** threadStorageSlot = Brofiler::GetEventStorageSlot();
+			*threadStorageSlot = restoreStorage;
+			restoreStorage = nullptr;
+		}
 	}
 
 	virtual void OnThreadCreated(uint32 workerIndex) override 
@@ -231,12 +257,11 @@ public:
 		MT_UNUSED(type);
 	}
 
-
-
-
-
 };
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+mt_thread_local Brofiler::EventStorage* Profiler::restoreStorage = nullptr;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 MT::IProfilerEventListener* GetProfiler()
 {

@@ -5,6 +5,7 @@ using System.Text;
 using System.Collections.ObjectModel;
 using System.Windows.Data;
 using System.IO;
+using System.Diagnostics;
 
 namespace Profiler.Data
 {
@@ -19,25 +20,45 @@ namespace Profiler.Data
             Events = new List<EventFrame>();
         }
 
-        public void Add(Synchronization sync)
+        public void ApplySynchronization()
         {
-            Sync = sync;
-
-            if (sync == null)
+            if (Sync == null)
                 return;
 
             int currentInterval = 0;
 
             foreach (EventFrame frame in Events)
             {
-                while (currentInterval < sync.Intervals.Count && sync.Intervals[currentInterval].Finish <= frame.Header.Start)
+                while (currentInterval < Sync.Intervals.Count && Sync.Intervals[currentInterval].Finish <= frame.Header.Start)
                     ++currentInterval;
 
-                while (currentInterval < sync.Intervals.Count && sync.Intervals[currentInterval].Finish <= frame.Header.Finish)
-                    frame.Synchronization.Add(sync.Intervals[currentInterval++]);
+                while (currentInterval < Sync.Intervals.Count && Sync.Intervals[currentInterval].Finish <= frame.Header.Finish)
+                    frame.Synchronization.Add(Sync.Intervals[currentInterval++]);
 
-                if (currentInterval < sync.Intervals.Count && sync.Intervals[currentInterval].Start <= frame.Header.Finish)
-                    frame.Synchronization.Add(sync.Intervals[currentInterval]);
+                if (currentInterval < Sync.Intervals.Count && Sync.Intervals[currentInterval].Start <= frame.Header.Finish)
+                    frame.Synchronization.Add(Sync.Intervals[currentInterval]);
+            }
+        }
+
+        public void AddWithMerge(EventFrame frame)
+        {
+            if (frame.Start == frame.Finish)
+                return;
+
+            int indexStart = Utils.BinarySearchExactIndex(Events, frame.Start);
+            int indexFinish = Utils.BinarySearchExactIndex(Events, frame.Finish - 1);
+
+            Debug.Assert(indexStart == indexFinish, "Can merge only events inside the same frame");
+
+            if (indexStart != -1)
+            {
+                EventFrame parent = Events[indexStart];
+                parent.MergeWith(frame);
+            }
+            else
+            {
+                Events.Add(frame);
+                IsDirty = true;
             }
         }
     }
@@ -73,7 +94,7 @@ namespace Profiler.Data
             while (index >= Threads.Count)
                 Threads.Add(new ThreadData());
 
-            Threads[index].Add(sync);
+            Threads[index].Sync = sync;
 
             if (Board.Threads[index].IsFiber)
                 SplitFiberThread(Threads[index]);
@@ -81,6 +102,8 @@ namespace Profiler.Data
 
         private void SplitFiberThread(ThreadData data)
         {
+            data.ApplySynchronization();
+
             foreach (EventFrame frame in data.Events)
             {
                 foreach (Synchronization.SyncInterval sync in frame.Synchronization)
@@ -102,8 +125,7 @@ namespace Profiler.Data
                     {
                         FrameHeader header = new FrameHeader(threadIndex, border);
                         EventFrame block = new EventFrame(header, entries, this);
-                        Threads[threadIndex].Events.Add(block);
-                        Threads[threadIndex].IsDirty = true;
+                        Threads[threadIndex].AddWithMerge(block);
                     }
                 }
             }
@@ -116,9 +138,10 @@ namespace Profiler.Data
                 if (data.IsDirty)
                 {
                     data.Events.Sort();
-                    data.Add(data.Sync);
                     data.IsDirty = false;
                 }
+
+                data.ApplySynchronization();
             }
         }
     }

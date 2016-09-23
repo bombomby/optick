@@ -108,6 +108,14 @@ namespace MT
 			}
 		}
 
+		void ThreadContext::NotifyThreadAssignedToFiber()
+		{
+			if (IProfilerEventListener* eventListener = taskScheduler->GetProfilerEventListener())
+			{
+				eventListener->OnThreadAssignedToFiber(workerIndex, 0xFFFFFFFF);
+			}
+		}
+
 		void ThreadContext::NotifyTaskExecuteStateChanged(MT::Color::Type debugColor, const mt_char* debugID, TaskExecuteState::Type type)
 		{
 			if (IProfilerEventListener* eventListener = taskScheduler->GetProfilerEventListener())

@@ -43,7 +43,7 @@ namespace Profiler.Data
 
             for (int i = index; i < Math.Min(index + 2, frames.Count); ++i)
             {
-                if (frames[i].Start <= value && value <= frames[i].Finish)
+                if (frames[i].Start <= value && value < frames[i].Finish)
                     return i;
             }
 

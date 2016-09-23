@@ -253,14 +253,24 @@ void Core::SendHandshakeResponse(EtwStatus status)
 bool Core::RegisterThread(const ThreadDescription& description, EventStorage** slot)
 {
 	MT::ScopedGuard guard(lock);
+	ThreadEntry* entry = new ThreadEntry(description, slot);
 	threads.push_back(new ThreadEntry(description, slot));
+
+	if (isActive)
+		*slot = &entry->storage;
+
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::RegisterFiber(const ThreadDescription& description, EventStorage** slot)
 {
 	MT::ScopedGuard guard(lock);
-	fibers.push_back(new ThreadEntry(description, slot));
+	ThreadEntry* entry = new ThreadEntry(description, slot);
+	fibers.push_back(entry);
+
+	if (isActive)
+		*slot = &entry->storage;
+
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

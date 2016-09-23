@@ -767,6 +767,11 @@ namespace MT
 		context.schedulerFiber.CreateFromCurrentThreadAndRun(SchedulerFiberWait, &waitContext);
 
 		isWorkerThreadTLS = 0;
+
+#ifdef MT_INSTRUMENTED_BUILD
+		context.NotifyThreadAssignedToFiber();
+#endif
+
 		return (waitContext.exitCode == 0);
 	}
 
@@ -800,6 +805,11 @@ namespace MT
 		context.schedulerFiber.CreateFromCurrentThreadAndRun(SchedulerFiberWait, &waitContext);
 
 		isWorkerThreadTLS = 0;
+
+#ifdef MT_INSTRUMENTED_BUILD
+		context.NotifyThreadAssignedToFiber();
+#endif
+
 		return (waitContext.exitCode == 0);
 	}
 
