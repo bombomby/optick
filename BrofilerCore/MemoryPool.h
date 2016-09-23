@@ -5,7 +5,7 @@
 namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<class T, uint SIZE>
+template<class T, uint32 SIZE>
 struct MemoryChunk
 {
 	BRO_ALIGN_CACHE T data[SIZE];
@@ -19,30 +19,30 @@ struct MemoryChunk
 		if (next)
 		{
 			next->~MemoryChunk();
-			_aligned_free(next);
+			MT::Memory::Free(next);
 			next = 0;
 			prev = 0;
 		}
 	}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<class T, uint SIZE = 16>
+template<class T, uint32 SIZE = 16>
 class MemoryPool
 {
 	typedef MemoryChunk<T, SIZE> Chunk;
 	Chunk root;
 
 	Chunk* chunk;
-	uint index;
+	uint32 index;
 
-	uint chunkCount;
+	uint32 chunkCount;
 
 	BRO_INLINE void AddChunk()
 	{
 		index = 0;
 		if (!chunk->next)
 		{
-			void* ptr = _aligned_malloc(sizeof(Chunk), BRO_CACHE_LINE_SIZE);
+			void* ptr = MT::Memory::Alloc(sizeof(Chunk), BRO_CACHE_LINE_SIZE);
 			chunk->next = new (ptr) Chunk();
 			chunk->next->prev = chunk;
 		}
@@ -51,7 +51,7 @@ class MemoryPool
 		++chunkCount;
 	}
 public:
-	MemoryPool() : index(0), chunk(&root), chunkCount(1)	{}
+	MemoryPool() : chunk(&root), index(0), chunkCount(1)	{}
 
 	BRO_INLINE T& Add()
 	{
@@ -94,7 +94,7 @@ public:
 			if (root.next)
 			{
 				root.next->~MemoryChunk();
-				_aligned_free(root.next);
+				MT::Memory::Free(root.next);
 				root.next = 0;
 			}
 		}
@@ -107,10 +107,10 @@ public:
 	void ForEach(Func func) const
 	{
 		for (const Chunk* it = &root; it != chunk; it = it->next)
-			for (uint i = 0; i < SIZE; ++i)
+			for (uint32 i = 0; i < SIZE; ++i)
 				func(it->data[i]);
 
-		for (uint i = 0; i < index; ++i)
+		for (uint32 i = 0; i < index; ++i)
 			func(chunk->data[i]);
 	}
 
@@ -118,10 +118,10 @@ public:
 	void ForEach(Func func)
 	{
 		for (Chunk* it = &root; it != chunk; it = it->next)
-			for (uint i = 0; i < SIZE; ++i)
+			for (uint32 i = 0; i < SIZE; ++i)
 				func(it->data[i]);
 
-		for (uint i = 0; i < index; ++i)
+		for (uint32 i = 0; i < index; ++i)
 			func(chunk->data[i]);
 	}
 
@@ -129,16 +129,16 @@ public:
 	void ForEachChunk(Func func) const
 	{
 		for (const Chunk* it = &root; it != chunk; it = it->next)
-			for (uint i = 0; i < SIZE; ++i)
+			for (uint32 i = 0; i < SIZE; ++i)
 				func(it->data, SIZE);
 
-		for (uint i = 0; i < index; ++i)
+		for (uint32 i = 0; i < index; ++i)
 			func(chunk->data, index);
 	}
 
 	void ToArray(T* destination) const
 	{
-		uint curIndex = 0;
+		uint32 curIndex = 0;
 
 		for (const Chunk* it = &root; it != chunk; it = it->next)
 		{

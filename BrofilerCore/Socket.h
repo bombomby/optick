@@ -2,14 +2,57 @@
 #include "Common.h"
 #include <string>
 
+
+#if MT_MSVC_COMPILER_FAMILY
+#pragma warning( push )
+
+//C4127. Conditional expression is constant
+#pragma warning( disable : 4127 )
+#endif
+
+
+
+#if MT_PLATFORM_POSIX
+#define USE_BERKELEY_SOCKETS (1)
+#else
+#define USE_WINDOWS_SOCKETS (1)
+#endif
+
+
+#define SOCKET_PROTOCOL_TCP (6)
+
+
+#if USE_BERKELEY_SOCKETS
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+
+#include <unistd.h>
+#include <fcntl.h>
+typedef int TcpSocket;
+
+
+#elif USE_WINDOWS_SOCKETS
+
 #if BRO_UWP
 #include <WinSock2.h>
 #else
 #include <winsock.h>
 #endif
 
+#include <basetsd.h>
+typedef UINT_PTR TcpSocket;
+
+#else
+
+#error Platform not supported
+
+#endif
+
 namespace Brofiler
 {
+#if USE_WINDOWS_SOCKETS
 	class Wsa
 	{
 		bool isInitialized;
@@ -35,63 +78,87 @@ namespace Brofiler
 			return wsa.isInitialized;
 		}
 	};
+#endif
+
+
+	inline bool IsValidSocket(TcpSocket socket)
+	{
+#ifdef USE_WINDOWS_SOCKETS
+		if (socket == INVALID_SOCKET)
+		{
+			return false;
+		}
+#else
+		if (socket < 0)
+		{
+			return false;
+		}
+#endif
+		return true;
+	}
+
+	inline void CloseSocket(TcpSocket& socket)
+	{
+#ifdef USE_WINDOWS_SOCKETS
+		closesocket(socket);
+		socket = INVALID_SOCKET;
+#else
+		close(socket);
+		socket = -1;
+#endif
+	}
+
 
 	class Socket
 	{
-		SOCKET acceptSocket;
-		SOCKET listenSocket;
-		u_long host;
+		TcpSocket acceptSocket;
+		TcpSocket listenSocket;
 		sockaddr_in address;
 
 		fd_set recieveSet;
 
-		CriticalSection lock;
+		MT::Mutex lock;
 		std::wstring errorMessage;
 
 		void Close()
 		{
-			if (listenSocket != INVALID_SOCKET)
+			if (!IsValidSocket(listenSocket))
 			{
-				::closesocket(listenSocket);
-				listenSocket = INVALID_SOCKET;
+				CloseSocket(listenSocket);
 			}
 		}
 
-		int Bind(short port)
+		bool Bind(short port)
 		{
-			address.sin_family      = AF_INET;
+			address.sin_family = AF_INET;
 			address.sin_addr.s_addr = INADDR_ANY;
-			address.sin_port        = htons(port);
+			address.sin_port = htons(port);
 
 			if (::bind(listenSocket, (sockaddr *)&address, sizeof(address)) == 0)
-				return ERROR_SUCCESS;
+			{
+				return true;
+			}
 
-			return WSAGetLastError();
-		}
-
-		void GetErrorMessage()
-		{
-			wchar_t buffer[512];
-			FormatMessage( FORMAT_MESSAGE_FROM_SYSTEM, 0, WSAGetLastError(), 0, buffer, 512, 0 );
-			errorMessage = buffer;
+			return false;
 		}
 
 		void Disconnect()
 		{ 
-			CRITICAL_SECTION(lock);
+			MT::ScopedGuard guard(lock);
 
-			if (acceptSocket != INVALID_SOCKET)
+			if (!IsValidSocket(acceptSocket))
 			{
-				::closesocket(acceptSocket);
-				acceptSocket = INVALID_SOCKET;
+				CloseSocket(acceptSocket);
 			}
 		}
 	public:
-		Socket() : listenSocket(0), acceptSocket(0), host(0)
+		Socket() : acceptSocket(0), listenSocket(0)
 		{
+#ifdef USE_WINDOWS_SOCKETS
 			Wsa::Init();
-			listenSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-			BRO_VERIFY(listenSocket != INVALID_SOCKET, "Can't create socket", GetErrorMessage());
+#endif
+			listenSocket = ::socket(AF_INET, SOCK_STREAM, SOCKET_PROTOCOL_TCP);
+			BRO_ASSERT(IsValidSocket(listenSocket), "Can't create socket");
 		}
 
 		~Socket()
@@ -106,11 +173,10 @@ namespace Brofiler
 			{
 				int result = Bind(port);
 
-				if (result == WSAEADDRINUSE)
+				if (result == false)
 					continue;
 
-				BRO_VERIFY(result == ERROR_SUCCESS, "Can't bind to specified port", GetErrorMessage());
-				return result == ERROR_SUCCESS;
+				return true;
 			}
 
 			return false;
@@ -118,28 +184,27 @@ namespace Brofiler
 
 		void Listen()
 		{
-			int result = listen(listenSocket, SOMAXCONN);
-			BRO_UNUSED(result);
-			BRO_VERIFY(result == ERROR_SUCCESS, "Can't start listening", GetErrorMessage());
+			int result = ::listen(listenSocket, 8);
+			BRO_ASSERT(result == 0, "Can't start listening");
 		}
 
 		void Accept()
 		{ 
-			SOCKET incomingSocket = accept(listenSocket, nullptr, nullptr);
-			BRO_VERIFY(incomingSocket != INVALID_SOCKET, "Can't accept socket", GetErrorMessage());
+			TcpSocket incomingSocket = ::accept(listenSocket, nullptr, nullptr);
+			BRO_ASSERT(IsValidSocket(incomingSocket), "Can't accept socket");
 
-			CRITICAL_SECTION(lock);
+			MT::ScopedGuard guard(lock);
 			acceptSocket = incomingSocket;
 		}
 
 		bool Send(const char *buf, size_t len)
 		{
-			CRITICAL_SECTION(lock);
+			MT::ScopedGuard guard(lock);
 
-			if (acceptSocket == INVALID_SOCKET)
+			if (!IsValidSocket(acceptSocket))
 				return false;
 
-			if (::send(acceptSocket, buf, (int)len, 0) == SOCKET_ERROR)
+			if (::send(acceptSocket, buf, (int)len, 0) >= 0)
 			{
 				Disconnect();
 				return false;
@@ -150,18 +215,26 @@ namespace Brofiler
 
 		int Receive(char *buf, int len)
 		{ 
-			CRITICAL_SECTION(lock);
+			MT::ScopedGuard guard(lock);
 
-			if (acceptSocket == INVALID_SOCKET)
+			if (!IsValidSocket(acceptSocket))
 				return 0;
 
-			recieveSet.fd_count = 1;
-			recieveSet.fd_array[0] = acceptSocket;
+			FD_ZERO(&recieveSet);
+			FD_SET(acceptSocket, &recieveSet);
 
 			static timeval lim = {0};
 
-			if (select(0, &recieveSet, nullptr, nullptr, &lim) == 1)
+#if USE_BERKELEY_SOCKETS
+			if (::select(acceptSocket + 1, &recieveSet, nullptr, nullptr, &lim) == 1)
+#elif USE_WINDOWS_SOCKETS
+			if (::select(0, &recieveSet, nullptr, nullptr, &lim) == 1)
+#else
+#error Platform not supported
+#endif
+			{
 				return ::recv(acceptSocket, buf, len, 0);
+			}
 
 			return 0;
 		}
@@ -169,3 +242,6 @@ namespace Brofiler
 }
 
 
+#if MT_MSVC_COMPILER_FAMILY
+#pragma warning( pop )
+#endif

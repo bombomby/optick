@@ -5,7 +5,7 @@ using SharpDX.DXGI;
 using SharpDX.WIC;
 using System.IO;
 using Device = SharpDX.Direct3D11.Device;
-using DeviceContext = SharpDX.Direct2D1.DeviceContext;
+using DeviceContext = SharpDX.Direct2D1.RenderTarget;
 using PixelFormat = SharpDX.WIC.PixelFormat;
 
 namespace Profiler.DirectX
@@ -14,14 +14,16 @@ namespace Profiler.DirectX
     {
         private static readonly ImagingFactory Imgfactory = new ImagingFactory();
 
-        public static Bitmap1 LoadBitmap(Stream stream, DeviceContext context)
+				public static SharpDX.Direct2D1.Bitmap LoadBitmap(Stream stream, DeviceContext context)
         {
+/*
             var props = new BitmapProperties1
             {
                 PixelFormat = new SharpDX.Direct2D1.PixelFormat(Format.R8G8B8A8_UNorm, SharpDX.Direct2D1.AlphaMode.Premultiplied)
             };
+ */ 
 
-            return Bitmap1.FromWicBitmap(context, LoadBitmap(stream), props);
+						return SharpDX.Direct2D1.Bitmap.FromWicBitmap(context, LoadBitmap(stream));
         }
 
         private static BitmapSource LoadBitmap(Stream stream)

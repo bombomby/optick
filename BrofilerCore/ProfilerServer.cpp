@@ -2,17 +2,20 @@
 #include "ProfilerServer.h"
 
 #include "Socket.h"
-#include <winbase.h>
 #include "Message.h"
 
+#if MT_PLATFORM_WINDOWS
 #pragma comment( lib, "ws2_32.lib" )
+#else
+#error Platform is not defined!
+#endif
 
 namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static const short DEFAULT_PORT = 31313;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Server::Server(short port) : socket(new Socket())
+Server::Server(short port) : socket(new Socket()), isInitialized(false)
 {
 	socket->Bind(port, 8);
 	socket->Listen();
@@ -20,7 +23,7 @@ Server::Server(short port) : socket(new Socket())
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Server::Update()
 {
-	CRITICAL_SECTION(lock);
+	MT::ScopedGuard guard(lock);
 
 	InitConnection();
 
@@ -39,7 +42,7 @@ void Server::Update()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Server::Send(DataResponse::Type type, OutputDataStream& stream)
 {
-	CRITICAL_SECTION(lock);
+	MT::ScopedGuard guard(lock);
 
 	std::string data = stream.GetData();
 
@@ -50,9 +53,10 @@ void Server::Send(DataResponse::Type type, OutputDataStream& stream)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Server::InitConnection()
 {
-	if (!acceptThread.joinable())
+	if (!isInitialized)
 	{
-		acceptThread = std::thread(Server::AsyncAccept, this);
+		acceptThread.Start(1 * 1024 * 1024, Server::AsyncAccept, this);
+		isInitialized = true;
 		return true;
 	}
 	return false;
@@ -60,7 +64,7 @@ bool Server::InitConnection()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Server::~Server()
 {
-	acceptThread.join();
+	acceptThread.Join();
 
 	if (socket)
 	{
@@ -81,11 +85,13 @@ bool Server::Accept()
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Server::AsyncAccept( Server* server )
+void Server::AsyncAccept( void* _server )
 {
+	Server* server = (Server*)_server;
+
 	while (server->Accept())
 	{
-		Sleep(1000);
+		MT::Thread::Sleep(1000);
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

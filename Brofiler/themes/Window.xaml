@@ -5,11 +5,6 @@
             <Setter Property="AllowsTransparency" Value="true" />
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="ResizeMode" Value="CanResizeWithGrip" />
-            <Setter Property="WindowChrome.WindowChrome">
-                <Setter.Value>
-                    <WindowChrome NonClientFrameEdges="None" GlassFrameThickness="0" ResizeBorderThickness="7" CaptionHeight="32" />
-                </Setter.Value>
-            </Setter>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Window}">
@@ -39,7 +34,6 @@
                                                     HorizontalAlignment="Right"
                                                     Width="32"
                                                     Height="32"
-                                                    WindowChrome.IsHitTestVisibleInChrome="True"
                                                 />
                                                 <TextBlock
                                                     x:Name="Caption"
@@ -52,13 +46,13 @@
                                                     Opacity="0.66"
                                                     Text="{Binding Path=Title, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
                                                 />
-                                                <Button Grid.Column="2" WindowChrome.IsHitTestVisibleInChrome="True">
+                                                <Button Grid.Column="2" >
                                                     <Viewbox Child="{StaticResource appbar_minus}" Margin="0,4,0,-4" />
                                                 </Button>
-                                                <Button Grid.Column="3" WindowChrome.IsHitTestVisibleInChrome="True">
+                                                <Button Grid.Column="3" >
                                                     <Viewbox Child="{StaticResource appbar_window_maximize}" />
                                                 </Button>
-                                                <Button Grid.Column="4" WindowChrome.IsHitTestVisibleInChrome="True">
+                                                <Button Grid.Column="4" >
                                                     <Viewbox Child="{StaticResource appbar_close}" />
                                                 </Button>
                                             </Grid>
@@ -93,10 +87,5 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-            <Style.Resources>
-                <Style TargetType="{x:Type ResizeGrip}">
-                    <Setter Property="WindowChrome.ResizeGripDirection" Value="BottomRight" />
-                </Style>
-            </Style.Resources>
         </Style>
 </ResourceDictionary>

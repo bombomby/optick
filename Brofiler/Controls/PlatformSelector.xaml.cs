@@ -76,20 +76,27 @@ namespace Profiler
 
             IPAddress ip = Platform.GetPCAddress();
 
+            int defaultSelectionIndex = 0;
             platforms.Add(new PlatformDescription() { Name = Environment.MachineName, IP = ip, Icon = "appbar_os_windows_8" });
+
             platforms.Add(new PlatformDescription() { Name = "PS4", IP = Platform.GetPS4Address(),  Icon = "appbar_social_playstation" });
             platforms.Add(new PlatformDescription() { Name = "Xbox", IP = Platform.GetXONEAddress(), Icon = "appbar_controller_xbox" });
             platforms.Add(new PlatformDescription() { Name = "Network", IP = IPAddress.Loopback, Icon = "appbar_network", Detailed = true });
 
             comboBox.ItemsSource = platforms;
 
+            comboBox.SelectedIndex = defaultSelectionIndex;
+
+/*
             IPAddress savedIP = ip;
             short savedPort = Properties.Settings.Default.DefaultPort;
             IPAddress.TryParse(Properties.Settings.Default.DefaultIP, out savedIP);
 
             AddPlatform(savedIP, savedPort, true);
 
+
             ScanNetworkForCompatibleDevices(ip);
+*/
         }
 
         private String GetIconByComputerName(String name)
@@ -104,6 +111,7 @@ namespace Profiler
             return result;
         }
 
+/*
         private void AddPlatform(IPAddress ip, short port, bool autofocus)
         {
             if (ip.Equals(IPAddress.None) || ip.Equals(IPAddress.Any) || ip.Equals(IPAddress.Loopback))
@@ -151,6 +159,7 @@ namespace Profiler
             });
         }
 
+
         private void ScanNetworkForCompatibleDevices(IPAddress startAddress)
         {
             byte[] address = startAddress.GetAddressBytes();
@@ -166,7 +175,7 @@ namespace Profiler
                 }
             }
         }
-            
+*/            
 
         private void comboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {

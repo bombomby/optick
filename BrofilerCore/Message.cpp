@@ -39,7 +39,7 @@ class MessageFactory
 		RegisterMessage<StopMessage>();
 		RegisterMessage<TurnSamplingMessage>();
 
-		for (uint msg = 0; msg < IMessage::COUNT; ++msg)
+		for (uint32 msg = 0; msg < IMessage::COUNT; ++msg)
 		{
 			BRO_ASSERT(factory[msg] != nullptr, "Message is not registered to factory");
 		}

@@ -9,6 +9,14 @@ using System.Threading.Tasks;
 
 namespace Profiler.DirectX
 {
+		public class Utilites
+		{
+			public static int SizeOf<T>() where T : struct
+			{
+				return Marshal.SizeOf(default(T));
+			}
+		}
+
     class DynamicBuffer<T> : List<T>, IDisposable where T : struct 
     {
         public SharpDX.Direct3D11.Buffer Buffer;
@@ -24,7 +32,7 @@ namespace Profiler.DirectX
         void Init(Device device, int count)
         {
             SharpDX.Utilities.Dispose(ref Buffer);
-            Buffer = new SharpDX.Direct3D11.Buffer(device, Marshal.SizeOf<T>() * count, ResourceUsage.Dynamic, Type, CpuAccessFlags.Write, ResourceOptionFlags.None, 0);
+						Buffer = new SharpDX.Direct3D11.Buffer(device, Utilites.SizeOf<T>() * count, ResourceUsage.Dynamic, Type, CpuAccessFlags.Write, ResourceOptionFlags.None, 0);
             BufferCapacity = count;
         }
 

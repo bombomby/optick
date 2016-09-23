@@ -1,8 +1,5 @@
 #pragma once
 
-#include <thread>
-
-#include "Concurrency.h"
 #include "Message.h"
 
 namespace Brofiler
@@ -17,17 +14,20 @@ class Server
 	static const int BIFFER_SIZE = 1024;
 	char buffer[BIFFER_SIZE];
 
-	std::thread acceptThread;
+	MT::Thread acceptThread;
+
 	Socket* socket;
 
-	CriticalSection lock;
+	MT::Mutex lock;
+
+	bool isInitialized;
 	
 	Server( short port );
 	~Server();
 
 	bool InitConnection();
 
-	static void AsyncAccept(Server* server);
+	static void AsyncAccept(void* server);
 	bool Accept();
 public:
 	void Send(DataResponse::Type type, OutputDataStream& stream = OutputDataStream::Empty);

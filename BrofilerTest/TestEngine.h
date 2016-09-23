@@ -1,22 +1,24 @@
 #pragma once
-#include <windows.h>
-#include <vector>
-#include <thread>
 
-#if BRO_FIBERS
+#include <array>
+
+
+// Inject brofiler code into the task scope
+#define MT_SCHEDULER_PROFILER_TASK_SCOPE_CODE_INJECTION( TYPE, DEBUG_COLOR, SRC_FILE, SRC_LINE) BROFILER_CATEGORY( MT_TEXT( #TYPE ), DEBUG_COLOR );
+
+
+#include <MTPlatform.h>
 #include <MTScheduler.h>
-#endif
 
 namespace Test
 {
 	// Test engine: emulates some hard CPU work.
 	class Engine
 	{
-#if BRO_FIBERS
 		MT::TaskScheduler scheduler;
-#endif
 
-		std::vector<std::thread> workers;
+		static const size_t WORKER_THREAD_COUNT = 2;
+		std::array<MT::Thread, WORKER_THREAD_COUNT> workers;
 		bool isAlive;
 
 		void UpdateInput();

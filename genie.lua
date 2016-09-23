@@ -7,17 +7,17 @@ if not _ACTION then
 	_ACTION="vs2012"
 end
 
+outFolderRoot = "Bin/" .. _ACTION .. "/";
+
 isVisualStudio = false
 isUWP = false
-isUsingFibers = false
 
 if _ACTION == "vs2010" or _ACTION == "vs2012" or _ACTION == "vs2015" then
-	isVisualStudio = true
+	if _OPTIONS['platform'] ~= "orbis"  then
+		isVisualStudio = true
+	end
 end
 
-if _ACTION == "vs2012" then
-isUsingFibers = true
-end
 
 if _OPTIONS["UWP"] then
 	isUWP = true
@@ -41,16 +41,11 @@ solution "Brofiler"
 	location ( outputFolder )
 	flags { "NoManifest", "ExtraWarnings", "Unicode" }
 	optimization_flags = { "OptimizeSpeed" }
-	targetdir("Bin")
+	targetdir(outFolderRoot)
 
-if isVisualStudio then
--- Compiler Warning (level 4) C4127. Conditional expression is constant
--- Compiler Warning 		  C4250. inherits 'std::basic_ostream'
-    buildoptions { "/wd4127", "/wd4250" }
-end
 	
 if isVisualStudio then
-	debugdir ("Bin")
+	debugdir (outFolderRoot)
 end
 
 if isUWP then
@@ -58,10 +53,7 @@ if isUWP then
 end
 
 	defines { "USE_BROFILER=1"}
-
-if isUsingFibers then
 	defines { "BRO_FIBERS=1"}
-end
 
 	local config_list = {
 		"Release",
@@ -71,6 +63,7 @@ end
 	local platform_list = {
 		"x32",
 		"x64",
+		"Native",
 	}
 
 	configurations(config_list)
@@ -80,11 +73,11 @@ end
 -- CONFIGURATIONS
 
 configuration "Release"
-	defines { "NDEBUG" }
+	defines { "NDEBUG", "MT_INSTRUMENTED_BUILD" }
 	flags { "Symbols", optimization_flags }
 
 configuration "Debug"
-	defines { "_DEBUG", "_CRTDBG_MAP_ALLOC"}
+	defines { "_DEBUG", "_CRTDBG_MAP_ALLOC", "MT_INSTRUMENTED_BUILD"}
 	flags { "Symbols" }
 
 --  give each configuration/platform a unique output directory
@@ -93,11 +86,11 @@ for _, config in ipairs(config_list) do
 	for _, plat in ipairs(platform_list) do
 		configuration { config, plat }
 		objdir    ( outputFolder .. "/Temp/" )
-		targetdir ("Bin/" .. plat .. "/" .. config)
+		targetdir (outFolderRoot .. plat .. "/" .. config)
 	end
 end
 
-os.mkdir("./Bin")
+os.mkdir("./" .. outFolderRoot)
 
 -- SUBPROJECTS
 
@@ -105,6 +98,12 @@ project "BrofilerCore"
 	kind "StaticLib"
 	uuid "830934D9-6F6C-C37D-18F2-FB3304348F00"
 	defines { "_CRT_SECURE_NO_WARNINGS" }
+
+	includedirs
+	{
+		"ThirdParty/TaskScheduler/Scheduler/Include"
+	}
+
 	files {
 		"BrofilerCore/**.cpp",
         "BrofilerCore/**.h", 
@@ -150,18 +149,17 @@ project "BrofilerCore"
 		},
 	}
 	
-if isUsingFibers then
 project "TaskScheduler"
     kind "StaticLib"
  	flags {"NoPCH"}
 	defines {"USE_BROFILER=1"}
  	files {
- 		"TaskScheduler/**.*", 
+ 		"ThirdParty/TaskScheduler/Scheduler/**.*", 
  	}
 
 	includedirs
 	{
-		"TaskScheduler/Include",
+		"ThirdParty/TaskScheduler/Scheduler/Include",
 		"BrofilerCore"
 	}
 
@@ -174,7 +172,6 @@ project "TaskScheduler"
 	links {
 		"BrofilerCore",
 	}
-end
 
 project "BrofilerTest"
  	flags {"NoPCH"}
@@ -184,27 +181,17 @@ project "BrofilerTest"
 		"BrofilerTest/**.*", 
  	}
 
-if isUsingFibers then	
 	includedirs
 	{
 		"BrofilerCore",
-		"TaskScheduler/Include"
+		"ThirdParty/TaskScheduler/Scheduler/Include"
 	}
-	
+
 	links {
 		"BrofilerCore",
-		"TaskScheduler"
-	}
-else
-	includedirs
-	{
+		"TaskScheduler",
 		"BrofilerCore"
 	}
-	
-	links {
-		"BrofilerCore"
-	}
-end
 	
 if isUWP then
 -- Genie can't generate proper UWP application
@@ -229,23 +216,16 @@ project "BrofilerWindowsTest"
 		["*"] = "BrofilerWindowsTest" 
 	}
 
-if isUsingFibers then
-	includedirs {
-		"TaskScheduler/Include"
-	}
-	links {
-		"TaskScheduler"
-	}
-end
-
 	includedirs {
 		"BrofilerCore",
-		"BrofilerTest"
+		"BrofilerTest",
+		"ThirdParty/TaskScheduler/Scheduler/Include"
 	}
 	
 	links {
 		"BrofilerCore",
-		"BrofilerTest"
+		"BrofilerTest",
+		"TaskScheduler"
 	}
 end
 

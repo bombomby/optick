@@ -1,3 +1,4 @@
+genie.exe vs2010 genie.lua
 genie.exe vs2012 genie.lua
 genie.exe vs2015 genie.lua
 
