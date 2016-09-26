@@ -120,7 +120,7 @@ void Engine::UpdateLogic()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdateTasks()
 { BROFILER_CATEGORY( "UpdateTasks", Brofiler::Color::SkyBlue )
-	RootTask<4> task;
+	RootTask<6> task;
 	scheduler.RunAsync(MT::TaskGroup::Default(), &task, 1);
 	scheduler.WaitAll(100000);
 }
@@ -148,7 +148,7 @@ class Profiler : public MT::IProfilerEventListener
 	Brofiler::EventStorage** eventStorageSlots[MT::MT_MAX_THREAD_COUNT];
 	MT::ThreadId threadIds[MT::MT_MAX_THREAD_COUNT];
 
-	static mt_thread_local Brofiler::EventStorage* restoreStorage;
+	static mt_thread_local Brofiler::EventStorage* backupThreadStorage;
 
 public:
 	virtual void OnFibersCreated(uint32 fibersCount) override
@@ -176,10 +176,15 @@ public:
 		if (threadIndex == 0xFFFFFFFF)
 		{
 			Brofiler::EventStorage** threadStorageSlot = Brofiler::GetEventStorageSlot();
+			Brofiler::EventStorage* activeStorage = *threadStorageSlot;
 
 			// Save storage for the first time
-			if (!restoreStorage)
-				restoreStorage = *threadStorageSlot;
+			if (!backupThreadStorage)
+				backupThreadStorage = activeStorage;
+
+			// If the active storage is not backed up thread storage - we need to notify the previous fiber storage about the switch
+			if (backupThreadStorage != activeStorage)
+				Brofiler::SyncData::StopWork(activeStorage);
 
 			*threadStorageSlot = eventStorages[fiberIndex];
 			Brofiler::SyncData::StartWork(*threadStorageSlot, (uint32)MT::ThreadId::Self().AsUInt64() );
@@ -206,12 +211,19 @@ public:
 		MT_UNUSED(fiberIndex);
 		MT_ASSERT(threadIndex == 0xFFFFFFFF, "Can't make assignment from another thread!");
 
-		if (restoreStorage)
+		if (backupThreadStorage)
 		{
 			// Restore original storage
 			Brofiler::EventStorage** threadStorageSlot = Brofiler::GetEventStorageSlot();
-			*threadStorageSlot = restoreStorage;
-			restoreStorage = nullptr;
+			Brofiler::EventStorage* activeStorage = *threadStorageSlot;
+
+			// If active storage is not the one we want to restore - we should notify it about the switch
+			if (backupThreadStorage != activeStorage)
+				Brofiler::SyncData::StopWork(activeStorage);
+
+			// Restore original thread storage
+			*threadStorageSlot = backupThreadStorage;
+			backupThreadStorage = nullptr;
 		}
 	}
 
@@ -260,7 +272,7 @@ public:
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-mt_thread_local Brofiler::EventStorage* Profiler::restoreStorage = nullptr;
+mt_thread_local Brofiler::EventStorage* Profiler::backupThreadStorage = nullptr;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 MT::IProfilerEventListener* GetProfiler()
