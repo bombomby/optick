@@ -163,7 +163,12 @@ namespace Profiler.Data
             {
                 ThreadDescription threadDesc = ThreadDescription.Read(reader);
                 desc.Threads.Add(threadDesc);
-                desc.ThreadID2ThreadIndex.Add(threadDesc.ThreadID, i);
+
+                int res;
+                if (!desc.ThreadID2ThreadIndex.TryGetValue(threadDesc.ThreadID, out res))
+                {
+                    desc.ThreadID2ThreadIndex.Add(threadDesc.ThreadID, i);
+                }
             }
 
             int fibersCount = reader.ReadInt32();

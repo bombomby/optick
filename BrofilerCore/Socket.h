@@ -12,10 +12,10 @@
 
 
 
-#if MT_PLATFORM_POSIX
-#define USE_BERKELEY_SOCKETS (1)
-#else
+#if MT_PLATFORM_WINDOWS
 #define USE_WINDOWS_SOCKETS (1)
+#else
+#define USE_BERKELEY_SOCKETS (1)
 #endif
 
 

@@ -41,7 +41,6 @@ solution "Brofiler"
 	location ( outputFolder )
 	flags { "NoManifest", "ExtraWarnings", "Unicode" }
 	optimization_flags = { "OptimizeSpeed" }
-	targetdir(outFolderRoot)
 
 	
 if isVisualStudio then
@@ -73,10 +72,12 @@ end
 -- CONFIGURATIONS
 
 configuration "Release"
+	targetdir(outFolderRoot .. "/Native/Release")
 	defines { "NDEBUG", "MT_INSTRUMENTED_BUILD" }
 	flags { "Symbols", optimization_flags }
 
 configuration "Debug"
+	targetdir(outFolderRoot .. "/Native/Debug")
 	defines { "_DEBUG", "_CRTDBG_MAP_ALLOC", "MT_INSTRUMENTED_BUILD"}
 	flags { "Symbols" }
 
@@ -86,11 +87,15 @@ for _, config in ipairs(config_list) do
 	for _, plat in ipairs(platform_list) do
 		configuration { config, plat }
 		objdir    ( outputFolder .. "/Temp/" )
-		targetdir (outFolderRoot .. plat .. "/" .. config)
+                tgtDir = outFolderRoot .. plat .. "/" .. config
+		targetdir (tgtDir)
 	end
 end
 
 os.mkdir("./" .. outFolderRoot)
+
+
+
 
 -- SUBPROJECTS
 

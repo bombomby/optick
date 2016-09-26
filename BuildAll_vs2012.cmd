@@ -2,7 +2,7 @@
 
 set solutionFile=%cd%\Brofiler\Brofiler_vs2012.sln
 set coreSolutionFile=%cd%\Build\vs2012\Brofiler.sln
-
+set logfile=%cd%\log_file.txt
 
 echo Generate project files
 

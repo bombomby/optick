@@ -270,7 +270,7 @@ MT::IProfilerEventListener* GetProfiler()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Engine::Engine() : isAlive(true), scheduler(0, nullptr, GetProfiler())
+Engine::Engine() : scheduler(0, nullptr, GetProfiler()), isAlive(true)
 {
 	for (size_t i = 0; i < WORKER_THREAD_COUNT; ++i)
 	{
