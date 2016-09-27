@@ -71,6 +71,10 @@ end
 
 -- CONFIGURATIONS
 
+if _ACTION == "vs2010" then
+defines { "_DISABLE_DEPRECATE_STATIC_CPPLIB", "_STATIC_CPPLIB"}
+end
+
 configuration "Release"
 	targetdir(outFolderRoot .. "/Native/Release")
 	defines { "NDEBUG", "MT_INSTRUMENTED_BUILD" }
@@ -78,7 +82,7 @@ configuration "Release"
 
 configuration "Debug"
 	targetdir(outFolderRoot .. "/Native/Debug")
-	defines { "_DEBUG", "_CRTDBG_MAP_ALLOC", "MT_INSTRUMENTED_BUILD"}
+	defines { "_DEBUG", "_CRTDBG_MAP_ALLOC", "MT_INSTRUMENTED_BUILD", "_ITERATOR_DEBUG_LEVEL=1"}
 	flags { "Symbols" }
 
 --  give each configuration/platform a unique output directory
