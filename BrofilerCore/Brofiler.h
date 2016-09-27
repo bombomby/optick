@@ -1,16 +1,6 @@
 #pragma once
 
-#if BROFILER_LIB
-#include <MTConfig.h>
-#if MT_PLATFORM_WINDOWS
-#include <windows.h>
-#endif
-#include <MTTypes.h>
-#include <MTPlatform.h>
-#endif
-
 #include <stdint.h>
-
 
 #if defined(__clang__) || defined(__GNUC__)
 #define BRO_GCC (1)
@@ -280,7 +270,6 @@ private:
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct BROFILER_API Event
 {
-
 	EventData* data;
 
 	static EventData* Start(const EventDescription& description);

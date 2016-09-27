@@ -1,6 +1,18 @@
 #pragma once
 
+#include <MTConfig.h>
+
+#if MT_PLATFORM_WINDOWS
+#include <windows.h>
+#endif
+
+#include <MTTypes.h>
+#include <MTPlatform.h>
+
+#include <stdint.h>
+
 #include "Brofiler.h"
+
 
 // MEMORY //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #define BRO_CACHE_LINE_SIZE 64
