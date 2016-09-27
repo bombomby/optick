@@ -104,9 +104,15 @@ os.mkdir("./" .. outFolderRoot)
 -- SUBPROJECTS
 
 project "BrofilerCore"
-	kind "StaticLib"
 	uuid "830934D9-6F6C-C37D-18F2-FB3304348F00"
 	defines { "_CRT_SECURE_NO_WARNINGS", "BROFILER_LIB=1" }
+
+if _OPTIONS['platform'] ~= "orbis" then
+	kind "SharedLib"
+	defines { "PROFILER_EXPORTS" }
+else
+	kind "StaticLib"
+end
 
 	includedirs
 	{
@@ -159,7 +165,9 @@ project "BrofilerCore"
 	}
 	
 project "TaskScheduler"
-    kind "StaticLib"
+
+	excludes { "ThirdParty/TaskScheduler/Scheduler/Source/MTDefaultAppInterop.cpp", }
+        kind "StaticLib"
  	flags {"NoPCH"}
 	defines {"USE_BROFILER=1"}
  	files {
@@ -219,6 +227,7 @@ project "BrofilerWindowsTest"
 	uuid "C50A1240-316C-EF4D-BAD9-3500263A260D"
  	files {
 		"BrofilerWindowsTest/**.*", 
+		"ThirdParty/TaskScheduler/Scheduler/Source/MTDefaultAppInterop.cpp",
  	}
 	
 	vpaths { 
