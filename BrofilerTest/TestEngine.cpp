@@ -142,6 +142,14 @@ void Engine::UpdatePhysics()
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#if MT_MSVC_COMPILER_FAMILY
+#pragma warning( push )
+
+//C4481. nonstandard extension used: override specifier 'override'
+#pragma warning( disable : 4481 )
+
+#endif
+
 class Profiler : public MT::IProfilerEventListener
 {
 	Brofiler::EventStorage* eventStorages[MT::MT_MAX_STANDART_FIBERS_COUNT + MT::MT_MAX_EXTENDED_FIBERS_COUNT];
@@ -270,6 +278,11 @@ public:
 	}
 
 };
+
+
+#if MT_MSVC_COMPILER_FAMILY
+#pragma warning( pop )
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 mt_thread_local Brofiler::EventStorage* Profiler::backupThreadStorage = nullptr;
