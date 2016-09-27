@@ -2,7 +2,7 @@
 
 #include <MTConfig.h>
 
-#ifdef MT_PLATFORM_WINDOWS
+#if defined(MT_PLATFORM_WINDOWS) && defined(BROFILER_LIB)
 #include <windows.h>
 #endif
 
