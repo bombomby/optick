@@ -1,12 +1,14 @@
 #pragma once
+#include "Brofiler.h"
+
 #include "Event.h"
 #include "Serialization.h"
-#include "Sampler.h"
 #include "MemoryPool.h"
-#include "Concurrency.h"
+#include "Sampler.h"
 #include "Tracer.h"
 //#include "Graphics.h"
 #include <map>
+
 
 namespace Brofiler
 {
@@ -59,7 +61,7 @@ struct EventStorage
 	CategoryBuffer categoryBuffer; 
 	SynchronizationBuffer synchronizationBuffer;
 
-	volatile uint isSampling;
+	MT::Atomic32<uint32> isSampling;
 
 	EventStorage();
 
@@ -89,10 +91,10 @@ struct EventStorage
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct ThreadDescription
 {
-	unsigned long threadID;
 	const char* name;
+	MT::ThreadId threadID;
 
-	ThreadDescription(const char* threadName, unsigned long id) : name(threadName), threadID(id) {}
+	ThreadDescription(const char* threadName, const MT::ThreadId& id): name(threadName), threadID(id) {}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct ThreadEntry
@@ -104,12 +106,14 @@ struct ThreadEntry
 	ThreadEntry(const ThreadDescription& desc, EventStorage** tls) : description(desc), threadTLS(tls) {}
 	void Activate(bool isActive);
 };
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class Core
 {
-	CriticalSection lock;
+	MT::Mutex lock;
 
-	uint32 mainThreadID;
+	MT::ThreadId mainThreadID;
 
 	std::vector<ThreadEntry*> threads;
 	std::vector<ThreadEntry*> fibers;
@@ -127,7 +131,7 @@ class Core
 	static Core notThreadSafeInstance;
 
 	void DumpCapturingProgress();
-	void SendHandshakeResponse(ETW::Status status);
+	void SendHandshakeResponse(EtwStatus status);
 
 	void DumpThread(const ThreadEntry& entry, const EventTime& timeSlice, ScopeData& scope);
 public:
@@ -135,16 +139,20 @@ public:
 	bool isActive;
 
 	// Active Frame (is used as buffer)
-	static __declspec(thread) EventStorage* storage;
+	static mt_thread_local EventStorage* storage;
 
+#if USE_BROFILER_SAMPLING
 	// Controls sampling routine
 	Sampler sampler;
+#endif
 
 	// Controls GPU activity
 	// Graphics graphics;
 
+#if USE_BROFILER_ETW
 	// Event Trace for Windows interface
 	ETW etw;
+#endif
 
 	// Returns thread collection
 	const std::vector<ThreadEntry*>& GetThreads() const;
@@ -177,7 +185,7 @@ public:
 	static void NextFrame() { Get().Update(); }
 
 	// Get Active ThreadID
-	static BRO_INLINE uint32 GetThreadID() { return Get().mainThreadID; }
+	//static BRO_INLINE uint32 GetThreadID() { return Get().mainThreadID; }
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

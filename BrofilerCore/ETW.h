@@ -3,11 +3,17 @@
 #if USE_BROFILER_ETW
 
 #define INITGUID  // Causes definition of SystemTraceControlGuid in evntrace.h.
-#include <windows.h>
 #include <strsafe.h>
 #include <wmistr.h>
 #include <evntrace.h>
 #include <evntcons.h>
+
+#if _MSC_VER <= 1600
+#define EVENT_DESCRIPTOR_DEF
+#define EVENT_HEADER_DEF
+#define EVENT_HEADER_EXTENDED_DATA_ITEM_DEF
+#define EVENT_RECORD_DEF
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 #define PROCESS_TRACE_MODE_REAL_TIME                0x00000100
@@ -89,3 +95,4 @@ typedef struct _EVENT_RECORD {
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif
+

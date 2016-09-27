@@ -1,6 +1,8 @@
 #pragma once
+
+#if USE_BROFILER_SAMPLING
+
 #include "SymEngine.h"
-#include <windows.h>
 #include <array>
 #include <vector>
 
@@ -16,15 +18,14 @@ class Sampler
 	std::list<CallStack> callstacks;
 	std::vector<ThreadEntry*> targetThreads;
 
-	HANDLE workerThread;
-	HANDLE finishEvent;
+	MW_HANDLE workerThread;
+	MW_HANDLE finishEvent;
 
-	uint intervalMicroSeconds;
+	uint32 intervalMicroSeconds;
 
-#if USE_BROFILER_SAMPLING
 	// Called from worker thread
-	static DWORD WINAPI AsyncUpdate( LPVOID lpParam );
-#endif
+	static MW_DWORD MW_WINAPI AsyncUpdate( void* lpParam );
+
 public:
 	Sampler();
 	~Sampler();
@@ -33,13 +34,15 @@ public:
 
 	bool IsActive() const;
 
-	void StartSampling(const std::vector<ThreadEntry*>& threads, uint samplingInterval = 300);
+	void StartSampling(const std::vector<ThreadEntry*>& threads, uint32 samplingInterval = 300);
 	bool StopSampling();
 
 	size_t GetCollectedCount() const;
 	OutputDataStream& Serialize(OutputDataStream& stream);
 
-	static uint GetCallstack(HANDLE hThread, CONTEXT& context, CallStackBuffer& callstack);
+	static uint32 GetCallstack(MW_HANDLE hThread, MW_CONTEXT& context, CallStackBuffer& callstack);
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
+
+#endif

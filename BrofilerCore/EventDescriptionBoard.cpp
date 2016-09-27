@@ -4,7 +4,7 @@
 namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-static CriticalSection lock;
+static MT::Mutex g_lock;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventDescriptionBoard& EventDescriptionBoard::Get()
 { 
@@ -13,13 +13,16 @@ EventDescriptionBoard& EventDescriptionBoard::Get()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void EventDescriptionBoard::SetSamplingFlag( int index, bool flag )
 { 
-	CRITICAL_SECTION(lock)
+	MT::ScopedGuard guard(g_lock);
 	BRO_VERIFY(index < (int)board.size(), "Invalid EventDescription index", return);
 
 	if (index < 0)
 	{
-		for each (EventDescription* desc in board)
+		for(auto it = board.begin(); it != board.end(); ++it)
+		{
+			EventDescription* desc = *it;
 			desc->isSampling = flag;
+		}
 	} else
 	{
 		board[index]->isSampling = flag;
@@ -28,10 +31,15 @@ void EventDescriptionBoard::SetSamplingFlag( int index, bool flag )
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool EventDescriptionBoard::HasSamplingEvents() const
 {
-	CRITICAL_SECTION(lock)
-	for each (const EventDescription* desc in board)
+	MT::ScopedGuard guard(g_lock);
+	for(auto it = board.begin(); it != board.end(); ++it)
+	{
+		EventDescription* desc = *it;
 		if (desc->isSampling)
+		{
 			return true;
+		}
+	}
 
 	return false;
 }
@@ -43,13 +51,16 @@ const std::vector<EventDescription*>& EventDescriptionBoard::GetEvents() const
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventDescriptionBoard::~EventDescriptionBoard()
 {
-	for each (EventDescription* desc in board)
+	for(auto it = board.begin(); it != board.end(); ++it)
+	{
+		EventDescription* desc = *it;
 		delete desc;
+	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventDescription* EventDescriptionBoard::CreateDescription()
 {
-	CRITICAL_SECTION(lock)
+	MT::ScopedGuard guard(g_lock);
 	EventDescription* desc = new EventDescription();
 	desc->index = (unsigned long)board.size();
 	board.push_back(desc);
@@ -58,13 +69,16 @@ EventDescription* EventDescriptionBoard::CreateDescription()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator << ( OutputDataStream& stream, const EventDescriptionBoard& ob)
 {
-	CRITICAL_SECTION(lock)
+	MT::ScopedGuard guard(g_lock);
 	const std::vector<EventDescription*>& events = ob.GetEvents();
 
 	stream << (uint32)events.size();
 
-	for each ( const EventDescription *desc in events )
+	for(auto it = events.begin(); it != events.end(); ++it)
+	{
+		const EventDescription* desc = *it;
 		stream << *desc;
+	}
 
 	return stream;
 }

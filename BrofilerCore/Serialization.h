@@ -4,6 +4,16 @@
 #include <sstream>
 #include "MemoryPool.h"
 
+#if MT_MSVC_COMPILER_FAMILY
+#pragma warning( push )
+
+//C4250. inherits 'std::basic_ostream'
+#pragma warning( disable : 4250 )
+
+//C4127. Conditional expression is constant
+#pragma warning( disable : 4127 )
+#endif
+
 namespace Brofiler
 {
 	class OutputDataStream : private std::ostringstream 
@@ -31,13 +41,16 @@ namespace Brofiler
 	{
 		stream << (uint32)val.size();
 
-		for each (const T& element in val)
+		for(auto it = val.begin(); it != val.end(); ++it)
+		{
+			const T& element = *it;
 			stream << element;
+		}
 
 		return stream;
 	}
 
-	template<class T, size_t N>
+	template<class T, uint32 N>
 	OutputDataStream& operator<<(OutputDataStream &stream, const MemoryPool<T, N>& val)
 	{
 		stream << (uint32)val.Size();
@@ -92,3 +105,7 @@ namespace Brofiler
 
 
 }
+
+#if MT_MSVC_COMPILER_FAMILY
+#pragma warning( pop )
+#endif

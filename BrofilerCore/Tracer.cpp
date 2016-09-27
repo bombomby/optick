@@ -1,9 +1,13 @@
+#include "Brofiler.h"
+
+#if USE_BROFILER_ETW
+
+#include <windows.h>
 #include "Core.h"
 #include "Tracer.h"
 
 namespace Brofiler
 {
-#if USE_BROFILER_ETW
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const byte SWITCH_CONTEXT_INSTRUCTION_OPCODE = 36;
@@ -40,7 +44,7 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 	{
 		ThreadEntry* entry = threads[i];
 
-		if (entry->description.threadID == pSwitchEvent->OldThreadId)
+		if (entry->description.threadID.AsUInt64() == (uint64)pSwitchEvent->OldThreadId)
 		{
 			if (SyncData* time = entry->storage.synchronizationBuffer.Back())
 			{
@@ -48,7 +52,7 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 			}
 		}
 
-		if (entry->description.threadID == pSwitchEvent->NewThreadId)
+		if (entry->description.threadID.AsUInt64() == (uint64)pSwitchEvent->NewThreadId)
 		{
 			SyncData& time = entry->storage.synchronizationBuffer.Add();
 			time.start = eventRecord->EventHeader.TimeStamp.QuadPart;
@@ -74,7 +78,7 @@ ETW::ETW() : isActive(false), sessionHandle(INVALID_TRACEHANDLE), openedHandle(I
 	sessionProperties =(EVENT_TRACE_PROPERTIES*) malloc(bufferSize);
 }
 
-ETW::Status ETW::Start()
+EtwStatus ETW::Start()
 {
 	if (!isActive) 
 	{
@@ -172,19 +176,6 @@ ETW::~ETW()
 	delete sessionProperties;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#else
-ETW::ETW() {}
-ETW::~ETW() {}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-ETW::Status ETW::Start() 
-{
-	return Status::ETW_FAILED;
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool ETW::Stop()
-{
-	return true;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #endif
-}

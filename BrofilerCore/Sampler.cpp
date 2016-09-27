@@ -1,11 +1,14 @@
 #include "Common.h"
+
+#if USE_BROFILER_SAMPLING
+
+#include "Common.h"
 #include "Event.h"
 #include "Core.h"
 #include "Serialization.h"
 #include "Sampler.h"
 #include <DbgHelp.h>
 #include <unordered_set>
-#include "HPTimer.h"
 
 namespace Brofiler
 {
@@ -87,12 +90,8 @@ Sampler::~Sampler()
 	StopSampling();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Sampler::StartSampling(const std::vector<ThreadEntry*>& threads, uint samplingInterval)
+void Sampler::StartSampling(const std::vector<ThreadEntry*>& threads, uint32 samplingInterval)
 {
-	threads;
-	samplingInterval;
-
-#if USE_BROFILER_SAMPLING
 	symEngine.Init();
 
 	intervalMicroSeconds = samplingInterval;
@@ -109,7 +108,6 @@ void Sampler::StartSampling(const std::vector<ThreadEntry*>& threads, uint sampl
 	workerThread = CreateThread(NULL, 0, &Sampler::AsyncUpdate, this, 0, NULL);
 
 	BRO_ASSERT(finishEvent && workerThread, "Sampling was not started!")
-#endif
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Sampler::IsActive() const
@@ -123,7 +121,6 @@ void ClearStackContext(CONTEXT& context)
 	context.ContextFlags = CONTEXT_FULL;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if USE_BROFILER_SAMPLING
 DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 {
 	Sampler& sampler = *(Sampler*)(lpParam);
@@ -133,10 +130,9 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 
 	for each (ThreadEntry* entry in sampler.targetThreads)
 	{
-		DWORD threadID = entry->description.threadID;
-		BRO_VERIFY(threadID != GetCurrentThreadId(), "It's a bad idea to sample specified thread! Deadlock will occur!", continue);
+		BRO_VERIFY(!entry->description.threadID.IsEqual(MT::ThreadId::Self()), "It's a bad idea to sample specified thread! Deadlock will occur!", continue);
 
-		HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, threadID);
+		HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, FALSE, (DWORD)entry->description.threadID.AsUInt64());
 		if (hThread == NULL)
 			continue;
 
@@ -154,7 +150,7 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 
 	while (WaitForSingleObject(sampler.finishEvent, 0) == WAIT_TIMEOUT)
 	{
-		SpinSleep(sampler.intervalMicroSeconds);
+		MT::SpinSleepMicroSeconds(sampler.intervalMicroSeconds);
 
 		// Check whether we are inside sampling scope
 		for each (const auto& entry in openThreads)
@@ -164,17 +160,17 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 
 			// Get storage from TLS slot (it can be replaced by Fibers)
 			EventStorage* storage = *thread->threadTLS;
-			if (!storage || !storage->isSampling)
+			if (!storage || !storage->isSampling.Load())
 				continue;
 
-			uint count = 0;
+			uint32 count = 0;
 
 			DWORD suspendedStatus = SuspendThread(handle);
 
 			if (suspendedStatus != (DWORD)-1)
 			{
 				// Check scope again because it is possible to leave sampling scope while trying to suspend main thread
-				if (storage->isSampling && GetThreadContext(handle, &context))
+				if (storage->isSampling.Load() && GetThreadContext(handle, &context))
 				{
 					count = sampler.symEngine.GetCallstack(handle, context, buffer);
 				}
@@ -197,7 +193,6 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 
 	return 0;
 }
-#endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& os, const Symbol * const symbol)
 {
@@ -226,7 +221,7 @@ OutputDataStream& Sampler::Serialize(OutputDataStream& stream)
 
 	std::vector<const Symbol*> symbols;
 	for each (DWORD64 address in addresses)
-		if (const Symbol* symbol = symEngine.GetSymbol(address))
+		if (const Symbol* symbol = symEngine.GetSymbol(static_cast<uintptr_t>(address)))
 			symbols.push_back(symbol);
 
 	stream << symbols;
@@ -242,9 +237,15 @@ OutputDataStream& Sampler::Serialize(OutputDataStream& stream)
 bool Sampler::IsSamplingScope() const
 {
 	for each (const ThreadEntry* entry in targetThreads)
+	{
 		if (const EventStorage* storage = *entry->threadTLS)
-			if (storage->isSampling)
+		{
+			if (storage->isSampling.Load())
+			{
 				return true;
+			}
+		}
+	}
 
 	return false;
 }
@@ -255,3 +256,5 @@ size_t Sampler::GetCollectedCount() const
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
+
+#endif

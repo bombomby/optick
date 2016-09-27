@@ -1,6 +1,5 @@
 #pragma once
 #include "Common.h"
-#include "Concurrency.h"
 #include "Serialization.h"
 
 namespace Brofiler
@@ -30,4 +29,5 @@ public:
 OutputDataStream& operator << ( OutputDataStream& stream, const EventDescriptionBoard& ob);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
+
 

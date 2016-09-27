@@ -1,10 +1,10 @@
-#include "Common.h"
 #include "Core.h"
+#include "Common.h"
 #include "Event.h"
 #include "ProfilerServer.h"
 #include "EventDescriptionBoard.h"
 #include "Thread.h"
-#include "HPTimer.h"
+
 
 extern "C" Brofiler::EventData* NextEvent()
 {
@@ -19,12 +19,19 @@ extern "C" Brofiler::EventData* NextEvent()
 
 namespace Brofiler
 {
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-static const uint32 INVALID_THREAD_ID = (uint32)-1;
+int64 GetHighPrecisionTime()
+{
+	return MT::GetHighFrequencyTime();
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpProgress(const char* message)
 {
-	progressReportedLastTimestampMS = GetTimeMilliSeconds();
+	progressReportedLastTimestampMS = MT::GetTimeMilliSeconds();
 
 	OutputDataStream stream;
 	stream << message;
@@ -88,8 +95,12 @@ void Core::DumpFrames()
 	uint32 mainThreadIndex = 0;
 
 	for (size_t i = 0; i < threads.size(); ++i)
-		if (threads[i]->description.threadID == mainThreadID)
+	{
+		if (threads[i]->description.threadID.IsEqual(mainThreadID))
+		{
 			mainThreadIndex = (uint32)i;
+		}
+	}
 
 	EventTime timeSlice;
 	timeSlice.start = frames.front().start;
@@ -99,7 +110,7 @@ void Core::DumpFrames()
 
 	static uint32 boardNumber = 0;
 	boardStream << ++boardNumber;
-	boardStream << GetFrequency();
+	boardStream << MT::GetFrequency();
 	boardStream << timeSlice;
 	boardStream << threads;
 	boardStream << fibers;
@@ -127,6 +138,7 @@ void Core::DumpFrames()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpSamplingData()
 {
+#if USE_BROFILER_SAMPLING
 	if (sampler.StopSampling())
 	{
 		DumpProgress("Collecting Sampling Events...");
@@ -137,15 +149,16 @@ void Core::DumpSamplingData()
 		DumpProgress("Sending Message With Sampling Data...");
 		Server::Get().Send(DataResponse::SamplingFrame, stream);
 	}
+#endif
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Core::Core() : mainThreadID(INVALID_THREAD_ID), isActive(false), progressReportedLastTimestampMS(0)
+Core::Core() : progressReportedLastTimestampMS(0), isActive(false)
 {
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::Update()
 {
-	CRITICAL_SECTION(lock);
+	MT::ScopedGuard guard(lock);
 	
 	if (isActive)
 	{
@@ -167,17 +180,19 @@ void Core::Update()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::UpdateEvents()
 {
-	DWORD currentThreadID = GetCurrentThreadId();
-
-	if (mainThreadID == INVALID_THREAD_ID)
-		mainThreadID = currentThreadID;
+	if (!mainThreadID.IsValid())
+	{
+		mainThreadID = MT::ThreadId::Self();
+	}
 
 	Server::Get().Update();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::StartSampling()
 {
+#if USE_BROFILER_SAMPLING
 	sampler.StartSampling(threads);
+#endif
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::Activate( bool active )
@@ -186,20 +201,32 @@ void Core::Activate( bool active )
 	{
 		isActive = active;
 
-		for each (ThreadEntry* entry in threads)
+		for(auto it = threads.begin(); it != threads.end(); ++it)
+		{
+			ThreadEntry* entry = *it;
 			entry->Activate(active);
+		}
 
-		for each (ThreadEntry* entry in fibers)
+		for(auto it = fibers.begin(); it != fibers.end(); ++it)
+		{
+			ThreadEntry* entry = *it;
 			entry->Activate(active);
+		}
 
 		if (active)
 		{
-			ETW::Status status = etw.Start();
+#if USE_BROFILER_ETW
+			EtwStatus status = etw.Start();
+#else
+			EtwStatus status = ETW_OK;
+#endif
 			SendHandshakeResponse(status);
 		}
 		else
 		{
+#if USE_BROFILER_ETW
 			etw.Stop();
+#endif
 		}
 	}
 
@@ -212,18 +239,20 @@ void Core::DumpCapturingProgress()
 	if (isActive)
 		stream << "Capturing Frame " << (uint32)frames.size() << std::endl;
 
+#if USE_BROFILER_SAMPLING
 	if (sampler.IsActive())
 		stream << "Sample Count " << (uint32)sampler.GetCollectedCount() << std::endl;
+#endif
 
 	DumpProgress(stream.str().c_str());
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::IsTimeToReportProgress() const
 {
-	return GetTimeMilliSeconds() > progressReportedLastTimestampMS + 200;
+	return MT::GetTimeMilliSeconds() > progressReportedLastTimestampMS + 200;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Core::SendHandshakeResponse(ETW::Status status)
+void Core::SendHandshakeResponse(EtwStatus status)
 {
 	OutputDataStream stream;
 	stream << (uint32)status;
@@ -232,25 +261,41 @@ void Core::SendHandshakeResponse(ETW::Status status)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::RegisterThread(const ThreadDescription& description, EventStorage** slot)
 {
-	CRITICAL_SECTION(lock);
+	MT::ScopedGuard guard(lock);
+	ThreadEntry* entry = new ThreadEntry(description, slot);
 	threads.push_back(new ThreadEntry(description, slot));
+
+	if (isActive)
+		*slot = &entry->storage;
+
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::RegisterFiber(const ThreadDescription& description, EventStorage** slot)
 {
-	CRITICAL_SECTION(lock);
-	fibers.push_back(new ThreadEntry(description, slot));
+	MT::ScopedGuard guard(lock);
+	ThreadEntry* entry = new ThreadEntry(description, slot);
+	fibers.push_back(entry);
+
+	if (isActive)
+		*slot = &entry->storage;
+
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core::~Core()
 {
-	for each (ThreadEntry* entry in threads)
+	for(auto it = threads.begin(); it != threads.end(); ++it)
+	{
+		ThreadEntry* entry = *it;
 		delete entry;
+	}
 
-	for each (ThreadEntry* entry in fibers)
+	for(auto it = fibers.begin(); it != fibers.end(); ++it)
+	{
+		ThreadEntry* entry = *it;
 		delete entry;
+	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const std::vector<ThreadEntry*>& Core::GetThreads() const
@@ -258,13 +303,13 @@ const std::vector<ThreadEntry*>& Core::GetThreads() const
 	return threads;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-EventStorage* Core::storage = nullptr;
+mt_thread_local EventStorage* Core::storage = nullptr;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core Core::notThreadSafeInstance;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-ScopeHeader::ScopeHeader() : threadNumber(0), boardNumber(0)
+ScopeHeader::ScopeHeader() : boardNumber(0), threadNumber(0)
 {
 
 }
@@ -281,7 +326,8 @@ OutputDataStream& operator<<(OutputDataStream& stream, const ScopeData& ob)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const ThreadDescription& description)
 {
-	return stream << description.threadID << description.name;
+	//FIXME, TODO: Remove cast to uint32
+	return stream << (uint32)description.threadID.AsUInt64() << description.name;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const ThreadEntry* entry)
@@ -306,12 +352,12 @@ BROFILER_API EventStorage** GetEventStorageSlot()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 BROFILER_API bool RegisterThread(const char* name)
 {
-	return Core::Get().RegisterThread(ThreadDescription(name, GetCurrentThreadId()), &Core::storage);
+	return Core::Get().RegisterThread(ThreadDescription(name, MT::ThreadId::Self()), &Core::storage);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 BROFILER_API bool RegisterFiber(const char* name, EventStorage** slot)
 {
-	return Core::Get().RegisterFiber(ThreadDescription(name, (unsigned long)-1), slot);
+	return Core::Get().RegisterFiber(ThreadDescription(name, MT::ThreadId()), slot);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventStorage::EventStorage(): isSampling(0)
@@ -332,9 +378,16 @@ bool IsSleepOnlyScope(const ScopeData& scope)
 	if (!scope.categories.empty())
 		return false;
 
-	for each (const EventData& data in scope.events)
+	const std::vector<EventData>& events = scope.events;
+	for(auto it = events.begin(); it != events.end(); ++it)
+	{
+		const EventData& data = *it;
+
 		if (data.description->color != Color::White)
+		{
 			return false;
+		}
+	}
 
 	return true;
 }

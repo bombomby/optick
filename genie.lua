@@ -7,17 +7,17 @@ if not _ACTION then
 	_ACTION="vs2012"
 end
 
+outFolderRoot = "Bin/" .. _ACTION .. "/";
+
 isVisualStudio = false
 isUWP = false
-isUsingFibers = false
 
 if _ACTION == "vs2010" or _ACTION == "vs2012" or _ACTION == "vs2015" then
-	isVisualStudio = true
+	if _OPTIONS['platform'] ~= "orbis"  then
+		isVisualStudio = true
+	end
 end
 
-if _ACTION == "vs2012" then
-isUsingFibers = true
-end
 
 if _OPTIONS["UWP"] then
 	isUWP = true
@@ -41,16 +41,10 @@ solution "Brofiler"
 	location ( outputFolder )
 	flags { "NoManifest", "ExtraWarnings", "Unicode" }
 	optimization_flags = { "OptimizeSpeed" }
-	targetdir("Bin")
 
-if isVisualStudio then
--- Compiler Warning (level 4) C4127. Conditional expression is constant
--- Compiler Warning 		  C4250. inherits 'std::basic_ostream'
-    buildoptions { "/wd4127", "/wd4250" }
-end
 	
 if isVisualStudio then
-	debugdir ("Bin")
+	debugdir (outFolderRoot)
 end
 
 if isUWP then
@@ -58,10 +52,7 @@ if isUWP then
 end
 
 	defines { "USE_BROFILER=1"}
-
-if isUsingFibers then
 	defines { "BRO_FIBERS=1"}
-end
 
 	local config_list = {
 		"Release",
@@ -71,6 +62,7 @@ end
 	local platform_list = {
 		"x32",
 		"x64",
+		"Native",
 	}
 
 	configurations(config_list)
@@ -79,12 +71,18 @@ end
 
 -- CONFIGURATIONS
 
+if _ACTION == "vs2010" then
+defines { "_DISABLE_DEPRECATE_STATIC_CPPLIB", "_STATIC_CPPLIB"}
+end
+
 configuration "Release"
-	defines { "NDEBUG" }
+	targetdir(outFolderRoot .. "/Native/Release")
+	defines { "NDEBUG", "MT_INSTRUMENTED_BUILD" }
 	flags { "Symbols", optimization_flags }
 
 configuration "Debug"
-	defines { "_DEBUG", "_CRTDBG_MAP_ALLOC"}
+	targetdir(outFolderRoot .. "/Native/Debug")
+	defines { "_DEBUG", "_CRTDBG_MAP_ALLOC", "MT_INSTRUMENTED_BUILD", "_ITERATOR_DEBUG_LEVEL=1"}
 	flags { "Symbols" }
 
 --  give each configuration/platform a unique output directory
@@ -93,18 +91,34 @@ for _, config in ipairs(config_list) do
 	for _, plat in ipairs(platform_list) do
 		configuration { config, plat }
 		objdir    ( outputFolder .. "/Temp/" )
-		targetdir ("Bin/" .. plat .. "/" .. config)
+                tgtDir = outFolderRoot .. plat .. "/" .. config
+		targetdir (tgtDir)
 	end
 end
 
-os.mkdir("./Bin")
+os.mkdir("./" .. outFolderRoot)
+
+
+
 
 -- SUBPROJECTS
 
 project "BrofilerCore"
-	kind "StaticLib"
 	uuid "830934D9-6F6C-C37D-18F2-FB3304348F00"
-	defines { "_CRT_SECURE_NO_WARNINGS" }
+	defines { "_CRT_SECURE_NO_WARNINGS", "BROFILER_LIB=1" }
+
+if _OPTIONS['platform'] ~= "orbis" then
+	kind "SharedLib"
+	defines { "PROFILER_EXPORTS" }
+else
+	kind "StaticLib"
+end
+
+	includedirs
+	{
+		"ThirdParty/TaskScheduler/Scheduler/Include"
+	}
+
 	files {
 		"BrofilerCore/**.cpp",
         "BrofilerCore/**.h", 
@@ -150,18 +164,19 @@ project "BrofilerCore"
 		},
 	}
 	
-if isUsingFibers then
 project "TaskScheduler"
-    kind "StaticLib"
+
+	excludes { "ThirdParty/TaskScheduler/Scheduler/Source/MTDefaultAppInterop.cpp", }
+        kind "StaticLib"
  	flags {"NoPCH"}
 	defines {"USE_BROFILER=1"}
  	files {
- 		"TaskScheduler/**.*", 
+ 		"ThirdParty/TaskScheduler/Scheduler/**.*", 
  	}
 
 	includedirs
 	{
-		"TaskScheduler/Include",
+		"ThirdParty/TaskScheduler/Scheduler/Include",
 		"BrofilerCore"
 	}
 
@@ -174,7 +189,6 @@ project "TaskScheduler"
 	links {
 		"BrofilerCore",
 	}
-end
 
 project "BrofilerTest"
  	flags {"NoPCH"}
@@ -184,27 +198,17 @@ project "BrofilerTest"
 		"BrofilerTest/**.*", 
  	}
 
-if isUsingFibers then	
 	includedirs
 	{
 		"BrofilerCore",
-		"TaskScheduler/Include"
+		"ThirdParty/TaskScheduler/Scheduler/Include"
 	}
-	
+
 	links {
 		"BrofilerCore",
-		"TaskScheduler"
-	}
-else
-	includedirs
-	{
+		"TaskScheduler",
 		"BrofilerCore"
 	}
-	
-	links {
-		"BrofilerCore"
-	}
-end
 	
 if isUWP then
 -- Genie can't generate proper UWP application
@@ -223,29 +227,23 @@ project "BrofilerWindowsTest"
 	uuid "C50A1240-316C-EF4D-BAD9-3500263A260D"
  	files {
 		"BrofilerWindowsTest/**.*", 
+		"ThirdParty/TaskScheduler/Scheduler/Source/MTDefaultAppInterop.cpp",
  	}
 	
 	vpaths { 
 		["*"] = "BrofilerWindowsTest" 
 	}
 
-if isUsingFibers then
-	includedirs {
-		"TaskScheduler/Include"
-	}
-	links {
-		"TaskScheduler"
-	}
-end
-
 	includedirs {
 		"BrofilerCore",
-		"BrofilerTest"
+		"BrofilerTest",
+		"ThirdParty/TaskScheduler/Scheduler/Include"
 	}
 	
 	links {
 		"BrofilerCore",
-		"BrofilerTest"
+		"BrofilerTest",
+		"TaskScheduler"
 	}
 end
 

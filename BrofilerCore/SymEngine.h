@@ -1,7 +1,8 @@
 #pragma once
+
+#if USE_BROFILER_SAMPLING
 #include "Common.h"
 #include <string>
-#include <windows.h>
 #include <unordered_map>
 #include <array>
 
@@ -10,28 +11,28 @@ namespace Brofiler
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct Symbol
 {
-	DWORD64 address;
-	DWORD64 offset;
+	uintptr_t address;
+	uintptr_t offset;
 	std::wstring module;
 	std::wstring file;
 	std::wstring function;
-	uint32			 line;
+	uint32 line;
 	Symbol() : line(0), offset(0), address(0) {}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-typedef std::array<DWORD64, 512> CallStackBuffer;
-typedef std::vector<DWORD64> CallStack;
+typedef std::array<uintptr_t, 512> CallStackBuffer;
+typedef std::vector<uintptr_t> CallStack;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-typedef std::unordered_map<DWORD64, Symbol> SymbolCache;
+typedef std::unordered_map<uintptr_t, Symbol> SymbolCache;
 class SymEngine
 {
-	HANDLE hProcess;
+	MW_HANDLE hProcess;
 	SymbolCache cache;
 
 	bool isInitialized;
 
 	bool needRestorePreviousSettings;
-	DWORD previousOptions;
+	uint32 previousOptions;
 	static const size_t MAX_SEARCH_PATH_LENGTH = 2048;
 	char previousSearchPath[MAX_SEARCH_PATH_LENGTH];
 public:
@@ -42,12 +43,12 @@ public:
 	void Close();
 
 	// Get Symbol from PDB file
-	const Symbol * const GetSymbol(DWORD64 dwAddress);
+	const Symbol * const GetSymbol(uintptr_t dwAddress);
 
-#if USE_BROFILER_SAMPLING
 	// Collects Callstack
-	uint GetCallstack(HANDLE hThread, CONTEXT& context, CallStackBuffer& callstack);
-#endif
+	uint32 GetCallstack(MW_HANDLE hThread, MW_CONTEXT& context, CallStackBuffer& callstack);
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
+
+#endif

@@ -242,6 +242,20 @@ namespace Profiler.Data
             return result;
         }
 
+        public void MergeWith(EventFrame frame)
+        {
+            Categories.AddRange(frame.Categories);
+            Categories.Sort();
+
+            Entries.AddRange(frame.Entries);
+            Entries.Sort();
+
+            root = new EventTree(this, Entries);
+            board = new Board<EventBoardItem, EventDescription, EventNode>(root);
+
+            CategoriesTree = new EventTree(this, Categories);
+        }
+
         protected void ReadInternal(BinaryReader reader)
         {
             Header = FrameHeader.Read(reader);

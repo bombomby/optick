@@ -1,9 +1,10 @@
+#include "Common.h"
 #include "SymEngine.h"
 
 #if USE_BROFILER_SAMPLING
+
 #include <DbgHelp.h>
 #pragma comment( lib, "DbgHelp.Lib" )
-#endif
 
 namespace Brofiler
 {
@@ -30,14 +31,12 @@ SymEngine::~SymEngine()
 	Close();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-const Symbol * const SymEngine::GetSymbol(DWORD64 dwAddress)
+const Symbol * const SymEngine::GetSymbol(uintptr_t address)
 {
-	dwAddress;
-#if USE_BROFILER_SAMPLING
-	if (dwAddress == 0)
+	if (address == 0)
 		return nullptr;
 
-	Symbol& symbol = cache[dwAddress];
+	Symbol& symbol = cache[address];
 
 	if (symbol.address != 0)
 		return &symbol;
@@ -45,7 +44,9 @@ const Symbol * const SymEngine::GetSymbol(DWORD64 dwAddress)
 	if (!isInitialized)
 		return nullptr;
 
-	symbol.address = dwAddress;
+	symbol.address = address;
+
+	DWORD64 dwAddress = static_cast<DWORD64>(address);
 
 	// Module Name
 	IMAGEHLP_MODULEW64 moduleInfo;
@@ -76,16 +77,17 @@ const Symbol * const SymEngine::GetSymbol(DWORD64 dwAddress)
 	memset(dbgSymbol, 0, sizeof(buffer));
 	dbgSymbol->SizeOfStruct = sizeof(SYMBOL_INFOW);
 	dbgSymbol->MaxNameLen = MAX_SYM_NAME;
-	if (SymFromAddrW(hProcess, dwAddress, &symbol.offset, dbgSymbol))
+
+	DWORD64 offset = 0;
+	if (SymFromAddrW(hProcess, dwAddress, &offset, dbgSymbol))
 	{
 		symbol.function.resize(dbgSymbol->NameLen);
 		memcpy(&symbol.function[0], &dbgSymbol->Name[0], sizeof(WCHAR) * dbgSymbol->NameLen);
 	}
 
+	symbol.offset = static_cast<uintptr_t>(offset);
+
 	return &symbol;
-#else
-	return nullptr;
-#endif
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // const char* USER_SYMBOL_SEARCH_PATH = "http://msdl.microsoft.com/download/symbols";
@@ -94,7 +96,6 @@ void SymEngine::Init()
 {
 	if (!isInitialized)
 	{
-#if USE_BROFILER_SAMPLING
 		previousOptions = SymGetOptions();
 
 		memset(previousSearchPath, 0, MAX_SEARCH_PATH_LENGTH);
@@ -113,13 +114,11 @@ void SymEngine::Init()
 		{
 			isInitialized = true;
 		}
-#endif
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void SymEngine::Close()
 {
-#if USE_BROFILER_SAMPLING
 	if (isInitialized)
 	{
 		SymCleanup(hProcess);
@@ -136,11 +135,10 @@ void SymEngine::Close()
 
 		needRestorePreviousSettings = false;
 	}
-#endif
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if USE_BROFILER_SAMPLING
-uint SymEngine::GetCallstack(HANDLE hThread, CONTEXT& context, CallStackBuffer& callstack) 
+
+uint32 SymEngine::GetCallstack(HANDLE hThread, CONTEXT& context, CallStackBuffer& callstack) 
 {
 	// We can't initialize dbghelp.dll here => http://microsoft.public.windbg.narkive.com/G2WkSt2k/stackwalk64-performance-problems
 	// Otherwise it will be 5x times slower
@@ -175,7 +173,7 @@ uint SymEngine::GetCallstack(HANDLE hThread, CONTEXT& context, CallStackBuffer& 
 #error "Platform not supported!"
 #endif
 
-	uint index = 0;
+	uint32 index = 0;
 	while (	StackWalk64(machineType, GetCurrentProcess(), hThread, &stackFrame, &context, nullptr, &SymFunctionTableAccess64, &SymGetModuleBase64, nullptr) )
 	{
 		DWORD64 dwAddress = stackFrame.AddrPC.Offset;
@@ -188,12 +186,13 @@ uint SymEngine::GetCallstack(HANDLE hThread, CONTEXT& context, CallStackBuffer& 
 		if (index > 0 && callstack[index - 1] == dwAddress)
 			continue;
 
-		callstack[index] = dwAddress;
+		callstack[index] = static_cast<uintptr_t>(dwAddress);
 		++index;
 	}
 
 	return index;
 }
-#endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
+
+#endif

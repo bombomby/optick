@@ -1,5 +1,4 @@
 #include <cstring>
-#include <windows.h>
 #include "Event.h"
 #include "Core.h"
 #include "Thread.h"
@@ -8,11 +7,12 @@
 namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-static CriticalSection lock;
+static MT::Mutex g_lock;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventDescription* EventDescription::Create(const char* eventName, const char* fileName, const unsigned long fileLine, const unsigned long eventColor /*= Color::Null*/)
 {
-	CRITICAL_SECTION(lock)
+	MT::ScopedGuard guard(g_lock);
+
 	EventDescription* result = EventDescriptionBoard::Get().CreateDescription();
 	result->name = eventName;
 	result->file = fileName;
@@ -21,7 +21,7 @@ EventDescription* EventDescription::Create(const char* eventName, const char* fi
 	return result;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-EventDescription::EventDescription() : name(""), file(""), line(0), color(0), isSampling(false)
+EventDescription::EventDescription() : isSampling(false), name(""), file(""), line(0), color(0)
 {
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -42,7 +42,7 @@ EventData* Event::Start(const EventDescription& description)
 
 		if (description.isSampling)
 		{
-			InterlockedIncrement(&storage->isSampling);
+			storage->isSampling.IncFetch();
 		}
 	}
 	return result;
@@ -55,7 +55,9 @@ void Event::Stop(EventData& data)
 	if (data.description->isSampling)
 	{
 		if (EventStorage* storage = Core::storage)
-			InterlockedDecrement(&storage->isSampling);
+		{
+			storage->isSampling.DecFetch();
+		}
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
