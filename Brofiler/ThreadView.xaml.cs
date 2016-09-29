@@ -154,6 +154,12 @@ namespace Profiler
 
         private void Row_EventNodeSelected(ThreadRow row, EventFrame frame, EventNode node)
         {
+            if (node != null)
+            {
+                TimeLabel.Content = node.Entry.Duration.ToString("F3") + "ms";
+            }
+            SurfacePopup.IsOpen = (node != null);
+
             RaiseEvent(new TimeLine.FocusFrameEventArgs(TimeLine.FocusFrameEvent, frame, node));
         }
 

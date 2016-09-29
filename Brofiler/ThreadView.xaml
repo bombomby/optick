@@ -18,6 +18,13 @@
     </Grid.ColumnDefinitions>
     <Profiler:SearchBox Margin="0,-22,2,0" HorizontalAlignment="Right" Width="200" x:Name="search" Grid.Column="1" VerticalAlignment="Top" />
     <DX:DirectXCanvas x:Name="surface" Height="Auto" Grid.Row="0" Grid.Column="1" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}" />
+
+    <Popup x:Name="SurfacePopup" StaysOpen="False" Placement="Mouse" PopupAnimation="Fade" IsEnabled="False" Focusable="False" IsHitTestVisible="False">
+            <Border Background="Silver" BorderThickness="1" BorderBrush="#FF171717" >
+                <Label x:Name="TimeLabel" Content="0 ms"/>
+            </Border>
+        </Popup>
+      
     <ScrollBar Orientation="Horizontal" Width="Auto" x:Name="scrollBar" Grid.Column="1" Grid.Row="1" />
     <Grid Grid.RowSpan="1" x:Name="ThreadList" ClipToBounds="False">
       <Grid.ColumnDefinitions>
