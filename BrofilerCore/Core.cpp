@@ -134,6 +134,8 @@ void Core::DumpFrames()
 	}
 
 	frames.clear();
+
+	CleanupThreads();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpSamplingData()
@@ -150,6 +152,39 @@ void Core::DumpSamplingData()
 		Server::Get().Send(DataResponse::SamplingFrame, stream);
 	}
 #endif
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Core::CleanupThreads()
+{
+	MT::ScopedGuard guard(lock);
+
+	for (ThreadList::iterator it = threads.begin(); it != threads.end();)
+	{
+		if (!(*it)->isAlive)
+		{
+			(*it)->~ThreadEntry();
+			MT::Memory::Free(*it);
+			it = threads.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
+
+	for (ThreadList::iterator it = fibers.begin(); it != fibers.end();)
+	{
+		if (!(*it)->isAlive)
+		{
+			(*it)->~ThreadEntry();
+			MT::Memory::Free(*it);
+			it = fibers.erase(it);
+		}
+		else
+		{
+			++it;
+		}
+	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core::Core() : progressReportedLastTimestampMS(0), isActive(false)
@@ -262,8 +297,8 @@ void Core::SendHandshakeResponse(EtwStatus status)
 bool Core::RegisterThread(const ThreadDescription& description, EventStorage** slot)
 {
 	MT::ScopedGuard guard(lock);
-	ThreadEntry* entry = new ThreadEntry(description, slot);
-	threads.push_back(new ThreadEntry(description, slot));
+	ThreadEntry* entry = new (MT::Memory::Alloc(sizeof(ThreadEntry), BRO_CACHE_LINE_SIZE)) ThreadEntry(description, slot);
+	threads.push_back(entry);
 
 	if (isActive)
 		*slot = &entry->storage;
@@ -271,10 +306,37 @@ bool Core::RegisterThread(const ThreadDescription& description, EventStorage** s
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool Core::UnRegisterThread(MT::ThreadId threadID)
+{
+	MT::ScopedGuard guard(lock);
+	for (ThreadList::iterator it = threads.begin(); it != threads.end(); ++it)
+	{
+		ThreadEntry* entry = *it;
+		if (entry->description.threadID.IsEqual(threadID) && entry->isAlive)
+		{
+			if (!isActive)
+			{
+				entry->~ThreadEntry();
+				MT::Memory::Free(entry);
+				threads.erase(it);
+				return true;
+			}
+			else
+			{
+				entry->isAlive = false;
+				return true;
+			}
+		}
+		++it;
+	}
+
+	return false;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::RegisterFiber(const ThreadDescription& description, EventStorage** slot)
 {
 	MT::ScopedGuard guard(lock);
-	ThreadEntry* entry = new ThreadEntry(description, slot);
+	ThreadEntry* entry = new (MT::Memory::Alloc(sizeof(ThreadEntry), BRO_CACHE_LINE_SIZE)) ThreadEntry(description, slot);
 	fibers.push_back(entry);
 
 	if (isActive)
@@ -285,17 +347,21 @@ bool Core::RegisterFiber(const ThreadDescription& description, EventStorage** sl
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core::~Core()
 {
-	for(auto it = threads.begin(); it != threads.end(); ++it)
-	{
-		ThreadEntry* entry = *it;
-		delete entry;
-	}
+	MT::ScopedGuard guard(lock);
 
-	for(auto it = fibers.begin(); it != fibers.end(); ++it)
+	for (ThreadList::iterator it = threads.begin(); it != threads.end(); ++it)
 	{
-		ThreadEntry* entry = *it;
-		delete entry;
+		(*it)->~ThreadEntry();
+		MT::Memory::Free((*it));
 	}
+	threads.clear();
+
+	for (ThreadList::iterator it = fibers.begin(); it != fibers.end(); ++it)
+	{
+		(*it)->~ThreadEntry();
+		MT::Memory::Free((*it));
+	}
+	fibers.clear();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const std::vector<ThreadEntry*>& Core::GetThreads() const
@@ -355,6 +421,11 @@ BROFILER_API bool RegisterThread(const char* name)
 	return Core::Get().RegisterThread(ThreadDescription(name, MT::ThreadId::Self()), &Core::storage);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+BROFILER_API bool UnRegisterThread()
+{
+	return Core::Get().UnRegisterThread(MT::ThreadId::Self());
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 BROFILER_API bool RegisterFiber(const char* name, EventStorage** slot)
 {
 	return Core::Get().RegisterFiber(ThreadDescription(name, MT::ThreadId()), slot);
@@ -367,6 +438,9 @@ EventStorage::EventStorage(): isSampling(0)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ThreadEntry::Activate(bool isActive)
 {
+	if (!isAlive)
+		return;
+
 	if (isActive)
 		storage.Clear(true);
 

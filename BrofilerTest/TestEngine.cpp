@@ -137,7 +137,6 @@ void Engine::Draw()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdatePhysics()
 { BROFILER_CATEGORY( "UpdatePhysics", Brofiler::Color::Wheat )
-
 	MT::SpinSleepMilliSeconds(20);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -237,7 +236,7 @@ public:
 
 	virtual void OnThreadCreated(uint32 workerIndex) override 
 	{
-		BROFILER_THREAD("Scheduler(Worker)");
+		BROFILER_START_THREAD("Scheduler(Worker)");
 		eventStorageSlots[workerIndex] = Brofiler::GetEventStorageSlot();
 		threadIds[workerIndex] = MT::ThreadId::Self();
 	}
@@ -250,6 +249,7 @@ public:
 	virtual void OnThreadStoped(uint32 workerIndex) override
 	{
 		MT_UNUSED(workerIndex);
+		BROFILER_STOP_THREAD();
 	}
 
 	virtual void OnThreadIdleStarted(uint32 workerIndex) override
@@ -276,7 +276,6 @@ public:
 		MT_UNUSED(debugID);
 		MT_UNUSED(type);
 	}
-
 };
 
 

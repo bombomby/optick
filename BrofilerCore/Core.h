@@ -103,20 +103,25 @@ struct ThreadEntry
 	EventStorage storage;
 	EventStorage** threadTLS;
 
-	ThreadEntry(const ThreadDescription& desc, EventStorage** tls) : description(desc), threadTLS(tls) {}
+	bool isAlive;
+
+	ThreadEntry(const ThreadDescription& desc, EventStorage** tls) : description(desc), threadTLS(tls), isAlive(true) {}
 	void Activate(bool isActive);
 };
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+typedef std::vector<ThreadEntry*> ThreadList;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 class Core
 {
 	MT::Mutex lock;
 
 	MT::ThreadId mainThreadID;
 
-	std::vector<ThreadEntry*> threads;
-	std::vector<ThreadEntry*> fibers;
+	ThreadList threads;
+	ThreadList fibers;
 
 	int64 progressReportedLastTimestampMS;
 
@@ -134,6 +139,8 @@ class Core
 	void SendHandshakeResponse(EtwStatus status);
 
 	void DumpThread(const ThreadEntry& entry, const EventTime& timeSlice, ScopeData& scope);
+
+	void CleanupThreads();
 public:
 	void Activate(bool active);
 	bool isActive;
@@ -174,6 +181,9 @@ public:
 
 	// Registers thread and create EventStorage
 	bool RegisterThread(const ThreadDescription& description, EventStorage** slot);
+
+	// UnRegisters thread
+	bool UnRegisterThread(MT::ThreadId threadId);
 
 	// Registers finer and create EventStorage
 	bool RegisterFiber(const ThreadDescription& description, EventStorage** slot);
