@@ -221,7 +221,7 @@ namespace Profiler
 
         private bool ApplyResponse(DataResponse response)
         {
-            if (response.Version == NetworkProtocol.NETWORK_PROTOCOL_VERSION)
+            if (response.Version >= NetworkProtocol.NETWORK_PROTOCOL_MIN_VERSION)
             {
                 //SaveTestResponse(response);
 

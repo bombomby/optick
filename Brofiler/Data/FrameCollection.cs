@@ -164,7 +164,7 @@ namespace Profiler.Data
             {
                 case DataResponse.Type.FrameDescriptionBoard:
                     {
-                        EventDescriptionBoard board = EventDescriptionBoard.Read(response.Reader);
+                        EventDescriptionBoard board = EventDescriptionBoard.Read(response);
                         groups[board.ID] = new FrameGroup(board);
                         break;
                     }

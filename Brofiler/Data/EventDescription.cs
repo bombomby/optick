@@ -101,14 +101,16 @@ namespace Profiler.Data
     public class ThreadDescription
     {
         public String Name { get; set; }
-        public int ThreadID { get; set; }
+        public UInt64 ThreadID { get; set; }
         public int MaxDepth { get; set; }
         public bool IsFiber { get; set; }
 
-        public static ThreadDescription Read(BinaryReader reader)
+        public static ThreadDescription Read(DataResponse response)
         {
+            BinaryReader reader = response.Reader;
             ThreadDescription res = new ThreadDescription();
-            res.ThreadID = reader.ReadInt32();
+
+            res.ThreadID = (response.Version >= NetworkProtocol.NETWORK_PROTOCOL_VERSION_7) ? reader.ReadUInt64() : (UInt64)reader.ReadUInt32();
             int nameLength = reader.ReadInt32();
             res.Name = new String(reader.ReadChars(nameLength));
             res.MaxDepth = 1; // TODO: reader.ReadInt32();
@@ -125,7 +127,7 @@ namespace Profiler.Data
         public int MainThreadIndex { get; private set; }
 
         public List<ThreadDescription> Threads { get; private set; }
-        public Dictionary<long, int> ThreadID2ThreadIndex { get; private set; }
+        public Dictionary<UInt64, int> ThreadID2ThreadIndex { get; private set; }
         public List<ThreadDescription> Fibers { get; private set; }
 
         private List<EventDescription> board = new List<EventDescription>();
@@ -143,8 +145,9 @@ namespace Profiler.Data
             }
         }
 
-        public static EventDescriptionBoard Read(BinaryReader reader)
+        public static EventDescriptionBoard Read(DataResponse response)
         {
+            BinaryReader reader = response.Reader;
             EventDescriptionBoard desc = new EventDescriptionBoard();
             desc.BaseStream = reader.BaseStream;
             desc.ID = reader.ReadInt32();
@@ -157,11 +160,11 @@ namespace Profiler.Data
 
             int threadCount = reader.ReadInt32();
             desc.Threads = new List<ThreadDescription>(threadCount);
-            desc.ThreadID2ThreadIndex = new Dictionary<long, int>();
+            desc.ThreadID2ThreadIndex = new Dictionary<UInt64, int>();
 
             for (int i = 0; i < threadCount; ++i)
             {
-                ThreadDescription threadDesc = ThreadDescription.Read(reader);
+                ThreadDescription threadDesc = ThreadDescription.Read(response);
                 desc.Threads.Add(threadDesc);
 
                 int res;
@@ -175,7 +178,7 @@ namespace Profiler.Data
             desc.Fibers = new List<ThreadDescription>(fibersCount);
             for (int i = 0; i < fibersCount; ++i)
             {
-                ThreadDescription threadDesc = ThreadDescription.Read(reader);
+                ThreadDescription threadDesc = ThreadDescription.Read(response);
                 threadDesc.IsFiber = true;
                 desc.Fibers.Add(threadDesc);
                 desc.Threads.Add(threadDesc);

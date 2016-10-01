@@ -392,8 +392,7 @@ OutputDataStream& operator<<(OutputDataStream& stream, const ScopeData& ob)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const ThreadDescription& description)
 {
-	//FIXME, TODO: Remove cast to uint32
-	return stream << (uint32)description.threadID.AsUInt64() << description.name;
+	return stream << description.threadID.AsUInt64() << description.name;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const ThreadEntry* entry)

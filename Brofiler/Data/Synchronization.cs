@@ -11,13 +11,13 @@ namespace Profiler.Data
     {
         public class SyncInterval : Durable
         {
-            public int Core { get; set; }
+            public UInt32 Core { get; set; }
 
             public static SyncInterval Read(BinaryReader reader)
             {
                 SyncInterval interval = new SyncInterval();
                 interval.ReadDurable(reader);
-                interval.Core = reader.ReadInt32();
+                interval.Core = reader.ReadUInt32();
                 return interval;
             }
         }

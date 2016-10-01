@@ -9,7 +9,11 @@ namespace Profiler
 {
     public struct NetworkProtocol
     {
-        public const UInt32 NETWORK_PROTOCOL_VERSION = 6;
+        public const UInt32 NETWORK_PROTOCOL_VERSION_6 = 6; 
+        public const UInt32 NETWORK_PROTOCOL_VERSION_7 = 7; // Changed ThreadID - uint32 => uint64
+
+        public const UInt32 NETWORK_PROTOCOL_VERSION = NETWORK_PROTOCOL_VERSION_7;
+        public const UInt32 NETWORK_PROTOCOL_MIN_VERSION = NETWORK_PROTOCOL_VERSION_6;
     }
 
     public class DataResponse
