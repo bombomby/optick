@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef LINUX64
+#if defined(LINUX64) || defined(ANDROID)
 #include "Linux/ConcurrencyLinux.h"
 #else
 #include "Windows/ConcurrencyWindows.h"

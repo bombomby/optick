@@ -6,7 +6,7 @@
 
 #if defined(WINDOWS)
 	typedef HANDLE ThreadID;
-#elif defined(LINUX64)
+#elif defined(LINUX64) || defined(ANDROID)
 	typedef Profiler::SystemThread ThreadID;
 #else
 #error "Wrong OS type"
