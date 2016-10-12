@@ -330,7 +330,8 @@ struct ThreadScope
 									Brofiler::NextFrame();										\
 									BROFILER_EVENT("Frame")										\
 
-#define BROFILER_THREAD(FRAME_NAME) ::Brofiler::ThreadScope(FRAME_NAME);\
+#define BROFILER_THREAD(FRAME_NAME) ::Brofiler::ThreadScope brofilerThreadScope(FRAME_NAME); \
+									BRO_UNUSED(brofilerThreadScope);						 \
 
 #define BROFILER_START_THREAD(FRAME_NAME) ::Brofiler::RegisterThread(FRAME_NAME);
 
