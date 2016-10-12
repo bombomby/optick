@@ -1,11 +1,11 @@
 version: 1.0.{build}
 
 build_script:
-- genie.exe vs2012 genie.lua
+- genie.exe vs2015 genie.lua
 - cd Brofiler
 - MsBuild Brofiler_vs2012.sln /t:Rebuild /p:Configuration=Release
 - cd ..
-- cd Build/vs2012
+- cd Build/vs2015
 - MsBuild Brofiler.sln /t:Rebuild /p:Configuration=Release
 
 test_script:
