@@ -167,10 +167,16 @@ namespace Profiler.Data
                 ThreadDescription threadDesc = ThreadDescription.Read(response);
                 desc.Threads.Add(threadDesc);
 
-                int res;
-                if (!desc.ThreadID2ThreadIndex.TryGetValue(threadDesc.ThreadID, out res))
+                if (!desc.ThreadID2ThreadIndex.ContainsKey(threadDesc.ThreadID))
                 {
                     desc.ThreadID2ThreadIndex.Add(threadDesc.ThreadID, i);
+                }
+                else
+                {
+                    // The old thread was finished and the new thread was started 
+                    // with the same threadID during one profiling session.
+                    // Can't do much here - lets show information for the new thread only.
+                    desc.ThreadID2ThreadIndex[threadDesc.ThreadID] = i;
                 }
             }
 

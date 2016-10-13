@@ -45,6 +45,10 @@ solution "Brofiler"
 	
 if isVisualStudio then
 	debugdir (outFolderRoot)
+	buildoptions { 
+		"/wd4127", -- Conditional expression is constant
+		"/wd4091"  -- 'typedef ': ignored on left of '' when no variable is declared
+	}
 end
 
 if isUWP then

@@ -111,21 +111,24 @@ namespace Profiler.Data
                     Durable border = new Durable(Math.Max(frame.Start, sync.Start), Math.Min(frame.Finish, sync.Finish));
 
                     List<Entry> entries = new List<Entry>();
-                    int threadIndex = Board.ThreadID2ThreadIndex[sync.Core];
 
-                    foreach (Entry entry in frame.Entries)
+                    int threadIndex = 0;
+                    if (Board.ThreadID2ThreadIndex.TryGetValue(sync.Core, out threadIndex))
                     {
-                        if (entry.Intersect(border))
+                        foreach (Entry entry in frame.Entries)
                         {
-                            entries.Add(new Entry(entry.Description, Math.Max(border.Start, entry.Start), Math.Min(border.Finish, entry.Finish)));
+                            if (entry.Intersect(border))
+                            {
+                                entries.Add(new Entry(entry.Description, Math.Max(border.Start, entry.Start), Math.Min(border.Finish, entry.Finish)));
+                            }
                         }
-                    }
 
-                    if (entries.Count > 0)
-                    {
-                        FrameHeader header = new FrameHeader(threadIndex, border);
-                        EventFrame block = new EventFrame(header, entries, this);
-                        Threads[threadIndex].AddWithMerge(block);
+                        if (entries.Count > 0)
+                        {
+                            FrameHeader header = new FrameHeader(threadIndex, border);
+                            EventFrame block = new EventFrame(header, entries, this);
+                            Threads[threadIndex].AddWithMerge(block);
+                        }
                     }
                 }
             }

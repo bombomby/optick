@@ -61,7 +61,7 @@ void Event::Stop(EventData& data)
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void SyncData::StartWork(EventStorage* storage, unsigned long core)
+void SyncData::StartWork(EventStorage* storage, uint64_t core)
 {
 	if (storage)
 	{
