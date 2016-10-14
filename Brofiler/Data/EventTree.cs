@@ -191,7 +191,7 @@ namespace Profiler.Data
 
   public class EventNode : TreeNode<EventDescription>
   {
-		public Entry Entry { get; private set; }
+	public Entry Entry { get; private set; }
 
     public EventNode(EventNode root, Entry entry)
       : base(root, entry.Description, entry.Duration)

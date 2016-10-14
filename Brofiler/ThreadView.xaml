@@ -21,7 +21,10 @@
 
     <Popup x:Name="SurfacePopup" StaysOpen="False" Placement="Mouse" PopupAnimation="Fade" IsEnabled="False" Focusable="False" IsHitTestVisible="False">
             <Border Background="Silver" BorderThickness="1" BorderBrush="#FF171717" >
-                <Label x:Name="TimeLabel" Content="0 ms"/>
+                <StackPanel>
+                    <Label Content="{Binding Path=Description.Name}"/>
+                    <Label Content="{Binding Path=Duration}" ContentStringFormat="{}{0:0.###} ms"/>
+                </StackPanel>
             </Border>
         </Popup>
       

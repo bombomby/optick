@@ -33,6 +33,25 @@ namespace Profiler
         public static Interval Unit = new Interval(0.0, 1.0);
     }
 
+
+    public static class RenderParams
+    {
+        public static double dpiScaleX = 1.0;
+        public static double dpiScaleY = 1.0;
+        public static double BaseHeight = 16.0;
+        public static double BaseMargin = 0.75;
+
+        static RenderParams()
+        {
+            using (System.Drawing.Graphics g = System.Drawing.Graphics.FromHwnd(IntPtr.Zero))
+            {
+                dpiScaleX = (g.DpiX / 96.0);
+                dpiScaleY = (g.DpiY / 96.0);
+            }
+        }
+    }
+
+
     public class ThreadScroll
     {
         public Durable TimeSlice { get; set; }
@@ -53,7 +72,7 @@ namespace Profiler
         public Interval TimeToPixel(Durable d)
         {
             Interval unit = TimeToUnit(d);
-            double scale = Width * Zoom;
+            double scale = Width * Zoom * RenderParams.dpiScaleX;
             return new Interval((unit.Left - ViewUnit.Left) * scale, unit.Width * scale);
         }
 
@@ -62,9 +81,10 @@ namespace Profiler
             return (pixel / Width) * ViewUnit.Width;
         }
 
-        public ITick PixelToTime(double pixel)
+        public ITick PixelToTime(double pixelX)
         {
-            double unit = ViewUnit.Left + PixelToUnitLength(pixel);
+            pixelX /= RenderParams.dpiScaleX;
+            double unit = ViewUnit.Left + PixelToUnitLength(pixelX);
             return new Tick() { Start = TimeSlice.Start + (long)(unit * (TimeSlice.Finish - TimeSlice.Start))};
         }
 
@@ -75,6 +95,7 @@ namespace Profiler
         }
 
     }
+
 
     public abstract class ThreadRow
     {
@@ -87,9 +108,6 @@ namespace Profiler
         }
 
         public RenderPriority Priority = RenderPriority.Normal;
-
-        public const double BaseHeight = 16.0;
-        public const double BaseMargin = 0.75;
 
         public double Offset { get; set; }
         public abstract double Height { get; }
@@ -105,7 +123,7 @@ namespace Profiler
     }
     public class HeaderThreadRow : ThreadRow
     {
-        public override double Height { get { return BaseHeight; } }
+        public override double Height { get { return RenderParams.BaseHeight; } }
         public override string Name { get { return String.Empty; } }
 
         public Color GradientTop { get; set; }
@@ -133,7 +151,7 @@ namespace Profiler
             BackgroundMeshLines = builder.Freeze(canvas.RenderDevice);
 
             DirectX.DynamicMesh builderHeader = canvas.CreateMesh();
-            builderHeader.AddRect(new Rect(0.0, 0.0, 1.0, (Height - BaseMargin) / scroll.Height), new Color[] {GradientTop, GradientTop, GradientBottom, GradientBottom});
+            builderHeader.AddRect(new Rect(0.0, 0.0, 1.0, (Height - RenderParams.BaseMargin) / scroll.Height), new Color[] { GradientTop, GradientTop, GradientBottom, GradientBottom });
             BackgroundMeshTris = builderHeader.Freeze(canvas.RenderDevice);
         }
 
@@ -204,7 +222,9 @@ namespace Profiler
             builder.AddRect(new Rect(interval.Left, y, interval.Width, h), node.Description.Color);
 
             foreach (EventNode child in node.Children)
+            {
                 BuildMeshNode(builder, scroll, child, level + 1);
+            }
         }
 
         public override void BuildMesh(DirectX.DirectXCanvas canvas, ThreadScroll scroll)
@@ -218,7 +238,9 @@ namespace Profiler
                 Durable interval = Group.Board.TimeSlice;
 
                 foreach (EventNode node in frame.CategoriesTree.Children)
+                {
                     BuildMeshNode(builder, scroll, node, 0);
+                }
 
                 Interval frameInterval = scroll.TimeToUnit(frame.Header);
 
@@ -231,7 +253,9 @@ namespace Profiler
                         Interval syncInterval = scroll.TimeToUnit(sync);
 
                         if (start < syncInterval.Left)
-                            syncBuilder.AddRect(new Rect(start, BaseMargin / Height, syncInterval.Left - start, SyncLineHeight / Height), SynchronizationColor);
+                        {
+                            syncBuilder.AddRect(new Rect(start, RenderParams.BaseMargin / Height, syncInterval.Left - start, SyncLineHeight / Height), SynchronizationColor);
+                        }
 
                         start = Math.Max(syncInterval.Right, start);
                     }
@@ -242,7 +266,7 @@ namespace Profiler
             SyncMesh = syncBuilder.Freeze(canvas.RenderDevice);
         }
 
-        public override double Height { get { return BaseHeight * MaxDepth; } }
+        public override double Height { get { return RenderParams.BaseHeight * MaxDepth; } }
         public override string Name { get { return Description.Name; } }
 
         const double TextDrawThreshold = 8.0;
@@ -250,8 +274,8 @@ namespace Profiler
 
         public override void Render(DirectX.DirectXCanvas canvas, ThreadScroll scroll)
         {
-            SharpDX.Matrix world = SharpDX.Matrix.Scaling((float)scroll.Zoom, (float)((Height - 2.0 * BaseMargin) / scroll.Height), 1.0f);
-            world.TranslationVector = new SharpDX.Vector3(-(float)(scroll.ViewUnit.Left * scroll.Zoom), (float)((Offset + 1.0 * BaseMargin) / scroll.Height), 0.0f);
+            SharpDX.Matrix world = SharpDX.Matrix.Scaling((float)scroll.Zoom, (float)((Height - 2.0 * RenderParams.BaseMargin) / scroll.Height), 1.0f);
+            world.TranslationVector = new SharpDX.Vector3(-(float)(scroll.ViewUnit.Left * scroll.Zoom), (float)((Offset + 1.0 * RenderParams.BaseMargin) / scroll.Height), 0.0f);
 
             if (Mesh != null)
             {
@@ -290,7 +314,7 @@ namespace Profiler
                     double lum = DirectX.Utils.GetLuminance(entry.Description.Color);
                     Color color = lum < 0.33 ? Colors.White : Colors.Black;
 
-                    canvas.Text.Draw(new Point(intervalPx.Left + TextDrawOffset, Offset + level * BaseHeight), 
+                    canvas.Text.Draw(new Point(intervalPx.Left + TextDrawOffset, (Offset + level * RenderParams.BaseHeight) * RenderParams.dpiScaleY), 
                                      entry.Description.Name, 
                                      color,
                                      TextAlignment.Left,
@@ -321,7 +345,7 @@ namespace Profiler
             {
                 EventFrame frame = EventData.Events[index];
 
-                int desiredLevel = (int)(point.Y / BaseHeight);
+                int desiredLevel = (int)(point.Y / RenderParams.BaseHeight);
 
                 frame.CategoriesTree.ForEachChild((node, level) =>
                 {
@@ -358,7 +382,7 @@ namespace Profiler
             if (level != -1)
             {
                 Interval interval = scroll.TimeToPixel(node.Entry);
-                Rect rect = new Rect(interval.Left, Offset + level * BaseHeight + BaseMargin, interval.Width, BaseHeight - BaseMargin);
+                Rect rect = new Rect(interval.Left, RenderParams.dpiScaleY * (Offset + level * RenderParams.BaseHeight + RenderParams.BaseMargin), interval.Width, (RenderParams.BaseHeight - RenderParams.BaseMargin) * RenderParams.dpiScaleY);
                 EventNodeHover(rect, this, node);
             }
             else

@@ -88,6 +88,9 @@
         <ToggleButton x:Name="StartButton" Width="24" Height="24" Unchecked="StartButton_Unchecked" Checked="StartButton_Checked" ToolTip="Start Profiling Session" Padding="-6">
                 <ContentControl Style="{StaticResource appbar_control_play}" />
             </ToggleButton>
+            <Button x:Name="OpenButton" Click="OpenButton_Click" HorizontalAlignment="Left" Width="24" Height="24" VerticalAlignment="Center" ToolTip="Open Saved Session" Margin="1,0,0,0" Padding="-6">
+                <ContentControl Style="{StaticResource appbar_folder_open}" />
+            </Button>
             <Button x:Name="SaveButton" Click="SaveButton_Click" HorizontalAlignment="Left" Width="24" Height="24" VerticalAlignment="Center" ToolTip="Save Active Session" Margin="1,0,0,0" Padding="-6">
                 <ContentControl Style="{StaticResource appbar_save}" />
             </Button>
