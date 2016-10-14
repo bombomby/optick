@@ -194,7 +194,7 @@ public:
 				Brofiler::SyncData::StopWork(activeStorage);
 
 			*threadStorageSlot = eventStorages[fiberIndex];
-			Brofiler::SyncData::StartWork(*threadStorageSlot, (uint32)MT::ThreadId::Self().AsUInt64() );
+			Brofiler::SyncData::StartWork(*threadStorageSlot, MT::ThreadId::Self().AsUInt64());
 		}
 		else
 		{
@@ -208,7 +208,7 @@ public:
 			// If we have an active storage - put current storage into the slot
 			*eventStorageSlot = eventStorage;
 
-			Brofiler::SyncData::StartWork(eventStorage, (uint32)threadId.AsUInt64() );
+			Brofiler::SyncData::StartWork(eventStorage, threadId.AsUInt64());
 		}
 	}
 

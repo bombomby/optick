@@ -240,9 +240,9 @@ struct EventData : public EventTime
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct BROFILER_API SyncData : public EventTime
 {
-	uint32_t core;
+	uint64_t core;
 
-	static void StartWork(EventStorage* storage, unsigned long core);
+	static void StartWork(EventStorage* storage, uint64_t core);
 	static void StopWork(EventStorage* storage);
 };
 
