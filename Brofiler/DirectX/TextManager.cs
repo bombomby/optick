@@ -36,6 +36,7 @@ namespace Profiler.DirectX
 
             public Texture2D Texture;
             public ShaderResourceView TextureView;
+            public double Size { get; set; }
 
             public static Font Create(Device device, String name)
             {
@@ -47,6 +48,9 @@ namespace Profiler.DirectX
                 {
                     XmlDocument doc = new XmlDocument();
                     doc.Load(stream);
+
+                    XmlNode desc = doc.SelectSingleNode("//info");
+                    font.Size = double.Parse(desc.Attributes["size"].Value);
 
                     XmlNode info = doc.SelectSingleNode("//common");
 
@@ -89,11 +93,24 @@ namespace Profiler.DirectX
             }
         }
 
-        Font SegoeUI_16;
+        Font SegoeUI;
 
         public TextManager(DirectX.DirectXCanvas canvas)
         {
-            SegoeUI_16 = Font.Create(canvas.RenderDevice, "SegoeUI_16_Normal");
+            double baseFontSize = 16.0;
+            int desiredFontSize = (int)(RenderSettings.dpiScaleY * baseFontSize);
+
+            int fontSize = 16;
+            int[] sizes = { 16, 20, 24, 28, 32 };
+            for (int i = 0; i < sizes.Length; ++i)
+            {
+                if (desiredFontSize < sizes[i])
+                    break;
+
+                fontSize = sizes[i];
+            }
+
+            SegoeUI = Font.Create(canvas.RenderDevice, String.Format("SegoeUI_{0}_Normal", fontSize));
             VertexBuffer = new DynamicBuffer<Vertex>(canvas.RenderDevice, BindFlags.VertexBuffer);
             IndexBuffer = new DynamicBuffer<int>(canvas.RenderDevice, BindFlags.IndexBuffer);
             TextMesh = canvas.CreateMesh(DirectXCanvas.MeshType.Text);
@@ -113,14 +130,14 @@ namespace Profiler.DirectX
                     {
                         double totalWidth = 0.0;
                         for (int i = 0; i < str.Length; ++i)
-                            totalWidth += SegoeUI_16.Symbols[str[i]].Advance;
+                            totalWidth += SegoeUI.Symbols[str[i]].Advance;
 
                         double shift = Math.Max(0.0, (maxWidth - totalWidth) * 0.5);
 
                         Vector2 origin = new Vector2((float)(pos.X + shift), (float)pos.Y);
                         for (int i = 0; i < str.Length; ++i)
                         {
-                            Font.Symbol symbol = SegoeUI_16.Symbols[str[i]];
+                            Font.Symbol symbol = SegoeUI.Symbols[str[i]];
 
                             if (symbol.Size.Width > maxWidth)
                                 break;
@@ -137,7 +154,7 @@ namespace Profiler.DirectX
                         Vector2 origin = new Vector2((float)(pos.X + maxWidth), (float)pos.Y);
                         for (int i = str.Length - 1; i >= 0; --i)
                         {
-                            Font.Symbol symbol = SegoeUI_16.Symbols[str[i]];
+                            Font.Symbol symbol = SegoeUI.Symbols[str[i]];
                             origin.X -= symbol.Advance;
 
                             if (symbol.Size.Width > maxWidth)
@@ -154,7 +171,7 @@ namespace Profiler.DirectX
                         Vector2 origin = new Vector2((float)pos.X, (float)pos.Y);
                         for (int i = 0; i < str.Length; ++i)
                         {
-                            Font.Symbol symbol = SegoeUI_16.Symbols[str[i]];
+                            Font.Symbol symbol = SegoeUI.Symbols[str[i]];
 
                             if (symbol.Size.Width > maxWidth)
                                 break;
@@ -203,7 +220,7 @@ namespace Profiler.DirectX
             Freeze(canvas.RenderDevice);
 
             canvas.RenderDevice.ImmediateContext.PixelShader.SetSampler(0, canvas.TextSamplerState);
-            canvas.RenderDevice.ImmediateContext.PixelShader.SetShaderResource(0, SegoeUI_16.TextureView);
+            canvas.RenderDevice.ImmediateContext.PixelShader.SetShaderResource(0, SegoeUI.TextureView);
 
             canvas.Draw(TextMesh);
         }
@@ -235,7 +252,7 @@ namespace Profiler.DirectX
 
         public void Dispose()
         {
-            SharpDX.Utilities.Dispose(ref SegoeUI_16);
+            SharpDX.Utilities.Dispose(ref SegoeUI);
             SharpDX.Utilities.Dispose(ref TextMesh);
         }
     }

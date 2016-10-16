@@ -196,6 +196,7 @@
     <Compile Include="DirectX\Fragment.cs" />
     <Compile Include="DirectX\Mesh.cs" />
     <Compile Include="DirectX\DynamicMesh.cs" />
+    <Compile Include="DirectX\RenderSettings.cs" />
     <Compile Include="DirectX\TextManager.cs" />
     <Compile Include="DirectX\TextureLoader.cs" />
     <Compile Include="DirectX\Utils.cs" />
@@ -326,6 +327,10 @@
     </EmbeddedResource>
     <None Include="app.config" />
     <EmbeddedResource Include="DirectX\Fonts\SegoeUI_16_Normal.fnt" />
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_20_Normal.fnt" />
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_24_Normal.fnt" />
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_32_Normal.fnt" />
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_28_Normal.fnt" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -411,5 +416,13 @@
     <EmbeddedResource Include="AutoEmbedLibs\SharpDX.Direct3D11.dll" />
     <EmbeddedResource Include="AutoEmbedLibs\SharpDX.dll" />
     <EmbeddedResource Include="AutoEmbedLibs\SharpDX.DXGI.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_20_Normal_0.png" />
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_24_Normal_0.png" />
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_32_Normal_0.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_28_Normal_0.png" />
   </ItemGroup>
 </Project>

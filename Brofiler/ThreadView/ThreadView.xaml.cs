@@ -115,7 +115,7 @@ namespace Profiler
 
             scroll.TimeSlice = group.Board.TimeSlice;
             scroll.Height = 0.0;
-            scroll.Width = surface.ActualWidth;
+            scroll.Width = surface.ActualWidth * RenderSettings.dpiScaleX;
             rows.ForEach(row => scroll.Height += row.Height);
 
             rows.ForEach(row => row.BuildMesh(surface, scroll));
@@ -138,7 +138,7 @@ namespace Profiler
 
                 Thickness margin = new Thickness(0, 0, 0, 0);
 
-                Label labelName = new Label() { Content = row.Name, Margin = margin, Padding = new Thickness(), FontWeight = FontWeights.Bold, Height = row.Height, VerticalContentAlignment = VerticalAlignment.Center };
+                Label labelName = new Label() { Content = row.Name, Margin = margin, Padding = new Thickness(), FontWeight = FontWeights.Bold, Height = row.Height / RenderSettings.dpiScaleY, VerticalContentAlignment = VerticalAlignment.Center };
 
                 Grid.SetRow(labelName, threadIndex);
 
@@ -223,6 +223,8 @@ namespace Profiler
 		class InputState
         {
             public bool IsDrag { get; set; }
+            public bool IsSelect { get; set; }
+            public System.Drawing.Point SelectStartPosition { get; set; }
             public System.Drawing.Point DragPosition { get; set; }
 			public System.Drawing.Point MousePosition { get; set; }
         }
@@ -243,6 +245,7 @@ namespace Profiler
         private void RenderCanvas_MouseLeave(object sender, EventArgs e)
         {
             Input.IsDrag = false;
+            Input.IsSelect = false;
 
 			if (SurfacePopup.IsOpen)
 			{
@@ -259,8 +262,6 @@ namespace Profiler
 
         private void UpdateHover(System.Drawing.Point e)
         {
-            e.Y = (int)((double)e.Y / RenderParams.dpiScaleY);
-
             foreach (ThreadRow row in rows)
             {
                 if (row.Offset <= e.Y && e.Y <= row.Offset + row.Height)
@@ -273,8 +274,6 @@ namespace Profiler
         private void MouseClick(System.Windows.Forms.MouseEventArgs args)
         {
             System.Drawing.Point e = new System.Drawing.Point(args.X, args.Y);
-            e.Y = (int)(e.Y / RenderParams.dpiScaleY);
-
             foreach (ThreadRow row in rows)
 			{
                 if (row.Offset <= e.Y && e.Y <= row.Offset + row.Height)
@@ -328,8 +327,11 @@ namespace Profiler
                 Input.IsDrag = true;
                 Input.DragPosition = e.Location;
             }
-            else
+            else if (e.Button == System.Windows.Forms.MouseButtons.Left)
             {
+                Input.IsSelect = true;
+                Input.SelectStartPosition = e.Location;
+
                 MouseClick(e);
             }
         }
@@ -389,7 +391,7 @@ namespace Profiler
                     Durable intervalTime = selection.Node == null ? (Durable)selection.Frame.Header : (Durable)selection.Node.Entry;
                     Interval intervalPx = scroll.TimeToPixel(intervalTime);
 
-                    Rect rect = new Rect(intervalPx.Left, (row.Offset + 2.0 * RenderParams.BaseMargin) * RenderParams.dpiScaleY, intervalPx.Width, (row.Height - 4.0 * RenderParams.BaseMargin) * RenderParams.dpiScaleY);
+                    Rect rect = new Rect(intervalPx.Left, row.Offset + 2.0 * RenderParams.BaseMargin, intervalPx.Width, row.Height - 4.0 * RenderParams.BaseMargin);
 
                     for (int i = 0; i < SelectionBorderCount; ++i)
                     {
@@ -430,7 +432,7 @@ namespace Profiler
 
         void ThreadView_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            scroll.Width = surface.ActualWidth;
+            scroll.Width = surface.ActualWidth * RenderSettings.dpiScaleX;
         }
 
         void Search_DelayedTextChanged(string text)

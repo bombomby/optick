@@ -17,7 +17,7 @@ namespace Profiler
         Mesh Mesh { get; set; }
         Mesh SyncMesh { get; set; }
 
-        const double SyncLineHeight = 4.0;
+        double SyncLineHeight = 4.0 * RenderSettings.dpiScaleY;
         static Color SynchronizationColor = Colors.OrangeRed;
 
         EventFilter Filter { get; set; }
@@ -92,8 +92,8 @@ namespace Profiler
         public override double Height { get { return RenderParams.BaseHeight * MaxDepth; } }
         public override string Name { get { return Description.Name; } }
 
-        const double TextDrawThreshold = 8.0;
-        const double TextDrawOffset = 1.5;
+        double TextDrawThreshold = 8.0 * RenderSettings.dpiScaleX;
+        double TextDrawOffset = 1.5 * RenderSettings.dpiScaleY;
 
         public override void Render(DirectX.DirectXCanvas canvas, ThreadScroll scroll)
         {
@@ -125,7 +125,7 @@ namespace Profiler
                     Entry entry = (node as EventNode).Entry;
                     Interval intervalPx = scroll.TimeToPixel(entry);
 
-                    if (intervalPx.Width < TextDrawThreshold)
+                    if (intervalPx.Width < TextDrawThreshold || intervalPx.Right < 0.0)
                         return false;
 
                     if (intervalPx.Left < 0.0)
@@ -137,7 +137,7 @@ namespace Profiler
                     double lum = DirectX.Utils.GetLuminance(entry.Description.Color);
                     Color color = lum < 0.33 ? Colors.White : Colors.Black;
 
-                    canvas.Text.Draw(new Point(intervalPx.Left + TextDrawOffset, (Offset + level * RenderParams.BaseHeight) * RenderParams.dpiScaleY), 
+                    canvas.Text.Draw(new Point(intervalPx.Left + TextDrawOffset, Offset + level * RenderParams.BaseHeight), 
                                      entry.Description.Name, 
                                      color,
                                      TextAlignment.Left,
@@ -205,7 +205,7 @@ namespace Profiler
             if (level != -1)
             {
                 Interval interval = scroll.TimeToPixel(node.Entry);
-                Rect rect = new Rect(interval.Left, RenderParams.dpiScaleY * (Offset + level * RenderParams.BaseHeight + RenderParams.BaseMargin), interval.Width, (RenderParams.BaseHeight - RenderParams.BaseMargin) * RenderParams.dpiScaleY);
+                Rect rect = new Rect(interval.Left, Offset + level * RenderParams.BaseHeight + RenderParams.BaseMargin, interval.Width, RenderParams.BaseHeight - RenderParams.BaseMargin);
                 EventNodeHover(rect, this, node);
             }
             else

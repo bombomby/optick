@@ -13,19 +13,10 @@ namespace Profiler
 {
 	public static class RenderParams
 	{
-		public static double dpiScaleX = 1.0;
-		public static double dpiScaleY = 1.0;
-		public static double BaseHeight = 16.0;
-		public static double BaseMargin = 0.75;
-
-		static RenderParams()
-		{
-			using (System.Drawing.Graphics g = System.Drawing.Graphics.FromHwnd(IntPtr.Zero))
-			{
-				dpiScaleX = (g.DpiX / 96.0);
-				dpiScaleY = (g.DpiY / 96.0);
-			}
-		}
+		private static double baseHeight = 16.0;
+        public static double BaseHeight { get { return baseHeight * DirectX.RenderSettings.dpiScaleX; } }
+		private static double baseMargin = 0.75;
+        public static double BaseMargin { get { return baseMargin * DirectX.RenderSettings.dpiScaleY; } }
 	}
 	
     public struct Interval
@@ -70,18 +61,17 @@ namespace Profiler
         public Interval TimeToPixel(Durable d)
         {
             Interval unit = TimeToUnit(d);
-            double scale = Width * Zoom * RenderParams.dpiScaleX;
+            double scale = Width * Zoom;
             return new Interval((unit.Left - ViewUnit.Left) * scale, unit.Width * scale);
         }
 
-        public double PixelToUnitLength(double pixel)
+        public double PixelToUnitLength(double pixelX)
         {
-            return (pixel / Width) * ViewUnit.Width;
+            return (pixelX / Width) * ViewUnit.Width;
         }
 
         public ITick PixelToTime(double pixelX)
         {
-			pixelX /= RenderParams.dpiScaleX;
             double unit = ViewUnit.Left + PixelToUnitLength(pixelX);
             return new Tick() { Start = TimeSlice.Start + (long)(unit * (TimeSlice.Finish - TimeSlice.Start))};
         }
@@ -105,9 +95,6 @@ namespace Profiler
         }
 
         public RenderPriority Priority = RenderPriority.Normal;
-
-        public const double BaseHeight = 16.0;
-        public const double BaseMargin = 0.75;
 
         public double Offset { get; set; }
         public abstract double Height { get; }
