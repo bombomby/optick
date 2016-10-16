@@ -230,7 +230,7 @@ namespace Profiler.DirectX
 
             TextMesh.VertexBuffer = VertexBuffer.Buffer;
             TextMesh.IndexBuffer = IndexBuffer.Buffer;
-						TextMesh.VertexBufferBinding = new VertexBufferBinding(TextMesh.VertexBuffer, Utilites.SizeOf<Vertex>(), 0);
+            TextMesh.VertexBufferBinding = new VertexBufferBinding(TextMesh.VertexBuffer, Utilites.SizeOf<Vertex>(), 0);
         }
 
         public void Dispose()

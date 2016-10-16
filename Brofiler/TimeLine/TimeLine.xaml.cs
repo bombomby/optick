@@ -168,7 +168,7 @@ namespace Profiler
             }
         }
 
-        public bool Open(Stream stream)
+        private bool Open(Stream stream)
         {
             DataResponse response = DataResponse.Create(stream);
             while (response != null)
@@ -306,7 +306,7 @@ namespace Profiler
             public Data.EventNode Node { get; set; }
 
             public FocusFrameEventArgs(RoutedEvent routedEvent, Data.Frame frame, Data.EventNode node = null)
-              : base(routedEvent)
+                : base(routedEvent)
             {
                 Frame = frame;
                 Node = node;
@@ -350,6 +350,29 @@ namespace Profiler
             from.CopyTo(to);
             from.Seek(pos, SeekOrigin.Begin);
         }
+
+        private void OpenButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            OpenFileDialog dlg = new OpenFileDialog();
+            dlg.Title = "Load profiler results?";
+            if (dlg.ShowDialog() == true)
+            {
+                LoadFile(dlg.FileName);
+            }
+
+        }
+
+        public void LoadFile(string file)
+        {
+            if (File.Exists(file))
+            {
+                using (FileStream stream = new FileStream(file, FileMode.Open))
+                {
+                    Open(stream);
+                }
+            }
+        }
+
 
         private void SaveButton_Click(object sender, System.Windows.RoutedEventArgs e)
         {

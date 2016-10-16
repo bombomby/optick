@@ -259,16 +259,29 @@ namespace Profiler
 
         private void UpdateHover(System.Drawing.Point e)
         {
+            e.Y = (int)((double)e.Y / RenderParams.dpiScaleY);
+
             foreach (ThreadRow row in rows)
+            {
                 if (row.Offset <= e.Y && e.Y <= row.Offset + row.Height)
+                {
                     row.OnMouseMove(new Point(e.X, e.Y - row.Offset), scroll);
+                }
+            }
         }
 
-        private void MouseClick(System.Windows.Forms.MouseEventArgs e)
+        private void MouseClick(System.Windows.Forms.MouseEventArgs args)
         {
+            System.Drawing.Point e = new System.Drawing.Point(args.X, args.Y);
+            e.Y = (int)(e.Y / RenderParams.dpiScaleY);
+
             foreach (ThreadRow row in rows)
+			{
                 if (row.Offset <= e.Y && e.Y <= row.Offset + row.Height)
-                    row.OnMouseClick(new Point(e.X, e.Y - row.Offset), e, scroll);
+				{
+                    row.OnMouseClick(new Point(e.X, e.Y - row.Offset), scroll);
+				}
+			}
         }
 
         private void RenderCanvas_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
@@ -376,7 +389,7 @@ namespace Profiler
                     Durable intervalTime = selection.Node == null ? (Durable)selection.Frame.Header : (Durable)selection.Node.Entry;
                     Interval intervalPx = scroll.TimeToPixel(intervalTime);
 
-                    Rect rect = new Rect(intervalPx.Left, row.Offset + 2.0 * ThreadRow.BaseMargin, intervalPx.Width, row.Height - 4.0 * ThreadRow.BaseMargin);
+                    Rect rect = new Rect(intervalPx.Left, (row.Offset + 2.0 * RenderParams.BaseMargin) * RenderParams.dpiScaleY, intervalPx.Width, (row.Height - 4.0 * RenderParams.BaseMargin) * RenderParams.dpiScaleY);
 
                     for (int i = 0; i < SelectionBorderCount; ++i)
                     {
@@ -403,8 +416,12 @@ namespace Profiler
             foreach (ThreadRow.RenderPriority priority in Enum.GetValues(typeof(ThreadRow.RenderPriority)))
             {
                 foreach (ThreadRow row in rows)
+                {
                     if (row.Priority == priority)
+                    {
                         row.Render(canvas, scroll);
+                    }
+                }
             }
 
             DrawSelection(canvas);

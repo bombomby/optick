@@ -11,6 +11,23 @@ using System.Windows.Forms;
 
 namespace Profiler
 {
+	public static class RenderParams
+	{
+		public static double dpiScaleX = 1.0;
+		public static double dpiScaleY = 1.0;
+		public static double BaseHeight = 16.0;
+		public static double BaseMargin = 0.75;
+
+		static RenderParams()
+		{
+			using (System.Drawing.Graphics g = System.Drawing.Graphics.FromHwnd(IntPtr.Zero))
+			{
+				dpiScaleX = (g.DpiX / 96.0);
+				dpiScaleY = (g.DpiY / 96.0);
+			}
+		}
+	}
+	
     public struct Interval
     {
         public double Left;
@@ -53,7 +70,7 @@ namespace Profiler
         public Interval TimeToPixel(Durable d)
         {
             Interval unit = TimeToUnit(d);
-            double scale = Width * Zoom;
+            double scale = Width * Zoom * RenderParams.dpiScaleX;
             return new Interval((unit.Left - ViewUnit.Left) * scale, unit.Width * scale);
         }
 
@@ -62,9 +79,10 @@ namespace Profiler
             return (pixel / Width) * ViewUnit.Width;
         }
 
-        public ITick PixelToTime(double pixel)
+        public ITick PixelToTime(double pixelX)
         {
-            double unit = ViewUnit.Left + PixelToUnitLength(pixel);
+			pixelX /= RenderParams.dpiScaleX;
+            double unit = ViewUnit.Left + PixelToUnitLength(pixelX);
             return new Tick() { Start = TimeSlice.Start + (long)(unit * (TimeSlice.Finish - TimeSlice.Start))};
         }
 
@@ -101,13 +119,13 @@ namespace Profiler
 
         public abstract void OnMouseMove(Point point, ThreadScroll scroll);
         public abstract void OnMouseHover(Point point, ThreadScroll scroll, List<object> dataContext);
-        public abstract void OnMouseClick(Point point, MouseEventArgs e, ThreadScroll scroll);
+        public abstract void OnMouseClick(Point point, ThreadScroll scroll);
         public abstract void ApplyFilter(DirectX.DirectXCanvas canvas, ThreadScroll scroll, HashSet<EventDescription> descriptions);
     }
 
     public class HeaderThreadRow : ThreadRow
     {
-        public override double Height { get { return BaseHeight; } }
+        public override double Height { get { return RenderParams.BaseHeight; } }
         public override string Name { get { return String.Empty; } }
 
         public Color GradientTop { get; set; }
@@ -135,7 +153,7 @@ namespace Profiler
             BackgroundMeshLines = builder.Freeze(canvas.RenderDevice);
 
             DirectX.DynamicMesh builderHeader = canvas.CreateMesh();
-            builderHeader.AddRect(new Rect(0.0, 0.0, 1.0, (Height - BaseMargin) / scroll.Height), new Color[] {GradientTop, GradientTop, GradientBottom, GradientBottom});
+			builderHeader.AddRect(new Rect(0.0, 0.0, 1.0, (Height - RenderParams.BaseMargin) / scroll.Height), new Color[] { GradientTop, GradientTop, GradientBottom, GradientBottom });
             BackgroundMeshTris = builderHeader.Freeze(canvas.RenderDevice);
         }
 
@@ -164,7 +182,7 @@ namespace Profiler
 
         public override void OnMouseMove(Point point, ThreadScroll scroll) { }
         public override void OnMouseHover(Point point, ThreadScroll scroll, List<object> dataContext) { }
-        public override void OnMouseClick(Point point, MouseEventArgs e, ThreadScroll scroll) { }
+        public override void OnMouseClick(Point point, ThreadScroll scroll) { }
         public override void ApplyFilter(DirectXCanvas canvas, ThreadScroll scroll, HashSet<EventDescription> descriptions) { }
     }
 
