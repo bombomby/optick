@@ -327,7 +327,6 @@ bool Core::UnRegisterThread(MT::ThreadId threadID)
 				return true;
 			}
 		}
-		++it;
 	}
 
 	return false;

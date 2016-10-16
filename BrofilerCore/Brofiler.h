@@ -23,7 +23,19 @@
 	#define USE_BROFILER 1
 #endif
 
-#if defined(MT_PLATFORM_WINDOWS)
+#if _XBOX_ONE
+#define BRO_XBOX (1)
+#elif __ORBIS__
+#define BRO_ORBIS (1)
+#elif _WIN32
+#define BRO_WINDOWS (1)
+#elif __APPLE_CC__
+#define BRO_OSX (1)
+#else
+#define BRO_POSIX (1)
+#endif
+
+#if defined(BRO_WINDOWS)
 	#define USE_BROFILER_SAMPLING (USE_BROFILER && !BRO_UWP)
 	#define USE_BROFILER_ETW	  (USE_BROFILER /*&& !BRO_UWP*/)
 #endif
@@ -241,6 +253,7 @@ struct EventData : public EventTime
 struct BROFILER_API SyncData : public EventTime
 {
 	uint64_t core;
+	int8_t reason;
 
 	static void StartWork(EventStorage* storage, uint64_t core);
 	static void StopWork(EventStorage* storage);

@@ -41,6 +41,12 @@ namespace Brofiler
 		return stream;
 	}
 
+	OutputDataStream &operator << (OutputDataStream &stream, int8 val)
+	{
+		stream.write((char*)&val, sizeof(val));
+		return stream;
+	}
+
 	OutputDataStream &operator << ( OutputDataStream &stream, byte val )
 	{
 		stream.write( (char*)&val, sizeof(byte) );

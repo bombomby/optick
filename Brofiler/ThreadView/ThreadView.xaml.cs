@@ -17,6 +17,7 @@ using System.Globalization;
 using System.Threading;
 using System.ComponentModel;
 using Profiler.DirectX;
+using System.Windows.Threading;
 
 namespace Profiler
 {
@@ -34,6 +35,8 @@ namespace Profiler
         SolidColorBrush AlternativeBackground;
         SolidColorBrush FrameSelection;
         SolidColorBrush FrameHover;
+
+		DispatcherTimer toolTipTimer = new DispatcherTimer();
 
         void InitColors()
         {
@@ -154,12 +157,6 @@ namespace Profiler
 
         private void Row_EventNodeSelected(ThreadRow row, EventFrame frame, EventNode node)
         {
-            if (node != null)
-            {
-                TimeLabel.Content = node.Entry.Duration.ToString("F3") + "ms";
-            }
-            SurfacePopup.IsOpen = (node != null);
-
             RaiseEvent(new TimeLine.FocusFrameEventArgs(TimeLine.FocusFrameEvent, frame, node));
         }
 
@@ -202,12 +199,32 @@ namespace Profiler
             HoverMesh = surface.CreateMesh();
             HoverMesh.Projection = Mesh.ProjectionType.Pixel;
             HoverMesh.Geometry = Mesh.GeometryType.Lines;
-        }
 
-        class InputState
+			toolTipTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
+			toolTipTimer.Tick += ToolTipTimer_Tick;
+		}
+
+		private void ToolTipTimer_Tick(object sender, EventArgs e)
+		{
+			List<Object> dataContext = new List<object>();
+
+			var pos = Input.MousePosition;
+
+			foreach (ThreadRow row in rows)
+				if (row.Offset <= pos.Y && pos.Y <= row.Offset + row.Height)
+					row.OnMouseHover(new Point(pos.X, pos.Y - row.Offset), scroll, dataContext);
+
+			SurfacePopup.DataContext = dataContext;
+			SurfacePopup.IsOpen = dataContext.Count > 0 ? true : false;
+
+			toolTipTimer.Stop();
+		}
+
+		class InputState
         {
             public bool IsDrag { get; set; }
             public System.Drawing.Point DragPosition { get; set; }
+			public System.Drawing.Point MousePosition { get; set; }
         }
 
         InputState Input = new InputState();
@@ -226,8 +243,18 @@ namespace Profiler
         private void RenderCanvas_MouseLeave(object sender, EventArgs e)
         {
             Input.IsDrag = false;
-            UpdateHover(new System.Drawing.Point(0, 0));
-            UpdateSurface();
+
+			if (SurfacePopup.IsOpen)
+			{
+				UpdateHover(Input.MousePosition);
+			}
+			else
+			{
+				UpdateHover(new System.Drawing.Point());
+			}
+			UpdateSurface();
+
+			toolTipTimer.Stop();
         }
 
         private void UpdateHover(System.Drawing.Point e)
@@ -240,17 +267,19 @@ namespace Profiler
         private void MouseClick(System.Windows.Forms.MouseEventArgs e)
         {
             foreach (ThreadRow row in rows)
-            {
                 if (row.Offset <= e.Y && e.Y <= row.Offset + row.Height)
-                {
                     row.OnMouseClick(new Point(e.X, e.Y - row.Offset), e, scroll);
-                }
-            }
         }
 
         private void RenderCanvas_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            if (Input.IsDrag)
+			Input.MousePosition = e.Location;
+
+			SurfacePopup.IsOpen = false;
+			toolTipTimer.Stop();
+			toolTipTimer.Start();
+
+			if (Input.IsDrag)
             {
                 double deltaPixel = e.X - Input.DragPosition.X;
 

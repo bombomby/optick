@@ -152,7 +152,7 @@ namespace Profiler.Data
 
         public List<Entry> Categories { get; private set; }
         public EventTree CategoriesTree { get; private set; }
-        public List<Durable> Synchronization { get; private set; }
+        public List<Data.SyncInterval> Synchronization { get; private set; }
 
         long IDurable.Finish
         {
@@ -262,7 +262,7 @@ namespace Profiler.Data
             Categories = ReadEventList(reader, DescriptionBoard);
             CategoriesTree = new EventTree(this, Categories);
 
-            Synchronization = new List<Durable>();
+            Synchronization = new List<SyncInterval>();
         }
 
         public double CalculateFilteredTime(HashSet<Object> filter)
@@ -298,7 +298,7 @@ namespace Profiler.Data
             root = new EventTree(this, Entries);
             board = new Board<EventBoardItem, EventDescription, EventNode>(root);
 
-            Synchronization = new List<Durable>();
+            Synchronization = new List<SyncInterval>();
 
             IsLoaded = true;
         }

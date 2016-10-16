@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Brofiler_vs2010", "Brofiler_vs2010.csproj", "{97F462A6-7E81-4AD1-AE48-602F79F70169}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Brofiler_vs2010", "Brofiler.csproj", "{97F462A6-7E81-4AD1-AE48-602F79F70169}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

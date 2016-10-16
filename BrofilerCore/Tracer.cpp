@@ -49,6 +49,7 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 			if (SyncData* time = entry->storage.synchronizationBuffer.Back())
 			{
 				time->finish = eventRecord->EventHeader.TimeStamp.QuadPart;
+				time->reason = pSwitchEvent->OldThreadWaitReason;
 			}
 		}
 
@@ -57,7 +58,7 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 			SyncData& time = entry->storage.synchronizationBuffer.Add();
 			time.start = eventRecord->EventHeader.TimeStamp.QuadPart;
 			time.finish = time.start;
-			time.core = 0; // TODO: find hardware thread ID
+			time.core = eventRecord->BufferContext.ProcessorNumber;
 		}
 	}
 }
