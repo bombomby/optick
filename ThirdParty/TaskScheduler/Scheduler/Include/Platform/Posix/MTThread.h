@@ -82,18 +82,18 @@ namespace MT
 			isInitialized.Store(0);
 		}
 
-		ThreadId(const ThreadId& other)
+		mt_forceinline ThreadId(const ThreadId& other)
 		{
 			Assign(other);
 		}
 
-		ThreadId& operator=(const ThreadId& other)
+		mt_forceinline ThreadId& operator=(const ThreadId& other)
 		{
 			Assign(other);
 			return *this;
 		}
 
-		static ThreadId Self()
+		mt_forceinline static ThreadId Self()
 		{
 			ThreadId selfThread;
 			selfThread.id = pthread_self();
@@ -101,12 +101,12 @@ namespace MT
 			return selfThread;
 		}
 
-		bool IsValid() const
+		mt_forceinline bool IsValid() const
 		{
 			return (isInitialized.Load() != 0);
 		}
 
-		bool IsEqual(const ThreadId& other)
+		mt_forceinline bool IsEqual(const ThreadId& other)
 		{
 			if (isInitialized.Load() != other.isInitialized.Load())
 			{
@@ -119,7 +119,7 @@ namespace MT
 			return true;
 		}
 
-		uint64 AsUInt64() const
+		mt_forceinline uint64 AsUInt64() const
 		{
 			if (isInitialized.Load() == 0)
 			{
@@ -345,7 +345,7 @@ namespace MT
 		static void Sleep(uint32 milliseconds)
 		{
 			struct timespec req;
-			time_t sec = (int)(milliseconds/1000);
+			int sec = (int)(milliseconds / 1000);
 			milliseconds = milliseconds - (sec*1000);
 			req.tv_sec = sec;
 			req.tv_nsec = milliseconds * 1000000L;

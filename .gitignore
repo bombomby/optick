@@ -4,3 +4,5 @@ Build/
 *.suo
 *.user
 Publish/
+*.rej
+*.orig
