@@ -354,6 +354,7 @@ namespace Profiler
         private void OpenButton_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             OpenFileDialog dlg = new OpenFileDialog();
+            dlg.Filter = "Brofiler files (*.prof)|*.prof";
             dlg.Title = "Load profiler results?";
             if (dlg.ShowDialog() == true)
             {
