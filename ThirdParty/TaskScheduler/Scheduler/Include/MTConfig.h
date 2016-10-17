@@ -89,7 +89,7 @@
 // Debug / Release
 ////////////////////////////////////////////////////////////////////////
 
-#if defined(_DEBUG) || defined(DEBUG)
+#ifdef _DEBUG
 
 #define MT_DEBUG (1)
 
@@ -150,18 +150,5 @@
 #define mt_release_fence() asm volatile("" ::: "memory")
 #else
 #error Platform is not supported!
-#endif
-
-
-
-//
-// mt_forceinline
-//
-#if MT_MSVC_COMPILER_FAMILY
-#define mt_forceinline __forceinline
-#elif MT_GCC_COMPILER_FAMILY
-#define mt_forceinline __attribute__((always_inline)) inline
-#else
-#error Can not define mt_forceinline. Unknown platform.
 #endif
 

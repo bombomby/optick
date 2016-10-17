@@ -5,7 +5,7 @@
 #include "Serialization.h"
 #include "MemoryPool.h"
 #include "Sampler.h"
-#include "SchedulerTrace/ISchedulerTrace.h"
+#include "Tracer.h"
 //#include "Graphics.h"
 #include <map>
 
@@ -109,16 +109,6 @@ struct ThreadEntry
 	void Activate(bool isActive);
 };
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct SwitchContextDesc
-{
-	int64_t timestamp;
-	uint64 oldThreadId;
-	uint64 newThreadId;
-	uint8 cpuId;
-	uint8 reason;
-};
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef std::vector<ThreadEntry*> ThreadList;
@@ -146,7 +136,7 @@ class Core
 	static Core notThreadSafeInstance;
 
 	void DumpCapturingProgress();
-	void SendHandshakeResponse(SchedulerTraceStatus::Type status);
+	void SendHandshakeResponse(EtwStatus status);
 
 	void DumpThread(const ThreadEntry& entry, const EventTime& timeSlice, ScopeData& scope);
 
@@ -166,14 +156,13 @@ public:
 	// Controls GPU activity
 	// Graphics graphics;
 
-	// System scheduler trace
-	ISchedulerTracer* schedulerTracer;
+#if USE_BROFILER_ETW
+	// Event Trace for Windows interface
+	ETW etw;
+#endif
 
 	// Returns thread collection
 	const std::vector<ThreadEntry*>& GetThreads() const;
-
-	// Report switch context event
-	void ReportSwitchContext(const SwitchContextDesc& desc);
 
 	// Starts sampling process
 	void StartSampling();

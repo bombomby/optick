@@ -25,23 +25,6 @@
 #ifndef __MT_FIBER__
 #define __MT_FIBER__
 
-//#define MT_USE_BOOST_CONTEXT (1)
-
-
-
-#if MT_USE_BOOST_CONTEXT
-
-#include <fcontext.h>
-
-//TODO
-
-#else
-
-
-#ifndef _XOPEN_SOURCE
-#define _XOPEN_SOURCE
-#endif
-
 #include <ucontext.h>
 #include <stdlib.h>
 #include <string.h>
@@ -59,9 +42,6 @@
 #include <MTAppInterop.h>
 #include "MTAtomic.h"
 
-#endif
-
-
 namespace MT
 {
 
@@ -77,7 +57,7 @@ namespace MT
 
 		ucontext_t fiberContext;
 		bool isInitialized;
-        
+
 		static void FiberFuncInternal(void* pFiber)
 		{
 			MT_ASSERT(pFiber != nullptr, "Invalid fiber");
@@ -88,7 +68,7 @@ namespace MT
 			MT_ASSERT(self->func != nullptr, "Invalid fiber func");
 			self->func(self->funcData);
 		}
-        
+
 		void CleanUp()
 		{
 			if (isInitialized)
@@ -124,19 +104,51 @@ namespace MT
 		void CreateFromCurrentThreadAndRun(TThreadEntryPoint entryPoint, void *userData)
 		{
 			MT_ASSERT(!isInitialized, "Already initialized");
-            
-            func = nullptr;
-            funcData = nullptr;
-            
+
+			int res = 0;
+			void* stackAddr = nullptr;
+			size_t stackSize = 0;
+			pthread_t callThread = pthread_self();
+
+#if MT_PLATFORM_OSX
+
+			stackAddr = pthread_get_stackaddr_np(callThread);
+			stackSize = pthread_get_stacksize_np(callThread);
+
+#else
+			// get current thread attributes
+			pthread_attr_t threadAttr;
+			
+			res = pthread_getattr_np(callThread, &threadAttr);
+			MT_USED_IN_ASSERT(res);
+			MT_ASSERT(res == 0, "pthread_getattr_np - failed");
+
+			// get current thread stack
+			res = pthread_attr_getstack(&threadAttr, &stackAddr, &stackSize);
+			MT_USED_IN_ASSERT(res);
+			MT_ASSERT(res == 0, "pthread_attr_getstack - failed");
+#endif
+
+			MT_ASSERT(stackAddr != nullptr, "Invalid stack address");
+			MT_ASSERT(stackSize > 0, "Invalid stack size");
+
 			// get execution context
-			int res = getcontext(&fiberContext);
+			res = getcontext(&fiberContext);
 			MT_USED_IN_ASSERT(res);
 			MT_ASSERT(res == 0, "getcontext - failed");
-            
-            isInitialized = true;
-            
-            entryPoint(userData);
-            
+
+			// setup context
+			fiberContext.uc_link = nullptr;
+			fiberContext.uc_stack.ss_sp = stackAddr;
+			fiberContext.uc_stack.ss_size = stackSize;
+			fiberContext.uc_stack.ss_flags = 0;
+
+			func = nullptr;
+			funcData = nullptr;
+
+			isInitialized = true;
+
+			entryPoint(userData);
 
 			CleanUp();
 		}

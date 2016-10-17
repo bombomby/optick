@@ -27,6 +27,8 @@
 
 #if MT_SSE_INTRINSICS_SUPPORTED
 #include <xmmintrin.h>
+#else
+#include <malloc.h>
 #endif
 
 
@@ -85,10 +87,7 @@ namespace MT
 #if MT_SSE_INTRINSICS_SUPPORTED
 		p = _mm_malloc(size, align);
 #else
-        if (posix_memalign(&p, size, align) != 0)
-        {
-            p = nullptr;
-        }
+		p = memalign(size, align);
 #endif
 		MT_ASSERT(p, "Can't allocate memory");
 		return p;
@@ -170,8 +169,8 @@ namespace MT
 
 #elif MT_PLATFORM_POSIX || MT_PLATFORM_OSX
 
-		int pageSize = (int)sysconf(_SC_PAGE_SIZE);
-		int pagesCount = (int)(size / pageSize);
+		int pageSize = sysconf(_SC_PAGE_SIZE);
+		int pagesCount = size / pageSize;
 
 		//need additional page for stack tail
 		if ((size % pageSize) > 0)

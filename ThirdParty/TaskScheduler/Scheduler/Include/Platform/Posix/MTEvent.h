@@ -186,8 +186,8 @@ namespace MT
 
 			uint64_t nanoseconds = ((uint64_t) tv.tv_sec) * 1000 * 1000 * 1000 + (uint64_t)milliseconds * 1000 * 1000 + ((uint64_t) tv.tv_usec) * 1000;
 
-			ts.tv_sec = (time_t)(nanoseconds / 1000 / 1000 / 1000);
-			ts.tv_nsec = (long)(nanoseconds - ((uint64_t) ts.tv_sec) * 1000 * 1000 * 1000);
+			ts.tv_sec = nanoseconds / 1000 / 1000 / 1000;
+			ts.tv_nsec = (nanoseconds - ((uint64_t) ts.tv_sec) * 1000 * 1000 * 1000);
 
 			int ret = 0;
 			while(true)

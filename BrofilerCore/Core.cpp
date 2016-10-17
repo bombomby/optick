@@ -189,7 +189,6 @@ void Core::CleanupThreads()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core::Core() : progressReportedLastTimestampMS(0), isActive(false)
 {
-	schedulerTracer = ISchedulerTracer::Get();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::Update()
@@ -223,40 +222,6 @@ void Core::UpdateEvents()
 
 	Server::Get().Update();
 }
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Core::ReportSwitchContext(const SwitchContextDesc& desc)
-{
-	BRO_UNUSED(desc.reason);
-
-	int64_t xxx = GetHighPrecisionTime();
-
-	for (size_t i = 0; i < threads.size(); ++i)
-	{
-		ThreadEntry* entry = threads[i];
-
-		if (entry->description.threadID.AsUInt64() == desc.oldThreadId)
-		{
-			if (SyncData* time = entry->storage.synchronizationBuffer.Back())
-			{
-				time->finish = desc.timestamp;
-			}
-		}
-
-		if (entry->description.threadID.AsUInt64() == desc.newThreadId)
-		{
-			SyncData& time = entry->storage.synchronizationBuffer.Add();
-			time.start = desc.timestamp;
-			time.finish = time.start;
-			time.core = desc.cpuId;
-		}
-	}
-
-
-}
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::StartSampling()
 {
@@ -285,12 +250,18 @@ void Core::Activate( bool active )
 
 		if (active)
 		{
-			SchedulerTraceStatus::Type status = schedulerTracer->Start();
+#if USE_BROFILER_ETW
+			EtwStatus status = etw.Start();
+#else
+			EtwStatus status = ETW_OK;
+#endif
 			SendHandshakeResponse(status);
 		}
 		else
 		{
-			schedulerTracer->Stop();
+#if USE_BROFILER_ETW
+			etw.Stop();
+#endif
 		}
 	}
 
@@ -316,7 +287,7 @@ bool Core::IsTimeToReportProgress() const
 	return MT::GetTimeMilliSeconds() > progressReportedLastTimestampMS + 200;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Core::SendHandshakeResponse(SchedulerTraceStatus::Type status)
+void Core::SendHandshakeResponse(EtwStatus status)
 {
 	OutputDataStream stream;
 	stream << (uint32)status;

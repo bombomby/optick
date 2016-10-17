@@ -60,7 +60,7 @@ namespace MT
 	// Signals to the processor to give resources to threads that are waiting for them.
 	//
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	inline void YieldProcessor()
+	inline void YieldCpu()
 	{
 #if MT_SSE_INTRINSICS_SUPPORTED
 		_mm_pause();
