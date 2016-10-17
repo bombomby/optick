@@ -120,7 +120,8 @@ end
 
 	includedirs
 	{
-		"ThirdParty/TaskScheduler/Scheduler/Include"
+		"ThirdParty/TaskScheduler/Scheduler/Include",
+		"BrofilerCore"
 	}
 
 	files {

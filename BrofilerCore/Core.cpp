@@ -228,8 +228,6 @@ void Core::UpdateEvents()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::ReportSwitchContext(const SwitchContextDesc& desc)
 {
-	BRO_UNUSED(desc.reason);
-
 	for (size_t i = 0; i < threads.size(); ++i)
 	{
 		ThreadEntry* entry = threads[i];
@@ -239,6 +237,7 @@ void Core::ReportSwitchContext(const SwitchContextDesc& desc)
 			if (SyncData* time = entry->storage.synchronizationBuffer.Back())
 			{
 				time->finish = desc.timestamp;
+				time->reason = desc.reason;
 			}
 		}
 
@@ -250,11 +249,7 @@ void Core::ReportSwitchContext(const SwitchContextDesc& desc)
 			time.core = desc.cpuId;
 		}
 	}
-
-
 }
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::StartSampling()
 {

@@ -378,7 +378,7 @@ namespace Profiler
         private void SaveButton_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             SaveFileDialog dlg = new SaveFileDialog();
-            dlg.Filter = "F1 Profiler files (*.prof)|*.prof";
+            dlg.Filter = "Brofiler files (*.prof)|*.prof";
             dlg.Title = "Where should I save profiler results?";
 
             if (dlg.ShowDialog() == true)
