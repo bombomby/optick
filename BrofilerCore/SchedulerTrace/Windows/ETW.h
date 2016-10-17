@@ -1,6 +1,6 @@
 #pragma once
+#ifdef _WIN32
 
-#if USE_BROFILER_ETW
 
 #define INITGUID  // Causes definition of SystemTraceControlGuid in evntrace.h.
 #include <strsafe.h>
@@ -94,5 +94,6 @@ typedef struct _EVENT_RECORD {
 #endif
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif
 
+
+#endif

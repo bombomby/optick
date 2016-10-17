@@ -1,17 +1,14 @@
 #pragma once
 
-#include "Brofiler.h"
-#include "EtwStatus.h"
+#ifdef _WIN32
 
-#if USE_BROFILER_ETW
-
-#include "MemoryPool.h"
+#include "..\ISchedulerTrace.h"
 #include "ETW.h"
 
 namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class ETW
+class ETW : public ISchedulerTracer
 {
 	EVENT_TRACE_PROPERTIES *sessionProperties;
 	EVENT_TRACE_LOGFILE logFile;
@@ -29,8 +26,8 @@ public:
 	ETW();
 	~ETW();
 
-	EtwStatus Start();
-	bool Stop();
+	virtual SchedulerTraceStatus::Type Start();
+	virtual bool Stop();
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

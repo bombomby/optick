@@ -1,7 +1,7 @@
 @echo off
 
 xcopy /Y .\ThirdParty\DevkitsInterop\*.* .\Publish\
-xcopy /Y .\Bin\vs2012\Debug\x64\*.* .\Publish\
+xcopy /Y .\Bin\Release\x64\*.* .\Publish\
 
 xcopy /Y .\BrofilerCore\Brofiler.h .\Publish\Include\
 
