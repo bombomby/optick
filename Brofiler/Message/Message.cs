@@ -12,8 +12,9 @@ namespace Profiler
         public const UInt32 NETWORK_PROTOCOL_VERSION_6 = 6; 
         public const UInt32 NETWORK_PROTOCOL_VERSION_7 = 7; // Changed ThreadID - uint32 => uint64
         public const UInt32 NETWORK_PROTOCOL_VERSION_8 = 8; // Changed CoreID in SyncData - uint32 => uint64
+        public const UInt32 NETWORK_PROTOCOL_VERSION_9 = 9; // Added thread synchronization wait reason
 
-        public const UInt32 NETWORK_PROTOCOL_VERSION = NETWORK_PROTOCOL_VERSION_8;
+        public const UInt32 NETWORK_PROTOCOL_VERSION = NETWORK_PROTOCOL_VERSION_9;
         public const UInt32 NETWORK_PROTOCOL_MIN_VERSION = NETWORK_PROTOCOL_VERSION_6;
     }
 

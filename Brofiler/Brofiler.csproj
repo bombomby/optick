@@ -10,8 +10,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Profiler</RootNamespace>
     <AssemblyName>Brofiler</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile></TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <ApplicationIcon>icon.ico</ApplicationIcon>
@@ -37,26 +38,28 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\Bin\vs2010\Debug\</OutputPath>
+    <OutputPath>..\Bin\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;NDA_CODE_SECTION</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>1668</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\Bin\vs2010\Release\</OutputPath>
+    <OutputPath>..\Bin\Release\</OutputPath>
     <DefineConstants>TRACE;NDA_CODE_SECTION</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <NoWarn>1668</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\Bin\vs2012\Debug\x64\</OutputPath>
+    <OutputPath>..\Bin\Debug\x64\</OutputPath>
     <DefineConstants>TRACE;DEBUG;NDA_CODE_SECTION</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
@@ -65,9 +68,10 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
     <NoWarn>1668</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>..\Bin\vs2010\Release\x64\</OutputPath>
+    <OutputPath>..\Bin\Release\x64\</OutputPath>
     <DefineConstants>TRACE;NDA_CODE_SECTION</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -75,10 +79,11 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\Bin\vs2010\Debug\Win32\</OutputPath>
+    <OutputPath>..\Bin\Debug\Win32\</OutputPath>
     <DefineConstants>TRACE;DEBUG;NDA_CODE_SECTION</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
@@ -89,9 +94,10 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>1668</NoWarn>
     <UseVSHostingProcess>false</UseVSHostingProcess>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>..\Bin\vs2010\Release\Win32\</OutputPath>
+    <OutputPath>..\Bin\Release\Win32\</OutputPath>
     <DefineConstants>TRACE;NDA_CODE_SECTION</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -103,10 +109,15 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NoWarn>1668</NoWarn>
     <UseVSHostingProcess>false</UseVSHostingProcess>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoWin32Manifest>true</NoWin32Manifest>
   </PropertyGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent></PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
@@ -185,9 +196,11 @@
     <Compile Include="DirectX\Fragment.cs" />
     <Compile Include="DirectX\Mesh.cs" />
     <Compile Include="DirectX\DynamicMesh.cs" />
+    <Compile Include="DirectX\RenderSettings.cs" />
     <Compile Include="DirectX\TextManager.cs" />
     <Compile Include="DirectX\TextureLoader.cs" />
     <Compile Include="DirectX\Utils.cs" />
+    <Compile Include="ThreadView\EventsThreadRow.cs" />
     <Compile Include="Frames\FrameDataTable.xaml.cs">
       <DependentUpon>FrameDataTable.xaml</DependentUpon>
     </Compile>
@@ -209,8 +222,8 @@
     <Compile Include="SourceWindow.xaml.cs">
       <DependentUpon>SourceWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ThreadRow.cs" />
-    <Compile Include="ThreadView.xaml.cs">
+    <Compile Include="ThreadView\ThreadRow.cs" />
+    <Compile Include="ThreadView\ThreadView.xaml.cs">
       <DependentUpon>ThreadView.xaml</DependentUpon>
     </Compile>
     <Compile Include="TimeLine\TimeLine.xaml.cs">
@@ -281,7 +294,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="ThreadView.xaml">
+    <Page Include="ThreadView\ThreadView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -314,6 +327,10 @@
     </EmbeddedResource>
     <None Include="app.config" />
     <EmbeddedResource Include="DirectX\Fonts\SegoeUI_16_Normal.fnt" />
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_20_Normal.fnt" />
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_24_Normal.fnt" />
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_32_Normal.fnt" />
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_28_Normal.fnt" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -399,5 +416,13 @@
     <EmbeddedResource Include="AutoEmbedLibs\SharpDX.Direct3D11.dll" />
     <EmbeddedResource Include="AutoEmbedLibs\SharpDX.dll" />
     <EmbeddedResource Include="AutoEmbedLibs\SharpDX.DXGI.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_20_Normal_0.png" />
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_24_Normal_0.png" />
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_32_Normal_0.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_28_Normal_0.png" />
   </ItemGroup>
 </Project>

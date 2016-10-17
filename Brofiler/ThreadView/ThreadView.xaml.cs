@@ -17,6 +17,7 @@ using System.Globalization;
 using System.Threading;
 using System.ComponentModel;
 using Profiler.DirectX;
+using System.Windows.Threading;
 
 namespace Profiler
 {
@@ -34,6 +35,8 @@ namespace Profiler
         SolidColorBrush AlternativeBackground;
         SolidColorBrush FrameSelection;
         SolidColorBrush FrameHover;
+
+		DispatcherTimer toolTipTimer = new DispatcherTimer();
 
         void InitColors()
         {
@@ -112,7 +115,7 @@ namespace Profiler
 
             scroll.TimeSlice = group.Board.TimeSlice;
             scroll.Height = 0.0;
-            scroll.Width = surface.ActualWidth;
+            scroll.Width = surface.ActualWidth * RenderSettings.dpiScaleX;
             rows.ForEach(row => scroll.Height += row.Height);
 
             rows.ForEach(row => row.BuildMesh(surface, scroll));
@@ -135,7 +138,7 @@ namespace Profiler
 
                 Thickness margin = new Thickness(0, 0, 0, 0);
 
-                Label labelName = new Label() { Content = row.Name, Margin = margin, Padding = new Thickness(), FontWeight = FontWeights.Bold, Height = row.Height, VerticalContentAlignment = VerticalAlignment.Center };
+                Label labelName = new Label() { Content = row.Name, Margin = margin, Padding = new Thickness(), FontWeight = FontWeights.Bold, Height = row.Height / RenderSettings.dpiScaleY, VerticalContentAlignment = VerticalAlignment.Center };
 
                 Grid.SetRow(labelName, threadIndex);
 
@@ -154,12 +157,6 @@ namespace Profiler
 
         private void Row_EventNodeSelected(ThreadRow row, EventFrame frame, EventNode node)
         {
-            if (node != null)
-            {
-                SurfacePopup.DataContext = node.Entry;
-            }
-            SurfacePopup.IsOpen = (node != null);
-
             RaiseEvent(new TimeLine.FocusFrameEventArgs(TimeLine.FocusFrameEvent, frame, node));
         }
 
@@ -202,12 +199,34 @@ namespace Profiler
             HoverMesh = surface.CreateMesh();
             HoverMesh.Projection = Mesh.ProjectionType.Pixel;
             HoverMesh.Geometry = Mesh.GeometryType.Lines;
-        }
 
-        class InputState
+			toolTipTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
+			toolTipTimer.Tick += ToolTipTimer_Tick;
+		}
+
+		private void ToolTipTimer_Tick(object sender, EventArgs e)
+		{
+			List<Object> dataContext = new List<object>();
+
+			var pos = Input.MousePosition;
+
+			foreach (ThreadRow row in rows)
+				if (row.Offset <= pos.Y && pos.Y <= row.Offset + row.Height)
+					row.OnMouseHover(new Point(pos.X, pos.Y - row.Offset), scroll, dataContext);
+
+			SurfacePopup.DataContext = dataContext;
+			SurfacePopup.IsOpen = dataContext.Count > 0 ? true : false;
+
+			toolTipTimer.Stop();
+		}
+
+		class InputState
         {
             public bool IsDrag { get; set; }
+            public bool IsSelect { get; set; }
+            public System.Drawing.Point SelectStartPosition { get; set; }
             public System.Drawing.Point DragPosition { get; set; }
+			public System.Drawing.Point MousePosition { get; set; }
         }
 
         InputState Input = new InputState();
@@ -226,14 +245,23 @@ namespace Profiler
         private void RenderCanvas_MouseLeave(object sender, EventArgs e)
         {
             Input.IsDrag = false;
-            UpdateHover(new System.Drawing.Point(0, 0));
-            UpdateSurface();
+            Input.IsSelect = false;
+
+			if (SurfacePopup.IsOpen)
+			{
+				UpdateHover(Input.MousePosition);
+			}
+			else
+			{
+				UpdateHover(new System.Drawing.Point());
+			}
+			UpdateSurface();
+
+			toolTipTimer.Stop();
         }
 
         private void UpdateHover(System.Drawing.Point e)
         {
-            e.Y = (int)((double)e.Y / RenderParams.dpiScaleY);
-
             foreach (ThreadRow row in rows)
             {
                 if (row.Offset <= e.Y && e.Y <= row.Offset + row.Height)
@@ -246,20 +274,24 @@ namespace Profiler
         private void MouseClick(System.Windows.Forms.MouseEventArgs args)
         {
             System.Drawing.Point e = new System.Drawing.Point(args.X, args.Y);
-            e.Y = (int)((double)e.Y / RenderParams.dpiScaleY);
-
             foreach (ThreadRow row in rows)
-            {
+			{
                 if (row.Offset <= e.Y && e.Y <= row.Offset + row.Height)
-                {
-                    row.OnMouseClick(new Point(e.X, e.Y - row.Offset), args, scroll);
-                }
-            }
+				{
+                    row.OnMouseClick(new Point(e.X, e.Y - row.Offset), scroll);
+				}
+			}
         }
 
         private void RenderCanvas_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
         {
-            if (Input.IsDrag)
+			Input.MousePosition = e.Location;
+
+			SurfacePopup.IsOpen = false;
+			toolTipTimer.Stop();
+			toolTipTimer.Start();
+
+			if (Input.IsDrag)
             {
                 double deltaPixel = e.X - Input.DragPosition.X;
 
@@ -295,8 +327,11 @@ namespace Profiler
                 Input.IsDrag = true;
                 Input.DragPosition = e.Location;
             }
-            else
+            else if (e.Button == System.Windows.Forms.MouseButtons.Left)
             {
+                Input.IsSelect = true;
+                Input.SelectStartPosition = e.Location;
+
                 MouseClick(e);
             }
         }
@@ -356,7 +391,7 @@ namespace Profiler
                     Durable intervalTime = selection.Node == null ? (Durable)selection.Frame.Header : (Durable)selection.Node.Entry;
                     Interval intervalPx = scroll.TimeToPixel(intervalTime);
 
-                    Rect rect = new Rect(intervalPx.Left, (row.Offset + 2.0 * RenderParams.BaseMargin) * RenderParams.dpiScaleY, intervalPx.Width, (row.Height - 4.0 * RenderParams.BaseMargin) * RenderParams.dpiScaleY);
+                    Rect rect = new Rect(intervalPx.Left, row.Offset + 2.0 * RenderParams.BaseMargin, intervalPx.Width, row.Height - 4.0 * RenderParams.BaseMargin);
 
                     for (int i = 0; i < SelectionBorderCount; ++i)
                     {
@@ -397,7 +432,7 @@ namespace Profiler
 
         void ThreadView_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            scroll.Width = surface.ActualWidth;
+            scroll.Width = surface.ActualWidth * RenderSettings.dpiScaleX;
         }
 
         void Search_DelayedTextChanged(string text)

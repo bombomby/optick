@@ -185,6 +185,7 @@ namespace Brofiler
 		void Listen()
 		{
 			int result = ::listen(listenSocket, 8);
+			BRO_UNUSED(result);
 			BRO_ASSERT(result == 0, "Can't start listening");
 		}
 

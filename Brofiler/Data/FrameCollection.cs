@@ -106,7 +106,7 @@ namespace Profiler.Data
 
             foreach (EventFrame frame in data.Events)
             {
-                foreach (Synchronization.SyncInterval sync in frame.Synchronization)
+                foreach (SyncInterval sync in frame.Synchronization)
                 {
                     Durable border = new Durable(Math.Max(frame.Start, sync.Start), Math.Min(frame.Finish, sync.Finish));
 
