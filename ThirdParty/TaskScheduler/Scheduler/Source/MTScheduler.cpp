@@ -166,10 +166,12 @@ namespace MT
 		{
 		case MT::StackRequirements::STANDARD:
 			res = standartFibersAvailable.TryPop(fiberContext);
+            MT_USED_IN_ASSERT(res);
 			MT_ASSERT(res, "Can't get more standard fibers!");
 			break;
 		case MT::StackRequirements::EXTENDED:
 			res = extendedFibersAvailable.TryPop(fiberContext);
+            MT_USED_IN_ASSERT(res);
 			MT_ASSERT(res, "Can't get more extended fibers!");
 			break;
 		default:
@@ -339,13 +341,7 @@ namespace MT
 
 	bool TaskScheduler::TryStealTask(internal::ThreadContext& threadContext, internal::GroupedTask & task)
 	{
-		bool taskStealingDisabled = threadContext.taskScheduler->IsTaskStealingDisabled();
 		uint32 workersCount = threadContext.taskScheduler->GetWorkersCount();
-
-		if (workersCount <= 1 || taskStealingDisabled )
-		{
-			return false;
-		}
 
 		uint32 victimIndex = threadContext.random.Get();
 
@@ -404,7 +400,7 @@ namespace MT
 		context.NotifyTaskExecuteStateChanged( MT_SYSTEM_TASK_COLOR, MT_SYSTEM_TASK_NAME, TaskExecuteState::START);
 #endif
 
-		bool isTaskStealingDisabled = context.taskScheduler->IsTaskStealingDisabled();
+		bool isTaskStealingDisabled = context.taskScheduler->IsTaskStealingDisabled(0);
 
 		int64 timeOut = GetTimeMicroSeconds() + (waitContext.waitTimeMs * 1000);
 
@@ -813,9 +809,9 @@ namespace MT
 		return (waitContext.exitCode == 0);
 	}
 
-	bool TaskScheduler::IsTaskStealingDisabled() const
+	bool TaskScheduler::IsTaskStealingDisabled(uint32 minWorkersCount) const
 	{
-		if (threadsCount.LoadRelaxed() <= 1)
+		if (threadsCount.LoadRelaxed() <= (int32)minWorkersCount)
 		{
 			return true;
 		}
@@ -893,11 +889,11 @@ namespace MT
 		}
 	}
 
-	void TaskScheduler::NotifyThreadsCreated(uint32 createdThreadsCount)
+	void TaskScheduler::NotifyThreadsCreated(uint32 threadsCount)
 	{
 		if (IProfilerEventListener* eventListener = GetProfilerEventListener())
 		{
-			eventListener->OnThreadsCreated(createdThreadsCount);
+			eventListener->OnThreadsCreated(threadsCount);
 		}
 	}
 

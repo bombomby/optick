@@ -37,8 +37,9 @@
 
 #if defined(BRO_WINDOWS)
 	#define USE_BROFILER_SAMPLING (USE_BROFILER && !BRO_UWP)
-	#define USE_BROFILER_ETW	  (USE_BROFILER /*&& !BRO_UWP*/)
 #endif
+
+
 
 #if USE_BROFILER
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -368,7 +368,7 @@ namespace MT
 
 		int32 GetWorkersCount() const;
 
-		bool IsTaskStealingDisabled() const;
+		bool IsTaskStealingDisabled(uint32 minWorkersCount = 1) const;
 
 		bool IsWorkerThread() const;
 

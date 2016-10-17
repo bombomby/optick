@@ -56,18 +56,18 @@ namespace MT
 			isInitialized.Store(0);
 		}
 
-		ThreadId(const ThreadId& other)
+		mt_forceinline ThreadId(const ThreadId& other)
 		{
 			Assign(other);
 		}
 
-		ThreadId& operator=(const ThreadId& other)
+		mt_forceinline ThreadId& operator=(const ThreadId& other)
 		{
 			Assign(other);
 			return *this;
 		}
 
-		static ThreadId Self()
+		mt_forceinline static ThreadId Self()
 		{
 			ThreadId selfThread;
 			selfThread.id = ::GetCurrentThreadId();
@@ -75,12 +75,12 @@ namespace MT
 			return selfThread;
 		}
 
-		bool IsValid() const
+		mt_forceinline bool IsValid() const
 		{
 			return (isInitialized.Load() != 0);
 		}
 
-		bool IsEqual(const ThreadId& other)
+		mt_forceinline bool IsEqual(const ThreadId& other)
 		{
 			if (isInitialized.Load() != other.isInitialized.Load())
 			{
@@ -93,7 +93,7 @@ namespace MT
 			return true;
 		}
 
-		uint64 AsUInt64() const
+		mt_forceinline uint64 AsUInt64() const
 		{
 			if (isInitialized.Load() == 0)
 			{

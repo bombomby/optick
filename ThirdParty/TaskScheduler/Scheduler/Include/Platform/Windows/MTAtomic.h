@@ -39,6 +39,10 @@
 #define MT_ATOMICPTR_COMPILE_TIME_CHECK \
 	static_assert(std::is_pod< AtomicPtrBase<T> >::value == true, "AtomicPtrBase must be a POD (plain old data type)");
 
+#ifdef YieldProcessor
+	#undef YieldProcessor
+#endif
+
 
 namespace MT
 {
@@ -55,7 +59,7 @@ namespace MT
 	// Signals to the processor to give resources to threads that are waiting for them.
 	//
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	inline void YieldCpu()
+	inline void YieldProcessor()
 	{
 		_mm_pause();
 	}

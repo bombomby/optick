@@ -118,13 +118,6 @@ namespace MT
 		//Fiber index in pool
 		uint32 fiberIndex;
 
-#ifdef MT_INSTRUMENTED_BUILD
-		const mt_char* debugID;
-		MT::Color::Type debugColor;
-		const char* sourceFile;
-		uint32 sourceLine;
-#endif
-
 		// Prevent false sharing between threads
 		uint8 cacheline[64];
 	};

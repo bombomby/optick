@@ -1,10 +1,10 @@
-#include "Brofiler.h"
-
-#if USE_BROFILER_ETW
+#ifdef _WIN32
 
 #include <windows.h>
-#include "Core.h"
-#include "Tracer.h"
+#include <vector>
+#include <MTTypes.h>
+#include "EtwTracer.h"
+#include "../../Core.h"
 
 namespace Brofiler
 {
@@ -14,53 +14,113 @@ const byte SWITCH_CONTEXT_INSTRUCTION_OPCODE = 36;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct CSwitch 
 {
+	// New thread ID after the switch.
 	uint32 NewThreadId;
+
+	// Previous thread ID.
 	uint32 OldThreadId;
+
+	// Thread priority of the new thread.
 	int8  NewThreadPriority;
+
+	// Thread priority of the previous thread.
 	int8  OldThreadPriority;
+
+	//The index of the C-state that was last used by the processor. A value of 0 represents the lightest idle state with higher values representing deeper C-states.
 	uint8  PreviousCState;
+
+	// Not used.
 	int8  SpareByte;
+
+	// Wait reason for the previous thread. The following are the possible values:
+	//       0	Executive
+	//       1	FreePage
+	//       2	PageIn
+	//       3	PoolAllocation
+	//       4	DelayExecution
+	//       5	Suspended
+	//       6	UserRequest
+	//       7	WrExecutive
+	//       8	WrFreePage
+	//       9	WrPageIn
+	//       10	WrPoolAllocation
+	//       11	WrDelayExecution
+	//       12	WrSuspended
+	//       13	WrUserRequest
+	//       14	WrEventPair
+	//       15	WrQueue
+	//       16	WrLpcReceive
+	//       17	WrLpcReply
+	//       18	WrVirtualMemory
+	//       19	WrPageOut
+	//       20	WrRendezvous
+	//       21	WrKeyedEvent
+	//       22	WrTerminated
+	//       23	WrProcessInSwap
+	//       24	WrCpuRateControl
+	//       25	WrCalloutStack
+	//       26	WrKernel
+	//       27	WrResource
+	//       28	WrPushLock
+	//       29	WrMutex
+	//       30	WrQuantumEnd
+	//       31	WrDispatchInt
+	//       32	WrPreempted
+	//       33	WrYieldExecution
+	//       34	WrFastMutex
+	//       35	WrGuardedMutex
+	//       36	WrRundown
+	//       37	MaximumWaitReason
 	int8  OldThreadWaitReason;
+
+	// Wait mode for the previous thread. The following are the possible values:
+	//     0 KernelMode
+	//     1 UserMode
 	int8  OldThreadWaitMode;
+
+	// State of the previous thread. The following are the possible state values:
+	//     0 Initialized
+	//     1 Ready
+	//     2 Running
+	//     3 Standby
+	//     4 Terminated
+	//     5 Waiting
+	//     6 Transition
+	//     7 DeferredReady (added for Windows Server 2003)
 	int8  OldThreadState;
+
+	// Ideal wait time of the previous thread.
 	int8  OldThreadWaitIdealProcessor;
+
+	// Wait time for the new thread.
 	uint32 NewThreadWaitTime;
+
+	// Reserved.
 	uint32 Reserved;
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 {
 	if (eventRecord->EventHeader.EventDescriptor.Opcode != SWITCH_CONTEXT_INSTRUCTION_OPCODE)
+	{
 		return;
+	}
 
 	if (sizeof(CSwitch) != eventRecord->UserDataLength)
+	{
 		return;
+	}
 
 	CSwitch* pSwitchEvent = (CSwitch*)eventRecord->UserData;
 
-	const std::vector<ThreadEntry*>& threads = Core::Get().GetThreads();
+	Brofiler::SwitchContextDesc desc;
 
-	for (size_t i = 0; i < threads.size(); ++i)
-	{
-		ThreadEntry* entry = threads[i];
-
-		if (entry->description.threadID.AsUInt64() == (uint64)pSwitchEvent->OldThreadId)
-		{
-			if (SyncData* time = entry->storage.synchronizationBuffer.Back())
-			{
-				time->finish = eventRecord->EventHeader.TimeStamp.QuadPart;
-				time->reason = pSwitchEvent->OldThreadWaitReason;
-			}
-		}
-
-		if (entry->description.threadID.AsUInt64() == (uint64)pSwitchEvent->NewThreadId)
-		{
-			SyncData& time = entry->storage.synchronizationBuffer.Add();
-			time.start = eventRecord->EventHeader.TimeStamp.QuadPart;
-			time.finish = time.start;
-			time.core = eventRecord->BufferContext.ProcessorNumber;
-		}
-	}
+	desc.reason = pSwitchEvent->OldThreadWaitReason;
+	desc.cpuId = eventRecord->BufferContext.ProcessorNumber;
+	desc.oldThreadId = (uint64)pSwitchEvent->OldThreadId;
+	desc.newThreadId = (uint64)pSwitchEvent->NewThreadId;
+	desc.timestamp = eventRecord->EventHeader.TimeStamp.QuadPart;
+	Core::Get().ReportSwitchContext(desc);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const TRACEHANDLE INVALID_TRACEHANDLE = (TRACEHANDLE)-1;
@@ -79,7 +139,7 @@ ETW::ETW() : isActive(false), sessionHandle(INVALID_TRACEHANDLE), openedHandle(I
 	sessionProperties =(EVENT_TRACE_PROPERTIES*) malloc(bufferSize);
 }
 
-EtwStatus ETW::Start()
+SchedulerTraceStatus::Type ETW::Start()
 {
 	if (!isActive) 
 	{
@@ -102,7 +162,7 @@ EtwStatus ETW::Start()
 		// ERROR_BAD_PATHNAME(161)
 		// ERROR_DISK_FULL(112)
 		int retryCount = 2;
-		ULONG status = ETW_OK;
+		ULONG status = SchedulerTraceStatus::OK;
 
 		while (--retryCount >= 0)
 		{
@@ -115,19 +175,19 @@ EtwStatus ETW::Start()
 				break;
 
 			case ERROR_ACCESS_DENIED:
-				return ETW_ERROR_ACCESS_DENIED;
+				return SchedulerTraceStatus::ERR_ACCESS_DENIED;
 
 			case ERROR_SUCCESS:
 				retryCount = 0;
 				break;
 
 			default:
-				return ETW_FAILED;
+				return SchedulerTraceStatus::FAILED;
 			}
 		}
 
 		if (status != ERROR_SUCCESS)
-			return ETW_FAILED;
+			return SchedulerTraceStatus::FAILED;
 
 		ZeroMemory(&logFile, sizeof(EVENT_TRACE_LOGFILE));
 
@@ -137,7 +197,7 @@ EtwStatus ETW::Start()
 
 		openedHandle = OpenTrace(&logFile);
 		if (openedHandle == INVALID_TRACEHANDLE)
-			return ETW_FAILED;
+			return SchedulerTraceStatus::FAILED;
 
 		DWORD threadID;
 		processThreadHandle = CreateThread(0, 0, RunProcessTraceThreadFunction, this, 0, &threadID);
@@ -145,7 +205,7 @@ EtwStatus ETW::Start()
 		isActive = true;
 	}
 
-	return ETW_OK;
+	return SchedulerTraceStatus::OK;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool ETW::Stop()
@@ -177,6 +237,15 @@ ETW::~ETW()
 	delete sessionProperties;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+ISchedulerTracer* ISchedulerTracer::Get()
+{
+	static ETW etwTracer;
+	return &etwTracer;
+}
+
 }
 
 #endif
+

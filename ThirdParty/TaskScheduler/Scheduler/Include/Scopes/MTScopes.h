@@ -543,7 +543,7 @@ namespace MT
 				{ \
 					break; \
 				} \
-				MT::YieldCpu(); \
+				MT::YieldProcessor(); \
 			} \
 			break; \
 		} \

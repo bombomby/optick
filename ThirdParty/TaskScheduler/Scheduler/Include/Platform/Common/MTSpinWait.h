@@ -62,14 +62,14 @@ namespace MT
 		{
 			if (iteration <= YIELD_CPU_THRESHOLD)
 			{
-				MT::YieldCpu();
+				MT::YieldProcessor();
 			} else
 			{
 				if (iteration <= YIELD_CPU_THRESHOLD2)
 				{
 					for (int32 i = 0; i < 50; i++)
 					{
-						MT::YieldCpu();
+						MT::YieldProcessor();
 					}
 				} else
 				{
@@ -114,7 +114,7 @@ namespace MT
 			{
 				break;
 			}
-			YieldCpu();
+			YieldProcessor();
 		}
 	}
 
