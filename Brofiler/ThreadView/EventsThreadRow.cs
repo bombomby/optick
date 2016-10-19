@@ -19,6 +19,19 @@ namespace Profiler
 
         double SyncLineHeight = 4.0 * RenderSettings.dpiScaleY;
         static Color SynchronizationColor = Colors.OrangeRed;
+        static Color SynchronizationColorUser = Colors.Yellow;
+
+        struct IntPair
+        {
+            public int count;
+            public long duration;
+        }
+
+
+        bool IsUserInitiatedSync(SyncReason reason)
+        {
+            return false;
+        }
 
         EventFilter Filter { get; set; }
         Mesh FilterMesh;
@@ -67,20 +80,22 @@ namespace Profiler
 
                 Interval frameInterval = scroll.TimeToUnit(frame.Header);
 
+                Color color = SynchronizationColor;
                 double start = frameInterval.Left;
 
                 if (frame.Synchronization != null)
                 {
-                    foreach (Durable sync in frame.Synchronization)
+                    foreach (SyncInterval sync in frame.Synchronization)
                     {
                         Interval syncInterval = scroll.TimeToUnit(sync);
 
                         if (start < syncInterval.Left)
                         {
-                            syncBuilder.AddRect(new Rect(start, RenderParams.BaseMargin / Height, syncInterval.Left - start, SyncLineHeight / Height), SynchronizationColor);
+                            syncBuilder.AddRect(new Rect(start, RenderParams.BaseMargin / Height, syncInterval.Left - start, SyncLineHeight / Height), color);
                         }
 
                         start = Math.Max(syncInterval.Right, start);
+                        color = IsUserInitiatedSync(sync.Reason) ? SynchronizationColorUser : SynchronizationColor;
                     }
                 }
             }
@@ -220,7 +235,6 @@ namespace Profiler
             EventFrame frame = null;
             if (FindNode(point, scroll, out frame, out node) != -1)
             {
-                dataContext.Add(node);
 
                 ITick tick = scroll.PixelToTime(point.X);
                 int index = Data.Utils.BinarySearchClosestIndex(frame.Synchronization, tick.Start);
@@ -244,6 +258,58 @@ namespace Profiler
 						}
 					}
 				}
+
+
+                dataContext.Add(node);
+
+
+                // build all intervals inside selected node
+                int from = Data.Utils.BinarySearchClosestIndex(frame.Synchronization, node.Entry.Start);
+                int to = Data.Utils.BinarySearchClosestIndex(frame.Synchronization, node.Entry.Finish);
+
+                if (to >= from)
+                {
+                    IntPair[] waitInfo = new IntPair[(int)SyncReason.SyncReasonCount];
+
+                    for (index = from; index <= to; ++index)
+                    {
+                        SyncReason reason = frame.Synchronization[index].Reason;
+                        int reasonIndex = (int)reason;
+
+                        long idleStart = frame.Synchronization[index].Finish;
+                        long idleFinish = (index + 1 < frame.Synchronization.Count) ? frame.Synchronization[index + 1].Start : frame.Finish;
+
+                        if (idleStart > node.Entry.Finish)
+                        {
+                            continue;
+                        }
+
+                        long idleStartClamped = Math.Max(idleStart, node.Entry.Start);
+                        long idleFinishClamped = Math.Min(idleFinish, node.Entry.Finish);
+                        long durationInTicks = idleFinishClamped - idleStartClamped;
+                        waitInfo[reasonIndex].duration += durationInTicks;
+                        waitInfo[reasonIndex].count++;
+                    }
+
+                    List<NodeWaitInterval> intervals = new List<NodeWaitInterval>();
+
+                    for (int i = 0; i < waitInfo.Length; i++)
+                    {
+                        if (waitInfo[i].count > 0)
+                        {
+                            NodeWaitInterval interval = new NodeWaitInterval() { Start = 0, Finish = waitInfo[i].duration, Reason = (SyncReason)i, NodeInterval = node.Entry, Count = waitInfo[i].count };
+                            intervals.Add(interval);
+                        }
+                    }
+
+                    intervals.Sort( (a,b) =>
+                    {
+                        return Comparer<long>.Default.Compare(b.Finish, a.Finish);
+                    });
+
+                    dataContext.AddRange(intervals);
+                }
+
             }
         }
 

@@ -47,8 +47,18 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <Label Content="{Binding Reason, Mode=OneTime}" ContentStringFormat="{}Wait: {0}" Margin="0" />
+                                <Label Content="{Binding Reason, Mode=OneTime}" ContentStringFormat="{}Cursor: {0}" Margin="0" />
                                 <Label Grid.Column="1" Margin="0" Content="{Binding Duration, Mode=OneTime}" ContentStringFormat="{}{0:0.###} ms" />
+                            </Grid>
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type Profiler_Data:NodeWaitInterval}">
+                            <Grid Margin="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Label Content="{Binding Reason, Mode=OneTime}" ContentStringFormat="{}{0}" Margin="0" FontFamily="Consolas" FontSize ="12" Foreground="Gray"/>
+                                <Label Grid.Column="1" Margin="0" Content="{Binding Desc, Mode=OneTime}" ContentStringFormat="{}{0}" FontFamily="Consolas" FontSize ="11" Foreground="Gray"/>
                             </Grid>
                         </DataTemplate>
                     </ItemsControl.Resources>
