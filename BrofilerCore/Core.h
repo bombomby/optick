@@ -2,16 +2,17 @@
 #include "Brofiler.h"
 
 #include "Event.h"
-#include "Serialization.h"
 #include "MemoryPool.h"
 #include "Sampler.h"
-#include "SchedulerTrace/ISchedulerTrace.h"
-//#include "Graphics.h"
-#include <map>
+#include "Serialization.h"
+#include "SchedulerTrace\CallstackCollector.h"
 
+#include <map>
 
 namespace Brofiler
 {
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct SchedulerTrace;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct ScopeHeader
 {
@@ -118,10 +119,19 @@ struct SwitchContextDesc
 	uint8 cpuId;
 	uint8 reason;
 };
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef std::vector<ThreadEntry*> ThreadList;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct CaptureStatus
+{
+	enum Type
+	{
+		OK = 0,
+		ERR_TRACER_ALREADY_EXISTS = 1,
+		ERR_TRACER_ACCESS_DENIED = 2,
+		FAILED = 3,
+	};
+};
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class Core
@@ -137,6 +147,8 @@ class Core
 
 	std::vector<EventTime> frames;
 
+	CallstackCollector callstackCollector;
+
 	void UpdateEvents();
 	void Update();
 
@@ -146,7 +158,7 @@ class Core
 	static Core notThreadSafeInstance;
 
 	void DumpCapturingProgress();
-	void SendHandshakeResponse(SchedulerTraceStatus::Type status);
+	void SendHandshakeResponse(CaptureStatus::Type status);
 
 	void DumpThread(const ThreadEntry& entry, const EventTime& timeSlice, ScopeData& scope);
 
@@ -167,13 +179,16 @@ public:
 	// Graphics graphics;
 
 	// System scheduler trace
-	ISchedulerTracer* schedulerTracer;
+	SchedulerTrace* SchedulerTrace;
 
 	// Returns thread collection
 	const std::vector<ThreadEntry*>& GetThreads() const;
 
 	// Report switch context event
 	void ReportSwitchContext(const SwitchContextDesc& desc);
+
+	// Report switch context event
+	void ReportStackWalk(const CallstackDesc& desc);
 
 	// Starts sampling process
 	void StartSampling();

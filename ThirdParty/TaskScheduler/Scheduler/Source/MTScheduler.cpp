@@ -889,11 +889,11 @@ namespace MT
 		}
 	}
 
-	void TaskScheduler::NotifyThreadsCreated(uint32 threadsCount)
+	void TaskScheduler::NotifyThreadsCreated(uint32 createdThreadsCount)
 	{
 		if (IProfilerEventListener* eventListener = GetProfilerEventListener())
 		{
-			eventListener->OnThreadsCreated(threadsCount);
+			eventListener->OnThreadsCreated(createdThreadsCount);
 		}
 	}
 
