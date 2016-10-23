@@ -73,9 +73,9 @@ namespace Profiler.Data
 		public WaitInterval() { }
 	}
 
-	public class Synchronization
+	public class Synchronization : IResponseHolder
     {
-        public DataResponse Response { get; set; }
+        public override DataResponse Response { get; set; }
         public int ThreadIndex { get; set; }
         public FrameGroup Group { get; set; }
 

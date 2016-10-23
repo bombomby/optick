@@ -390,38 +390,35 @@ namespace Profiler
                     HashSet<EventDescriptionBoard> boards = new HashSet<EventDescriptionBoard>();
                     HashSet<FrameGroup> groups = new HashSet<FrameGroup>();
 
-                    foreach (Frame frame in frames)
-                    {
-                        if (frame is EventFrame)
-                        {
-                            EventFrame eventFrame = frame as EventFrame;
-                            boards.Add(eventFrame.DescriptionBoard);
-                            groups.Add(eventFrame.Group);
-                        }
-                    }
-
-                    foreach (EventDescriptionBoard board in boards)
-                    {
-                        DataResponse.Serialize(DataResponse.Type.FrameDescriptionBoard, board.BaseStream, stream);
-                    }
+					FrameGroup currentGroup = null;
 
                     foreach (Frame frame in frames)
-                        frame.Response.Serialize(stream);
-
-                    foreach (FrameGroup group in groups)
                     {
-                        for (int threadIndex = 0; threadIndex < group.Threads.Count; ++threadIndex)
-                        {
-                            if (threadIndex != group.Board.MainThreadIndex)
-                                foreach (Frame frame in group.Threads[threadIndex].Events)
-                                    if (frame.Response != null)
-                                        frame.Response.Serialize(stream);
+						if (frame is EventFrame)
+						{
+							EventFrame eventFrame = frame as EventFrame;
+							if (eventFrame.Group != currentGroup && currentGroup != null)
+							{
+								currentGroup.Responses.ForEach(response => response.Serialize(stream));
+							}
+							currentGroup = eventFrame.Group;
+						}
+						else if (frame is SamplingFrame)
+						{
+							if (currentGroup != null)
+							{
+								currentGroup.Responses.ForEach(response => response.Serialize(stream));
+								currentGroup = null;
+							}
 
-                            Synchronization sync = group.Threads[threadIndex].Sync;
-                            if (sync != null)
-                                sync.Response.Serialize(stream);
-                        }
+							(frame as SamplingFrame).Response.Serialize(stream);
+						}
                     }
+
+					if (currentGroup != null)
+					{
+						currentGroup.Responses.ForEach(response => response.Serialize(stream));
+					}
 
                     stream.Close();
                 }

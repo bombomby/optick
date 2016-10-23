@@ -92,8 +92,6 @@ Sampler::~Sampler()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Sampler::StartSampling(const std::vector<ThreadEntry*>& threads, uint32 samplingInterval)
 {
-	symEngine.Init();
-
 	intervalMicroSeconds = samplingInterval;
 	targetThreads = threads;
 
@@ -172,7 +170,7 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 				// Check scope again because it is possible to leave sampling scope while trying to suspend main thread
 				if (storage->isSampling.Load() && GetThreadContext(handle, &context))
 				{
-					count = sampler.symEngine.GetCallstack(handle, context, buffer);
+					count = Core::Get().symEngine.GetCallstack(handle, context, buffer);
 				}
 
 				ClearStackContext(context);
@@ -194,11 +192,7 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 	return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-OutputDataStream& operator<<(OutputDataStream& os, const Symbol * const symbol)
-{
-	BRO_VERIFY(symbol, "Can't serialize NULL symbol!", return os);
-	return os << (uint64)symbol->address << symbol->module << symbol->function << symbol->file << symbol->line;
-}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& Sampler::Serialize(OutputDataStream& stream)
 {
@@ -219,6 +213,8 @@ OutputDataStream& Sampler::Serialize(OutputDataStream& stream)
 
 	Core::Get().DumpProgress("Resolving Symbols...");
 
+	SymEngine& symEngine = Core::Get().symEngine;
+
 	std::vector<const Symbol*> symbols;
 	for each (DWORD64 address in addresses)
 		if (const Symbol* symbol = symEngine.GetSymbol(static_cast<uintptr_t>(address)))
@@ -227,9 +223,6 @@ OutputDataStream& Sampler::Serialize(OutputDataStream& stream)
 	stream << symbols;
 
 	tree.Serialize(stream);
-
-	// Clear temporary data for dbghelp.dll (http://microsoft.public.windbg.narkive.com/G2WkSt2k/stackwalk64-performance-problems)
-	//symEngine.Close();
 
 	return stream;
 }

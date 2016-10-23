@@ -149,6 +149,7 @@ void Core::DumpFrames()
 	{
 		DumpProgress("Serializing callstacks");
 		OutputDataStream callstacksStream;
+		callstacksStream << boardNumber;
 		callstackCollector.SerializeCallstacks(callstacksStream);
 		Server::Get().Send(DataResponse::CallstackPack, callstacksStream);
 	}
@@ -205,7 +206,7 @@ void Core::CleanupThreads()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core::Core() : progressReportedLastTimestampMS(0), isActive(false)
 {
-	SchedulerTrace = SchedulerTrace::Get();
+	schedulerTrace = SchedulerTrace::Get();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::Update()
@@ -269,6 +270,9 @@ void Core::ReportSwitchContext(const SwitchContextDesc& desc)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::ReportStackWalk(const CallstackDesc& desc)
 {
+	if ((schedulerTrace != nullptr) && (schedulerTrace->activeThreadsIDs.find(desc.threadID) == schedulerTrace->activeThreadsIDs.end()))
+		return;
+
 	callstackCollector.Add(desc);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -299,17 +303,17 @@ void Core::Activate( bool active )
 
 		if (active)
 		{
-			CaptureStatus::Type status = SchedulerTrace->Start(SchedulerTrace::SWITCH_CONTEXTS | SchedulerTrace::STACK_WALK, threads);
+			CaptureStatus::Type status = schedulerTrace->Start(SchedulerTrace::SWITCH_CONTEXTS | SchedulerTrace::STACK_WALK, threads);
 
 			// Let's retry with more narrow setup
 			if (status != CaptureStatus::OK)
-				status = SchedulerTrace->Start(SchedulerTrace::SWITCH_CONTEXTS, threads);
+				status = schedulerTrace->Start(SchedulerTrace::SWITCH_CONTEXTS, threads);
 
 			SendHandshakeResponse(status);
 		}
 		else
 		{
-			SchedulerTrace->Stop();
+			schedulerTrace->Stop();
 		}
 	}
 }

@@ -118,7 +118,7 @@ namespace Profiler.Data
         }
     }
 
-    public class EventDescriptionBoard
+    public class EventDescriptionBoard : IResponseHolder
     {
         public Stream BaseStream { get; private set; }
         public int ID { get; private set; }
@@ -149,6 +149,7 @@ namespace Profiler.Data
         {
             BinaryReader reader = response.Reader;
             EventDescriptionBoard desc = new EventDescriptionBoard();
+			desc.Response = response;
             desc.BaseStream = reader.BaseStream;
             desc.ID = reader.ReadInt32();
 
@@ -199,7 +200,9 @@ namespace Profiler.Data
             }
             return desc;
         }
-    }
+
+		public override DataResponse Response { get;set; }
+	}
 
     public class Entry : EventData, IComparable<Entry>
     {

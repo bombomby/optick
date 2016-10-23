@@ -12,6 +12,7 @@ namespace Profiler.Data
     public class ThreadData
     {
         public List<EventFrame> Events { get; set; }
+		public List<Callstack> Callstacks { get; set; }
         public Synchronization Sync { get; set; }
         public bool IsDirty { get; set; }
 
@@ -66,19 +67,26 @@ namespace Profiler.Data
     public class FrameGroup
     {
         public EventDescriptionBoard Board { get; set; }
+        public ISamplingBoard SamplingBoard { get; set; }
         public List<ThreadData> Threads { get; set; }
         public List<ThreadData> Fibers { get; set; }
-        public ThreadData MainThread { get { return Threads[Board.MainThreadIndex]; } }
+		public ThreadData MainThread { get { return Threads[Board.MainThreadIndex]; } }
+
+		public List<DataResponse> Responses { get; set; }
 
         public FrameGroup(EventDescriptionBoard board)
         {
             Board = board;
             Threads = new List<ThreadData>();
             Fibers = new List<ThreadData>();
+			Responses = new List<DataResponse>();
+			Responses.Add(board.Response);
         }
 
         public void Add(EventFrame frame)
         {
+			Responses.Add(frame.Response);
+
             int index = frame.Header.ThreadIndex;
 
             while (index >= Threads.Count)
@@ -89,6 +97,8 @@ namespace Profiler.Data
 
         public void Add(Synchronization sync)
         {
+			Responses.Add(sync.Response);
+
             int index = sync.ThreadIndex;
 
             while (index >= Threads.Count)
@@ -99,6 +109,18 @@ namespace Profiler.Data
             if (Board.Threads[index].IsFiber)
                 SplitFiberThread(Threads[index]);
         }
+
+		public void Add(CallstackPack pack)
+		{
+			Responses.Add(pack.Response);
+
+			for (int i = 0; i < Board.Threads.Count; ++i)
+			{
+				List<Callstack> callstacks;
+				if (pack.CallstackMap.TryGetValue(Board.Threads[i].ThreadID, out callstacks))
+					Threads[i].Callstacks = callstacks;
+			}
+		}
 
         private void SplitFiberThread(ThreadData data)
         {
@@ -198,6 +220,35 @@ namespace Profiler.Data
                         FrameGroup group = groups[id];
 
                         group.Add(new Synchronization(response, group));
+
+                        break;
+                    }
+
+                case DataResponse.Type.SymbolPack:
+                    {
+                        int id = response.Reader.ReadInt32();
+                        FrameGroup group = groups[id];
+
+                        group.SamplingBoard = SamplingDescriptionBoard.Create(response.Reader);
+
+                        break;
+                    }
+
+                case DataResponse.Type.CallstackPack:
+                    {
+						int id = response.Reader.ReadInt32();
+						FrameGroup group = groups[id];
+
+						ISamplingBoard samplingBoard = group.SamplingBoard;
+
+						if (samplingBoard == null)
+						{
+							// TODO: replace Dummy Sampling Board with proper Platform-dependent ISamplingBoard
+							samplingBoard = DummySamplingBoard.Instance;
+						}
+
+						CallstackPack pack = CallstackPack.Create(response, samplingBoard);
+						group.Add(pack);
 
                         break;
                     }

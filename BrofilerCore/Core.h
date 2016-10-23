@@ -173,13 +173,16 @@ public:
 #if USE_BROFILER_SAMPLING
 	// Controls sampling routine
 	Sampler sampler;
+
+	// Resolves symbols
+	SymEngine symEngine;
 #endif
 
 	// Controls GPU activity
 	// Graphics graphics;
 
 	// System scheduler trace
-	SchedulerTrace* SchedulerTrace;
+	SchedulerTrace* schedulerTrace;
 
 	// Returns thread collection
 	const std::vector<ThreadEntry*>& GetThreads() const;

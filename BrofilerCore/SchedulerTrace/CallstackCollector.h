@@ -9,6 +9,8 @@
 namespace Brofiler
 {
 	//////////////////////////////////////////////////////////////////////////
+	class SymEngine;
+	//////////////////////////////////////////////////////////////////////////
 	struct CallstackDesc
 	{
 		uint64 threadID;
@@ -20,7 +22,8 @@ namespace Brofiler
 	class CallstackCollector
 	{
 		// Packed callstack list: {ThreadID, Timestamp, Count, u64[Count]}
-		MemoryPool<uint64, 1024 * 32> callstacksPool;
+		typedef MemoryPool<uint64, 1024 * 32> CallstacksPool;
+		CallstacksPool callstacksPool;
 	public:
 		void Add(const CallstackDesc& desc);
 		void Clear();

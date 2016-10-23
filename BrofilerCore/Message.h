@@ -18,8 +18,8 @@ struct DataResponse
 		NullFrame,						// Last Fame Mark
 		ReportProgress,					// Report Current Progress
 		Handshake,						// Handshake Response
-		CallstackPack,					// Callstack Pack
 		SymbolPack,						// A pack full of resolved Symbols
+		CallstackPack,					// Callstack Pack
 	};
 
 	uint32 version;

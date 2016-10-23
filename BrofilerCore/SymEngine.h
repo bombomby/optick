@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_map>
 #include <array>
+#include "Serialization.h"
 
 namespace Brofiler
 {
@@ -19,6 +20,8 @@ struct Symbol
 	uint32 line;
 	Symbol() : line(0), offset(0), address(0) {}
 };
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+OutputDataStream& operator<<(OutputDataStream& os, const Symbol * const symbol);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef std::array<uintptr_t, 512> CallStackBuffer;
 typedef std::vector<uintptr_t> CallStack;
