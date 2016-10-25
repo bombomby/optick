@@ -5,47 +5,44 @@ namespace Profiler.Data
 {
 	public enum SyncReason
 	{
-		Win_Executive = 0,
-        Win_FreePage = 1,
-        Win_PageIn = 2,
-        Win_PoolAllocation = 3,
-        Win_DelayExecution = 4,
-        Win_Suspended = 5,
-        Win_UserRequest = 6,
-        Win_WrExecutive = 7,
-        Win_WrFreePage = 8,
-        Win_WrPageIn = 9,
-        Win_WrPoolAllocation = 10,
-        Win_WrDelayExecution = 11,
-        Win_WrSuspended = 12,
-        Win_WrUserRequest = 13,
-        Win_WrEventPair = 14,
-        Win_WrQueue = 15,
-        Win_WrLpcReceive = 16,
-        Win_WrLpcReply = 17,
-        Win_WrVirtualMemory = 18,
-        Win_WrPageOut = 19,
-        Win_WrRendezvous = 20,
-        Win_WrKeyedEvent = 21,
-        Win_WrTerminated = 22,
-        Win_WrProcessInSwap = 23,
-        Win_WrCpuRateControl = 24,
-        Win_WrCalloutStack = 25,
-        Win_WrKernel = 26,
-        Win_WrResource = 27,
-        Win_WrPushLock = 28,
-        Win_WrMutex = 29,
-        Win_WrQuantumEnd = 30,
-        Win_WrDispatchInt = 31,
-        Win_WrPreempted = 32,
-        Win_WrYieldExecution = 33,
-        Win_WrFastMutex = 34,
-        Win_WrGuardedMutex = 35,
-        Win_WrRundown = 36,
-        Win_MaximumWaitReason = 37,
-
-
-        SyncReasonCount
+		Executive,
+		FreePage,
+		PageIn,
+		PoolAllocation,
+		DelayExecution,
+		Suspended,
+		UserRequest,
+		WrExecutive,
+		WrFreePage,
+		WrPageIn,
+		WrPoolAllocation,
+		WrDelayExecution,
+		WrSuspended,
+		WrUserRequest,
+		WrEventPair,
+		WrQueue,
+		WrLpcReceive,
+		WrLpcReply,
+		WrVirtualMemory,
+		WrPageOut,
+		WrRendezvous,
+		WrKeyedEvent,
+		WrTerminated,
+		WrProcessInSwap,
+		WrCpuRateControl,
+		WrCalloutStack,
+		WrKernel,
+		WrResource,
+		WrPushLock,
+		WrMutex,
+		WrQuantumEnd,
+		WrDispatchInt,
+		WrPreempted,
+		WrYieldExecution,
+		WrFastMutex,
+		WrGuardedMutex,
+		WrRundown,
+		MaximumWaitReason
 	}
 
 	public class SyncInterval : Durable
@@ -75,35 +72,6 @@ namespace Profiler.Data
 		public SyncReason Reason { get; set; }
 		public WaitInterval() { }
 	}
-
-    public class NodeWaitInterval : Durable
-    {
-        public int Count { get; set; }
-        public Durable NodeInterval { get; set; }
-        public SyncReason Reason { get; set; }
-        public double Percent
-        {
-            get
-            {
-                long nodeTime = (NodeInterval.Finish - NodeInterval.Start);
-                long waitTime = (this.Finish - this.Start);
-                double percent = ((double)waitTime / (double)nodeTime) * 100.0;
-                return percent;
-            }
-        }
-
-        public string Desc
-        {
-            get
-            {
-                return Percent.ToString("F3") + "%, " + DurationF3 + " ms, " + Count;
-            }
-        }
-
-
-        public NodeWaitInterval() { }
-    }
-
 
 	public class Synchronization
     {
