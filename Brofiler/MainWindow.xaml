@@ -21,7 +21,7 @@
         <Border Grid.Row="1">
 			<local:TimeLine Margin="2" x:Name="timeLine" />
 	    </Border>
-    <Expander Header="Threads (block info = Ctrl + LMB)" Margin="1" Grid.Row="2" VerticalContentAlignment="Stretch" UseLayoutRounding="False" IsExpanded="True">
+    <Expander Header="Threads" Margin="1" Grid.Row="2" VerticalContentAlignment="Stretch" UseLayoutRounding="False" IsExpanded="True">
       <Grid>
         <local:ThreadView x:Name="ThreadView" Height="Auto" MinHeight="1" HorizontalAlignment="Stretch" Margin="0" VerticalAlignment="Stretch" Width="Auto" />
       </Grid>

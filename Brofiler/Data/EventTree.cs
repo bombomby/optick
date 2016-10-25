@@ -27,20 +27,12 @@ namespace Profiler.Data
 
 		public abstract String Path { get; }
 
-		public static readonly DependencyProperty ExpandedProperty = DependencyProperty.Register("IsExpanded", typeof(Boolean), typeof(BaseTreeNode));
-		public bool IsExpanded
+		public static readonly DependencyProperty ExpandedProperty = DependencyProperty.Register("Expanded", typeof(Boolean), typeof(BaseTreeNode));
+		public bool Expanded
 		{
 			get { return (bool)GetValue(ExpandedProperty); }
 			set { SetValue(ExpandedProperty, value); }
 		}
-
-		public static readonly DependencyProperty SelectedProperty = DependencyProperty.Register("IsSelected", typeof(Boolean), typeof(BaseTreeNode));
-		public bool IsSelected
-		{
-			get { return (bool)GetValue(SelectedProperty); }
-			set { SetValue(SelectedProperty, value); }
-		}
-
 
 		public static readonly DependencyProperty VisibleProperty = DependencyProperty.Register("Visible", typeof(Visibility), typeof(BaseTreeNode));
 		public Visibility Visible
@@ -60,7 +52,7 @@ namespace Profiler.Data
 			//if (Expanded == false && Visible == Visibility.Visible)
 			//  return;
 
-			IsExpanded = false;
+			Expanded = false;
 			Visible = Visibility.Visible;
 
 			foreach (var node in Children)
@@ -69,10 +61,10 @@ namespace Profiler.Data
 
 		public void Hide()
 		{
-			if (IsExpanded == false && Visible == Visibility.Collapsed)
+			if (Expanded == false && Visible == Visibility.Collapsed)
 				return;
 
-			IsExpanded = false;
+			Expanded = false;
 			Visible = Visibility.Collapsed;
 		}
 
@@ -137,7 +129,7 @@ namespace Profiler.Data
 				foreach (var node in Children)
 					node.ApplyFilter(roof, nodes, mode);
 
-				IsExpanded = true;
+				Expanded = true;
 			}
 			else if (nodes == null || nodes.Contains(this) || !mode.HideNotRelative)
 			{

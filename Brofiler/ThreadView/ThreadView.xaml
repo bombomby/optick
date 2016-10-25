@@ -21,7 +21,7 @@
         <DX:DirectXCanvas x:Name="surface" Height="Auto" Grid.Row="0" Grid.Column="1" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
         </DX:DirectXCanvas>
         <Popup x:Name="SurfacePopup" StaysOpen="False" Placement="Mouse" PopupAnimation="Fade" IsEnabled="False" Focusable="False" IsHitTestVisible="False">
-            <Border BorderThickness="1" Background="#FFE6E6E6" BorderBrush="SlateGray" >
+            <Border BorderThickness="1" Background="#FFE6E6E6" BorderBrush="SlateGray">
                 <ItemsControl ItemsSource="{Binding}" Margin="0">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>

@@ -9,30 +9,14 @@ using System.Windows.Input;
 
 namespace Profiler
 {
-	public class CloseableTabItem : TabItem
+  public class CloseableTabItem : TabItem
 	{
-		private FrameInfo _frameInfo;
-
-		public FrameInfo frameInfo
-		{
-			get
-			{
-				return _frameInfo;
-			}
-		}
-
-		public void AddFrameInfo(FrameInfo info)
-		{
-			_frameInfo = info;
-			Add(_frameInfo);
-		}
-
-		public void Add(FrameworkElement element)
-		{
-			AddChild(element);
+    public void Add(FrameworkElement element)
+    {
+      AddChild(element);
 			MouseDown += new System.Windows.Input.MouseButtonEventHandler(OnMouseDown);
 			KeyDown += new System.Windows.Input.KeyEventHandler(OnKeyDown);
-		}
+    }
 
 		void OnKeyDown(object sender, KeyEventArgs e)
 		{
@@ -51,28 +35,28 @@ namespace Profiler
 		}
 
 		#region CloseTab
-		public static readonly RoutedEvent CloseTabEvent =
-		EventManager.RegisterRoutedEvent("CloseTab", RoutingStrategy.Bubble,
-			typeof(RoutedEventHandler), typeof(CloseableTabItem));
+    public static readonly RoutedEvent CloseTabEvent =
+    EventManager.RegisterRoutedEvent("CloseTab", RoutingStrategy.Bubble,
+        typeof(RoutedEventHandler), typeof(CloseableTabItem));
 
-		public event RoutedEventHandler CloseTab
-		{
-			add { AddHandler(CloseTabEvent, value); }
-			remove { RemoveHandler(CloseTabEvent, value); }
-		}
+    public event RoutedEventHandler CloseTab
+    {
+      add { AddHandler(CloseTabEvent, value); }
+      remove { RemoveHandler(CloseTabEvent, value); }
+    }
 
-		public override void OnApplyTemplate()
-		{
-			base.OnApplyTemplate();
+    public override void OnApplyTemplate()
+    {
+      base.OnApplyTemplate();
 
-			Button closeButton = base.GetTemplateChild("PART_Close") as Button;
-			if (closeButton != null)
-				closeButton.Click += new System.Windows.RoutedEventHandler(closeButton_Click);
-		}
+      Button closeButton = base.GetTemplateChild("PART_Close") as Button;
+      if (closeButton != null)
+        closeButton.Click += new System.Windows.RoutedEventHandler(closeButton_Click);
+    }
 
-		void closeButton_Click(object sender, System.Windows.RoutedEventArgs e)
-		{
-			this.RaiseEvent(new RoutedEventArgs(CloseTabEvent, this));
+    void closeButton_Click(object sender, System.Windows.RoutedEventArgs e)
+    {
+      this.RaiseEvent(new RoutedEventArgs(CloseTabEvent, this));
 		}
 		#endregion
 	}

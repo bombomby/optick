@@ -117,21 +117,15 @@
 						</DataTrigger>
 					</HierarchicalDataTemplate.Triggers>
 				</HierarchicalDataTemplate>
-				<!-- <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ActiveCaptionColorKey}}" x:Key="{x:Static SystemColors.HighlightBrushKey}"/> -->
+				<SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ActiveCaptionColorKey}}" x:Key="{x:Static SystemColors.HighlightBrushKey}"/>
 			</TreeView.Resources>
 			<TreeView.ItemContainerStyle>
-                <Style TargetType="{x:Type TreeViewItem}">
-                    <Style.Resources>
-                        <!-- Style the inactive selection the same as active -->
-                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}"  Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}"/>
-                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightTextColorKey}}"/>
-                    </Style.Resources>
-                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
-                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
-                    <Setter Property="Visibility" Value="{Binding Visible}" />
-                    <EventSetter Event="MouseRightButtonDown" Handler="OnTreeViewItemMouseRightButtonDown" />
-                </Style>
-            </TreeView.ItemContainerStyle>
+				<Style TargetType="{x:Type TreeViewItem}">
+					<Setter Property="IsExpanded" Value="{Binding Expanded}" />
+          <Setter Property="Visibility" Value="{Binding Visible}" />
+          <EventSetter Event="MouseRightButtonDown" Handler="OnTreeViewItemMouseRightButtonDown" />
+        </Style>
+			</TreeView.ItemContainerStyle>
 		</TreeView>
 		<local:FrameDataTable Grid.Row="0" Grid.RowSpan="2" Width="Auto" RenderTransformOrigin="0.461,0.52" Grid.Column="9" DataContext="{Binding Board}" x:Name="SummaryTable" Margin="4,0,0,0" />
 		<GridSplitter ResizeDirection="Columns" Width="4" Grid.Column="1" HorizontalAlignment="Left" Grid.RowSpan="2"/>
