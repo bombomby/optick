@@ -289,9 +289,13 @@ namespace Profiler.Data
             Categories = new List<Entry>();
 
             this.entries = entries;
-            foreach (Entry entry in entries)
-                if (entry.Description.Color.A != 0)
-                    Categories.Add(entry);
+			foreach (Entry entry in entries)
+			{
+				if (entry.Description.Color.A != 0)
+				{
+					Categories.Add(entry);
+				}
+			}
 
             CategoriesTree = new EventTree(this, Categories);
 

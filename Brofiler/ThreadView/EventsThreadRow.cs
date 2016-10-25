@@ -42,7 +42,82 @@ namespace Profiler
             EventData = data;
             Group = group;
 
-            data.Events.ForEach(frame => MaxDepth = Math.Max(frame.CategoriesTree.Depth, MaxDepth));
+			List<EventNode> rootCategories = new List<EventNode>();
+			List<EventNode> nodesToProcess = new List<EventNode>();
+
+			foreach (EventFrame frame in data.Events)
+			{
+				// Fill holes in timeline from regular events (not categories)
+				// ------------------------------------------------------------------------------------------------------
+				const double thresholdMs = 0.1;
+
+				EventTree categoriesTree = frame.CategoriesTree;
+				rootCategories.Clear();
+				foreach (EventNode node in frame.CategoriesTree.Children)
+				{
+					rootCategories.Add(node);
+				}
+
+				if (rootCategories.Count != 0)
+				{
+					nodesToProcess.Clear();
+					foreach (EventNode node in frame.Root.Children)
+					{
+						nodesToProcess.Add(node);
+					}
+
+					while(nodesToProcess.Count > 0)
+					{
+						EventNode node = nodesToProcess[0];
+						nodesToProcess.RemoveAt(0);
+
+						bool nodeIntersectWithCategories = false;
+
+						foreach(EventNode categoryNode in rootCategories)
+						{
+							// drop nodes less than thresholdMs ms
+							if (node.Entry.Duration < thresholdMs)
+							{
+								nodeIntersectWithCategories = true;
+								break;
+							}
+
+							// node is entirely inside the categoryNode
+							if (node.Entry.Start >= categoryNode.Entry.Start && node.Entry.Finish <= categoryNode.Entry.Finish)
+							{
+								nodeIntersectWithCategories = true;
+								break;
+							}
+
+							// node is partially inside the categoryNode
+							if (node.Entry.Intersect(categoryNode.Entry))
+							{
+								foreach (EventNode tmp in node.Children)
+								{
+									nodesToProcess.Add(tmp);
+								}
+
+								nodeIntersectWithCategories = true;
+								break;
+							}
+						}
+
+						if (nodeIntersectWithCategories == false && node.Entry.Duration >= thresholdMs)
+						{
+							// node is not intersect with any categoryNode (add to category tree)
+							EventNode fakeCategoryNode = new EventNode(frame.CategoriesTree, node.Entry);
+
+							node.Entry.SetOverrideColor( GenerateColorFromString(node.Entry.Description.FullName) );
+							
+							rootCategories.Add(fakeCategoryNode);
+							frame.CategoriesTree.Children.Add(fakeCategoryNode);
+						}
+					}
+				}
+				// ------------------------------------------------------------------------------------------------------
+
+				MaxDepth = Math.Max(frame.CategoriesTree.Depth, MaxDepth);
+			}
         }
 
         void BuildMeshNode(DirectX.DynamicMesh builder, ThreadScroll scroll, EventNode node, int level)
@@ -166,8 +241,18 @@ namespace Profiler
         public delegate void EventNodeHoverHandler(Rect rect, ThreadRow row, EventNode node);
         public event EventNodeHoverHandler EventNodeHover;
 
-        public delegate void EventNodeSelectedHandler(ThreadRow row, EventFrame frame, EventNode node);
+        public delegate void EventNodeSelectedHandler(ThreadRow row, EventFrame frame, EventNode node, ITick tick);
         public event EventNodeSelectedHandler EventNodeSelected;
+
+		public EventFrame FindFrame(ITick tick)
+		{
+			int index = Data.Utils.BinarySearchExactIndex(EventData.Events, tick.Start);
+			if (index >= 0)
+			{
+				return EventData.Events[index];
+			}
+			return null;
+		}
 
         public int FindNode(Point point, ThreadScroll scroll, out EventFrame eventFrame, out EventNode eventNode)
         {
@@ -187,8 +272,10 @@ namespace Profiler
 
                 frame.CategoriesTree.ForEachChild((node, level) =>
                 {
-                    if (level > desiredLevel || resultFrame != null)
-                        return false;
+					if (level > desiredLevel || resultFrame != null)
+					{
+						return false;
+					}
 
                     if (level == desiredLevel)
                     {
@@ -208,7 +295,6 @@ namespace Profiler
 
             eventFrame = resultFrame;
             eventNode = resultNode;
-
             return resultLevel;
         }
 
@@ -267,7 +353,7 @@ namespace Profiler
                 int from = Data.Utils.BinarySearchClosestIndex(frame.Synchronization, node.Entry.Start);
                 int to = Data.Utils.BinarySearchClosestIndex(frame.Synchronization, node.Entry.Finish);
 
-                if (to >= from)
+				if (from >= 0 && to >= from)
                 {
                     IntPair[] waitInfo = new IntPair[(int)SyncReason.SyncReasonCount];
 
@@ -318,8 +404,18 @@ namespace Profiler
             EventNode node = null;
             EventFrame frame = null;
             int level = FindNode(point, scroll, out frame, out node);
-            if (level != -1 && EventNodeSelected != null)
-                EventNodeSelected(this, frame, node);
+			if (EventNodeSelected != null)
+			{
+				ITick tick = scroll.PixelToTime(point.X);
+				if (frame == null)
+				{
+					frame = FindFrame(tick);
+				}
+				if (frame != null)
+				{
+					EventNodeSelected(this, frame, node, tick);
+				}
+			}
         }
 
         //static Color FilterFrameColor = Colors.LimeGreen;
@@ -327,6 +423,18 @@ namespace Profiler
 
         static Color FilterFrameColor = Colors.PaleGreen;
         static Color FilterEntryColor = Colors.Salmon;
+
+
+		static Color GenerateColorFromString(string s)
+		{
+			int hash = s.GetHashCode();
+
+			byte r = (byte)((hash & 0xFF0000) >> 16);
+			byte g = (byte)((hash & 0x00FF00) >> 8);
+			byte b = (byte)(hash & 0x0000FF);
+
+			return Color.FromArgb(0xFF, r, g, b);
+		}
 
         public override void ApplyFilter(DirectXCanvas canvas, ThreadScroll scroll, HashSet<EventDescription> descriptions)
         {

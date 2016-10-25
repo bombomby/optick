@@ -68,6 +68,12 @@ namespace Profiler.Data
 
         const byte IS_SAMPLING_FLAG = 0x1;
 
+		public void SetOverrideColor(Color color)
+		{
+			Color = color;
+			Brush = new SolidColorBrush(color);
+		}
+
         static public EventDescription Read(BinaryReader reader, int id)
         {
             EventDescription desc = new EventDescription();
@@ -211,6 +217,11 @@ namespace Profiler.Data
         {
             this.Description = desc;
         }
+
+		public void SetOverrideColor(Color color)
+		{
+			Description.SetOverrideColor(color);
+		}
 
         public static Entry Read(BinaryReader reader, EventDescriptionBoard board)
         {

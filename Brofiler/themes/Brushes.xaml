@@ -15,6 +15,11 @@
     <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="Green" />
     <SolidColorBrush x:Key="{x:Static SystemColors.ActiveCaptionBrush}" Color="Green" />-->
 
+    <!--
+    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightColorKey}" Color="Orange" />
+    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextColorKey}" Color="Orange" />
+    -->
+
     <SolidColorBrush x:Key="BroForeground" Color="#FF171717" />
     <SolidColorBrush x:Key="BroAlternative" Color="LightGray" />
     <SolidColorBrush x:Key="BroFrameSelection" Color="Black" />
