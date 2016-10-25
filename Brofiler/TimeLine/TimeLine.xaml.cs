@@ -304,12 +304,14 @@ namespace Profiler
         {
             public Data.Frame Frame { get; set; }
             public Data.EventNode Node { get; set; }
+			public ITick Tick { get; set; }
 
-            public FocusFrameEventArgs(RoutedEvent routedEvent, Data.Frame frame, Data.EventNode node = null)
+            public FocusFrameEventArgs(RoutedEvent routedEvent, Data.Frame frame, Data.EventNode node = null, ITick tick = null)
                 : base(routedEvent)
             {
                 Frame = frame;
                 Node = node;
+				Tick = tick;
             }
         }
 

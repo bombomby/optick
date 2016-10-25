@@ -72,6 +72,20 @@ namespace Profiler
 
         private void OpenTab(object source, TimeLine.FocusFrameEventArgs args)
         {
+			Durable focusRange = null;
+			if (args.Node != null)
+			{
+				focusRange = args.Node.Entry;
+			}
+			else
+			{
+				if (args.Tick != null)
+				{
+					focusRange = new Durable(args.Tick.Start, args.Tick.Start + 1 );
+				}
+			}
+
+
             Data.Frame frame = args.Frame;
             foreach (var tab in frameTabs.Items)
             {
@@ -81,6 +95,10 @@ namespace Profiler
                     if (item.DataContext.Equals(frame))
                     {
                         frameTabs.SelectedItem = item;
+						if (item.frameInfo != null)
+						{
+							item.frameInfo.FocusOnNode(focusRange);
+						}
                         return;
                     }
                 }
@@ -93,10 +111,12 @@ namespace Profiler
             info.SelectedTreeNodeChanged += new SelectedTreeNodeChangedHandler(FrameInfo_OnSelectedTreeNodeChanged);
             info.SetFrame(frame);
 
-            tabItem.Add(info);
+            tabItem.AddFrameInfo(info);
 
             frameTabs.Items.Add(tabItem);
             frameTabs.SelectedItem = tabItem;
+
+			info.FocusOnNode(focusRange);
         }
 
         void FrameInfo_OnSelectedTreeNodeChanged(Data.Frame frame, BaseTreeNode node)
@@ -145,4 +165,25 @@ namespace Profiler
                 e.Effects = DragDropEffects.Copy;
         }
     }
+
+
+
+	public static class Extensions
+	{
+		// extension method
+		public static T GetChildOfType<T>(this DependencyObject depObj) where T : DependencyObject
+		{
+			if (depObj == null) return null;
+
+			for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+			{
+				var child = VisualTreeHelper.GetChild(depObj, i);
+				var result = (child as T) ?? GetChildOfType<T>(child);
+				if (result != null) return result;
+			}
+			return null;
+		}
+	}
+
+
 }

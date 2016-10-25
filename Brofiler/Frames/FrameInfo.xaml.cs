@@ -19,37 +19,38 @@ using System.Diagnostics;
 namespace Profiler
 {
 
-  public delegate void SelectedTreeNodeChangedHandler(Data.Frame frame, BaseTreeNode node);
-	
-  /// <summary>
+	public delegate void SelectedTreeNodeChangedHandler(Data.Frame frame, BaseTreeNode node);
+
+	/// <summary>
 	/// Interaction logic for FrameInfo.xaml
 	/// </summary>
 	public partial class FrameInfo : UserControl
 	{
+
 		public FrameInfo()
 		{
 			this.InitializeComponent();
-      SummaryTable.FilterApplied += new ApplyFilterEventHandler(ApplyFilterToEventTree);
+			SummaryTable.FilterApplied += new ApplyFilterEventHandler(ApplyFilterToEventTree);
 			SummaryTable.DescriptionFilterApplied += new ApplyDescriptionFilterEventHandler(ApplyDescriptionFilterToEventTree);
 
-      EventTreeView.SelectedItemChanged += new RoutedPropertyChangedEventHandler<object>(EventTreeView_SelectedItemChanged);
+			EventTreeView.SelectedItemChanged += new RoutedPropertyChangedEventHandler<object>(EventTreeView_SelectedItemChanged);
 		}
 
-    private Data.Frame frame;
+		private Data.Frame frame;
 
-    public void SetFrame(Data.Frame frame)
-    {
-      this.frame = frame;
-      Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => { frame.Load();  this.DataContext = frame; }));
-    }
+		public void SetFrame(Data.Frame frame)
+		{
+			this.frame = frame;
+			Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => { frame.Load(); this.DataContext = frame; }));
+		}
 
-    public void RefreshFilter(object sender, RoutedEventArgs e)
-    {
-      SummaryTable.RefreshFilter();
-    }
+		public void RefreshFilter(object sender, RoutedEventArgs e)
+		{
+			SummaryTable.RefreshFilter();
+		}
 
-    private void ApplyFilterToEventTree(HashSet<Object> filter, FilterMode mode)
-    {
+		private void ApplyFilterToEventTree(HashSet<Object> filter, FilterMode mode)
+		{
 			if (FocusCallStack.IsChecked ?? true)
 				mode.HideNotRelative = true;
 
@@ -60,38 +61,38 @@ namespace Profiler
 					mode.TimeLimit = limit;
 			}
 
-      HashSet<Object> roof = null;
-      
-      if (filter != null && filter.Count > 0)
-      {
-        roof = new HashSet<Object>();
+			HashSet<Object> roof = null;
 
-        foreach (Object node in filter)
-        {
-          BaseTreeNode current = (node as BaseTreeNode).Parent;
-          while (current != null)
-          {
-            if (!roof.Add(current))
-              break;
+			if (filter != null && filter.Count > 0)
+			{
+				roof = new HashSet<Object>();
 
-            current = current.Parent;
-          }
-        }
-      }
+				foreach (Object node in filter)
+				{
+					BaseTreeNode current = (node as BaseTreeNode).Parent;
+					while (current != null)
+					{
+						if (!roof.Add(current))
+							break;
 
-      foreach (var node in EventTreeView.ItemsSource)
-      {
-        if (node is BaseTreeNode)
-        {
-          BaseTreeNode eventNode = node as BaseTreeNode;
+						current = current.Parent;
+					}
+				}
+			}
 
-          Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-          {
-            eventNode.ApplyFilter(roof, filter, mode);
-          }), DispatcherPriority.Loaded);
-        }
-      }
-    }
+			foreach (var node in EventTreeView.ItemsSource)
+			{
+				if (node is BaseTreeNode)
+				{
+					BaseTreeNode eventNode = node as BaseTreeNode;
+
+					Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+					{
+						eventNode.ApplyFilter(roof, filter, mode);
+					}), DispatcherPriority.Loaded);
+				}
+			}
+		}
 
 		private void ApplyDescriptionFilterToEventTree(HashSet<Object> filter)
 		{
@@ -119,15 +120,15 @@ namespace Profiler
 			}
 		}
 
-    public event SelectedTreeNodeChangedHandler SelectedTreeNodeChanged;
+		public event SelectedTreeNodeChangedHandler SelectedTreeNodeChanged;
 
-    void EventTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
-    {
-      if (e.NewValue is BaseTreeNode && DataContext is Data.Frame)
-      {
-        SelectedTreeNodeChanged(DataContext as Data.Frame, e.NewValue as BaseTreeNode);
-      }
-    }
+		void EventTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+		{
+			if (e.NewValue is BaseTreeNode && DataContext is Data.Frame)
+			{
+				SelectedTreeNodeChanged(DataContext as Data.Frame, e.NewValue as BaseTreeNode);
+			}
+		}
 
 
 		private void OnTreeViewItemMouseRightButtonDown(object sender, MouseButtonEventArgs e)
@@ -142,9 +143,15 @@ namespace Profiler
 				{
 					Object windowDataContext = null;
 					if (item.DataContext is SamplingNode)
+					{
 						windowDataContext = SourceView<SamplingBoardItem, SamplingDescription, SamplingNode>.Create(SummaryTable.DataContext as Board<SamplingBoardItem, SamplingDescription, SamplingNode>, (item.DataContext as SamplingNode).Description.Path);
-					else if (item.DataContext is EventNode)
-						windowDataContext = SourceView<EventBoardItem, EventDescription, EventNode>.Create(SummaryTable.DataContext as Board<EventBoardItem, EventDescription, EventNode>, (item.DataContext as EventNode).Description.Path);
+					} else
+					{
+						if (item.DataContext is EventNode)
+						{
+							windowDataContext = SourceView<EventBoardItem, EventDescription, EventNode>.Create(SummaryTable.DataContext as Board<EventBoardItem, EventDescription, EventNode>, (item.DataContext as EventNode).Description.Path);
+						}
+					}
 
 					if (windowDataContext != null)
 					{
@@ -152,6 +159,103 @@ namespace Profiler
 					}
 				}));
 			}
+		}
+
+
+
+		public bool FocusOnNode(Durable focusRange)
+		{
+			if (EventTreeView == null)
+			{
+				return false;
+			}
+
+			if (EventTreeView.ItemsSource == null)
+			{
+				return false;
+			}
+
+			List<BaseTreeNode> treePath = new List<BaseTreeNode>();
+
+			foreach (var node in EventTreeView.ItemsSource)
+			{
+				BaseTreeNode baseTreeNode = node as BaseTreeNode;
+				if (baseTreeNode == null)
+				{
+					continue;
+				}
+
+				baseTreeNode.ForEach( (curNode, level) =>
+				{
+					EventNode treeEventNode = curNode as EventNode;
+					if (treeEventNode == null)
+					{
+						return true;
+					}
+
+					if (treeEventNode.Entry.Start > focusRange.Finish)
+					{
+						return false;
+					}
+
+					if (treeEventNode.Entry.Intersect(focusRange))
+					{
+						treePath.Add(curNode);
+
+						//find desired node in tree
+						if (treeEventNode.Entry.Start >= focusRange.Start && treeEventNode.Entry.Finish <= focusRange.Finish)
+						{
+							return false;
+						}
+					}
+
+
+					return true;
+				});
+
+				ItemsControl root = EventTreeView;
+
+				int pathElementsCount = treePath.Count;
+				if (pathElementsCount > 0)
+				{
+					//expand path in tree
+					int index = 0;
+					for (index = 0; index < (pathElementsCount - 1); index++)
+					{
+						BaseTreeNode expandNode = treePath[index];
+
+						if (root != null)
+						{
+							root = root.ItemContainerGenerator.ContainerFromItem(expandNode) as ItemsControl;
+						}
+
+						treePath[index].IsExpanded = true;
+					}
+
+					BaseTreeNode finalNode = treePath[index];
+
+					// select target node
+					finalNode.IsExpanded = false;
+					finalNode.IsSelected = true;
+
+					// focus on finalNode
+					if (root != null)
+					{
+						root = root.ItemContainerGenerator.ContainerFromItem(finalNode) as ItemsControl;
+						if (root != null)
+						{
+							root.BringIntoView();
+						}
+					}
+
+					EventTreeView.InvalidateVisual();
+
+					return true;
+				}
+			
+			}
+
+			return false;
 		}
 	}
 }

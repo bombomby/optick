@@ -37,7 +37,6 @@ namespace Profiler
         SolidColorBrush FrameSelection;
         SolidColorBrush FrameHover;
 
-		DispatcherTimer toolTipTimer = new DispatcherTimer();
 
         void InitColors()
         {
@@ -156,9 +155,9 @@ namespace Profiler
             BackgroundMesh = backgroundBuilder.Freeze(surface.RenderDevice);
         }
 
-        private void Row_EventNodeSelected(ThreadRow row, EventFrame frame, EventNode node)
+		private void Row_EventNodeSelected(ThreadRow row, EventFrame frame, EventNode node, ITick tick)
         {
-            RaiseEvent(new TimeLine.FocusFrameEventArgs(TimeLine.FocusFrameEvent, frame, node));
+			RaiseEvent(new TimeLine.FocusFrameEventArgs(TimeLine.FocusFrameEvent, frame, node, tick));
         }
 
         private void Row_EventNodeHover(Rect rect, ThreadRow row, EventNode node)
@@ -200,25 +199,6 @@ namespace Profiler
             HoverMesh = surface.CreateMesh();
             HoverMesh.Projection = Mesh.ProjectionType.Pixel;
             HoverMesh.Geometry = Mesh.GeometryType.Lines;
-
-			toolTipTimer.Interval = new TimeSpan(0, 0, 0, 0, 500);
-			toolTipTimer.Tick += ToolTipTimer_Tick;
-		}
-
-		private void ToolTipTimer_Tick(object sender, EventArgs e)
-		{
-			List<Object> dataContext = new List<object>();
-
-			var pos = Input.MousePosition;
-
-			foreach (ThreadRow row in rows)
-				if (row.Offset <= pos.Y && pos.Y <= row.Offset + row.Height)
-					row.OnMouseHover(new Point(pos.X, pos.Y - row.Offset), scroll, dataContext);
-
-			SurfacePopup.DataContext = dataContext;
-			SurfacePopup.IsOpen = dataContext.Count > 0 ? true : false;
-
-			toolTipTimer.Stop();
 		}
 
 		class InputState
@@ -247,39 +227,33 @@ namespace Profiler
         {
             Input.IsDrag = false;
             Input.IsSelect = false;
-
-			if (SurfacePopup.IsOpen)
-			{
-				UpdateHover(Input.MousePosition);
-			}
-			else
-			{
-				UpdateHover(new System.Drawing.Point());
-			}
 			UpdateSurface();
-
-			toolTipTimer.Stop();
         }
 
-        private void UpdateHover(System.Drawing.Point e)
-        {
-            foreach (ThreadRow row in rows)
-            {
-                if (row.Offset <= e.Y && e.Y <= row.Offset + row.Height)
-                {
-                    row.OnMouseMove(new Point(e.X, e.Y - row.Offset), scroll);
-                }
-            }
-        }
 
-        private void MouseClick(System.Windows.Forms.MouseEventArgs args)
-        {
-            System.Drawing.Point e = new System.Drawing.Point(args.X, args.Y);
-            foreach (ThreadRow row in rows)
+		private void MouseShowPopup(System.Windows.Forms.MouseEventArgs args)
+		{
+			System.Drawing.Point e = new System.Drawing.Point(args.X, args.Y);
+			List<Object> dataContext = new List<object>();
+			foreach (ThreadRow row in rows)
 			{
-                if (row.Offset <= e.Y && e.Y <= row.Offset + row.Height)
+				if (row.Offset <= e.Y && e.Y <= row.Offset + row.Height)
 				{
-                    row.OnMouseClick(new Point(e.X, e.Y - row.Offset), scroll);
+					row.OnMouseHover(new Point(e.X, e.Y - row.Offset), scroll, dataContext);
+				}
+			}
+			SurfacePopup.DataContext = dataContext;
+			SurfacePopup.IsOpen = dataContext.Count > 0 ? true : false;
+		}
+
+        private void MouseClickLeft(System.Windows.Forms.MouseEventArgs args)
+        {
+			System.Drawing.Point e = new System.Drawing.Point(args.X, args.Y);
+			foreach (ThreadRow row in rows)
+			{
+				if (row.Offset <= e.Y && e.Y <= row.Offset + row.Height)
+				{
+					row.OnMouseClick(new Point(e.X, e.Y - row.Offset), scroll);
 				}
 			}
         }
@@ -287,10 +261,6 @@ namespace Profiler
         private void RenderCanvas_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
         {
 			Input.MousePosition = e.Location;
-
-			SurfacePopup.IsOpen = false;
-			toolTipTimer.Stop();
-			toolTipTimer.Start();
 
 			if (Input.IsDrag)
             {
@@ -300,7 +270,6 @@ namespace Profiler
                 scroll.ViewUnit.Left -= deltaUnit;
                 scroll.ViewUnit.Normalize();
 
-                UpdateHover(e.Location);
                 UpdateBar();
                 UpdateSurface();
 
@@ -308,7 +277,6 @@ namespace Profiler
             }
             else
             {
-                UpdateHover(e.Location);
                 UpdateSurface();
             }
         }
@@ -317,6 +285,7 @@ namespace Profiler
         {
             if (e.Button == System.Windows.Forms.MouseButtons.Right)
             {
+				Mouse.OverrideCursor = null;
                 Input.IsDrag = false;
             }
         }
@@ -325,16 +294,22 @@ namespace Profiler
         {
             if (e.Button == System.Windows.Forms.MouseButtons.Right)
             {
+				Mouse.OverrideCursor = Cursors.ScrollWE;
                 Input.IsDrag = true;
                 Input.DragPosition = e.Location;
             }
             else if (e.Button == System.Windows.Forms.MouseButtons.Left)
             {
-                Input.IsSelect = true;
-                Input.SelectStartPosition = e.Location;
-
-                MouseClick(e);
-            }
+				if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
+				{
+					MouseShowPopup(e);
+				} else
+				{
+					Input.IsSelect = true;
+					Input.SelectStartPosition = e.Location;
+					MouseClickLeft(e);
+				}
+			}
         }
 
         private void ScrollBar_Scroll(object sender, ScrollEventArgs e)
@@ -360,7 +335,6 @@ namespace Profiler
                 scroll.ViewUnit.Left += (prevWidth - scroll.ViewUnit.Width) * ratio;
                 scroll.ViewUnit.Normalize();
 
-                UpdateHover(e.Location);
                 UpdateBar();
                 UpdateSurface();
             }
