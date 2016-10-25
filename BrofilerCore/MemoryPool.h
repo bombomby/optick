@@ -61,6 +61,18 @@ public:
 		return chunk->data[index++];
 	}
 
+	BRO_INLINE T* TryAdd(int count)
+	{
+		if (index + count <= SIZE)
+		{
+			T* res = &chunk->data[index];
+			index += count;
+			return res;
+		}
+
+		return nullptr;
+	}
+
 	BRO_INLINE T* Back()
 	{
 		if (index > 0)
@@ -101,6 +113,58 @@ public:
 
 		index = 0;
 		chunk = &root;
+	}
+
+	class const_iterator
+	{
+		void advance()
+		{
+			if (chunkIndex < SIZE - 1)
+			{
+				++chunkIndex;
+			}
+			else
+			{
+				chunkPtr = chunkPtr->next;
+				chunkIndex = 0;
+			}
+		}
+	public:
+		typedef const_iterator self_type;
+		typedef T value_type;
+		typedef T& reference;
+		typedef T* pointer;
+		typedef int difference_type;
+		typedef std::forward_iterator_tag iterator_category;
+		const_iterator(const Chunk* ptr, size_t index) : chunkPtr(ptr), chunkIndex(index) { }
+		self_type operator++() 
+		{
+			self_type i = *this; 
+			advance();
+			return i; 
+		}
+		self_type operator++(int junk) 
+		{
+			advance();
+			return *this; 
+		}
+		const reference operator*() { return (reference)chunkPtr->data[chunkIndex]; }
+		const pointer operator->() { return &chunkPtr->data[chunkIndex]; }
+		bool operator==(const self_type& rhs) { return (chunkPtr == rhs.chunkPtr) && (chunkIndex == rhs.chunkIndex); }
+		bool operator!=(const self_type& rhs) { return (chunkPtr != rhs.chunkPtr) || (chunkIndex != rhs.chunkIndex); }
+	private:
+		const Chunk* chunkPtr;
+		size_t chunkIndex;
+	};
+
+	const_iterator begin() const
+	{
+		return const_iterator(&root, 0);
+	}
+
+	const_iterator end() const
+	{
+		return const_iterator(chunk, index);
 	}
 
 	template<class Func>

@@ -28,7 +28,8 @@ namespace Profiler
     {
         FrameGroup group;
 
-        ThreadScroll scroll = new ThreadScroll();
+		ThreadScroll scroll = new ThreadScroll();
+		//ThreadScroll scroll = new ThreadScroll() { DrawCallstacks = true };
         List<ThreadRow> rows = new List<ThreadRow>();
         Dictionary<int, ThreadRow> id2row = new Dictionary<int, ThreadRow>();
 

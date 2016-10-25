@@ -36,6 +36,8 @@ const Symbol * const SymEngine::GetSymbol(uintptr_t address)
 	if (address == 0)
 		return nullptr;
 
+	Init();
+
 	Symbol& symbol = cache[address];
 
 	if (symbol.address != 0)
@@ -191,6 +193,12 @@ uint32 SymEngine::GetCallstack(HANDLE hThread, CONTEXT& context, CallStackBuffer
 	}
 
 	return index;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+OutputDataStream& operator<<(OutputDataStream& os, const Symbol * const symbol)
+{
+	BRO_VERIFY(symbol, "Can't serialize NULL symbol!", return os);
+	return os << (uint64)symbol->address << symbol->module << symbol->function << symbol->file << symbol->line;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

@@ -53,6 +53,12 @@ namespace Profiler
 
         public double Zoom { get { return 1.0 / ViewUnit.Width; } }
 
+		public double TimeToUnit(ITick tick)
+		{
+			double durationTicks = TimeSlice.Finish - TimeSlice.Start;
+			return (tick.Start - TimeSlice.Start) / durationTicks;
+		}
+
         public Interval TimeToUnit(Durable d)
         {
             double durationTicks = TimeSlice.Finish - TimeSlice.Start;
@@ -82,6 +88,7 @@ namespace Profiler
             return new Durable(TimeSlice.Start + (long)(ViewUnit.Left * duration), TimeSlice.Start + (long)(ViewUnit.Right * duration));
         }
 
+		public bool DrawCallstacks { get; set; }
     }
 
     public abstract class ThreadRow

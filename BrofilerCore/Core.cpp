@@ -5,6 +5,8 @@
 #include "EventDescriptionBoard.h"
 #include "Thread.h"
 
+#include "SchedulerTrace/SchedulerTrace.h"
+
 
 extern "C" Brofiler::EventData* NextEvent()
 {
@@ -134,8 +136,23 @@ void Core::DumpFrames()
 	}
 
 	frames.clear();
-
 	CleanupThreads();
+
+	{
+		DumpProgress("Resolving callstacks");
+		OutputDataStream symbolsStream;
+		symbolsStream << boardNumber;
+		callstackCollector.SerializeSymbols(symbolsStream);
+		Server::Get().Send(DataResponse::SymbolPack, symbolsStream);
+	}
+	
+	{
+		DumpProgress("Serializing callstacks");
+		OutputDataStream callstacksStream;
+		callstacksStream << boardNumber;
+		callstackCollector.SerializeCallstacks(callstacksStream);
+		Server::Get().Send(DataResponse::CallstackPack, callstacksStream);
+	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpSamplingData()
@@ -189,7 +206,7 @@ void Core::CleanupThreads()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core::Core() : progressReportedLastTimestampMS(0), isActive(false)
 {
-	schedulerTracer = ISchedulerTracer::Get();
+	schedulerTrace = SchedulerTrace::Get();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::Update()
@@ -251,6 +268,14 @@ void Core::ReportSwitchContext(const SwitchContextDesc& desc)
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Core::ReportStackWalk(const CallstackDesc& desc)
+{
+	if ((schedulerTrace != nullptr) && (schedulerTrace->activeThreadsIDs.find(desc.threadID) == schedulerTrace->activeThreadsIDs.end()))
+		return;
+
+	callstackCollector.Add(desc);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::StartSampling()
 {
 #if USE_BROFILER_SAMPLING
@@ -278,15 +303,19 @@ void Core::Activate( bool active )
 
 		if (active)
 		{
-			SchedulerTraceStatus::Type status = schedulerTracer->Start();
+			CaptureStatus::Type status = schedulerTrace->Start(SchedulerTrace::SWITCH_CONTEXTS | SchedulerTrace::STACK_WALK, threads);
+
+			// Let's retry with more narrow setup
+			if (status != CaptureStatus::OK)
+				status = schedulerTrace->Start(SchedulerTrace::SWITCH_CONTEXTS, threads);
+
 			SendHandshakeResponse(status);
 		}
 		else
 		{
-			schedulerTracer->Stop();
+			schedulerTrace->Stop();
 		}
 	}
-
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpCapturingProgress()
@@ -309,7 +338,7 @@ bool Core::IsTimeToReportProgress() const
 	return MT::GetTimeMilliSeconds() > progressReportedLastTimestampMS + 200;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Core::SendHandshakeResponse(SchedulerTraceStatus::Type status)
+void Core::SendHandshakeResponse(CaptureStatus::Type status)
 {
 	OutputDataStream stream;
 	stream << (uint32)status;

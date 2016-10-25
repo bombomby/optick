@@ -4,13 +4,13 @@
 
 #ifdef BRO_WINDOWS
 
-#include "..\ISchedulerTrace.h"
+#include "..\SchedulerTrace.h"
 #include "ETW.h"
 
 namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class ETW : public ISchedulerTracer
+class ETW : public SchedulerTrace
 {
 	EVENT_TRACE_PROPERTIES *sessionProperties;
 	EVENT_TRACE_LOGFILE logFile;
@@ -28,7 +28,7 @@ public:
 	ETW();
 	~ETW();
 
-	virtual SchedulerTraceStatus::Type Start();
+	virtual CaptureStatus::Type Start(int mode, const ThreadList& threads) override;
 	virtual bool Stop();
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

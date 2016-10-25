@@ -10,9 +10,6 @@
 
 namespace Brofiler
 {
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-const byte SWITCH_CONTEXT_INSTRUCTION_OPCODE = 36;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct CSwitch 
 {
@@ -99,30 +96,90 @@ struct CSwitch
 
 	// Reserved.
 	uint32 Reserved;
+
+	static const byte OPCODE = 36;
 };
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct StackWalk_Event
+{
+	// Original event time stamp from the event header
+	uint64 EventTimeStamp;
+
+	// The process identifier of the original event
+	uint32 StackProcess;
+	
+	// The thread identifier of the original event
+	uint32 StackThread;
+	
+	// Callstack head
+	size_t Stack0;
+
+	static const byte OPCODE = 32;
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct SampledProfile
+{
+	uint32 InstructionPointer;
+	uint32 ThreadId;
+	uint32 Count;
+
+	static const byte OPCODE = 46;
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// ce1dbfb4-137e-4da6-87b0-3f59aa102cbc 
+DEFINE_GUID(SampledProfileGuid, 0xce1dbfb4, 0x137e, 0x4da6, 0x87, 0xb0, 0x3f, 0x59, 0xaa, 0x10, 0x2c, 0xbc);
+const uint8 SAMPLED_PROFILE_OPCODE = 46;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 {
-	if (eventRecord->EventHeader.EventDescriptor.Opcode != SWITCH_CONTEXT_INSTRUCTION_OPCODE)
+	const byte opcode = eventRecord->EventHeader.EventDescriptor.Opcode;
+
+	if (opcode == CSwitch::OPCODE)
 	{
-		return;
-	}
+		if (sizeof(CSwitch) != eventRecord->UserDataLength)
+			return;
 
-	if (sizeof(CSwitch) != eventRecord->UserDataLength)
+		CSwitch* pSwitchEvent = (CSwitch*)eventRecord->UserData;
+
+		Brofiler::SwitchContextDesc desc;
+
+		desc.reason = pSwitchEvent->OldThreadWaitReason;
+		desc.cpuId = eventRecord->BufferContext.ProcessorNumber;
+		desc.oldThreadId = (uint64)pSwitchEvent->OldThreadId;
+		desc.newThreadId = (uint64)pSwitchEvent->NewThreadId;
+		desc.timestamp = eventRecord->EventHeader.TimeStamp.QuadPart;
+		Core::Get().ReportSwitchContext(desc);
+	}
+	else if (opcode == StackWalk_Event::OPCODE)
 	{
-		return;
+		if (eventRecord->UserData && eventRecord->UserDataLength > 0)
+		{
+			StackWalk_Event* pStackWalkEvent = (StackWalk_Event*)eventRecord->UserData;
+			uint32 count = 1 + (eventRecord->UserDataLength - sizeof(StackWalk_Event)) / sizeof(size_t);
+
+			if (count && pStackWalkEvent->StackThread != 0)
+			{
+				CallstackDesc desc;
+				desc.threadID = pStackWalkEvent->StackThread;
+				desc.timestamp = pStackWalkEvent->EventTimeStamp;
+				desc.callstack = &pStackWalkEvent->Stack0;
+				desc.count = (uint8)count;
+				Core::Get().ReportStackWalk(desc);
+			}
+		}
 	}
-
-	CSwitch* pSwitchEvent = (CSwitch*)eventRecord->UserData;
-
-	Brofiler::SwitchContextDesc desc;
-
-	desc.reason = pSwitchEvent->OldThreadWaitReason;
-	desc.cpuId = eventRecord->BufferContext.ProcessorNumber;
-	desc.oldThreadId = (uint64)pSwitchEvent->OldThreadId;
-	desc.newThreadId = (uint64)pSwitchEvent->NewThreadId;
-	desc.timestamp = eventRecord->EventHeader.TimeStamp.QuadPart;
-	Core::Get().ReportSwitchContext(desc);
+	else if (opcode == SampledProfile::OPCODE)
+	{
+		SampledProfile* pEvent = (SampledProfile*)eventRecord->UserData;
+		(void)pEvent->InstructionPointer;
+	}
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+static ULONG WINAPI OnBufferRecord(_In_ PEVENT_TRACE_LOGFILE Buffer)
+{
+	BRO_UNUSED(Buffer);
+	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const TRACEHANDLE INVALID_TRACEHANDLE = (TRACEHANDLE)-1;
@@ -130,7 +187,8 @@ const TRACEHANDLE INVALID_TRACEHANDLE = (TRACEHANDLE)-1;
 DWORD WINAPI ETW::RunProcessTraceThreadFunction( LPVOID parameter )
 {
 	ETW* etw = (ETW*)parameter;
-	ProcessTrace(&etw->openedHandle, 1, 0, 0);
+	ULONG status = ProcessTrace(&etw->openedHandle, 1, 0, 0);
+	BRO_UNUSED(status);
 	return 0;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -141,16 +199,29 @@ ETW::ETW() : isActive(false), sessionHandle(INVALID_TRACEHANDLE), openedHandle(I
 	sessionProperties =(EVENT_TRACE_PROPERTIES*) malloc(bufferSize);
 }
 
-SchedulerTraceStatus::Type ETW::Start()
+CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads)
 {
 	if (!isActive) 
 	{
+		CaptureStatus::Type res = SchedulerTrace::Start(mode, threads);
+		if (res != CaptureStatus::OK)
+			return res;
+
 		ULONG bufferSize = sizeof(EVENT_TRACE_PROPERTIES) + sizeof(KERNEL_LOGGER_NAME);
 		ZeroMemory(sessionProperties, bufferSize);
 		sessionProperties->Wnode.BufferSize = bufferSize;
 		sessionProperties->LoggerNameOffset = sizeof(EVENT_TRACE_PROPERTIES);
 
-		sessionProperties->EnableFlags = EVENT_TRACE_FLAG_CSWITCH;
+		sessionProperties->EnableFlags = 0;
+
+		if (mode & SWITCH_CONTEXTS)
+			sessionProperties->EnableFlags |= EVENT_TRACE_FLAG_CSWITCH;
+
+		if (mode & STACK_WALK)
+			sessionProperties->EnableFlags |= EVENT_TRACE_FLAG_PROFILE;
+
+		sessionProperties->EnableFlags |= EVENT_TRACE_FLAG_FILE_IO;
+
 		sessionProperties->LogFileMode = EVENT_TRACE_REAL_TIME_MODE;
 
 		sessionProperties->Wnode.Flags = WNODE_FLAG_TRACED_GUID;
@@ -163,43 +234,75 @@ SchedulerTraceStatus::Type ETW::Start()
 		// ERROR_INVALID_PARAMETER(87)
 		// ERROR_BAD_PATHNAME(161)
 		// ERROR_DISK_FULL(112)
-		int retryCount = 2;
-		ULONG status = SchedulerTraceStatus::OK;
+		// ERROR_NO_SUCH_PRIVILEGE(1313)
+		int retryCount = 4;
+		ULONG status = CaptureStatus::OK;
+		HANDLE token = 0;
 
 		while (--retryCount >= 0)
 		{
+			CLASSIC_EVENT_ID sampleEventID;
+			sampleEventID.EventGuid = SampledProfileGuid;
+			sampleEventID.Type = SampledProfile::OPCODE;
+
 			status = StartTrace(&sessionHandle, KERNEL_LOGGER_NAME, sessionProperties);
 
 			switch (status)
 			{
+			case ERROR_NO_SUCH_PRIVILEGE:
+				if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &token))
+				{
+					TOKEN_PRIVILEGES tokenPrivileges;
+					memset(&tokenPrivileges, 0, sizeof(tokenPrivileges));
+					tokenPrivileges.PrivilegeCount = 1;
+					tokenPrivileges.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+					LookupPrivilegeValue(NULL, SE_SYSTEM_PROFILE_NAME, &tokenPrivileges.Privileges[0].Luid);
+
+					AdjustTokenPrivileges(token, FALSE, &tokenPrivileges, 0, (PTOKEN_PRIVILEGES)NULL, 0);
+					CloseHandle(token);
+				}
+				break;
+
 			case ERROR_ALREADY_EXISTS:
 				ControlTrace(0, KERNEL_LOGGER_NAME, sessionProperties, EVENT_TRACE_CONTROL_STOP);
 				break;
 
 			case ERROR_ACCESS_DENIED:
-				return SchedulerTraceStatus::ERR_ACCESS_DENIED;
+				return CaptureStatus::ERR_TRACER_ACCESS_DENIED;
 
 			case ERROR_SUCCESS:
 				retryCount = 0;
 				break;
 
 			default:
-				return SchedulerTraceStatus::FAILED;
+				return CaptureStatus::FAILED;
 			}
 		}
 
 		if (status != ERROR_SUCCESS)
-			return SchedulerTraceStatus::FAILED;
+			return CaptureStatus::FAILED;
 
 		ZeroMemory(&logFile, sizeof(EVENT_TRACE_LOGFILE));
 
 		logFile.LoggerName = KERNEL_LOGGER_NAME;
 		logFile.ProcessTraceMode = (PROCESS_TRACE_MODE_REAL_TIME | PROCESS_TRACE_MODE_EVENT_RECORD | PROCESS_TRACE_MODE_RAW_TIMESTAMP);
 		logFile.EventRecordCallback = OnRecordEvent;
+		logFile.BufferCallback = OnBufferRecord;
+
+		if (mode & STACK_WALK)
+		{
+			CLASSIC_EVENT_ID sampleEventID;
+			sampleEventID.EventGuid = SampledProfileGuid;
+			sampleEventID.Type = SAMPLED_PROFILE_OPCODE;
+
+			status = TraceSetInformation(sessionHandle, TraceStackTracingInfo, &sampleEventID, sizeof(CLASSIC_EVENT_ID));
+			if (status != ERROR_SUCCESS)
+				return CaptureStatus::FAILED;
+		}
 
 		openedHandle = OpenTrace(&logFile);
 		if (openedHandle == INVALID_TRACEHANDLE)
-			return SchedulerTraceStatus::FAILED;
+			return CaptureStatus::FAILED;
 
 		DWORD threadID;
 		processThreadHandle = CreateThread(0, 0, RunProcessTraceThreadFunction, this, 0, &threadID);
@@ -207,11 +310,14 @@ SchedulerTraceStatus::Type ETW::Start()
 		isActive = true;
 	}
 
-	return SchedulerTraceStatus::OK;
+	return CaptureStatus::OK;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool ETW::Stop()
 {
+	if (!SchedulerTrace::Stop())
+		return false;
+
 	if (isActive)
 	{
 		ULONG controlTraceResult = ControlTrace(openedHandle, KERNEL_LOGGER_NAME, sessionProperties, EVENT_TRACE_CONTROL_STOP);
@@ -239,14 +345,12 @@ ETW::~ETW()
 	delete sessionProperties;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-ISchedulerTracer* ISchedulerTracer::Get()
+SchedulerTrace* SchedulerTrace::Get()
 {
 	static ETW etwTracer;
 	return &etwTracer;
 }
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 #endif

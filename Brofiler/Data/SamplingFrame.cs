@@ -34,7 +34,7 @@ namespace Profiler.Data
 	}
 
 	public class SamplingDescription : Description
-  {
+	{
 		private bool isHooked = false;
 		public bool IsHooked
 		{
@@ -49,33 +49,38 @@ namespace Profiler.Data
 			}
 		}
 
-    public UInt64 Address { get; private set; }
-    public String Module { get; private set; }
+		public UInt64 Address { get; private set; }
+		public String Module { get; private set; }
 
-    static char[] slashDelimetr = { '\\', '/' };
-    public String ModuleShortName
-    {
-      get
-      {
-        int index = Module.LastIndexOfAny(slashDelimetr);
-        return index != -1 ? Module.Substring(index + 1) : Module;
-      }
-    }
+		static char[] slashDelimetr = { '\\', '/' };
+		public String ModuleShortName
+		{
+			get
+			{
+				int index = Module.LastIndexOfAny(slashDelimetr);
+				return index != -1 ? Module.Substring(index + 1) : Module;
+			}
+		}
 
-    public static SamplingDescription UnresolvedDescription = new SamplingDescription() { Module = "Unresolved", FullName = "Unresolved", Address = 0, Path = new FileLine(String.Empty, 0) };
+		public static SamplingDescription UnresolvedDescription = new SamplingDescription() { Module = "Unresolved", FullName = "Unresolved", Address = 0, Path = FileLine.Empty };
 
-    public static SamplingDescription Create(BinaryReader reader)
-    {
-      SamplingDescription description = new SamplingDescription();
-      description.Address = reader.ReadUInt64();
-      description.Module = System.Text.Encoding.Unicode.GetString(reader.ReadBytes(reader.ReadInt32()));
-      description.FullName = System.Text.Encoding.Unicode.GetString(reader.ReadBytes(reader.ReadInt32()));
+		public static SamplingDescription Create(BinaryReader reader)
+		{
+			SamplingDescription description = new SamplingDescription();
+			description.Address = reader.ReadUInt64();
+			description.Module = System.Text.Encoding.Unicode.GetString(reader.ReadBytes(reader.ReadInt32()));
+			description.FullName = System.Text.Encoding.Unicode.GetString(reader.ReadBytes(reader.ReadInt32()));
 
-      String file = System.Text.Encoding.Unicode.GetString(reader.ReadBytes(reader.ReadInt32()));
-      description.Path = new FileLine(file, reader.ReadInt32());
+			String file = System.Text.Encoding.Unicode.GetString(reader.ReadBytes(reader.ReadInt32()));
+			description.Path = new FileLine(file, reader.ReadInt32());
 
-      return description;
-    }
+			return description;
+		}
+
+		public static SamplingDescription Create(UInt64 address)
+		{
+			return new SamplingDescription() { Module = "Unresolved", FullName = String.Format("0x{0:x}", address), Address = address, Path = FileLine.Empty };
+		}
 
 		public override Object GetSharedKey()
 		{
@@ -83,137 +88,159 @@ namespace Profiler.Data
 		}
 	}
 
-  public class SamplingDescriptionBoard
-  {
-    public Dictionary<UInt64, SamplingDescription> Descriptions { get; private set; }
+	public abstract class ISamplingBoard
+	{
+		public abstract SamplingDescription GetDescription(UInt64 address);
+	}
 
-    public static SamplingDescriptionBoard Create(BinaryReader reader)
-    {
-      SamplingDescriptionBoard board = new SamplingDescriptionBoard();
-      board.Descriptions = new Dictionary<UInt64, SamplingDescription>();
+	public class SamplingDescriptionBoard : ISamplingBoard
+	{
+		public Dictionary<UInt64, SamplingDescription> Descriptions { get; private set; }
 
-      uint count = reader.ReadUInt32();
-      for (uint i = 0; i < count; ++i)
-      {
-        SamplingDescription desc = SamplingDescription.Create(reader);
-        board.Descriptions[desc.Address] = desc;
-      }
+		public static SamplingDescriptionBoard Create(BinaryReader reader)
+		{
+			SamplingDescriptionBoard board = new SamplingDescriptionBoard();
+			board.Descriptions = new Dictionary<UInt64, SamplingDescription>();
 
-      return board;
-    }
-  }
+			uint count = reader.ReadUInt32();
+			for (uint i = 0; i < count; ++i)
+			{
+				SamplingDescription desc = SamplingDescription.Create(reader);
+				board.Descriptions[desc.Address] = desc;
+			}
 
-  public class SamplingNode : TreeNode<SamplingDescription>
-  {
-    public UInt64 Address { get; private set; }
-    public override String Name { get { return Description.Name; } }
-    
-    // Participated in sampling process
-    public uint Passed { get; private set; }
+			return board;
+		}
 
-    // Stopped at this function
-    public uint Sampled
-    {
-      get
-      {
-        uint total = Passed;
-        foreach (SamplingNode child in Children)
-        {
-          total -= child.Passed;
-        }
-        return total;
-      }
-    }
+		public override SamplingDescription GetDescription(ulong address)
+		{
+			SamplingDescription result = null;
+			return Descriptions.TryGetValue(address, out result) ? result : SamplingDescription.UnresolvedDescription;
+		}
+	}
 
-    //public SamplingNode Parent { get; private set; }
+	public class DummySamplingBoard : ISamplingBoard
+	{
+		public override SamplingDescription GetDescription(ulong address)
+		{
+			return SamplingDescription.Create(address);
+		}
 
-    SamplingNode(SamplingNode root, SamplingDescription desc, UInt64 address, UInt32 passed)
-      : base(root, desc, passed)
-    {
-      Passed = passed;
-    }
+		public static DummySamplingBoard Instance = new DummySamplingBoard();
+	}
 
-    public static SamplingNode Create(BinaryReader reader, SamplingDescriptionBoard board, SamplingNode root)
-    {
-      UInt64 address = reader.ReadUInt64();
+	public class SamplingNode : TreeNode<SamplingDescription>
+	{
+		public UInt64 Address { get; private set; }
+		public override String Name { get { return Description.Name; } }
 
-      SamplingDescription desc = null;
-      if (!board.Descriptions.TryGetValue(address, out desc))
-        desc = SamplingDescription.UnresolvedDescription;
+		// Participated in sampling process
+		public uint Passed { get; private set; }
 
-      UInt32 passed = reader.ReadUInt32();
+		// Stopped at this function
+		public uint Sampled
+		{
+			get
+			{
+				uint total = Passed;
+				foreach (SamplingNode child in Children)
+				{
+					total -= child.Passed;
+				}
+				return total;
+			}
+		}
 
-      SamplingNode node = new SamplingNode(root, desc, address, passed);
+		//public SamplingNode Parent { get; private set; }
 
-      UInt32 childrenCount = reader.ReadUInt32();
-      for (UInt32 i = 0; i < childrenCount; ++i)
-        node.AddChild(SamplingNode.Create(reader, board, root != null ? root : node));
+		SamplingNode(SamplingNode root, SamplingDescription desc, UInt64 address, UInt32 passed)
+			: base(root, desc, passed)
+		{
+			Passed = passed;
+		}
 
-      return node;
-    }
-  }
+		public static SamplingNode Create(BinaryReader reader, SamplingDescriptionBoard board, SamplingNode root)
+		{
+			UInt64 address = reader.ReadUInt64();
 
-  public class SamplingFrame : Frame
-  {
-    public override DataResponse.Type ResponseType { get { return DataResponse.Type.SamplingFrame; } }
+			SamplingDescription desc = null;
+			if (!board.Descriptions.TryGetValue(address, out desc))
+				desc = SamplingDescription.UnresolvedDescription;
 
-    public SamplingDescriptionBoard DescriptionBoard { get; private set; }
-    public BinaryReader Reader { get; private set; }
+			UInt32 passed = reader.ReadUInt32();
 
-    private Board<SamplingBoardItem, SamplingDescription, SamplingNode> board;
-    public Board<SamplingBoardItem, SamplingDescription, SamplingNode> Board
-    {
-      get
-      {
-        Load();
-        return board;
-      }
-    }
+			SamplingNode node = new SamplingNode(root, desc, address, passed);
 
-    private const int MAX_ROOT_SKIP_DEPTH = 3;
-    private SamplingNode root = null;
-    public SamplingNode Root
-    {
-      get
-      {
-        Load();
+			UInt32 childrenCount = reader.ReadUInt32();
+			for (UInt32 i = 0; i < childrenCount; ++i)
+				node.AddChild(SamplingNode.Create(reader, board, root != null ? root : node));
 
-        SamplingNode result = root;
-        int depth = 0;
+			return node;
+		}
+	}
 
-        while (depth < MAX_ROOT_SKIP_DEPTH && result.Children.Count == 1 && (result.Children[0] as SamplingNode).Sampled == 0)
-        {
-          ++depth;
-          result = result.Children[0] as SamplingNode;
-        }
+	public class SamplingFrame : Frame
+	{
+		public override DataResponse.Type ResponseType { get { return DataResponse.Type.SamplingFrame; } }
 
-        return result;
-      }
-    }
+		public SamplingDescriptionBoard DescriptionBoard { get; private set; }
+		public BinaryReader Reader { get; private set; }
+
+		private Board<SamplingBoardItem, SamplingDescription, SamplingNode> board;
+		public Board<SamplingBoardItem, SamplingDescription, SamplingNode> Board
+		{
+			get
+			{
+				Load();
+				return board;
+			}
+		}
+
+		private const int MAX_ROOT_SKIP_DEPTH = 3;
+		private SamplingNode root = null;
+		public SamplingNode Root
+		{
+			get
+			{
+				Load();
+
+				SamplingNode result = root;
+				int depth = 0;
+
+				while (depth < MAX_ROOT_SKIP_DEPTH && result.Children.Count == 1 && (result.Children[0] as SamplingNode).Sampled == 0)
+				{
+					++depth;
+					result = result.Children[0] as SamplingNode;
+				}
+
+				return result;
+			}
+		}
 
 		public uint SampleCount { get; private set; }
 
-    public override string Description { get { return String.Format("{0} Sampling Data", SampleCount); } }
-    public override double Duration { get { return 130.0; } }
+		public override string Description { get { return String.Format("{0} Sampling Data", SampleCount); } }
+		public override double Duration { get { return 130.0; } }
 
-    public override void Load()
-    {
-      if (!IsLoaded)
-      {
-        DescriptionBoard = SamplingDescriptionBoard.Create(Reader);
-        root = SamplingNode.Create(Reader, DescriptionBoard, null);
-        root.CalculateRecursiveExcludeFlag(new Dictionary<Object, int>());
+		public override void Load()
+		{
+			if (!IsLoaded)
+			{
+				DescriptionBoard = SamplingDescriptionBoard.Create(Reader);
+				root = SamplingNode.Create(Reader, DescriptionBoard, null);
+				root.CalculateRecursiveExcludeFlag(new Dictionary<Object, int>());
 
-        board = new Board<SamplingBoardItem, SamplingDescription, SamplingNode>(root);
+				board = new Board<SamplingBoardItem, SamplingDescription, SamplingNode>(root);
 
-        IsLoaded = true;
-      }
-    }
+				IsLoaded = true;
+			}
+		}
 
-    public SamplingFrame(DataResponse response) : base(response)
-    {
-      Reader = response.Reader;
-	  SampleCount = Reader.ReadUInt32();
-    }
-  }
+		public SamplingFrame(DataResponse response)
+			: base(response)
+		{
+			Reader = response.Reader;
+			SampleCount = Reader.ReadUInt32();
+		}
+	}
 }

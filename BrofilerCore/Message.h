@@ -5,7 +5,7 @@
 namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-static const uint32 NETWORK_PROTOCOL_VERSION = 9;
+static const uint32 NETWORK_PROTOCOL_VERSION = 10;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct DataResponse
 {
@@ -18,6 +18,8 @@ struct DataResponse
 		NullFrame,						// Last Fame Mark
 		ReportProgress,					// Report Current Progress
 		Handshake,						// Handshake Response
+		SymbolPack,						// A pack full of resolved Symbols
+		CallstackPack,					// Callstack Pack
 	};
 
 	uint32 version;

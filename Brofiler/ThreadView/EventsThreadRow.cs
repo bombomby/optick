@@ -14,11 +14,14 @@ namespace Profiler
         ThreadData EventData { get; set; }
         int MaxDepth { get; set; }
 
-        Mesh Mesh { get; set; }
-        Mesh SyncMesh { get; set; }
+		Mesh Mesh { get; set; }
+		Mesh SyncMesh { get; set; }
+		Mesh CallstackMesh { get; set; }
 
         double SyncLineHeight = 4.0 * RenderSettings.dpiScaleY;
         static Color SynchronizationColor = Colors.OrangeRed;
+
+		static Color CallstackColor = Colors.Black;
 
         EventFilter Filter { get; set; }
         Mesh FilterMesh;
@@ -87,6 +90,28 @@ namespace Profiler
 
             Mesh = builder.Freeze(canvas.RenderDevice);
             SyncMesh = syncBuilder.Freeze(canvas.RenderDevice);
+
+			if (EventData.Callstacks != null && EventData.Callstacks.Count > 0)
+			{
+				DirectX.DynamicMesh callstackBuilder = canvas.CreateMesh();
+				callstackBuilder.Geometry = DirectX.Mesh.GeometryType.Lines;
+
+				foreach (Data.Callstack callstack in EventData.Callstacks)
+				{
+					//long tick = Durable.MsToTick(0.5);
+					//Durable durable = new Durable(callstack.Start - tick, callstack.Start + tick);
+					//Interval interval = scroll.TimeToUnit(durable);
+					
+					//callstackBuilder.AddLine(new Point(interval.Left, 1), new Point(interval.Left + interval.Width * 0.5, 0.5), CallstackColor);
+					//callstackBuilder.AddLine(new Point(interval.Right, 1), new Point(interval.Left + interval.Width * 0.5, 0.5), CallstackColor);
+
+					double unit = scroll.TimeToUnit(callstack);
+					callstackBuilder.AddLine(new Point(unit, 1), new Point(unit, 0.5), CallstackColor);
+				}
+
+				CallstackMesh = callstackBuilder.Freeze(canvas.RenderDevice);
+			}
+
         }
 
         public override double Height { get { return RenderParams.BaseHeight * MaxDepth; } }
@@ -105,6 +130,12 @@ namespace Profiler
                 Mesh.World = world;
                 canvas.Draw(Mesh);
             }
+
+			if (CallstackMesh != null && scroll.DrawCallstacks)
+			{
+				CallstackMesh.World = world;
+				canvas.Draw(CallstackMesh);
+			}
 
             if (FilterMesh != null)
             {
