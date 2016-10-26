@@ -1,34 +1,22 @@
 #pragma once
 
-#if USE_BROFILER_SAMPLING
+
 #include "Common.h"
 #include <string>
 #include <unordered_map>
 #include <array>
 #include "Serialization.h"
+#include "../SymbolEngine.h"
 
 namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct Symbol
-{
-	uintptr_t address;
-	uintptr_t offset;
-	std::wstring module;
-	std::wstring file;
-	std::wstring function;
-	uint32 line;
-	Symbol() : line(0), offset(0), address(0) {}
-};
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-OutputDataStream& operator<<(OutputDataStream& os, const Symbol * const symbol);
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef std::array<uintptr_t, 512> CallStackBuffer;
-typedef std::vector<uintptr_t> CallStack;
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-typedef std::unordered_map<uintptr_t, Symbol> SymbolCache;
+typedef std::unordered_map<uint64, Symbol> SymbolCache;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class SymEngine
+class SymEngine : public SymbolEngine
 {
 	MW_HANDLE hProcess;
 	SymbolCache cache;
@@ -47,12 +35,9 @@ public:
 	void Close();
 
 	// Get Symbol from PDB file
-	const Symbol * const GetSymbol(uintptr_t dwAddress);
-
-	// Collects Callstack
-	uint32 GetCallstack(MW_HANDLE hThread, MW_CONTEXT& context, CallStackBuffer& callstack);
+	virtual const Symbol * const GetSymbol(uint64 dwAddress) override;
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
-#endif
+

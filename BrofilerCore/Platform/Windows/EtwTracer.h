@@ -1,8 +1,6 @@
 #pragma once
 
-#include "Brofiler.h"
-
-#ifdef BRO_WINDOWS
+#ifdef _WIN32
 
 #include "..\SchedulerTrace.h"
 #include "ETW.h"

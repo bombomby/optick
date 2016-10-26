@@ -1,6 +1,6 @@
+#ifdef _WIN32
 #include "Common.h"
 
-#if USE_BROFILER_SAMPLING
 
 #include "Common.h"
 #include "Event.h"
@@ -12,52 +12,6 @@
 
 namespace Brofiler
 {
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct CallStackTreeNode
-{
-	DWORD64 dwArddress;
-	uint32 invokeCount;
-
-	std::list<CallStackTreeNode> children;
-
-	CallStackTreeNode()									: dwArddress(0), invokeCount(0) {}
-	CallStackTreeNode(DWORD64 address)	: dwArddress(address), invokeCount(0) {} 
-
-	bool Merge(const CallStack& callstack, size_t index)
-	{
-		++invokeCount;
-		if (index == 0)
-			return true;
-
-		// I suppose, that usually sampling function has only several children.. so linear search will be fast enough
-		DWORD64 address = callstack[index];
-		for (auto it = children.begin(); it != children.end(); ++it)
-			if (it->dwArddress == address)
-				return it->Merge(callstack, index - 1);
-
-		// Didn't find node => create one
-		children.push_back(CallStackTreeNode(address));
-		return children.back().Merge(callstack, index - 1); 
-	}
-
-	void CollectAddresses(std::unordered_set<DWORD64>& addresses) const
-	{
-		addresses.insert(dwArddress);
-		for each (const auto& node in children)
-			node.CollectAddresses(addresses);
-	}
-
-	OutputDataStream& Serialize(OutputDataStream& stream) const
-	{
-		stream << (uint64)dwArddress << invokeCount;
-
-		stream << (uint32)children.size();
-		for each (const CallStackTreeNode& node in children)
-			node.Serialize(stream);
-
-		return stream;
-	}
-};
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Sampler::StopSampling()
 {
@@ -170,7 +124,7 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 				// Check scope again because it is possible to leave sampling scope while trying to suspend main thread
 				if (storage->isSampling.Load() && GetThreadContext(handle, &context))
 				{
-					count = Core::Get().symEngine.GetCallstack(handle, context, buffer);
+					count = GetCallstack(handle, context, buffer);
 				}
 
 				ClearStackContext(context);
@@ -193,40 +147,63 @@ DWORD WINAPI Sampler::AsyncUpdate(LPVOID lpParam)
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-OutputDataStream& Sampler::Serialize(OutputDataStream& stream)
+uint32 Sampler::GetCallstack(HANDLE hThread, CONTEXT& context, CallStackBuffer& callstack) 
 {
-	BRO_VERIFY(!IsActive(), "Can't serialize active Sampler!", return stream);
+	// We can't initialize dbghelp.dll here => http://microsoft.public.windbg.narkive.com/G2WkSt2k/stackwalk64-performance-problems
+	// Otherwise it will be 5x times slower
+	// Init();
 
-	stream << (uint32)callstacks.size();
+	STACKFRAME64 stackFrame;
+	memset(&stackFrame, 0, sizeof(STACKFRAME64));
+	DWORD machineType;
 
-	CallStackTreeNode tree;
+	stackFrame.AddrPC.Mode = AddrModeFlat;
+	stackFrame.AddrFrame.Mode = AddrModeFlat;
+	stackFrame.AddrStack.Mode = AddrModeFlat;
 
-	Core::Get().DumpProgress("Merging CallStacks...");
+#ifdef _M_IX86
+	machineType = IMAGE_FILE_MACHINE_I386;
+	stackFrame.AddrPC.Offset = context.Eip;
+	stackFrame.AddrFrame.Offset = context.Ebp;
+	stackFrame.AddrStack.Offset = context.Esp;
+#elif _M_X64
+	machineType = IMAGE_FILE_MACHINE_AMD64;
+	stackFrame.AddrPC.Offset = context.Rip;
+	stackFrame.AddrFrame.Offset = context.Rsp;
+	stackFrame.AddrStack.Offset = context.Rsp;
+#elif _M_IA64
+	machineType = IMAGE_FILE_MACHINE_IA64;
+	stackFrame.AddrPC.Offset = context.StIIP;
+	stackFrame.AddrFrame.Offset = context.IntSp;
+	stackFrame.AddrStack.Offset = context.IntSp;
+	stackFrame.AddrBStore.Offset = context.RsBSP;
+	stackFrame.AddrBStore.Mode = AddrModeFlat;
+#else
+#error "Platform not supported!"
+#endif
 
-	for each (const CallStack& callstack in callstacks)
-		if (!callstack.empty())
-			tree.Merge(callstack, callstack.size() - 1);
+	uint32 index = 0;
+	while (	StackWalk64(machineType, GetCurrentProcess(), hThread, &stackFrame, &context, nullptr, &SymFunctionTableAccess64, &SymGetModuleBase64, nullptr) )
+	{
+		DWORD64 dwAddress = stackFrame.AddrPC.Offset;
+		if (!dwAddress)
+			break;
 
-	std::unordered_set<DWORD64> addresses;
-	tree.CollectAddresses(addresses);
+		if (index == callstack.size())
+			return 0; // Too long callstack - possible error, let's skip it
 
-	Core::Get().DumpProgress("Resolving Symbols...");
+		if (index > 0 && callstack[index - 1] == dwAddress)
+			continue;
 
-	SymEngine& symEngine = Core::Get().symEngine;
+		callstack[index] = static_cast<uintptr_t>(dwAddress);
+		++index;
+	}
 
-	std::vector<const Symbol*> symbols;
-	for each (DWORD64 address in addresses)
-		if (const Symbol* symbol = symEngine.GetSymbol(static_cast<uintptr_t>(address)))
-			symbols.push_back(symbol);
-
-	stream << symbols;
-
-	tree.Serialize(stream);
-
-	return stream;
+	return index;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 bool Sampler::IsSamplingScope() const
 {
 	for each (const ThreadEntry* entry in targetThreads)
@@ -247,7 +224,18 @@ size_t Sampler::GetCollectedCount() const
 {
 	return callstacks.size();
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+SamplingProfiler* SamplingProfiler::Get()
+{
+	static Sampler winSamplingProfiler;
+	return &winSamplingProfiler;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
+
+
 #endif
+

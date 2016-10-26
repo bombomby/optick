@@ -135,7 +135,6 @@ public:
 		typedef T& reference;
 		typedef T* pointer;
 		typedef int difference_type;
-		typedef std::forward_iterator_tag iterator_category;
 		const_iterator(const Chunk* ptr, size_t index) : chunkPtr(ptr), chunkIndex(index) { }
 		self_type operator++() 
 		{
@@ -148,7 +147,7 @@ public:
 			advance();
 			return *this; 
 		}
-		const reference operator*() { return (reference)chunkPtr->data[chunkIndex]; }
+		reference operator*() { return (reference)chunkPtr->data[chunkIndex]; }
 		const pointer operator->() { return &chunkPtr->data[chunkIndex]; }
 		bool operator==(const self_type& rhs) { return (chunkPtr == rhs.chunkPtr) && (chunkIndex == rhs.chunkIndex); }
 		bool operator!=(const self_type& rhs) { return (chunkPtr != rhs.chunkPtr) || (chunkIndex != rhs.chunkIndex); }

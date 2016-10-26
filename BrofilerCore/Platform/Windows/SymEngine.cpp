@@ -1,7 +1,6 @@
+#ifdef _WIN32
 #include "Common.h"
 #include "SymEngine.h"
-
-#if USE_BROFILER_SAMPLING
 
 #include <DbgHelp.h>
 #pragma comment( lib, "DbgHelp.Lib" )
@@ -31,7 +30,7 @@ SymEngine::~SymEngine()
 	Close();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-const Symbol * const SymEngine::GetSymbol(uintptr_t address)
+const Symbol * const SymEngine::GetSymbol(uint64 address)
 {
 	if (address == 0)
 		return nullptr;
@@ -138,69 +137,16 @@ void SymEngine::Close()
 		needRestorePreviousSettings = false;
 	}
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-uint32 SymEngine::GetCallstack(HANDLE hThread, CONTEXT& context, CallStackBuffer& callstack) 
+
+//////////////////////////////////////////////////////////////////////////
+SymbolEngine* SymbolEngine::Get()
 {
-	// We can't initialize dbghelp.dll here => http://microsoft.public.windbg.narkive.com/G2WkSt2k/stackwalk64-performance-problems
-	// Otherwise it will be 5x times slower
-	// Init();
-
-	STACKFRAME64 stackFrame;
-	memset(&stackFrame, 0, sizeof(STACKFRAME64));
-	DWORD machineType;
-
-	stackFrame.AddrPC.Mode = AddrModeFlat;
-	stackFrame.AddrFrame.Mode = AddrModeFlat;
-	stackFrame.AddrStack.Mode = AddrModeFlat;
-
-#ifdef _M_IX86
-	machineType = IMAGE_FILE_MACHINE_I386;
-	stackFrame.AddrPC.Offset = context.Eip;
-	stackFrame.AddrFrame.Offset = context.Ebp;
-	stackFrame.AddrStack.Offset = context.Esp;
-#elif _M_X64
-	machineType = IMAGE_FILE_MACHINE_AMD64;
-	stackFrame.AddrPC.Offset = context.Rip;
-	stackFrame.AddrFrame.Offset = context.Rsp;
-	stackFrame.AddrStack.Offset = context.Rsp;
-#elif _M_IA64
-	machineType = IMAGE_FILE_MACHINE_IA64;
-	stackFrame.AddrPC.Offset = context.StIIP;
-	stackFrame.AddrFrame.Offset = context.IntSp;
-	stackFrame.AddrStack.Offset = context.IntSp;
-	stackFrame.AddrBStore.Offset = context.RsBSP;
-	stackFrame.AddrBStore.Mode = AddrModeFlat;
-#else
-#error "Platform not supported!"
-#endif
-
-	uint32 index = 0;
-	while (	StackWalk64(machineType, GetCurrentProcess(), hThread, &stackFrame, &context, nullptr, &SymFunctionTableAccess64, &SymGetModuleBase64, nullptr) )
-	{
-		DWORD64 dwAddress = stackFrame.AddrPC.Offset;
-		if (!dwAddress)
-			break;
-
-		if (index == callstack.size())
-			return 0; // Too long callstack - possible error, let's skip it
-
-		if (index > 0 && callstack[index - 1] == dwAddress)
-			continue;
-
-		callstack[index] = static_cast<uintptr_t>(dwAddress);
-		++index;
-	}
-
-	return index;
+	static SymEngine pdbSymbolEngine;
+	return &pdbSymbolEngine;
 }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-OutputDataStream& operator<<(OutputDataStream& os, const Symbol * const symbol)
-{
-	BRO_VERIFY(symbol, "Can't serialize NULL symbol!", return os);
-	return os << (uint64)symbol->address << symbol->module << symbol->function << symbol->file << symbol->line;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 }
 
 #endif
+

@@ -1,12 +1,10 @@
-#include "Brofiler.h"
-
-#ifdef BRO_WINDOWS
+#ifdef _WIN32
 
 #include <windows.h>
 #include <vector>
 #include <MTTypes.h>
 #include "EtwTracer.h"
-#include "Core.h"
+#include "../../Core.h"
 
 namespace Brofiler
 {

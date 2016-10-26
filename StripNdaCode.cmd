@@ -1,7 +1,7 @@
 rd /Q /S "./Bin"
 rd /Q /S "./ThirdParty/DevkitsInterop"
 rd /Q /S "./ThirdParty/TaskScheduler/Scheduler/Include/Platform/Orbis"
-rd /Q /S "./BrofilerCore/SchedulerTrace/PS4"
+rd /Q /S "./BrofilerCore/Platform/PS4"
 
 rd /Q /S "./Build"
 sunifdef.exe --replace --recurse --filter cs --discard drop --undef NDA_CODE_SECTION ./Brofiler
