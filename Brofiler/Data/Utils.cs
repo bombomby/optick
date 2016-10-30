@@ -10,7 +10,7 @@ namespace Profiler.Data
     {
         public static int BinarySearchClosestIndex<T>(List<T> frames, long value) where T : ITick
         {
-            if (frames.Count == 0)
+            if (frames == null || frames.Count == 0)
                 return -1;
 
             int left = 0;
@@ -55,7 +55,7 @@ namespace Profiler.Data
             int left = BinarySearchClosestIndex(frames, interval.Start);
             int right = BinarySearchClosestIndex(frames, interval.Finish);
 
-            for (int i = left; i <= right; ++i)
+            for (int i = left; i <= right && i != -1; ++i)
             {
                 action(frames[i]);
             }
@@ -66,7 +66,7 @@ namespace Profiler.Data
             int left = BinarySearchClosestIndex(frames, interval.Start);
             int right = BinarySearchClosestIndex(frames, interval.Finish);
 
-            for (int i = left; i <= right; ++i)
+            for (int i = left; i <= right && i != -1; ++i)
             {
                 if (interval.Intersect(frames[i].Start))
                     action(frames[i]);
