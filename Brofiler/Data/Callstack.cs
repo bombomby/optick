@@ -44,7 +44,8 @@ namespace Profiler.Data
 					result.CallstackMap.Add(threadID, callstacks);
 				}
 
-				callstacks.Add(callstack);
+                callstack.Reverse();
+                callstacks.Add(callstack);
 
 				i += (3 + count);
             }

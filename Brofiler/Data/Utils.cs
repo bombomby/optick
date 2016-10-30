@@ -60,5 +60,18 @@ namespace Profiler.Data
                 action(frames[i]);
             }
         }
+
+        public static void ForEachInsideIntervalStrict<T>(List<T> frames, Durable interval, Action<T> action) where T : ITick
+        {
+            int left = BinarySearchClosestIndex(frames, interval.Start);
+            int right = BinarySearchClosestIndex(frames, interval.Finish);
+
+            for (int i = left; i <= right; ++i)
+            {
+                if (interval.Intersect(frames[i].Start))
+                    action(frames[i]);
+            }
+        }
+
     }
 }

@@ -77,14 +77,14 @@ namespace Profiler
 			{
 				focusRange = args.Node.Entry;
 			}
-			else
+			else if (args.Tick != null)
 			{
-				if (args.Tick != null)
-				{
-					focusRange = new Durable(args.Tick.Start, args.Tick.Start + 1 );
-				}
+				focusRange = new Durable(args.Tick.Start, args.Tick.Start + 1 );
 			}
-
+            else if (args.Frame is EventFrame)
+            {
+                focusRange = (args.Frame as EventFrame).Header;
+            }
 
             Data.Frame frame = args.Frame;
             foreach (var tab in frameTabs.Items)

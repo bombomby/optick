@@ -16,11 +16,15 @@ namespace Profiler
 
 		Mesh Mesh { get; set; }
 		Mesh SyncMesh { get; set; }
-		Mesh CallstackMesh { get; set; }
+		DynamicMesh CallstackMeshPolys { get; set; }
+        DynamicMesh CallstackMeshLines { get; set; }
 
         double SyncLineHeight = 4.0 * RenderSettings.dpiScaleY;
         static Color SynchronizationColor = Colors.OrangeRed;
         static Color SynchronizationColorUser = Colors.Yellow;
+
+        double CallstackMarkerSize = 8.0 * RenderSettings.dpiScaleY;
+        double CallstackMarkerOffset = -1.5 * RenderSettings.dpiScaleY;
 
         struct IntPair
         {
@@ -34,7 +38,7 @@ namespace Profiler
             return false;
         }
 
-		static Color CallstackColor = Colors.Black;
+		static Color CallstackColor = Colors.Red;
 
         EventFilter Filter { get; set; }
         Mesh FilterMesh;
@@ -181,27 +185,10 @@ namespace Profiler
             Mesh = builder.Freeze(canvas.RenderDevice);
             SyncMesh = syncBuilder.Freeze(canvas.RenderDevice);
 
-			if (EventData.Callstacks != null && EventData.Callstacks.Count > 0)
-			{
-				DirectX.DynamicMesh callstackBuilder = canvas.CreateMesh();
-				callstackBuilder.Geometry = DirectX.Mesh.GeometryType.Lines;
+			CallstackMeshPolys = canvas.CreateMesh();
 
-				foreach (Data.Callstack callstack in EventData.Callstacks)
-				{
-					//long tick = Durable.MsToTick(0.5);
-					//Durable durable = new Durable(callstack.Start - tick, callstack.Start + tick);
-					//Interval interval = scroll.TimeToUnit(durable);
-					
-					//callstackBuilder.AddLine(new Point(interval.Left, 1), new Point(interval.Left + interval.Width * 0.5, 0.5), CallstackColor);
-					//callstackBuilder.AddLine(new Point(interval.Right, 1), new Point(interval.Left + interval.Width * 0.5, 0.5), CallstackColor);
-
-					double unit = scroll.TimeToUnit(callstack);
-					callstackBuilder.AddLine(new Point(unit, 1), new Point(unit, 0.5), CallstackColor);
-				}
-
-				CallstackMesh = callstackBuilder.Freeze(canvas.RenderDevice);
-			}
-
+            CallstackMeshLines = canvas.CreateMesh();
+            CallstackMeshLines.Geometry = Mesh.GeometryType.Lines;
         }
 
         public override double Height { get { return RenderParams.BaseHeight * MaxDepth; } }
@@ -221,12 +208,6 @@ namespace Profiler
                 canvas.Draw(Mesh);
             }
 
-			if (CallstackMesh != null && scroll.DrawCallstacks)
-			{
-				CallstackMesh.World = world;
-				canvas.Draw(CallstackMesh);
-			}
-
             if (FilterMesh != null)
             {
                 FilterMesh.World = world;
@@ -237,6 +218,34 @@ namespace Profiler
             {
                 SyncMesh.World = world;
                 canvas.Draw(SyncMesh);
+            }
+
+            if (CallstackMeshPolys != null && CallstackMeshLines != null && scroll.DrawCallstacks)
+            {
+                double unitWidth = scroll.PixelToUnitLength(CallstackMarkerSize * 0.5);
+                double unitHeight = (CallstackMarkerSize / RenderParams.BaseHeight) / MaxDepth;
+                double offset = (CallstackMarkerOffset / RenderParams.BaseHeight) / MaxDepth;
+
+                Data.Utils.ForEachInsideInterval(EventData.Callstacks, scroll.ViewTime, callstack =>
+                {
+                    double center = scroll.TimeToUnit(callstack);
+
+                    Point a = new Point(center - unitWidth, offset);
+                    Point b = new Point(center, offset + unitHeight);
+                    Point c = new Point(center + unitWidth, offset);
+
+                    CallstackMeshPolys.AddTri(a, b, c, CallstackColor);
+                    CallstackMeshLines.AddTri(a, b, c, Colors.Black);
+                });
+
+                CallstackMeshPolys.Update(canvas.RenderDevice);
+                CallstackMeshLines.Update(canvas.RenderDevice);
+
+                CallstackMeshPolys.World = world;
+                CallstackMeshLines.World = world;
+
+                canvas.DrawLater(CallstackMeshPolys);
+                canvas.DrawLater(CallstackMeshLines);
             }
 
             Data.Utils.ForEachInsideInterval(EventData.Events, scroll.ViewTime, frame =>
@@ -469,7 +478,7 @@ namespace Profiler
 
         public override void ApplyFilter(DirectXCanvas canvas, ThreadScroll scroll, HashSet<EventDescription> descriptions)
         {
-            Filter = EventFilter.Create(Description, EventData, descriptions);
+            Filter = EventFilter.Create(EventData, descriptions);
 
             if (Filter != null)
             {

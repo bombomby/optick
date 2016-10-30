@@ -191,7 +191,7 @@ namespace Profiler
 
         public delegate void LoadedEventHandler();
 
-        void Load(ThreadDescription description, ThreadData data)
+        void Load(ThreadData data)
         {
             data.Events.ForEach(frame =>
             {
@@ -217,13 +217,13 @@ namespace Profiler
         }
 
         
-        public static EventFilter Create(ThreadDescription description, ThreadData data, HashSet<EventDescription> descriptions)
+        public static EventFilter Create(ThreadData data, HashSet<EventDescription> descriptions)
         {
             if (descriptions == null)
                 return null;
 
             EventFilter result = new EventFilter() { Descriptions = descriptions };
-            result.Load(description, data);
+            result.Load(data);
             return result;
         }
     }

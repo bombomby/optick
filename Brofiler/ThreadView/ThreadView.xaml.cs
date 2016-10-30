@@ -29,7 +29,6 @@ namespace Profiler
         FrameGroup group;
 
 		ThreadScroll scroll = new ThreadScroll();
-		//ThreadScroll scroll = new ThreadScroll() { DrawCallstacks = true };
         List<ThreadRow> rows = new List<ThreadRow>();
         Dictionary<int, ThreadRow> id2row = new Dictionary<int, ThreadRow>();
 
@@ -435,5 +434,11 @@ namespace Profiler
         }
 
         List<Selection> SelectionList = new List<Selection>();
+
+        private void ShowCallstacksButton_Click(object sender, RoutedEventArgs e)
+        {
+            scroll.DrawCallstacks = ShowCallstacksButton.IsChecked ?? false;
+            UpdateSurface();
+        }
     }
 }
