@@ -17,7 +17,12 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
-        <Profiler:SearchBox Margin="0,-22,2,0" HorizontalAlignment="Right" Width="200" x:Name="search" Grid.Column="1" VerticalAlignment="Top" />
+        <StackPanel Margin="0,-22,2,0" HorizontalAlignment="Right" x:Name="ThreadToolsPanel" Grid.Column="1" VerticalAlignment="Top" Orientation="Horizontal">
+            <ToggleButton x:Name="ShowCallstacksButton" ToolTip="Show Callstacks" Width="20" Height="20" Margin="0,0,4,0" Padding="-8" Click="ShowCallstacksButton_Click">
+                <ContentControl Style="{StaticResource appbar_camera_flash}" />
+            </ToggleButton>
+            <Profiler:SearchBox x:Name="search" Width="200"  />
+        </StackPanel>
         <DX:DirectXCanvas x:Name="surface" Height="Auto" Grid.Row="0" Grid.Column="1" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
         </DX:DirectXCanvas>
         <Popup x:Name="SurfacePopup" StaysOpen="False" Placement="Mouse" PopupAnimation="Fade" IsEnabled="False" Focusable="False" IsHitTestVisible="False">
@@ -44,22 +49,42 @@
                         <DataTemplate DataType="{x:Type Profiler_Data:WaitInterval}">
                             <Grid Margin="0">
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <Label Content="{Binding Reason, Mode=OneTime}" ContentStringFormat="{}Cursor: {0}" Margin="0" />
-                                <Label Grid.Column="1" Margin="0" Content="{Binding Duration, Mode=OneTime}" ContentStringFormat="{}{0:0.###} ms" />
+                                <ContentControl Style="{StaticResource appbar_timer_pause}" Margin="-3,-6,-6,-6" Width="32" Height="32" />
+                                <Label Grid.Column="1" Content="{Binding Reason, Mode=OneTime}" ContentStringFormat="{}Cursor: {0}" Margin="-2,0,0,0" />
+                                <Label Grid.Column="2" Margin="0" Content="{Binding Duration, Mode=OneTime}" ContentStringFormat="{}{0:0.###} ms" />
                             </Grid>
                         </DataTemplate>
-                        <DataTemplate DataType="{x:Type Profiler_Data:NodeWaitInterval}">
-                            <Grid Margin="0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <Label Content="{Binding Reason, Mode=OneTime}" ContentStringFormat="{}{0}" Margin="0" FontFamily="Consolas" FontSize ="12" Foreground="Gray"/>
-                                <Label Grid.Column="1" Margin="0" Content="{Binding Desc, Mode=OneTime}" ContentStringFormat="{}{0}" FontFamily="Consolas" FontSize ="11" Foreground="Gray"/>
-                            </Grid>
+                        <DataTemplate DataType="{x:Type Profiler_Data:NodeWaitIntervalList}">
+                            <Expander Header="Synchronization" IsExpanded="True" FontWeight="Bold">
+                                <DataGrid ItemsSource="{Binding}"  CanUserAddRows="False" GridLinesVisibility="None" IsReadOnly="True" BorderThickness="0" AutoGenerateColumns="False" FontWeight="Normal">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Reason" Binding="{Binding Reason}" />
+                                        <DataGridTextColumn Header="Time(ms)" Binding="{Binding Duration, StringFormat={}{0:0.###}ms}" />
+                                        <DataGridTextColumn Header="Time(%)" Binding="{Binding Percent, StringFormat={}{0:0.#}%}" />
+                                        <DataGridTextColumn Header="Count" Binding="{Binding Count}" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Expander>
+                        </DataTemplate>
+                        <DataTemplate DataType="{x:Type Profiler_Data:Callstack}">
+                            <Expander Header="Callstack" IsExpanded="True" FontWeight="Bold">
+                                <DataGrid AutoGenerateColumns="False" ItemsSource="{Binding}" CanUserAddRows="False" HeadersVisibility="None" GridLinesVisibility="None" IsReadOnly="True" BorderThickness="0" FontWeight="Normal">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Address" Binding="{Binding Address, StringFormat={}0x{0:x}}" Foreground="Gray">
+                                            <DataGridTextColumn.ElementStyle>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="HorizontalAlignment" Value="Right" />
+                                                </Style>
+                                            </DataGridTextColumn.ElementStyle>
+                                        </DataGridTextColumn>
+                                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Expander>
                         </DataTemplate>
                     </ItemsControl.Resources>
                 </ItemsControl>

@@ -29,7 +29,6 @@ namespace Profiler
         FrameGroup group;
 
 		ThreadScroll scroll = new ThreadScroll();
-		//ThreadScroll scroll = new ThreadScroll() { DrawCallstacks = true };
         List<ThreadRow> rows = new List<ThreadRow>();
         Dictionary<int, ThreadRow> id2row = new Dictionary<int, ThreadRow>();
 
@@ -63,7 +62,7 @@ namespace Profiler
                     Visibility visibility = value == null ? Visibility.Collapsed : Visibility.Visible;
 
                     scrollBar.Visibility = visibility;
-                    search.Visibility = visibility;
+                    ThreadToolsPanel.Visibility = visibility;
 
                     surface.Height = value == null ? 0.0 : ThreadList.Height;
                 }
@@ -181,7 +180,7 @@ namespace Profiler
         {
             InitializeComponent();
             scrollBar.Visibility = Visibility.Collapsed;
-            search.Visibility = Visibility.Collapsed;
+            ThreadToolsPanel.Visibility = Visibility.Collapsed;
 
             search.DelayedTextChanged += new SearchBox.DelayedTextChangedEventHandler(Search_DelayedTextChanged);
 
@@ -436,5 +435,11 @@ namespace Profiler
         }
 
         List<Selection> SelectionList = new List<Selection>();
+
+        private void ShowCallstacksButton_Click(object sender, RoutedEventArgs e)
+        {
+            scroll.DrawCallstacks = ShowCallstacksButton.IsChecked ?? false;
+            UpdateSurface();
+        }
     }
 }

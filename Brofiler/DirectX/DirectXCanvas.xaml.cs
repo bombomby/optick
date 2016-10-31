@@ -56,10 +56,10 @@ namespace Profiler.DirectX
             DepthBias = 0,
             DepthBiasClamp = 0,
             FillMode = FillMode.Solid,
-            IsAntialiasedLineEnabled = false,
+            IsAntialiasedLineEnabled = true,
             IsDepthClipEnabled = false,
             IsFrontCounterClockwise = false,
-            IsMultisampleEnabled = false,
+            IsMultisampleEnabled = true,
             IsScissorEnabled = false,
             SlopeScaledDepthBias = 0
         };
@@ -142,19 +142,19 @@ namespace Profiler.DirectX
 
             SwapChainDesc = new SwapChainDescription()
             {
-                BufferCount = 1,
+                BufferCount = 2,
                 ModeDescription = new ModeDescription(RenderCanvas.ClientSize.Width, RenderCanvas.ClientSize.Height, new Rational(60, 1), Format.R8G8B8A8_UNorm),
                 IsWindowed = true,
                 OutputHandle = RenderCanvas.Handle,
-                SampleDescription = new SampleDescription(1, 0),
+                SampleDescription = new SampleDescription(4, 0),
                 SwapEffect = SwapEffect.Discard,
-                Usage = Usage.RenderTargetOutput
+                Usage = Usage.RenderTargetOutput,
             };
 
             SharpDX.Direct3D11.Device device;
             SwapChain swapChain;
 
-            SharpDX.Direct3D11.Device.CreateWithSwapChain(DriverType.Hardware, DeviceCreationFlags.None, SwapChainDesc, out device, out swapChain);
+            SharpDX.Direct3D11.Device.CreateWithSwapChain(DriverType.Hardware, DeviceCreationFlags.Debug, SwapChainDesc, out device, out swapChain);
 
             SwapChain = swapChain;
             RenderDevice = device;
@@ -244,6 +244,9 @@ namespace Profiler.DirectX
 
             Text.Render(this);
 
+            DelayedDrawList.ForEach(mesh => Draw(mesh));
+            DelayedDrawList.Clear();
+
             SwapChain.Present(0, PresentFlags.None);
         }
 
@@ -262,6 +265,13 @@ namespace Profiler.DirectX
                 RenderDevice.ImmediateContext.DrawIndexed(indexCount, 0, 0);
                 SetAlphaBlend(false);
             }
+        }
+
+        List<Mesh> DelayedDrawList = new List<Mesh>();
+
+        public void DrawLater(Mesh mesh)
+        {
+            DelayedDrawList.Add(mesh);
         }
 
         public void SetAlphaBlend(bool isOn)

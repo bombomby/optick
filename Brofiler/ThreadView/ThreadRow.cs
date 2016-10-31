@@ -64,11 +64,19 @@ namespace Profiler
             double durationTicks = TimeSlice.Finish - TimeSlice.Start;
             return new Interval((d.Start - TimeSlice.Start) / durationTicks, (d.Finish - d.Start) / durationTicks);
         }
+
         public Interval TimeToPixel(Durable d)
         {
             Interval unit = TimeToUnit(d);
             double scale = Width * Zoom;
             return new Interval((unit.Left - ViewUnit.Left) * scale, unit.Width * scale);
+        }
+
+        public double TimeToPixel(ITick t)
+        {
+            double unit = TimeToUnit(t);
+            double scale = Width * Zoom;
+            return (unit - ViewUnit.Left) * scale;
         }
 
         public double PixelToUnitLength(double pixelX)
@@ -191,7 +199,7 @@ namespace Profiler
 
         public delegate void LoadedEventHandler();
 
-        void Load(ThreadDescription description, ThreadData data)
+        void Load(ThreadData data)
         {
             data.Events.ForEach(frame =>
             {
@@ -217,13 +225,13 @@ namespace Profiler
         }
 
         
-        public static EventFilter Create(ThreadDescription description, ThreadData data, HashSet<EventDescription> descriptions)
+        public static EventFilter Create(ThreadData data, HashSet<EventDescription> descriptions)
         {
             if (descriptions == null)
                 return null;
 
             EventFilter result = new EventFilter() { Descriptions = descriptions };
-            result.Load(description, data);
+            result.Load(data);
             return result;
         }
     }

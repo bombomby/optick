@@ -14,13 +14,19 @@ namespace Profiler.Data
 		public BaseTreeNode RootParent { get; private set; }
 		public List<BaseTreeNode> Children { get; private set; }
 
-		public double Duration { get; private set; }
-		public double ChildrenDuration { get; private set; }
+		public double Duration { get; protected set; }
+		public double ChildrenDuration { get; protected set; }
 		public double SelfDuration { get { return Duration - ChildrenDuration; } }
 
 		public abstract String Name { get; }
 
-		public double Ratio { get; private set; }
+		public double Ratio
+        {
+            get
+            {
+                return Parent != null ? Duration / Parent.Duration : 1.0;
+            }
+        }
 
 		public double TotalPercent { get { return RootParent != null ? (100.0 * Duration / RootParent.Duration) : 100.0; } }
 		public double SelfPercent { get { return RootParent != null ? (100.0 * SelfDuration / RootParent.Duration) : (SelfDuration / Duration); } }
@@ -91,8 +97,6 @@ namespace Profiler.Data
 
 			Children.Add(node);
 			ChildrenDuration += node.Duration;
-
-			node.Ratio = node.Duration / Duration;
 		}
 
 		public abstract void ApplyFilter(HashSet<Object> roof, HashSet<Object> nodes, FilterMode mode);

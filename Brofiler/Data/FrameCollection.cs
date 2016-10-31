@@ -122,6 +122,12 @@ namespace Profiler.Data
 			}
 		}
 
+        public void Add(SamplingDescriptionPack pack)
+        {
+            Responses.Add(pack.Response);
+            SamplingBoard = pack;
+        }
+
         private void SplitFiberThread(ThreadData data)
         {
             data.ApplySynchronization();
@@ -229,7 +235,7 @@ namespace Profiler.Data
                         int id = response.Reader.ReadInt32();
                         FrameGroup group = groups[id];
 
-                        group.SamplingBoard = SamplingDescriptionBoard.Create(response.Reader);
+                        group.Add(SamplingDescriptionPack.Create(response));
 
                         break;
                     }

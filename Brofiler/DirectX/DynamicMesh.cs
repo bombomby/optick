@@ -21,10 +21,17 @@ namespace Profiler.DirectX
 
         public static int[] BoxTriIndices = new int[]{ 0, 1, 2, 2, 3, 0 };
         public static int[] BoxLineIndices = new int[] { 0, 1, 1, 2, 2, 3, 3, 0 };
+        public static int[] TriIndices = new int[] { 0, 1, 2 };
+        public static int[] TriLineIndices = new int[] { 0, 1, 1, 2, 2, 0 };
 
         int[] GetBoxIndicesList()
         {
             return Geometry == Mesh.GeometryType.Polygons ? BoxTriIndices : BoxLineIndices;
+        }
+
+        int[] GetTriIndicesList()
+        {
+            return Geometry == Mesh.GeometryType.Polygons ? TriIndices : TriLineIndices;
         }
 
         public void AddRect(Rect rect, System.Windows.Media.Color color)
@@ -49,6 +56,20 @@ namespace Profiler.DirectX
             Vertices.Add(new Mesh.Vertex() { Position = new Vector2((float)rect.Right, (float)rect.Bottom), Color = Utils.Convert(colors[2]) });
             Vertices.Add(new Mesh.Vertex() { Position = new Vector2((float)rect.Left, (float)rect.Bottom), Color = Utils.Convert(colors[3]) });
             foreach (int i in GetBoxIndicesList())
+                Indices.Add(index + i);
+
+            IsDirty = true;
+        }
+
+        public void AddTri(System.Windows.Point a, System.Windows.Point b, System.Windows.Point c, System.Windows.Media.Color color)
+        {
+            int index = Vertices.Count;
+            SharpDX.Color vertexColor = Utils.Convert(color);
+            Vertices.Add(new Mesh.Vertex() { Position = new Vector2((float)a.X, (float)a.Y), Color = vertexColor });
+            Vertices.Add(new Mesh.Vertex() { Position = new Vector2((float)b.X, (float)b.Y), Color = vertexColor });
+            Vertices.Add(new Mesh.Vertex() { Position = new Vector2((float)c.X, (float)c.Y), Color = vertexColor });
+
+            foreach (int i in GetTriIndicesList())
                 Indices.Add(index + i);
 
             IsDirty = true;

@@ -79,10 +79,30 @@
 			<ColumnDefinition Width="3*"/>
 		</Grid.ColumnDefinitions>
 		<TreeView Grid.Row="1" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling" x:Name="EventTreeView" DataContext="{Binding Root}" ItemsSource="{Binding Children}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="0" >
-			<TreeView.Resources>
+            <TreeView.Resources>
 				<HierarchicalDataTemplate DataType="{x:Type Profiler_Data:BaseTreeNode}" ItemsSource="{Binding Children}">
 					<Grid Width="Auto" Margin="1">
-						<Grid.ColumnDefinitions>
+                        <Grid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Show Source Code" Click="MenuShowSourceCode">
+                                    <MenuItem.Icon>
+                                        <ContentControl Style="{StaticResource appbar_page_code}" Margin="-10" Width="26" Height="26"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <Separator />
+                                <MenuItem Header="Sample Function" Click="MenuSampleFunction">
+                                    <MenuItem.Icon>
+                                        <ContentControl Style="{StaticResource appbar_camera_flash}" Margin="-10" Width="26" Height="26"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Sample Function (All Frames)" Click="MenuSampleFunctions">
+                                    <MenuItem.Icon>
+                                        <ContentControl Style="{StaticResource appbar_camera_flash_auto}" Margin="-10" Width="26" Height="26" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </Grid.ContextMenu>
+                        <Grid.ColumnDefinitions>
 							<ColumnDefinition Width="88"/>
 							<ColumnDefinition Width="*" />
 							<ColumnDefinition Width="*" />
@@ -129,10 +149,9 @@
                     <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
                     <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
                     <Setter Property="Visibility" Value="{Binding Visible}" />
-                    <EventSetter Event="MouseRightButtonDown" Handler="OnTreeViewItemMouseRightButtonDown" />
                 </Style>
             </TreeView.ItemContainerStyle>
-		</TreeView>
+        </TreeView>
 		<local:FrameDataTable Grid.Row="0" Grid.RowSpan="2" Width="Auto" RenderTransformOrigin="0.461,0.52" Grid.Column="9" DataContext="{Binding Board}" x:Name="SummaryTable" Margin="4,0,0,0" />
 		<GridSplitter ResizeDirection="Columns" Width="4" Grid.Column="1" HorizontalAlignment="Left" Grid.RowSpan="2"/>
     <Grid>

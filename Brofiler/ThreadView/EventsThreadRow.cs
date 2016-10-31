@@ -16,11 +16,16 @@ namespace Profiler
 
 		Mesh Mesh { get; set; }
 		Mesh SyncMesh { get; set; }
-		Mesh CallstackMesh { get; set; }
+		DynamicMesh CallstackMeshPolys { get; set; }
+        DynamicMesh CallstackMeshLines { get; set; }
 
         double SyncLineHeight = 4.0 * RenderSettings.dpiScaleY;
         static Color SynchronizationColor = Colors.OrangeRed;
         static Color SynchronizationColorUser = Colors.Yellow;
+
+        double CallstackMarkerSize = 10.0 * RenderSettings.dpiScaleY;
+        double SelectCallstackMarkerSize = 12.0 * RenderSettings.dpiScaleY;
+        double CallstackMarkerOffset = -1.5 * RenderSettings.dpiScaleY;
 
         struct IntPair
         {
@@ -34,7 +39,7 @@ namespace Profiler
             return false;
         }
 
-		static Color CallstackColor = Colors.Black;
+		static Color CallstackColor = Colors.Red;
 
         EventFilter Filter { get; set; }
         Mesh FilterMesh;
@@ -181,27 +186,10 @@ namespace Profiler
             Mesh = builder.Freeze(canvas.RenderDevice);
             SyncMesh = syncBuilder.Freeze(canvas.RenderDevice);
 
-			if (EventData.Callstacks != null && EventData.Callstacks.Count > 0)
-			{
-				DirectX.DynamicMesh callstackBuilder = canvas.CreateMesh();
-				callstackBuilder.Geometry = DirectX.Mesh.GeometryType.Lines;
+			CallstackMeshPolys = canvas.CreateMesh();
 
-				foreach (Data.Callstack callstack in EventData.Callstacks)
-				{
-					//long tick = Durable.MsToTick(0.5);
-					//Durable durable = new Durable(callstack.Start - tick, callstack.Start + tick);
-					//Interval interval = scroll.TimeToUnit(durable);
-					
-					//callstackBuilder.AddLine(new Point(interval.Left, 1), new Point(interval.Left + interval.Width * 0.5, 0.5), CallstackColor);
-					//callstackBuilder.AddLine(new Point(interval.Right, 1), new Point(interval.Left + interval.Width * 0.5, 0.5), CallstackColor);
-
-					double unit = scroll.TimeToUnit(callstack);
-					callstackBuilder.AddLine(new Point(unit, 1), new Point(unit, 0.5), CallstackColor);
-				}
-
-				CallstackMesh = callstackBuilder.Freeze(canvas.RenderDevice);
-			}
-
+            CallstackMeshLines = canvas.CreateMesh();
+            CallstackMeshLines.Geometry = Mesh.GeometryType.Lines;
         }
 
         public override double Height { get { return RenderParams.BaseHeight * MaxDepth; } }
@@ -221,12 +209,6 @@ namespace Profiler
                 canvas.Draw(Mesh);
             }
 
-			if (CallstackMesh != null && scroll.DrawCallstacks)
-			{
-				CallstackMesh.World = world;
-				canvas.Draw(CallstackMesh);
-			}
-
             if (FilterMesh != null)
             {
                 FilterMesh.World = world;
@@ -237,6 +219,34 @@ namespace Profiler
             {
                 SyncMesh.World = world;
                 canvas.Draw(SyncMesh);
+            }
+
+            if (CallstackMeshPolys != null && CallstackMeshLines != null && scroll.DrawCallstacks)
+            {
+                double unitWidth = scroll.PixelToUnitLength(CallstackMarkerSize * 0.5);
+                double unitHeight = (CallstackMarkerSize / RenderParams.BaseHeight) / MaxDepth;
+                double offset = (CallstackMarkerOffset / RenderParams.BaseHeight) / MaxDepth;
+
+                Data.Utils.ForEachInsideInterval(EventData.Callstacks, scroll.ViewTime, callstack =>
+                {
+                    double center = scroll.TimeToUnit(callstack);
+
+                    Point a = new Point(center - unitWidth, offset);
+                    Point b = new Point(center, offset + unitHeight);
+                    Point c = new Point(center + unitWidth, offset);
+
+                    CallstackMeshPolys.AddTri(a, b, c, CallstackColor);
+                    CallstackMeshLines.AddTri(a, b, c, Colors.Black);
+                });
+
+                CallstackMeshPolys.Update(canvas.RenderDevice);
+                CallstackMeshLines.Update(canvas.RenderDevice);
+
+                CallstackMeshPolys.World = world;
+                CallstackMeshLines.World = world;
+
+                canvas.DrawLater(CallstackMeshPolys);
+                canvas.DrawLater(CallstackMeshLines);
             }
 
             Data.Utils.ForEachInsideInterval(EventData.Events, scroll.ViewTime, frame =>
@@ -350,10 +360,13 @@ namespace Profiler
         {
             EventNode node = null;
             EventFrame frame = null;
+
+            ITick tick = scroll.PixelToTime(point.X);
+
             if (FindNode(point, scroll, out frame, out node) != -1)
             {
+                dataContext.Add(node);
 
-                ITick tick = scroll.PixelToTime(point.X);
                 int index = Data.Utils.BinarySearchClosestIndex(frame.Synchronization, tick.Start);
                 if (index != -1)
                 {
@@ -375,10 +388,6 @@ namespace Profiler
 						}
 					}
 				}
-
-
-                dataContext.Add(node);
-
 
                 // build all intervals inside selected node
                 int from = Data.Utils.BinarySearchClosestIndex(frame.Synchronization, node.Entry.Start);
@@ -408,7 +417,7 @@ namespace Profiler
                         waitInfo[reasonIndex].count++;
                     }
 
-                    List<NodeWaitInterval> intervals = new List<NodeWaitInterval>();
+                    NodeWaitIntervalList intervals = new NodeWaitIntervalList();
 
                     for (int i = 0; i < waitInfo.Length; i++)
                     {
@@ -424,9 +433,23 @@ namespace Profiler
                         return Comparer<long>.Default.Compare(b.Finish, a.Finish);
                     });
 
-                    dataContext.AddRange(intervals);
+                    if (intervals.Count > 0)
+                        dataContext.Add(intervals);
                 }
 
+                if (scroll.DrawCallstacks)
+                {
+                    int startIndex = Data.Utils.BinarySearchClosestIndex(EventData.Callstacks, tick.Start);
+                    for (int i = 0; (i <= startIndex + 1) && (i < EventData.Callstacks.Count) && (i != -1); ++i)
+                    {
+                        double pixelPos = scroll.TimeToPixel(EventData.Callstacks[i]);
+                        if (Math.Abs(pixelPos - point.X) < SelectCallstackMarkerSize && point.Y < SelectCallstackMarkerSize)
+                        {
+                            dataContext.Add(EventData.Callstacks[i]);
+                            break;
+                        }
+                    }
+                }
             }
         }
 
@@ -469,7 +492,7 @@ namespace Profiler
 
         public override void ApplyFilter(DirectXCanvas canvas, ThreadScroll scroll, HashSet<EventDescription> descriptions)
         {
-            Filter = EventFilter.Create(Description, EventData, descriptions);
+            Filter = EventFilter.Create(EventData, descriptions);
 
             if (Filter != null)
             {
