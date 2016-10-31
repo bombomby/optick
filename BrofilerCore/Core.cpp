@@ -138,15 +138,14 @@ void Core::DumpFrames()
 	frames.clear();
 	CleanupThreads();
 
+	if (!callstackCollector.IsEmpty())
 	{
 		DumpProgress("Resolving callstacks");
 		OutputDataStream symbolsStream;
 		symbolsStream << boardNumber;
 		callstackCollector.SerializeSymbols(symbolsStream);
 		Server::Get().Send(DataResponse::SymbolPack, symbolsStream);
-	}
-	
-	{
+
 		DumpProgress("Serializing callstacks");
 		OutputDataStream callstacksStream;
 		callstacksStream << boardNumber;
