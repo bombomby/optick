@@ -37,8 +37,8 @@
 		</ItemsPanelTemplate>
 		<DataTemplate x:Key="TimeLineItemTemplate">
       <Grid x:Name="rect" Height="163" Width="14" Margin="0,0,0,0" >
-        <local:TimeLineItem x:Name="timeLineItem" Height="{Binding Duration, Converter={StaticResource FrameHeightConverter}}" Width="Auto" VerticalAlignment="Bottom" />
-        <Label x:Name="frameDescriptionText" Content="{Binding Description, Mode=OneTime}" Width="Auto" VerticalAlignment="Bottom" Height="Auto" FontSize="12" Padding="0,0,0,0" Margin="-1,0,0,3" SnapsToDevicePixels="True" FontWeight="Bold" Grid.ColumnSpan="2" >
+        <local:TimeLineItem x:Name="timeLineItem" Height="{Binding Duration, Converter={StaticResource FrameHeightConverter}}" Width="Auto" VerticalAlignment="Bottom" Padding="0" Margin="0" />
+        <Label x:Name="frameDescriptionText" Content="{Binding Description, Mode=OneTime}" Width="Auto" VerticalAlignment="Bottom" Height="Auto" FontSize="12" Padding="0" Margin="-1,0,0,3" SnapsToDevicePixels="True" FontWeight="Bold" Grid.ColumnSpan="2" >
 			<Label.LayoutTransform>
 				<TransformGroup>
 					<ScaleTransform/>
@@ -83,8 +83,15 @@
 			<ColumnDefinition Width="0.299*"/>
 			<ColumnDefinition Width="Auto"/>
 		</Grid.ColumnDefinitions>
-    <ListBox x:Name="frameList" ItemsPanel="{DynamicResource TimeLaneLayoutTemplate}" ItemTemplate="{DynamicResource TimeLineItemTemplate}" ItemsSource="{Binding Mode=OneWay}" DataContext="{Binding Mode=OneWay}" SelectionChanged="frameList_SelectionChanged" Grid.Row="1" Margin="0,2,0,0" d:LayoutOverrides="Width" TextOptions.TextFormattingMode="Display" />
-    <StackPanel Orientation="Horizontal" Margin="0" Grid.ColumnSpan="2" HorizontalAlignment="Left">
+        <ListView x:Name="frameList" ItemsPanel="{DynamicResource TimeLaneLayoutTemplate}" ItemTemplate="{DynamicResource TimeLineItemTemplate}" ItemsSource="{Binding Mode=OneWay}" DataContext="{Binding Mode=OneWay}" SelectionChanged="frameList_SelectionChanged" Grid.Row="1" Margin="0,2,0,0" Padding="0" d:LayoutOverrides="Width" TextOptions.TextFormattingMode="Display">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Margin" Value="0"/>
+                    <Setter Property="Padding" Value="0"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+        </ListView>
+        <StackPanel Orientation="Horizontal" Margin="0" Grid.ColumnSpan="2" HorizontalAlignment="Left">
         <ToggleButton x:Name="StartButton" Width="24" Height="24" Unchecked="StartButton_Unchecked" Checked="StartButton_Checked" ToolTip="Start Profiling Session" Padding="-6">
                 <ContentControl Style="{StaticResource appbar_control_play}" />
             </ToggleButton>
