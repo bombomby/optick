@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace Profiler.Data
 {
-	public enum SyncReason
-	{
-		Win_Executive = 0,
+    public enum SyncReason
+    {
+        Win_Executive = 0,
         Win_FreePage = 1,
         Win_PageIn = 2,
         Win_PoolAllocation = 3,
@@ -46,35 +46,35 @@ namespace Profiler.Data
 
 
         SyncReasonCount
-	}
+    }
 
-	public class SyncInterval : Durable
-	{
-		public UInt64 Core { get; set; }
-		public SyncReason Reason { get; set; }
+    public class SyncInterval : Durable
+    {
+        public UInt64 Core { get; set; }
+        public SyncReason Reason { get; set; }
 
-		public static SyncInterval Read(DataResponse response)
-		{
-			SyncInterval interval = new SyncInterval();
-			interval.ReadDurable(response.Reader);
+        public static SyncInterval Read(DataResponse response)
+        {
+            SyncInterval interval = new SyncInterval();
+            interval.ReadDurable(response.Reader);
 
-			if (response.Version >= NetworkProtocol.NETWORK_PROTOCOL_VERSION_8)
-				interval.Core = response.Reader.ReadUInt64();
-			else
-				interval.Core = response.Reader.ReadUInt32();
+            if (response.Version >= NetworkProtocol.NETWORK_PROTOCOL_VERSION_8)
+                interval.Core = response.Reader.ReadUInt64();
+            else
+                interval.Core = response.Reader.ReadUInt32();
 
-			if (response.Version >= NetworkProtocol.NETWORK_PROTOCOL_VERSION_9)
-				interval.Reason = (SyncReason)response.Reader.ReadByte();
+            if (response.Version >= NetworkProtocol.NETWORK_PROTOCOL_VERSION_9)
+                interval.Reason = (SyncReason)response.Reader.ReadByte();
 
-			return interval;
-		}
-	}
+            return interval;
+        }
+    }
 
-	public class WaitInterval : Durable
-	{
-		public SyncReason Reason { get; set; }
-		public WaitInterval() { }
-	}
+    public class WaitInterval : Durable
+    {
+        public SyncReason Reason { get; set; }
+        public WaitInterval() { }
+    }
 
     public class NodeWaitInterval : Durable
     {
@@ -104,8 +104,10 @@ namespace Profiler.Data
         public NodeWaitInterval() { }
     }
 
+    public class NodeWaitIntervalList : List<NodeWaitInterval> {}
 
-	public class Synchronization : IResponseHolder
+
+    public class Synchronization : IResponseHolder
     {
         public override DataResponse Response { get; set; }
         public int ThreadIndex { get; set; }

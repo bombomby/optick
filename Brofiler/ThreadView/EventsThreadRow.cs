@@ -23,7 +23,8 @@ namespace Profiler
         static Color SynchronizationColor = Colors.OrangeRed;
         static Color SynchronizationColorUser = Colors.Yellow;
 
-        double CallstackMarkerSize = 8.0 * RenderSettings.dpiScaleY;
+        double CallstackMarkerSize = 10.0 * RenderSettings.dpiScaleY;
+        double SelectCallstackMarkerSize = 12.0 * RenderSettings.dpiScaleY;
         double CallstackMarkerOffset = -1.5 * RenderSettings.dpiScaleY;
 
         struct IntPair
@@ -359,10 +360,13 @@ namespace Profiler
         {
             EventNode node = null;
             EventFrame frame = null;
+
+            ITick tick = scroll.PixelToTime(point.X);
+
             if (FindNode(point, scroll, out frame, out node) != -1)
             {
+                dataContext.Add(node);
 
-                ITick tick = scroll.PixelToTime(point.X);
                 int index = Data.Utils.BinarySearchClosestIndex(frame.Synchronization, tick.Start);
                 if (index != -1)
                 {
@@ -384,10 +388,6 @@ namespace Profiler
 						}
 					}
 				}
-
-
-                dataContext.Add(node);
-
 
                 // build all intervals inside selected node
                 int from = Data.Utils.BinarySearchClosestIndex(frame.Synchronization, node.Entry.Start);
@@ -417,7 +417,7 @@ namespace Profiler
                         waitInfo[reasonIndex].count++;
                     }
 
-                    List<NodeWaitInterval> intervals = new List<NodeWaitInterval>();
+                    NodeWaitIntervalList intervals = new NodeWaitIntervalList();
 
                     for (int i = 0; i < waitInfo.Length; i++)
                     {
@@ -433,9 +433,23 @@ namespace Profiler
                         return Comparer<long>.Default.Compare(b.Finish, a.Finish);
                     });
 
-                    dataContext.AddRange(intervals);
+                    if (intervals.Count > 0)
+                        dataContext.Add(intervals);
                 }
 
+                if (scroll.DrawCallstacks)
+                {
+                    int startIndex = Data.Utils.BinarySearchClosestIndex(EventData.Callstacks, tick.Start);
+                    for (int i = 0; (i <= startIndex + 1) && (i < EventData.Callstacks.Count) && (i != -1); ++i)
+                    {
+                        double pixelPos = scroll.TimeToPixel(EventData.Callstacks[i]);
+                        if (Math.Abs(pixelPos - point.X) < SelectCallstackMarkerSize && point.Y < SelectCallstackMarkerSize)
+                        {
+                            dataContext.Add(EventData.Callstacks[i]);
+                            break;
+                        }
+                    }
+                }
             }
         }
 

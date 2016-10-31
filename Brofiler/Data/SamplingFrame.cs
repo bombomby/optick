@@ -194,6 +194,11 @@ namespace Profiler.Data
         }
 
 
+        bool IsSimilar(SamplingDescription a, SamplingDescription b)
+        {
+            return a.Address == b.Address || (a.Path.Line == b.Path.Line && a.Name == b.Name);
+        }
+
         void AppendMerge(Callstack callstack, int index, SamplingNode root)
         {
             if (callstack.Count == index)
@@ -204,7 +209,7 @@ namespace Profiler.Data
 
             foreach (SamplingNode node in Children)
             {
-                if (node.Description.Address == desc.Address)
+                if (IsSimilar(node.Description, desc))
                 {
                     ++node.Passed;
                     node.AppendMerge(callstack, index + 1, rootNode);

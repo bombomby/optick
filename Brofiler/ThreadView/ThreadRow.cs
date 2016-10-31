@@ -64,11 +64,19 @@ namespace Profiler
             double durationTicks = TimeSlice.Finish - TimeSlice.Start;
             return new Interval((d.Start - TimeSlice.Start) / durationTicks, (d.Finish - d.Start) / durationTicks);
         }
+
         public Interval TimeToPixel(Durable d)
         {
             Interval unit = TimeToUnit(d);
             double scale = Width * Zoom;
             return new Interval((unit.Left - ViewUnit.Left) * scale, unit.Width * scale);
+        }
+
+        public double TimeToPixel(ITick t)
+        {
+            double unit = TimeToUnit(t);
+            double scale = Width * Zoom;
+            return (unit - ViewUnit.Left) * scale;
         }
 
         public double PixelToUnitLength(double pixelX)

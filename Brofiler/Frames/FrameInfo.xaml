@@ -84,10 +84,22 @@
 					<Grid Width="Auto" Margin="1">
                         <Grid.ContextMenu>
                             <ContextMenu>
-                                <MenuItem Header="Show Source Code" Click="MenuShowSourceCode" />
+                                <MenuItem Header="Show Source Code" Click="MenuShowSourceCode">
+                                    <MenuItem.Icon>
+                                        <ContentControl Style="{StaticResource appbar_page_code}" Margin="-10" Width="26" Height="26"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
                                 <Separator />
-                                <MenuItem Header="Sample Function (Current Block)" Click="MenuSampleFunction" />
-                                <MenuItem Header="Sample Function (All Frames)" Click="MenuSampleFunctions" />
+                                <MenuItem Header="Sample Function" Click="MenuSampleFunction">
+                                    <MenuItem.Icon>
+                                        <ContentControl Style="{StaticResource appbar_camera_flash}" Margin="-10" Width="26" Height="26"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Sample Function (All Frames)" Click="MenuSampleFunctions">
+                                    <MenuItem.Icon>
+                                        <ContentControl Style="{StaticResource appbar_camera_flash_auto}" Margin="-10" Width="26" Height="26" />
+                                    </MenuItem.Icon>
+                                </MenuItem>
                             </ContextMenu>
                         </Grid.ContextMenu>
                         <Grid.ColumnDefinitions>

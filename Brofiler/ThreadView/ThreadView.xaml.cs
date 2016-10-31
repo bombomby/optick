@@ -62,7 +62,7 @@ namespace Profiler
                     Visibility visibility = value == null ? Visibility.Collapsed : Visibility.Visible;
 
                     scrollBar.Visibility = visibility;
-                    search.Visibility = visibility;
+                    ThreadToolsPanel.Visibility = visibility;
 
                     surface.Height = value == null ? 0.0 : ThreadList.Height;
                 }
@@ -180,7 +180,7 @@ namespace Profiler
         {
             InitializeComponent();
             scrollBar.Visibility = Visibility.Collapsed;
-            search.Visibility = Visibility.Collapsed;
+            ThreadToolsPanel.Visibility = Visibility.Collapsed;
 
             search.DelayedTextChanged += new SearchBox.DelayedTextChangedEventHandler(Search_DelayedTextChanged);
 
