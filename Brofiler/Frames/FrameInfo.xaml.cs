@@ -15,7 +15,6 @@ using Profiler.Data;
 using System.Threading;
 using System.Windows.Threading;
 using System.Diagnostics;
-using static Profiler.TimeLine;
 
 namespace Profiler
 {
@@ -290,7 +289,7 @@ namespace Profiler
             if (callstacks.Count > 0)
             {
                 SamplingFrame frame = new SamplingFrame(callstacks);
-                FocusFrameEventArgs args = new FocusFrameEventArgs(FocusFrameEvent, frame);
+				Profiler.TimeLine.FocusFrameEventArgs args = new Profiler.TimeLine.FocusFrameEventArgs(Profiler.TimeLine.FocusFrameEvent, frame);
                 RaiseEvent(args);
             }
         }
