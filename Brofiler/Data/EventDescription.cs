@@ -154,7 +154,8 @@ namespace Profiler.Data
         public static EventDescriptionBoard Read(DataResponse response)
         {
             BinaryReader reader = response.Reader;
-            EventDescriptionBoard desc = new EventDescriptionBoard();
+
+            EventDescriptionBoard desc = new EventDescriptionBoard() { Response = response };
             desc.BaseStream = reader.BaseStream;
             desc.ID = reader.ReadInt32();
 

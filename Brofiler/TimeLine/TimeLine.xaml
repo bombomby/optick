@@ -83,7 +83,7 @@
 			<ColumnDefinition Width="0.299*"/>
 			<ColumnDefinition Width="Auto"/>
 		</Grid.ColumnDefinitions>
-        <ListView x:Name="frameList" ItemsPanel="{DynamicResource TimeLaneLayoutTemplate}" ItemTemplate="{DynamicResource TimeLineItemTemplate}" ItemsSource="{Binding Mode=OneWay}" DataContext="{Binding Mode=OneWay}" SelectionChanged="frameList_SelectionChanged" Grid.Row="1" Margin="0,2,0,0" Padding="0" d:LayoutOverrides="Width" TextOptions.TextFormattingMode="Display">
+        <ListView x:Name="frameList" ItemsPanel="{DynamicResource TimeLaneLayoutTemplate}" ItemTemplate="{DynamicResource TimeLineItemTemplate}" ItemsSource="{Binding Mode=OneWay}" DataContext="{Binding Mode=OneWay}" SelectionChanged="frameList_SelectionChanged" Grid.Row="1" Margin="0,2,0,0" Padding="0" d:LayoutOverrides="Width" TextOptions.TextFormattingMode="Display" SelectedIndex="-1">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="Margin" Value="0"/>

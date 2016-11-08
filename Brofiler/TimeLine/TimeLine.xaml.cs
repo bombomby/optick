@@ -233,6 +233,7 @@ namespace Profiler
                         break;
 
                     case DataResponse.Type.NullFrame:
+						StatusText.Visibility = System.Windows.Visibility.Collapsed;
                         lock (frames)
                         {
                             frames.Flush();
@@ -255,7 +256,6 @@ namespace Profiler
                         break;
 
                     default:
-                        StatusText.Visibility = System.Windows.Visibility.Collapsed;
                         lock (frames)
                         {
                             frames.Add(response);

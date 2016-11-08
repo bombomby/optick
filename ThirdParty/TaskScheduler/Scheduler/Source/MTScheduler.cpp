@@ -29,9 +29,6 @@
 //  Look like low latency hybrid wait is work better for PS4/X1, but a little worse on PC
 //#define MT_LOW_LATENCY_EXPERIMENTAL_WAIT (1)
 
-#if defined(MT_PLATFORM_DURANGO) || defined(MT_PLATFORM_ORBIS)
-#define MT_LOW_LATENCY_EXPERIMENTAL_WAIT (1)
-#endif
 
 namespace MT
 {
@@ -902,24 +899,4 @@ namespace MT
 
 }
 
-#if MT_PLATFORM_ORBIS
-
-#include <libsysmodule.h> 
-
-namespace MT
-{
-	void InitializeOrbisFiberLibrary()
-	{
-		static uint32 isInitialized = 0;
-		if (isInitialized == 0)
-		{
-			int ret = sceSysmoduleLoadModule(SCE_SYSMODULE_FIBER);
-			MT_USED_IN_ASSERT(ret);
-			MT_ASSERT(ret == SCE_OK, "Can't load module");
-			isInitialized = 1;
-		}
-	}
-}
-
-#endif
 

@@ -76,6 +76,8 @@ namespace Profiler.Data
 
         public FrameGroup(EventDescriptionBoard board)
         {
+			System.Diagnostics.Debug.Assert(board != null && board.Response != null, "Invalid EventDescriptionBoard response");
+
             Board = board;
             Threads = new List<ThreadData>();
             Fibers = new List<ThreadData>();
@@ -85,6 +87,8 @@ namespace Profiler.Data
 
         public void Add(EventFrame frame)
         {
+			System.Diagnostics.Debug.Assert(frame != null && frame.Response != null, "Invalid EventFrame response");
+
 			Responses.Add(frame.Response);
 
             int index = frame.Header.ThreadIndex;
@@ -97,6 +101,8 @@ namespace Profiler.Data
 
         public void Add(Synchronization sync)
         {
+			System.Diagnostics.Debug.Assert(sync != null && sync.Response != null, "Invalid Synchronization response");
+
 			Responses.Add(sync.Response);
 
             int index = sync.ThreadIndex;
@@ -112,6 +118,8 @@ namespace Profiler.Data
 
 		public void Add(CallstackPack pack)
 		{
+			System.Diagnostics.Debug.Assert(pack != null && pack.Response != null, "Invalid CallstackPack response");
+
 			Responses.Add(pack.Response);
 
 			for (int i = 0; i < Board.Threads.Count; ++i)
@@ -124,6 +132,8 @@ namespace Profiler.Data
 
         public void Add(SamplingDescriptionPack pack)
         {
+			System.Diagnostics.Debug.Assert(pack != null && pack.Response != null, "Invalid SamplingDescriptionPack response");
+
             Responses.Add(pack.Response);
             SamplingBoard = pack;
         }

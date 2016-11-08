@@ -436,21 +436,21 @@ namespace Profiler
                     if (intervals.Count > 0)
                         dataContext.Add(intervals);
                 }
+            } // FindNode
 
-                if (scroll.DrawCallstacks)
-                {
-                    int startIndex = Data.Utils.BinarySearchClosestIndex(EventData.Callstacks, tick.Start);
-                    for (int i = 0; (i <= startIndex + 1) && (i < EventData.Callstacks.Count) && (i != -1); ++i)
-                    {
-                        double pixelPos = scroll.TimeToPixel(EventData.Callstacks[i]);
-                        if (Math.Abs(pixelPos - point.X) < SelectCallstackMarkerSize && point.Y < SelectCallstackMarkerSize)
-                        {
-                            dataContext.Add(EventData.Callstacks[i]);
-                            break;
-                        }
-                    }
-                }
-            }
+			if (scroll.DrawCallstacks)
+			{
+				int startIndex = Data.Utils.BinarySearchClosestIndex(EventData.Callstacks, tick.Start);
+				for (int i = 0; (i <= startIndex + 1) && (i < EventData.Callstacks.Count) && (i != -1); ++i)
+				{
+					double pixelPos = scroll.TimeToPixel(EventData.Callstacks[i]);
+					if (Math.Abs(pixelPos - point.X) < SelectCallstackMarkerSize && point.Y < SelectCallstackMarkerSize)
+					{
+						dataContext.Add(EventData.Callstacks[i]);
+						break;
+					}
+				}
+			}
         }
 
         public override void OnMouseClick(Point point, ThreadScroll scroll)

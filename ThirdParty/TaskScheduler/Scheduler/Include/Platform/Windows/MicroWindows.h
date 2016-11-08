@@ -222,11 +222,6 @@ struct MW_CONTEXT
 
 #define MW_CREATE_SUSPENDED (0x00000004)
 
-#if MT_PLATFORM_DURANGO
-
-#define MW_MAXIMUM_PROCESSORS (8)
-#define MW_FIBER_FLAG_FLOAT_SWITCH (0)
-#else
 
 #if MT_PTR64
 #define MW_MAXIMUM_PROCESSORS (64)
@@ -236,7 +231,6 @@ struct MW_CONTEXT
 #define MW_FIBER_FLAG_FLOAT_SWITCH (0x1)
 #endif
 
-#endif
 
 #endif
 

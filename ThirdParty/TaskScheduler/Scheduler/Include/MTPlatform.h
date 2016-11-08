@@ -43,10 +43,8 @@ namespace MT
 
 
 
-#if MT_PLATFORM_WINDOWS || MT_PLATFORM_DURANGO
+#if MT_PLATFORM_WINDOWS 
 	#include <Platform/Windows/MTCommon.h>
-#elif MT_PLATFORM_ORBIS
-	#include <Platform/Orbis/MTCommon.h>
 #elif MT_PLATFORM_POSIX || MT_PLATFORM_OSX
 	#include <Platform/Posix/MTCommon.h>
 #else

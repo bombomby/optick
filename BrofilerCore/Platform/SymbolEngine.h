@@ -1,6 +1,6 @@
 #pragma once
 #include "Core.h"
-#include <unordered_set>
+#include <unordered_map>
 
 namespace Brofiler
 {
@@ -25,6 +25,9 @@ namespace Brofiler
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	typedef std::unordered_map<uint64, Symbol> SymbolCache;
+
 	struct SymbolEngine
 	{
 		// Get Symbol from address
@@ -33,6 +36,12 @@ namespace Brofiler
 		virtual ~SymbolEngine() {};
 
 		static SymbolEngine* Get();
+
+	protected:
+
+		SymbolCache cache;
+
+
 	};
 
 }

@@ -25,15 +25,7 @@
 
 // Target Platform
 ////////////////////////////////////////////////////////////////////////
-#if _XBOX_ONE
-
-#define MT_PLATFORM_DURANGO (1)
-
-#elif __ORBIS__
-
-#define MT_PLATFORM_ORBIS (1)
-
-#elif _WIN32
+#if   _WIN32
 
 #define MT_PLATFORM_WINDOWS (1)
 
