@@ -118,26 +118,6 @@ namespace MT
 		}
 
 
-#if MT_PLATFORM_DURANGO
-		static MW_ULONG_PTR GetAffinityMask(uint32 cpuCore)
-		{
-			MT_ASSERT((cpuCore >= 0 && cpuCore <= 6) || cpuCore == MT_CPUCORE_ANY, "Invalid cpu core specified");
-
-			uint32 anyCpuMask = (1 << (uint32)GetNumberOfHardwareThreads()) - 1;
-			MW_ULONG_PTR cpuMask = anyCpuMask;
-			if (cpuCore != MT_CPUCORE_ANY)
-			{
-				cpuMask = ((MW_ULONG_PTR)1 << (MW_ULONG_PTR)cpuCore);
-				cpuMask &= anyCpuMask;
-				if (cpuMask == 0)
-				{
-					cpuMask = anyCpuMask;
-				}
-			}
-
-			return cpuMask;
-		}
-#endif
 
 		static int GetPriority(ThreadPriority::Type priority)
 		{
@@ -178,12 +158,6 @@ namespace MT
 			thread = ::CreateThread( nullptr, stackSize, ThreadFuncInternal, this, MW_CREATE_SUSPENDED, nullptr );
 			MT_ASSERT(thread != nullptr, "Can't create thread");
 
-#if MT_PLATFORM_DURANGO
-			MW_ULONG_PTR cpuMask = GetAffinityMask(cpuCore);
-			MW_ULONG_PTR res = ::SetThreadAffinityMask(thread, cpuMask);
-			MT_USED_IN_ASSERT(res);
-			MT_ASSERT(res != 0, "SetThreadAffinityMask failed!");
-#else
 			if (cpuCore == MT_CPUCORE_ANY)
 			{
 				cpuCore = MW_MAXIMUM_PROCESSORS;
@@ -192,7 +166,6 @@ namespace MT
 			MW_DWORD res = ::SetThreadIdealProcessor(thread, cpuCore);
 			MT_USED_IN_ASSERT(res);
 			MT_ASSERT(res != (MW_DWORD)-1, "SetThreadIdealProcessor failed!");
-#endif
 
 			int sched_priority = GetPriority(priority);
 
@@ -253,12 +226,6 @@ namespace MT
 
 		static void SetThreadSchedulingPolicy(uint32 cpuCore, ThreadPriority::Type priority = ThreadPriority::DEFAULT)
 		{
-#if MT_PLATFORM_DURANGO
-			MW_ULONG_PTR cpuMask = GetAffinityMask(cpuCore);
-			MW_ULONG_PTR res = ::SetThreadAffinityMask( ::GetCurrentThread(), cpuMask);
-			MT_USED_IN_ASSERT(res);
-			MT_ASSERT(res != 0, "SetThreadAffinityMask failed!");
-#else
 			if (cpuCore == MT_CPUCORE_ANY)
 			{
 				cpuCore = MW_MAXIMUM_PROCESSORS;
@@ -267,7 +234,6 @@ namespace MT
 			MW_DWORD res = ::SetThreadIdealProcessor( ::GetCurrentThread(), cpuCore);
 			MT_USED_IN_ASSERT(res);
 			MT_ASSERT(res != (MW_DWORD)-1, "SetThreadIdealProcessor failed!");
-#endif
 
 			int sched_priority = GetPriority(priority);
 
@@ -278,13 +244,9 @@ namespace MT
 
 		static int GetNumberOfHardwareThreads()
 		{
-#if MT_PLATFORM_DURANGO
-			return 6;
-#else
 			MW_SYSTEM_INFO sysinfo;
 			::GetSystemInfo( &sysinfo );
 			return sysinfo.dwNumberOfProcessors;
-#endif
 		}
 
 		static void Sleep(uint32 milliseconds)

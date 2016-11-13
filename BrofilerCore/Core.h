@@ -3,9 +3,8 @@
 
 #include "Event.h"
 #include "MemoryPool.h"
-#include "Sampler.h"
 #include "Serialization.h"
-#include "SchedulerTrace\CallstackCollector.h"
+#include "CallstackCollector.h"
 
 #include <map>
 
@@ -13,6 +12,8 @@ namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct SchedulerTrace;
+struct SamplingProfiler;
+struct SymbolEngine;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct ScopeHeader
 {
@@ -170,13 +171,11 @@ public:
 	// Active Frame (is used as buffer)
 	static mt_thread_local EventStorage* storage;
 
-#if USE_BROFILER_SAMPLING
 	// Controls sampling routine
-	Sampler sampler;
+	SamplingProfiler* samplingProfiler;
 
 	// Resolves symbols
-	SymEngine symEngine;
-#endif
+	SymbolEngine* symbolEngine;
 
 	// Controls GPU activity
 	// Graphics graphics;

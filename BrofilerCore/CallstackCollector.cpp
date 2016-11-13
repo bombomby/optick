@@ -1,6 +1,6 @@
 #include "CallstackCollector.h"
 #include "Core.h"
-#include "SymEngine.h"
+#include "Platform/SymbolEngine.h"
 
 #include <unordered_set>
 
@@ -32,6 +32,7 @@ void CallstackCollector::Clear()
 	callstacksPool.Clear(false);
 }
 
+//////////////////////////////////////////////////////////////////////////
 bool CallstackCollector::SerializeSymbols(OutputDataStream& stream)
 {
 	typedef std::unordered_set<uint64> SymbolSet;
@@ -40,10 +41,13 @@ bool CallstackCollector::SerializeSymbols(OutputDataStream& stream)
 	for (CallstacksPool::const_iterator it = callstacksPool.begin(); it != callstacksPool.end();)
 	{
 		CallstacksPool::const_iterator startIt = it;
+		MT_UNUSED(startIt);
 
 		uint64 threadID = *it;
+		MT_UNUSED(threadID);
 		++it; //Skip ThreadID
 		uint64 timestamp = *it;
+		MT_UNUSED(timestamp);
 		++it; //Skip Timestamp
 		uint64 count = *it;
 		++it; //Skip Count
@@ -55,16 +59,20 @@ bool CallstackCollector::SerializeSymbols(OutputDataStream& stream)
 		}
 	}
 
-	SymEngine& symEngine = Core::Get().symEngine;
+	SymbolEngine* symEngine = Core::Get().symbolEngine;
 
 	std::vector<const Symbol*> symbols;
 	symbols.reserve(symbolSet.size());
-	for each (uint64 address in symbolSet)
-		if (const Symbol* symbol = symEngine.GetSymbol(address))
+	for(auto it = symbolSet.begin(); it != symbolSet.end(); ++it)
+	{
+		uint64 address = *it;
+		if (const Symbol* symbol = symEngine->GetSymbol(address))
+		{
 			symbols.push_back(symbol);
+		}
+	}
 
 	stream << symbols;
-
 	return true;
 }
 
@@ -86,6 +94,6 @@ bool CallstackCollector::IsEmpty() const
 {
 	return callstacksPool.IsEmpty();
 }
-
 //////////////////////////////////////////////////////////////////////////
+
 }

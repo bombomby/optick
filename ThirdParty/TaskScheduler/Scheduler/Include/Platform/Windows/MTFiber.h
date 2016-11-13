@@ -41,12 +41,7 @@
 #endif
 
 
-#if MT_PLATFORM_DURANGO
-	// Durango fibers don't waste virtual address space for stack as windows fibers
-	#include "MTFiberDefault.h"
-#else
 	#include "MTFiberOptimized.h"
-#endif
 
 
 #endif

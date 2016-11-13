@@ -224,6 +224,7 @@ namespace Profiler
 
         private void RenderCanvas_MouseLeave(object sender, EventArgs e)
         {
+				Mouse.OverrideCursor = null;
             Input.IsDrag = false;
             Input.IsSelect = false;
 			UpdateSurface();

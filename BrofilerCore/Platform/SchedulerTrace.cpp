@@ -7,9 +7,14 @@ CaptureStatus::Type SchedulerTrace::Start(int mode, const ThreadList& threads)
 {
 	BRO_UNUSED(mode);
 	activeThreadsIDs.clear();
-	for each (const ThreadEntry* entry in threads)
+	for(auto it = threads.begin(); it != threads.end(); ++it)
+	{
+		const ThreadEntry* entry = *it;
 		if (entry->isAlive)
+		{
 			activeThreadsIDs.insert(entry->description.threadID.AsUInt64());
+		}
+	}
 
 	return CaptureStatus::OK;
 }

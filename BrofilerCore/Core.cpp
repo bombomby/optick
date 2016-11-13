@@ -5,7 +5,9 @@
 #include "EventDescriptionBoard.h"
 #include "Thread.h"
 
-#include "SchedulerTrace/SchedulerTrace.h"
+#include "Platform/SchedulerTrace.h"
+#include "Platform/SamplingProfiler.h"
+#include "Platform/SymbolEngine.h"
 
 
 extern "C" Brofiler::EventData* NextEvent()
@@ -156,18 +158,16 @@ void Core::DumpFrames()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpSamplingData()
 {
-#if USE_BROFILER_SAMPLING
-	if (sampler.StopSampling())
+	if (samplingProfiler->StopSampling())
 	{
 		DumpProgress("Collecting Sampling Events...");
 
 		OutputDataStream stream;
-		sampler.Serialize(stream);
+		samplingProfiler->Serialize(stream);
 
 		DumpProgress("Sending Message With Sampling Data...");
 		Server::Get().Send(DataResponse::SamplingFrame, stream);
 	}
-#endif
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::CleanupThreads()
@@ -206,6 +206,8 @@ void Core::CleanupThreads()
 Core::Core() : progressReportedLastTimestampMS(0), isActive(false)
 {
 	schedulerTrace = SchedulerTrace::Get();
+	samplingProfiler = SamplingProfiler::Get();
+	symbolEngine = SymbolEngine::Get();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::Update()
@@ -277,9 +279,7 @@ void Core::ReportStackWalk(const CallstackDesc& desc)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::StartSampling()
 {
-#if USE_BROFILER_SAMPLING
-	sampler.StartSampling(threads);
-#endif
+	samplingProfiler->StartSampling(threads);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::Activate( bool active )
@@ -324,10 +324,8 @@ void Core::DumpCapturingProgress()
 	if (isActive)
 		stream << "Capturing Frame " << (uint32)frames.size() << std::endl;
 
-#if USE_BROFILER_SAMPLING
-	if (sampler.IsActive())
-		stream << "Sample Count " << (uint32)sampler.GetCollectedCount() << std::endl;
-#endif
+	if (samplingProfiler->IsActive())
+		stream << "Sample Count " << (uint32)samplingProfiler->GetCollectedCount() << std::endl;
 
 	DumpProgress(stream.str().c_str());
 }

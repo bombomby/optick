@@ -30,24 +30,13 @@
 #endif
 
 
-#if MT_PLATFORM_ORBIS
-size_t sceLibcHeapSize = 256 * 1024 * 1024;
-#endif
 
 
-#if MT_PLATFORM_WINDOWS || MT_PLATFORM_DURANGO
+#if MT_PLATFORM_WINDOWS 
 
 inline void ThrowException()
 {
 	__debugbreak();
-}
-
-#elif MT_PLATFORM_ORBIS
-
-#include<libdbg.h>
-inline void ThrowException()
-{
-	SCE_BREAK();
 }
 
 #elif MT_PLATFORM_POSIX
@@ -107,7 +96,7 @@ namespace MT
 	{
 		StackDesc desc;
 
-#if MT_PLATFORM_WINDOWS || MT_PLATFORM_DURANGO
+#if MT_PLATFORM_WINDOWS 
 
 		MW_SYSTEM_INFO systemInfo;
 		GetSystemInfo(&systemInfo);
@@ -135,38 +124,6 @@ namespace MT
 		MW_BOOL res = VirtualProtect(desc.stackMemory, pageSize, MW_PAGE_NOACCESS, &oldProtect);
 		MT_USED_IN_ASSERT(res);
 		MT_ASSERT(res != 0, "Can't protect memory");
-
-#elif MT_PLATFORM_ORBIS
-
-		int pageSize = SCE_KERNEL_PAGE_SIZE;
-		int pagesCount = size / pageSize;
-
-		//need additional page for stack tail
-		if ((size % pageSize) > 0)
-		{
-			pagesCount++;
-		}
-
-		//protected guard page
-		pagesCount++;
-
-		desc.stackMemoryBytesCount = pagesCount * pageSize;
-
-		desc.physAddr = 0;
-		int32_t ret = sceKernelAllocateDirectMemory(0, SCE_KERNEL_MAIN_DMEM_SIZE, desc.stackMemoryBytesCount, 0, SCE_KERNEL_WB_ONION, &desc.physAddr);
-		MT_USED_IN_ASSERT(ret);
-		MT_ASSERT(ret == SCE_OK, "Can't allocate physical memory!");
-
-		ret = sceKernelMapDirectMemory((void**)&desc.stackMemory, desc.stackMemoryBytesCount, SCE_KERNEL_PROT_CPU_READ  | SCE_KERNEL_PROT_CPU_WRITE, 0, desc.physAddr, 0);
-		MT_USED_IN_ASSERT(ret);
-		MT_ASSERT(ret == SCE_OK, "Can't map physical memory!");
-
-		ret = sceKernelMprotect(desc.stackMemory, pageSize, 0);
-		MT_USED_IN_ASSERT(ret);
-		MT_ASSERT(ret == SCE_OK, "Can't protect guard page!");
-
-		desc.stackBottom = desc.stackMemory + pageSize;
-		desc.stackTop = desc.stackMemory + desc.stackMemoryBytesCount;
 
 #elif MT_PLATFORM_POSIX || MT_PLATFORM_OSX
 
@@ -202,21 +159,11 @@ namespace MT
 
 	void Memory::FreeStack(const Memory::StackDesc & desc)
 	{
-#if MT_PLATFORM_WINDOWS || MT_PLATFORM_DURANGO
+#if MT_PLATFORM_WINDOWS 
 
 		int res = VirtualFree(desc.stackMemory, 0, MW_MEM_RELEASE);
 		MT_USED_IN_ASSERT(res);
 		MT_ASSERT(res != 0, "Can't free memory");
-
-#elif MT_PLATFORM_ORBIS
-
-		int res = sceKernelMunmap(desc.stackMemory, desc.stackMemoryBytesCount);
-		MT_USED_IN_ASSERT(res);
-		MT_ASSERT(res == SCE_OK, "Can't unmap memory");
-
-		res = sceKernelReleaseDirectMemory(desc.physAddr, desc.stackMemoryBytesCount);
-		MT_USED_IN_ASSERT(res);
-		MT_ASSERT(res == SCE_OK, "Can't release direct memory");
 
 #elif MT_PLATFORM_POSIX || MT_PLATFORM_OSX
 
