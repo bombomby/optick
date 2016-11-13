@@ -167,12 +167,24 @@ namespace Profiler
         DynamicMesh SelectionMesh;
         DynamicMesh HoverMesh;
 
+        const double DefaultFrameZoom = 1.25;
 
         public void FocusOn(EventFrame frame, EventNode node)
         {
             Group = frame.Group;
             SelectionList.Clear();
             SelectionList.Add(new Selection() { Frame = frame, Node = node });
+
+            Interval interval = scroll.TimeToUnit(node != null ? (IDurable)node.Entry : (IDurable)frame);
+            if (!scroll.ViewUnit.Intersect(interval))
+            {
+                scroll.ViewUnit.Width = interval.Width * DefaultFrameZoom;
+                scroll.ViewUnit.Left = interval.Left - (scroll.ViewUnit.Width - interval.Width) * 0.5;
+                scroll.ViewUnit.Normalize();
+                UpdateBar();
+            }
+
+
             UpdateSurface();
         }
 
@@ -258,6 +270,15 @@ namespace Profiler
 			}
         }
 
+        ThreadRow GetRow(double posY)
+        {
+            foreach (ThreadRow row in rows)
+                if (row.Offset <= posY && posY <= row.Offset + row.Height)
+                    return row;
+
+            return null;
+        }
+
         private void RenderCanvas_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
         {
 			Input.MousePosition = e.Location;
@@ -277,6 +298,12 @@ namespace Profiler
             }
             else
             {
+                ThreadRow row = GetRow(e.Y);
+                if (row != null)
+                {
+                    row.OnMouseMove(new Point(e.X, e.Y - row.Offset), scroll);
+                }
+
                 UpdateSurface();
             }
         }

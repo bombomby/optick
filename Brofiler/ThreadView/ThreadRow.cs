@@ -38,6 +38,11 @@ namespace Profiler
             Width = width;
         }
 
+        public bool Intersect(Interval other)
+        {
+            return Right >= other.Left && other.Right >= Left;
+        }
+
         public static Interval Unit = new Interval(0.0, 1.0);
     }
 
@@ -59,13 +64,13 @@ namespace Profiler
 			return (tick.Start - TimeSlice.Start) / durationTicks;
 		}
 
-        public Interval TimeToUnit(Durable d)
+        public Interval TimeToUnit(IDurable d)
         {
             double durationTicks = TimeSlice.Finish - TimeSlice.Start;
             return new Interval((d.Start - TimeSlice.Start) / durationTicks, (d.Finish - d.Start) / durationTicks);
         }
 
-        public Interval TimeToPixel(Durable d)
+        public Interval TimeToPixel(IDurable d)
         {
             Interval unit = TimeToUnit(d);
             double scale = Width * Zoom;

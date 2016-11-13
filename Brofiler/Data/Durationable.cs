@@ -67,7 +67,7 @@ namespace Profiler.Data
             return Start <= value && value <= Finish;
         }
 
-        internal bool Intersect(Durable other)
+        internal bool Intersect(IDurable other)
         {
             return Start <= other.Finish && Finish >= other.Start;
         }

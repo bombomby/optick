@@ -28,6 +28,8 @@ namespace Brofiler
 		void Add(const CallstackDesc& desc);
 		void Clear();
 
+		bool IsEmpty() const;
+
 		bool SerializeSymbols(OutputDataStream& stream);
 		bool SerializeCallstacks(OutputDataStream& stream);
 	};

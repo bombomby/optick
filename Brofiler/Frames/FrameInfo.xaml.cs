@@ -37,10 +37,10 @@ namespace Profiler
 
 		private Data.Frame frame;
 
-		public void SetFrame(Data.Frame frame)
+		public void SetFrame(Data.Frame frame, IDurable node)
 		{
 			this.frame = frame;
-			Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => { frame.Load(); this.DataContext = frame; }));
+			Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => { frame.Load(); this.DataContext = frame; FocusOnNode(node); }));
 		}
 
 		public void RefreshFilter(object sender, RoutedEventArgs e)
@@ -129,7 +129,7 @@ namespace Profiler
 			}
 		}
 
-		public bool FocusOnNode(Durable focusRange)
+		public bool FocusOnNode(IDurable focusRange)
 		{
 			if (EventTreeView == null)
 			{

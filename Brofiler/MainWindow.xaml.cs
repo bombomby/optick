@@ -109,14 +109,12 @@ namespace Profiler
             FrameInfo info = new FrameInfo() { Height = Double.NaN, Width = Double.NaN, DataContext = null };
             info.DataContextChanged += new DependencyPropertyChangedEventHandler((object sender, DependencyPropertyChangedEventArgs e) => { tabItem.Header = frame.Description; });
             info.SelectedTreeNodeChanged += new SelectedTreeNodeChangedHandler(FrameInfo_OnSelectedTreeNodeChanged);
-            info.SetFrame(frame);
+            info.SetFrame(frame, focusRange);
 
             tabItem.AddFrameInfo(info);
 
             frameTabs.Items.Add(tabItem);
             frameTabs.SelectedItem = tabItem;
-
-			info.FocusOnNode(focusRange);
         }
 
         void FrameInfo_OnSelectedTreeNodeChanged(Data.Frame frame, BaseTreeNode node)
