@@ -35,6 +35,7 @@ namespace Profiler
         SolidColorBrush AlternativeBackground;
         SolidColorBrush FrameSelection;
         SolidColorBrush FrameHover;
+        Color MeasureBackground;
 
 
         void InitColors()
@@ -42,6 +43,7 @@ namespace Profiler
             AlternativeBackground = FindResource("BroAlternative") as SolidColorBrush;
             FrameSelection = FindResource("BroFrameSelection") as SolidColorBrush;
             FrameHover = FindResource("BroFrameHover") as SolidColorBrush;
+            MeasureBackground = Color.FromArgb(100, 0, 0, 0);
         }
 
         class RowsDescription
@@ -166,6 +168,7 @@ namespace Profiler
 
         DynamicMesh SelectionMesh;
         DynamicMesh HoverMesh;
+        DynamicMesh MeasureMesh;
 
         const double DefaultFrameZoom = 1.25;
 
@@ -210,15 +213,26 @@ namespace Profiler
             HoverMesh = surface.CreateMesh();
             HoverMesh.Projection = Mesh.ProjectionType.Pixel;
             HoverMesh.Geometry = Mesh.GeometryType.Lines;
-		}
+
+            MeasureMesh = surface.CreateMesh();
+            MeasureMesh.Projection = Mesh.ProjectionType.Pixel;
+            MeasureMesh.UseAlpha = true;
+        }
 
 		class InputState
         {
             public bool IsDrag { get; set; }
             public bool IsSelect { get; set; }
+            public bool IsMeasure { get; set; }
+            public Durable MeasureInterval { get; set; }
             public System.Drawing.Point SelectStartPosition { get; set; }
             public System.Drawing.Point DragPosition { get; set; }
 			public System.Drawing.Point MousePosition { get; set; }
+
+            public InputState()
+            {
+                MeasureInterval = new Durable();
+            }
         }
 
         InputState Input = new InputState();
@@ -282,6 +296,7 @@ namespace Profiler
         private void RenderCanvas_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e)
         {
 			Input.MousePosition = e.Location;
+            bool updateSurface = false;
 
 			if (Input.IsDrag)
             {
@@ -292,9 +307,14 @@ namespace Profiler
                 scroll.ViewUnit.Normalize();
 
                 UpdateBar();
-                UpdateSurface();
+                updateSurface = true;
 
                 Input.DragPosition = e.Location;
+            }
+            else if (Input.IsMeasure)
+            {
+                Input.MeasureInterval.Finish = scroll.PixelToTime(e.X).Start;
+                updateSurface = true;
             }
             else
             {
@@ -304,8 +324,11 @@ namespace Profiler
                     row.OnMouseMove(new Point(e.X, e.Y - row.Offset), scroll);
                 }
 
-                UpdateSurface();
+                updateSurface = true;
             }
+
+            if (updateSurface)
+                UpdateSurface();
         }
 
         private void RenderCanvas_MouseUp(object sender, System.Windows.Forms.MouseEventArgs e)
@@ -314,6 +337,11 @@ namespace Profiler
             {
 				Mouse.OverrideCursor = null;
                 Input.IsDrag = false;
+            }
+
+            if (e.Button == System.Windows.Forms.MouseButtons.Left)
+            {
+                Input.IsMeasure = false;
             }
         }
 
@@ -330,9 +358,15 @@ namespace Profiler
 				if (Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl))
 				{
 					MouseShowPopup(e);
-				} else
+				}
+                else
 				{
-					Input.IsSelect = true;
+                    Input.IsMeasure = true;
+                    long time = scroll.PixelToTime(e.X).Start;
+                    Input.MeasureInterval.Start = time;
+                    Input.MeasureInterval.Finish = time;
+
+                    Input.IsSelect = true;
 					Input.SelectStartPosition = e.Location;
 					MouseClickLeft(e);
 				}
@@ -407,29 +441,44 @@ namespace Profiler
             canvas.Draw(SelectionMesh);
         }
 
+        void DrawMeasure(DirectX.DirectXCanvas canvas)
+        {
+            if (Input.MeasureInterval.Start != Input.MeasureInterval.Finish)
+            {
+                Durable activeInterval = Input.MeasureInterval.Normalize();
+                Interval pixelInterval = scroll.TimeToPixel(activeInterval);
+                MeasureMesh.AddRect(new Rect(pixelInterval.Left, 0, pixelInterval.Width, scroll.Height), MeasureBackground);
+                canvas.Text.Draw(new Point(pixelInterval.Left, scroll.Height*0.5), activeInterval.DurationF3, Colors.White, TextAlignment.Center, pixelInterval.Width);
+
+                MeasureMesh.Update(canvas.RenderDevice);
+                canvas.Draw(MeasureMesh);
+            }
+        }
+
         void DrawHover(DirectXCanvas canvas)
         {
             HoverMesh.Update(canvas.RenderDevice);
             canvas.Draw(HoverMesh);
         }
 
-        void OnDraw(DirectX.DirectXCanvas canvas)
+        void OnDraw(DirectX.DirectXCanvas canvas, DirectXCanvas.Layer layer)
         {
-            canvas.Draw(BackgroundMesh);
-
-            foreach (ThreadRow.RenderPriority priority in Enum.GetValues(typeof(ThreadRow.RenderPriority)))
+            if (layer == DirectXCanvas.Layer.Background)
             {
-                foreach (ThreadRow row in rows)
-                {
-                    if (row.Priority == priority)
-                    {
-                        row.Render(canvas, scroll);
-                    }
-                }
+                canvas.Draw(BackgroundMesh);
             }
 
-            DrawSelection(canvas);
-            DrawHover(canvas);
+            foreach (ThreadRow row in rows)
+            {
+                row.Render(canvas, scroll, layer);
+            }
+
+            if (layer == DirectXCanvas.Layer.Foreground)
+            {
+                DrawSelection(canvas);
+                DrawHover(canvas);
+                DrawMeasure(canvas);
+            }
         }
 
         void ThreadView_SizeChanged(object sender, SizeChangedEventArgs e)

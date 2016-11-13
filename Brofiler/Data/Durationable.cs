@@ -83,6 +83,11 @@ namespace Profiler.Data
 			Finish = reader.ReadInt64();
 		}
 
+        public Durable Normalize()
+        {
+            return (Start > Finish) ? new Durable(Finish, Start) : new Durable(Start, Finish);
+        }
+
 		public Durable(long s, long f)
 		{
 			this.Start = s;

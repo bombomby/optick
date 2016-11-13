@@ -180,6 +180,8 @@ namespace Profiler
             }
 
             frames.Flush();
+            ScrollToEnd();
+
             return true;
         }
 
@@ -237,11 +239,7 @@ namespace Profiler
                         lock (frames)
                         {
                             frames.Flush();
-                            if (frames.Count > 0)
-                            {
-                                frameList.SelectedItem = frames[frames.Count - 1];
-                                ScrollToEnd();
-                            }
+                            ScrollToEnd();
                         }
                         break;
 
@@ -276,6 +274,7 @@ namespace Profiler
         {
             if (frames.Count > 0)
             {
+                frameList.SelectedItem = frames[frames.Count - 1];
                 frameList.ScrollIntoView(frames[frames.Count - 1]);
             }
         }

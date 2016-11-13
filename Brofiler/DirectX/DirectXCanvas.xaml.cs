@@ -225,7 +225,14 @@ namespace Profiler.DirectX
             return Utils.Convert(color);
         }
 
-        public delegate void OnDrawHandler(DirectXCanvas canvas);
+        public enum Layer
+        {
+            Background,
+            Normal,
+            Foreground,
+        }
+
+        public delegate void OnDrawHandler(DirectXCanvas canvas, Layer layer);
         public event OnDrawHandler OnDraw;
 
         public void Update()
@@ -240,12 +247,16 @@ namespace Profiler.DirectX
             context.ClearRenderTargetView(RTView, ConvertColor(Background));
 
             if (OnDraw != null)
-                OnDraw(this);
+            {
+                foreach (Layer layer in Enum.GetValues(typeof(Layer)))
+                {
+                    OnDraw(this, layer);
+                    Text.Render(this);
+                }
+            }
 
-            Text.Render(this);
-
-            DelayedDrawList.ForEach(mesh => Draw(mesh));
-            DelayedDrawList.Clear();
+            //DelayedDrawList.ForEach(mesh => Draw(mesh));
+            //DelayedDrawList.Clear();
 
             SwapChain.Present(0, PresentFlags.None);
         }
@@ -267,12 +278,12 @@ namespace Profiler.DirectX
             }
         }
 
-        List<Mesh> DelayedDrawList = new List<Mesh>();
+        //List<Mesh> DelayedDrawList = new List<Mesh>();
 
-        public void DrawLater(Mesh mesh)
-        {
-            DelayedDrawList.Add(mesh);
-        }
+        //public void DrawLater(Mesh mesh)
+        //{
+        //    DelayedDrawList.Add(mesh);
+        //}
 
         public void SetAlphaBlend(bool isOn)
         {

@@ -198,85 +198,94 @@ namespace Profiler
         double TextDrawThreshold = 8.0 * RenderSettings.dpiScaleX;
         double TextDrawOffset = 1.5 * RenderSettings.dpiScaleY;
 
-        public override void Render(DirectX.DirectXCanvas canvas, ThreadScroll scroll)
+        public override void Render(DirectX.DirectXCanvas canvas, ThreadScroll scroll, DirectXCanvas.Layer layer)
         {
             SharpDX.Matrix world = SharpDX.Matrix.Scaling((float)scroll.Zoom, (float)((Height - 2.0 * RenderParams.BaseMargin) / scroll.Height), 1.0f);
             world.TranslationVector = new SharpDX.Vector3(-(float)(scroll.ViewUnit.Left * scroll.Zoom), (float)((Offset + 1.0 * RenderParams.BaseMargin) / scroll.Height), 0.0f);
 
-            if (Mesh != null)
+            if (layer == DirectXCanvas.Layer.Background)
             {
-                Mesh.World = world;
-                canvas.Draw(Mesh);
-            }
 
-            if (FilterMesh != null)
-            {
-                FilterMesh.World = world;
-                canvas.Draw(FilterMesh);
-            }
-
-            if (SyncMesh != null)
-            {
-                SyncMesh.World = world;
-                canvas.Draw(SyncMesh);
-            }
-
-            if (CallstackMeshPolys != null && CallstackMeshLines != null && scroll.DrawCallstacks)
-            {
-                double unitWidth = scroll.PixelToUnitLength(CallstackMarkerSize * 0.5);
-                double unitHeight = (CallstackMarkerSize / RenderParams.BaseHeight) / MaxDepth;
-                double offset = (CallstackMarkerOffset / RenderParams.BaseHeight) / MaxDepth;
-
-                Data.Utils.ForEachInsideInterval(EventData.Callstacks, scroll.ViewTime, callstack =>
+                if (Mesh != null)
                 {
-                    double center = scroll.TimeToUnit(callstack);
+                    Mesh.World = world;
+                    canvas.Draw(Mesh);
+                }
 
-                    Point a = new Point(center - unitWidth, offset);
-                    Point b = new Point(center, offset + unitHeight);
-                    Point c = new Point(center + unitWidth, offset);
-
-                    CallstackMeshPolys.AddTri(a, b, c, CallstackColor);
-                    CallstackMeshLines.AddTri(a, b, c, Colors.Black);
-                });
-
-                CallstackMeshPolys.Update(canvas.RenderDevice);
-                CallstackMeshLines.Update(canvas.RenderDevice);
-
-                CallstackMeshPolys.World = world;
-                CallstackMeshLines.World = world;
-
-                canvas.DrawLater(CallstackMeshPolys);
-                canvas.DrawLater(CallstackMeshLines);
-            }
-
-            Data.Utils.ForEachInsideInterval(EventData.Events, scroll.ViewTime, frame =>
-            {
-                frame.CategoriesTree.ForEachChild((node, level) =>
+                if (FilterMesh != null)
                 {
-                    Entry entry = (node as EventNode).Entry;
-                    Interval intervalPx = scroll.TimeToPixel(entry);
+                    FilterMesh.World = world;
+                    canvas.Draw(FilterMesh);
+                }
 
-                    if (intervalPx.Width < TextDrawThreshold || intervalPx.Right < 0.0)
-                        return false;
+                if (SyncMesh != null)
+                {
+                    SyncMesh.World = world;
+                    canvas.Draw(SyncMesh);
+                }
 
-                    if (intervalPx.Left < 0.0)
+                Data.Utils.ForEachInsideInterval(EventData.Events, scroll.ViewTime, frame =>
+                {
+                    frame.CategoriesTree.ForEachChild((node, level) =>
                     {
-                        intervalPx.Width += intervalPx.Left;
-                        intervalPx.Left = 0.0;
-                    }
+                        Entry entry = (node as EventNode).Entry;
+                        Interval intervalPx = scroll.TimeToPixel(entry);
 
-                    double lum = DirectX.Utils.GetLuminance(entry.Description.Color);
-                    Color color = lum < 0.33 ? Colors.White : Colors.Black;
+                        if (intervalPx.Width < TextDrawThreshold || intervalPx.Right < 0.0)
+                            return false;
 
-                    canvas.Text.Draw(new Point(intervalPx.Left + TextDrawOffset, Offset + level * RenderParams.BaseHeight), 
-                                     entry.Description.Name, 
-                                     color,
-                                     TextAlignment.Left,
-                                     intervalPx.Width - TextDrawOffset);
+                        if (intervalPx.Left < 0.0)
+                        {
+                            intervalPx.Width += intervalPx.Left;
+                            intervalPx.Left = 0.0;
+                        }
 
-                    return true;
+                        double lum = DirectX.Utils.GetLuminance(entry.Description.Color);
+                        Color color = lum < 0.33 ? Colors.White : Colors.Black;
+
+                        canvas.Text.Draw(new Point(intervalPx.Left + TextDrawOffset, Offset + level * RenderParams.BaseHeight),
+                                         entry.Description.Name,
+                                         color,
+                                         TextAlignment.Left,
+                                         intervalPx.Width - TextDrawOffset);
+
+                        return true;
+                    });
                 });
-            });
+            }
+
+            if (layer == DirectXCanvas.Layer.Foreground)
+            {
+                if (CallstackMeshPolys != null && CallstackMeshLines != null && scroll.DrawCallstacks)
+                {
+                    double unitWidth = scroll.PixelToUnitLength(CallstackMarkerSize * 0.5);
+                    double unitHeight = (CallstackMarkerSize / RenderParams.BaseHeight) / MaxDepth;
+                    double offset = (CallstackMarkerOffset / RenderParams.BaseHeight) / MaxDepth;
+
+                    Data.Utils.ForEachInsideInterval(EventData.Callstacks, scroll.ViewTime, callstack =>
+                    {
+                        double center = scroll.TimeToUnit(callstack);
+
+                        Point a = new Point(center - unitWidth, offset);
+                        Point b = new Point(center, offset + unitHeight);
+                        Point c = new Point(center + unitWidth, offset);
+
+                        CallstackMeshPolys.AddTri(a, b, c, CallstackColor);
+                        CallstackMeshLines.AddTri(a, b, c, Colors.Black);
+                    });
+
+                    CallstackMeshPolys.Update(canvas.RenderDevice);
+                    CallstackMeshLines.Update(canvas.RenderDevice);
+
+                    CallstackMeshPolys.World = world;
+                    CallstackMeshLines.World = world;
+
+                    canvas.Draw(CallstackMeshPolys);
+                    canvas.Draw(CallstackMeshLines);
+                }
+            }
+
+
         }
 
         public delegate void EventNodeHoverHandler(Rect rect, ThreadRow row, EventNode node);

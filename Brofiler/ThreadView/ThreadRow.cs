@@ -106,22 +106,12 @@ namespace Profiler
 
     public abstract class ThreadRow
     {
-        public enum RenderPriority
-        {
-            Background,
-            Normal,
-            Foreground,
-            Selection,
-        }
-
-        public RenderPriority Priority = RenderPriority.Normal;
-
         public double Offset { get; set; }
         public abstract double Height { get; }
         public abstract String Name { get; }
         public FrameGroup Group { get; set; }
 
-        public abstract void Render(DirectX.DirectXCanvas canvas, ThreadScroll scroll);
+        public abstract void Render(DirectX.DirectXCanvas canvas, ThreadScroll scroll, DirectXCanvas.Layer layer);
         public abstract void BuildMesh(DirectX.DirectXCanvas canvas, ThreadScroll scroll);
 
         public abstract void OnMouseMove(Point point, ThreadScroll scroll);
@@ -164,27 +154,30 @@ namespace Profiler
             BackgroundMeshTris = builderHeader.Freeze(canvas.RenderDevice);
         }
 
-        public override void Render(DirectX.DirectXCanvas canvas, ThreadScroll scroll)
+        public override void Render(DirectXCanvas canvas, ThreadScroll scroll, DirectXCanvas.Layer layer)
         {
-            SharpDX.Matrix world = SharpDX.Matrix.Scaling((float)scroll.Zoom, 1.0f, 1.0f);
-            world.TranslationVector = new SharpDX.Vector3(-(float)(scroll.ViewUnit.Left * scroll.Zoom), 0.0f, 0.0f);
-
-            BackgroundMeshLines.World = world;
-            BackgroundMeshTris.World = world;
-
-            canvas.Draw(BackgroundMeshTris);
-            canvas.Draw(BackgroundMeshLines);
-
-            Data.Utils.ForEachInsideInterval(Group.MainThread.Events, scroll.ViewTime, frame =>
+            if (layer == DirectXCanvas.Layer.Background)
             {
-                Interval interval = scroll.TimeToPixel(frame.Header);
+                SharpDX.Matrix world = SharpDX.Matrix.Scaling((float)scroll.Zoom, 1.0f, 1.0f);
+                world.TranslationVector = new SharpDX.Vector3(-(float)(scroll.ViewUnit.Left * scroll.Zoom), 0.0f, 0.0f);
 
-                String text = String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:0.0} ms", frame.Header.Duration);
+                BackgroundMeshLines.World = world;
+                BackgroundMeshTris.World = world;
 
-                // 2 times to emulate "bold"
-                for (int i = 0; i < 2; ++i)
-                canvas.Text.Draw(new Point(interval.Left, Offset), text, TextColor, TextAlignment.Center, interval.Width);
-            });
+                canvas.Draw(BackgroundMeshTris);
+                canvas.Draw(BackgroundMeshLines);
+
+                Data.Utils.ForEachInsideInterval(Group.MainThread.Events, scroll.ViewTime, frame =>
+                {
+                    Interval interval = scroll.TimeToPixel(frame.Header);
+
+                    String text = String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:0.0} ms", frame.Header.Duration);
+
+                    // 2 times to emulate "bold"
+                    for (int i = 0; i < 2; ++i)
+                        canvas.Text.Draw(new Point(interval.Left, Offset), text, TextColor, TextAlignment.Center, interval.Width);
+                });
+            }
         }
 
         public override void OnMouseMove(Point point, ThreadScroll scroll) { }
