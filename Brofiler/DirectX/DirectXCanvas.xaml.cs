@@ -154,7 +154,13 @@ namespace Profiler.DirectX
             SharpDX.Direct3D11.Device device;
             SwapChain swapChain;
 
-            SharpDX.Direct3D11.Device.CreateWithSwapChain(DriverType.Hardware, DeviceCreationFlags.Debug, SwapChainDesc, out device, out swapChain);
+            DeviceCreationFlags flags = DeviceCreationFlags.None;
+
+        #if DEBUG
+            flags |= DeviceCreationFlags.Debug;
+        #endif
+
+            SharpDX.Direct3D11.Device.CreateWithSwapChain(DriverType.Hardware, flags, SwapChainDesc, out device, out swapChain);
 
             SwapChain = swapChain;
             RenderDevice = device;
