@@ -104,19 +104,31 @@ namespace Profiler.Data
         }
     }
 
+	public class FiberDescription
+	{
+		public UInt64 fiberID { get; set; }
+
+		public static FiberDescription Read(DataResponse response)
+		{
+			BinaryReader reader = response.Reader;
+			FiberDescription res = new FiberDescription();
+			res.fiberID = reader.ReadUInt64();
+			return res;
+		}
+	}
+
     public class ThreadDescription
     {
         public String Name { get; set; }
         public UInt64 ThreadID { get; set; }
         public int MaxDepth { get; set; }
-        public bool IsFiber { get; set; }
 
         public static ThreadDescription Read(DataResponse response)
         {
             BinaryReader reader = response.Reader;
             ThreadDescription res = new ThreadDescription();
 
-            res.ThreadID = (response.Version >= NetworkProtocol.NETWORK_PROTOCOL_VERSION_7) ? reader.ReadUInt64() : (UInt64)reader.ReadUInt32();
+            res.ThreadID = reader.ReadUInt64();
             int nameLength = reader.ReadInt32();
             res.Name = new String(reader.ReadChars(nameLength));
             res.MaxDepth = 1; // TODO: reader.ReadInt32();
@@ -134,7 +146,7 @@ namespace Profiler.Data
 
         public List<ThreadDescription> Threads { get; private set; }
         public Dictionary<UInt64, int> ThreadID2ThreadIndex { get; private set; }
-        public List<ThreadDescription> Fibers { get; private set; }
+		public List<FiberDescription> Fibers { get; private set; }
 
         private List<EventDescription> board = new List<EventDescription>();
         public List<EventDescription> Board
@@ -188,13 +200,11 @@ namespace Profiler.Data
             }
 
             int fibersCount = reader.ReadInt32();
-            desc.Fibers = new List<ThreadDescription>(fibersCount);
+			desc.Fibers = new List<FiberDescription>(fibersCount);
             for (int i = 0; i < fibersCount; ++i)
             {
-                ThreadDescription threadDesc = ThreadDescription.Read(response);
-                threadDesc.IsFiber = true;
-                desc.Fibers.Add(threadDesc);
-                desc.Threads.Add(threadDesc);
+				FiberDescription fiberDesc = FiberDescription.Read(response);
+				desc.Fibers.Add(fiberDesc);
             }
 
             desc.MainThreadIndex = reader.ReadInt32();

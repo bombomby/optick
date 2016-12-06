@@ -64,14 +64,14 @@ namespace MT
 		// Called from thread when thread is finished waiting for group
 		virtual void OnThreadWaitFinished() = 0;
 
-		// Called from thread when fiber assigned to this worker thread
-		virtual void OnFiberAssignedToThread(uint32 fiberIndex, uint32 threadIndex) = 0;
+		// Called from thread when waiting thread temporary convert to worker
+		virtual void OnTemporaryWorkerThreadJoin() = 0;
 
-		// Called from thread when fiber assigned to this worker thread
-		virtual void OnThreadAssignedToFiber(uint32 threadIndex, uint32 fiberIndex) = 0;
+		// Called from thread when temporary worker leave
+		virtual void OnTemporaryWorkerThreadLeave() = 0;
 
 		// Called from the worker thread that has change the task execution state
-		virtual void OnTaskExecuteStateChanged(MT::Color::Type debugColor, const mt_char* debugID, TaskExecuteState::Type type) = 0;
+		virtual void OnTaskExecuteStateChanged(MT::Color::Type debugColor, const mt_char* debugID, TaskExecuteState::Type type, int32 fiberIndex) = 0;
 	};
 
 }

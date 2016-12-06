@@ -15,13 +15,15 @@ namespace Brofiler
 	{
 		uint64 threadID;
 		uint64 timestamp;
-		size_t* callstack;
+		uint64* callstack;
 		uint8 count;
 	};
+
+
 	//////////////////////////////////////////////////////////////////////////
 	class CallstackCollector
 	{
-		// Packed callstack list: {ThreadID, Timestamp, Count, u64[Count]}
+		// Packed callstack list: {ThreadID, Timestamp, Count, Callstack[Count]}
 		typedef MemoryPool<uint64, 1024 * 32> CallstacksPool;
 		CallstacksPool callstacksPool;
 	public:

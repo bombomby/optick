@@ -9,14 +9,18 @@ namespace Profiler
 {
     public struct NetworkProtocol
     {
+/*
         public const UInt32 NETWORK_PROTOCOL_VERSION_6  = 6; 
         public const UInt32 NETWORK_PROTOCOL_VERSION_7  = 7; // Changed ThreadID - uint32 => uint64
         public const UInt32 NETWORK_PROTOCOL_VERSION_8  = 8; // Changed CoreID in SyncData - uint32 => uint64
         public const UInt32 NETWORK_PROTOCOL_VERSION_9  = 9; // Added thread synchronization wait reason
         public const UInt32 NETWORK_PROTOCOL_VERSION_10 = 10; // Added StackWalk event
+		public const UInt32 NETWORK_PROTOCOL_VERSION_11 = 11; // Added thread synchronization switch to thread ID
+ */ 
+		public const UInt32 NETWORK_PROTOCOL_VERSION_12 = 12; // Added separate fiber sync data stream
 
-        public const UInt32 NETWORK_PROTOCOL_VERSION = NETWORK_PROTOCOL_VERSION_10;
-        public const UInt32 NETWORK_PROTOCOL_MIN_VERSION = NETWORK_PROTOCOL_VERSION_6;
+		public const UInt32 NETWORK_PROTOCOL_VERSION = NETWORK_PROTOCOL_VERSION_12;
+		public const UInt32 NETWORK_PROTOCOL_MIN_VERSION = NETWORK_PROTOCOL_VERSION_12;
     }
 
 	public abstract class IResponseHolder
@@ -28,15 +32,17 @@ namespace Profiler
     {
         public enum Type
         {
-            FrameDescriptionBoard,
-            EventFrame,
-            SamplingFrame,
-            Synchronization,
-            NullFrame,
-            ReportProgress,
-            Handshake,
-            SymbolPack,
-            CallstackPack,
+            FrameDescriptionBoard = 0,
+            EventFrame = 1,
+            SamplingFrame = 2,
+            Synchronization = 3,
+            NullFrame = 4,
+            ReportProgress = 5,
+            Handshake = 6,
+            SymbolPack = 7,
+            CallstackPack = 8,
+			SyscallPack = 9,
+			FiberSynchronization = 10,
         }
 
         public Type ResponseType { get; set; }

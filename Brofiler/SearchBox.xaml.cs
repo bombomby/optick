@@ -42,6 +42,15 @@ namespace Profiler
 
 		public bool IsFiltering { get { return isFiltering; } }
 
+		public void SetFilterText(string text)
+		{
+			isFiltering = true;
+			FilterText.Text = text;
+			delayedTextUpdateTimer.Stop();
+			delayedTextUpdateTimer.Start();
+		}
+
+
 		private void FilterText_GotFocus(object sender, RoutedEventArgs e)
 		{
 			if (!isFiltering)

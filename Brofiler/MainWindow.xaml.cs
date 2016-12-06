@@ -104,9 +104,19 @@ namespace Profiler
                 }
             }
 
+
+/*
+			CloseableTabItem curr = frameTabs.SelectedItem as CloseableTabItem;
+			string currFiltredText = null;
+			if (curr != null && curr.frameInfo != null)
+			{
+				currFiltredText = curr.frameInfo.SummaryTable.FilterText.FilterText.Text;
+			}
+ */ 
+
             CloseableTabItem tabItem = new CloseableTabItem() { Header = "Loading...", DataContext = frame };
 
-            FrameInfo info = new FrameInfo() { Height = Double.NaN, Width = Double.NaN, DataContext = null };
+			FrameInfo info = new FrameInfo(timeLine.Frames) { Height = Double.NaN, Width = Double.NaN, DataContext = null };
             info.DataContextChanged += new DependencyPropertyChangedEventHandler((object sender, DependencyPropertyChangedEventArgs e) => { tabItem.Header = frame.Description; });
             info.SelectedTreeNodeChanged += new SelectedTreeNodeChangedHandler(FrameInfo_OnSelectedTreeNodeChanged);
             info.SetFrame(frame);
@@ -117,6 +127,14 @@ namespace Profiler
             frameTabs.SelectedItem = tabItem;
 
 			info.FocusOnNode(focusRange);
+
+/*
+			if (!string.IsNullOrEmpty(currFiltredText))
+			{
+				info.SummaryTable.FilterText.SetFilterText(currFiltredText);
+			}
+ */ 
+
         }
 
         void FrameInfo_OnSelectedTreeNodeChanged(Data.Frame frame, BaseTreeNode node)

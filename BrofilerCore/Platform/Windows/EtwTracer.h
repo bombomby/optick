@@ -10,9 +10,9 @@ namespace Brofiler
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class ETW : public SchedulerTrace
 {
-	EVENT_TRACE_PROPERTIES *sessionProperties;
+	EVENT_TRACE_PROPERTIES *traceProperties;
 	EVENT_TRACE_LOGFILE logFile;
-	TRACEHANDLE sessionHandle;
+	TRACEHANDLE traceSessionHandle;
 	TRACEHANDLE openedHandle;
 
 	HANDLE processThreadHandle;
@@ -26,7 +26,7 @@ public:
 	ETW();
 	~ETW();
 
-	virtual CaptureStatus::Type Start(int mode, const ThreadList& threads) override;
+	virtual CaptureStatus::Type Start(int mode, const ThreadList& threads, bool autoAddUnknownThreads) override;
 	virtual bool Stop();
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

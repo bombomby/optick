@@ -5,26 +5,36 @@ using System.Text;
 using System.IO;
 using System.Windows.Media;
 using System.Threading;
+using System.ComponentModel;
 
 namespace Profiler.Data
 {
     public class FrameHeader : EventData
     {
         public int ThreadIndex { get; private set; }
+		public int FiberIndex { get; private set; }
 
         public static FrameHeader Read(BinaryReader reader)
         {
             FrameHeader header = new FrameHeader();
             header.ThreadIndex = reader.ReadInt32();
+			header.FiberIndex = reader.ReadInt32();
+
+			if (header.FiberIndex >= 0)
+			{
+				int a = 0;
+			}
+
             header.ReadEventData(reader);
             return header;
         }
 
         public FrameHeader() { }
 
-        public FrameHeader(int index, IDurable duration)
+        public FrameHeader(int threadIndex, int fiberIndex, IDurable duration)
         {
-            ThreadIndex = index;
+			ThreadIndex = threadIndex;
+			FiberIndex = fiberIndex;
             Start = duration.Start;
             Finish = duration.Finish;
         }
@@ -58,7 +68,7 @@ namespace Profiler.Data
     }
 
 
-    public class EventFrame : Frame, IDurable, IComparable<EventFrame>
+    public class EventFrame : Frame, IDurable, IComparable<EventFrame>, INotifyPropertyChanged
     {
         public override DataResponse.Type ResponseType { get { return DataResponse.Type.EventFrame; } }
 
@@ -84,6 +94,8 @@ namespace Profiler.Data
         public long Start { get { return Header.Start; } }
         public long Finish { get { return Header.Finish; } }
 
+		string filteredDescription = "";
+
         public override double Duration
         {
             get
@@ -101,6 +113,29 @@ namespace Profiler.Data
                 return String.Format("{0:0} ms", Header.Duration);
             }
         }
+
+		public override string FilteredDescription
+		{
+			get
+			{
+				return filteredDescription;
+			}
+
+			set
+			{
+				filteredDescription = value;
+				OnPropertyChanged("FilteredDescription"); 
+			}
+		}
+
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		private void OnPropertyChanged(string propertyName)
+		{
+			if (PropertyChanged != null)
+				PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+		}
+
 
         public string DeatiledDescription
         {
@@ -153,6 +188,7 @@ namespace Profiler.Data
         public List<Entry> Categories { get; private set; }
         public EventTree CategoriesTree { get; private set; }
         public List<Data.SyncInterval> Synchronization { get; private set; }
+		public List<Data.FiberSyncInterval> FiberSync { get; private set; }
 
         long IDurable.Finish
         {
@@ -263,6 +299,7 @@ namespace Profiler.Data
             CategoriesTree = new EventTree(this, Categories);
 
             Synchronization = new List<SyncInterval>();
+			FiberSync = new List<FiberSyncInterval>();
         }
 
         public double CalculateFilteredTime(HashSet<Object> filter)
@@ -303,6 +340,7 @@ namespace Profiler.Data
             board = new Board<EventBoardItem, EventDescription, EventNode>(root);
 
             Synchronization = new List<SyncInterval>();
+			FiberSync = new List<FiberSyncInterval>();
 
             IsLoaded = true;
         }

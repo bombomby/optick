@@ -5,6 +5,7 @@
 #include "MemoryPool.h"
 #include "Serialization.h"
 #include "CallstackCollector.h"
+#include "SysCallCollector.h"
 
 #include <map>
 
@@ -19,7 +20,8 @@ struct ScopeHeader
 {
 	EventTime event;
 	uint32 boardNumber;
-	uint32 threadNumber;
+	int32 threadNumber;
+	int32 fiberNumber;
 
 	ScopeHeader();
 };
@@ -56,14 +58,17 @@ OutputDataStream& operator << ( OutputDataStream& stream, const ScopeData& ob);
 typedef MemoryPool<EventData, 1024> EventBuffer;
 typedef MemoryPool<const EventData*, 32> CategoryBuffer;
 typedef MemoryPool<SyncData, 1024> SynchronizationBuffer;
+typedef MemoryPool<FiberSyncData, 1024> FiberSyncBuffer;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct EventStorage
 {
 	EventBuffer eventBuffer;
 	CategoryBuffer categoryBuffer; 
 	SynchronizationBuffer synchronizationBuffer;
+	FiberSyncBuffer fiberSyncBuffer;
 
 	MT::Atomic32<uint32> isSampling;
+	bool isFiberStorage;
 
 	EventStorage();
 
@@ -83,6 +88,7 @@ struct EventStorage
 		eventBuffer.Clear(preserveContent);
 		categoryBuffer.Clear(preserveContent);
 		synchronizationBuffer.Clear(preserveContent);
+		fiberSyncBuffer.Clear(preserveContent);
 	}
 
 	void Reset()
@@ -95,8 +101,22 @@ struct ThreadDescription
 {
 	const char* name;
 	MT::ThreadId threadID;
+	bool fromOtherProcess;
 
-	ThreadDescription(const char* threadName, const MT::ThreadId& id): name(threadName), threadID(id) {}
+	ThreadDescription(const char* threadName, const MT::ThreadId& id, bool _fromOtherProcess)
+		: name(threadName)
+		, threadID(id)
+		, fromOtherProcess(_fromOtherProcess)
+	{}
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct FiberDescription
+{
+	uint64 id; 
+
+	FiberDescription(uint64 _id)
+		: id(_id)
+	{}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct ThreadEntry
@@ -112,6 +132,25 @@ struct ThreadEntry
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct FiberEntry
+{
+	FiberDescription description;
+	EventStorage storage;
+
+	FiberEntry(const FiberDescription& desc) : description(desc) {}
+};
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+enum SwitchContextResult
+{
+	SCR_OTHERPROCESS = 0,   // context switch in other process
+	SCR_INSIDEPROCESS = 3,  // context switch in our process
+	SCR_THREADENABLED = 1,  // enabled thread in our process
+	SCR_THREADDISABLED = 2, // disabled thread in our process
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct SwitchContextDesc
 {
 	int64_t timestamp;
@@ -122,6 +161,7 @@ struct SwitchContextDesc
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef std::vector<ThreadEntry*> ThreadList;
+typedef std::vector<FiberEntry*> FiberList;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct CaptureStatus
 {
@@ -142,13 +182,14 @@ class Core
 	MT::ThreadId mainThreadID;
 
 	ThreadList threads;
-	ThreadList fibers;
+	FiberList fibers;
 
 	int64 progressReportedLastTimestampMS;
 
 	std::vector<EventTime> frames;
 
 	CallstackCollector callstackCollector;
+	SysCallCollector syscallCollector;
 
 	void UpdateEvents();
 	void Update();
@@ -161,9 +202,12 @@ class Core
 	void DumpCapturingProgress();
 	void SendHandshakeResponse(CaptureStatus::Type status);
 
-	void DumpThread(const ThreadEntry& entry, const EventTime& timeSlice, ScopeData& scope);
 
-	void CleanupThreads();
+	void DumpEvents(const EventStorage& entry, const EventTime& timeSlice, ScopeData& scope);
+	void DumpThread(const ThreadEntry& entry, const EventTime& timeSlice, ScopeData& scope);
+	void DumpFiber(const FiberEntry& entry, const EventTime& timeSlice, ScopeData& scope);
+
+	void CleanupThreadsAndFibers();
 public:
 	void Activate(bool active);
 	bool isActive;
@@ -187,10 +231,13 @@ public:
 	const std::vector<ThreadEntry*>& GetThreads() const;
 
 	// Report switch context event
-	void ReportSwitchContext(const SwitchContextDesc& desc);
+	SwitchContextResult ReportSwitchContext(const SwitchContextDesc& desc);
 
 	// Report switch context event
-	void ReportStackWalk(const CallstackDesc& desc);
+	bool ReportStackWalk(const CallstackDesc& desc);
+
+	// Report syscall event
+	void ReportSysCall(const SysCallDesc& desc);
 
 	// Starts sampling process
 	void StartSampling();
@@ -213,8 +260,11 @@ public:
 	// UnRegisters thread
 	bool UnRegisterThread(MT::ThreadId threadId);
 
+	// Check is registered thread
+	bool IsRegistredThread(MT::ThreadId id);
+
 	// Registers finer and create EventStorage
-	bool RegisterFiber(const ThreadDescription& description, EventStorage** slot);
+	bool RegisterFiber(const FiberDescription& description, EventStorage** slot);
 
 	// NOT Thread Safe singleton (performance)
 	static BRO_INLINE Core& Get() { return notThreadSafeInstance; }

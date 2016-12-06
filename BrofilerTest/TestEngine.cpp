@@ -4,6 +4,9 @@
 #include <vector>
 #include <MTProfilerEventListener.h>
 
+
+static const size_t SCHEDULER_WORKERS_COUNT = 0;
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace Test
@@ -57,10 +60,24 @@ struct SimpleTask
 
 	SimpleTask() : value(0.0f) {}
 
-	void Do(MT::FiberContext&)
+	void Do(MT::FiberContext& ctx)
 	{
-		for (unsigned long i = 0; i < N; ++i)
-			value = (value + sin((float)i)) * 0.5f;
+		{
+			BROFILER_CATEGORY("BeforeYield", Brofiler::Color::Green);
+
+			for (unsigned long i = 0; i < N; ++i)
+				value = (value + sin((float)i)) * 0.5f;
+		}
+
+		ctx.Yield();
+
+		{
+			BROFILER_CATEGORY("AfterYield", Brofiler::Color::Red);
+
+			for (unsigned long i = 0; i < N; ++i)
+				value = (value + cos((float)i)) * 0.5f;
+		}
+
 	}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -83,6 +100,25 @@ struct RootTask
 		MT::SpinSleepMilliSeconds(1);
 	}
 };
+
+
+struct PriorityTask
+{
+	MT_DECLARE_TASK(PriorityTask, MT::StackRequirements::STANDARD, MT::TaskPriority::HIGH, MT::Color::Orange);
+
+	float value;
+
+	PriorityTask() : value(0.0f) {}
+
+	void Do(MT::FiberContext&)
+	{
+		for (unsigned long i = 0; i < 8192; ++i)
+		{
+			value = (value + cos((float)i)) * 0.5f;
+		}
+	}
+};
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Engine::Update()
 { 
@@ -120,8 +156,14 @@ void Engine::UpdateLogic()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdateTasks()
 { BROFILER_CATEGORY( "UpdateTasks", Brofiler::Color::SkyBlue )
-	RootTask<6> task;
+	RootTask<16> task;
 	scheduler.RunAsync(MT::TaskGroup::Default(), &task, 1);
+
+	MT::SpinSleepMilliSeconds(1);
+
+	PriorityTask priorityTasks[128];
+	scheduler.RunAsync(MT::TaskGroup::Default(), &priorityTasks[0], MT_ARRAY_SIZE(priorityTasks));
+
 	scheduler.WaitAll(100000);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -151,94 +193,71 @@ void Engine::UpdatePhysics()
 
 class Profiler : public MT::IProfilerEventListener
 {
-	Brofiler::EventStorage* eventStorages[MT::MT_MAX_STANDART_FIBERS_COUNT + MT::MT_MAX_EXTENDED_FIBERS_COUNT];
-	Brofiler::EventStorage** eventStorageSlots[MT::MT_MAX_THREAD_COUNT];
-	MT::ThreadId threadIds[MT::MT_MAX_THREAD_COUNT];
+	Brofiler::EventStorage* fiberEventStorages[MT::MT_MAX_STANDART_FIBERS_COUNT + MT::MT_MAX_EXTENDED_FIBERS_COUNT];
+	uint32 totalFibersCount;
 
-	static mt_thread_local Brofiler::EventStorage* backupThreadStorage;
+	static mt_thread_local Brofiler::EventStorage* originalThreadStorage;
+	static mt_thread_local Brofiler::EventStorage* activeThreadStorage;
 
 public:
+
+	Profiler()
+		: totalFibersCount(0)
+	{
+	}
+
 	virtual void OnFibersCreated(uint32 fibersCount) override
 	{
-		MT_ASSERT(fibersCount <= MT_ARRAY_SIZE(eventStorages), "Too many fibers!");
-		for(uint32 i = 0; i < fibersCount; i++)
+		totalFibersCount = fibersCount;
+		MT_ASSERT(fibersCount <= MT_ARRAY_SIZE(fiberEventStorages), "Too many fibers!");
+		for(uint32 fiberIndex = 0; fiberIndex < fibersCount; fiberIndex++)
 		{
-			Brofiler::RegisterFiber("Fiber", &eventStorages[i]);
+			Brofiler::RegisterFiber(fiberIndex, &fiberEventStorages[fiberIndex]);
 		}
 	}
 
 	virtual void OnThreadsCreated(uint32 threadsCount) override
 	{
-		MT_ASSERT(threadsCount <= MT_ARRAY_SIZE(eventStorageSlots), "Too many threads!");
-
-		for(uint32 i = 0; i < threadsCount; i++)
-		{
-			eventStorageSlots[i] = nullptr;
-		}
+		MT_UNUSED(threadsCount);
 	}
 
-	virtual void OnFiberAssignedToThread(uint32 fiberIndex, uint32 threadIndex) override
+
+
+	virtual void OnTemporaryWorkerThreadLeave() override
 	{
-		// from current thread
-		if (threadIndex == 0xFFFFFFFF)
+		Brofiler::EventStorage** currentThreadStorageSlot = Brofiler::GetEventStorageSlotForCurrentThread();
+		MT_ASSERT(currentThreadStorageSlot, "Sanity check failed");
+		Brofiler::EventStorage* storage = *currentThreadStorageSlot;
+
+		// if profile session is not active
+		if (storage == nullptr)
 		{
-			Brofiler::EventStorage** threadStorageSlot = Brofiler::GetEventStorageSlot();
-			Brofiler::EventStorage* activeStorage = *threadStorageSlot;
-
-			// Save storage for the first time
-			if (!backupThreadStorage)
-				backupThreadStorage = activeStorage;
-
-			// If the active storage is not backed up thread storage - we need to notify the previous fiber storage about the switch
-			if (backupThreadStorage != activeStorage)
-				Brofiler::SyncData::StopWork(activeStorage);
-
-			*threadStorageSlot = eventStorages[fiberIndex];
-			Brofiler::SyncData::StartWork(*threadStorageSlot, MT::ThreadId::Self().AsUInt64());
+			return;
 		}
-		else
-		{
-			Brofiler::EventStorage** & eventStorageSlot = eventStorageSlots[threadIndex];
-			MT::ThreadId & threadId = threadIds[threadIndex];
-			Brofiler::EventStorage* & eventStorage = eventStorages[fiberIndex];
 
-			Brofiler::EventStorage* previousStorage = *eventStorageSlot;
-			Brofiler::SyncData::StopWork(previousStorage);
-
-			// If we have an active storage - put current storage into the slot
-			*eventStorageSlot = eventStorage;
-
-			Brofiler::SyncData::StartWork(eventStorage, threadId.AsUInt64());
-		}
+		MT_ASSERT(IsFiberStorage(storage) == false, "Sanity check failed");
 	}
 
-
-	virtual void OnThreadAssignedToFiber(uint32 threadIndex, uint32 fiberIndex) override
+	virtual void OnTemporaryWorkerThreadJoin() override
 	{
-		MT_UNUSED(fiberIndex);
-		MT_ASSERT(threadIndex == 0xFFFFFFFF, "Can't make assignment from another thread!");
+		Brofiler::EventStorage** currentThreadStorageSlot = Brofiler::GetEventStorageSlotForCurrentThread();
+		MT_ASSERT(currentThreadStorageSlot, "Sanity check failed");
+		Brofiler::EventStorage* storage = *currentThreadStorageSlot;
 
-		if (backupThreadStorage)
+		// if profile session is not active
+		if (storage == nullptr)
 		{
-			// Restore original storage
-			Brofiler::EventStorage** threadStorageSlot = Brofiler::GetEventStorageSlot();
-			Brofiler::EventStorage* activeStorage = *threadStorageSlot;
-
-			// If active storage is not the one we want to restore - we should notify it about the switch
-			if (backupThreadStorage != activeStorage)
-				Brofiler::SyncData::StopWork(activeStorage);
-
-			// Restore original thread storage
-			*threadStorageSlot = backupThreadStorage;
-			backupThreadStorage = nullptr;
+			return;
 		}
+
+		MT_ASSERT(IsFiberStorage(storage) == false, "Sanity check failed");
 	}
+
 
 	virtual void OnThreadCreated(uint32 workerIndex) override 
 	{
 		BROFILER_START_THREAD("Scheduler(Worker)");
-		eventStorageSlots[workerIndex] = Brofiler::GetEventStorageSlot();
-		threadIds[workerIndex] = MT::ThreadId::Self();
+		MT_UNUSED(workerIndex);
 	}
 
 	virtual void OnThreadStarted(uint32 workerIndex) override
@@ -270,8 +289,84 @@ public:
 	{
 	}
 
-	virtual void OnTaskExecuteStateChanged(MT::Color::Type debugColor, const mt_char* debugID, MT::TaskExecuteState::Type type) override 
+	virtual void OnTaskExecuteStateChanged(MT::Color::Type debugColor, const mt_char* debugID, MT::TaskExecuteState::Type type, int32 fiberIndex) override 
 	{
+		MT_ASSERT(fiberIndex < (int32)totalFibersCount, "Sanity check failed");
+
+		Brofiler::EventStorage** currentThreadStorageSlot = Brofiler::GetEventStorageSlotForCurrentThread();
+		MT_ASSERT(currentThreadStorageSlot, "Sanity check failed");
+
+		// if profile session is not active
+		if (*currentThreadStorageSlot == nullptr)
+		{
+			return;
+		}
+
+		// if actual fiber is scheduler internal fiber (don't have event storage for internal scheduler fibers)
+		if (fiberIndex < 0)
+		{
+			return;
+		}
+
+		switch(type)
+		{
+		case MT::TaskExecuteState::START:
+		case MT::TaskExecuteState::RESUME:
+			{
+				MT_ASSERT(originalThreadStorage == nullptr, "Sanity check failed");
+
+				originalThreadStorage = *currentThreadStorageSlot;
+
+				MT_ASSERT(IsFiberStorage(originalThreadStorage) == false, "Sanity check failed");
+
+				Brofiler::EventStorage* currentFiberStorage = nullptr;
+				if (fiberIndex >= (int32)0)
+				{
+					currentFiberStorage = fiberEventStorages[fiberIndex];
+				} 
+
+				*currentThreadStorageSlot = currentFiberStorage;
+				activeThreadStorage = currentFiberStorage;
+				Brofiler::FiberSyncData::AttachToThread(currentFiberStorage, MT::ThreadId::Self().AsUInt64());
+			}
+			break;
+
+		case MT::TaskExecuteState::STOP:
+		case MT::TaskExecuteState::SUSPEND:
+			{
+				Brofiler::EventStorage* currentFiberStorage = *currentThreadStorageSlot;
+
+				//////////////////////////////////////////////////////////////////////////
+				Brofiler::EventStorage* checkFiberStorage = nullptr;
+				if (fiberIndex >= (int32)0)
+				{
+					checkFiberStorage = fiberEventStorages[fiberIndex];
+				}
+				MT_ASSERT(checkFiberStorage == currentFiberStorage, "Sanity check failed");
+
+				MT_ASSERT(activeThreadStorage == currentFiberStorage, "Sanity check failed");
+
+				//////////////////////////////////////////////////////////////////////////
+
+				MT_ASSERT(IsFiberStorage(currentFiberStorage) == true, "Sanity check failed");
+
+				Brofiler::FiberSyncData::DetachFromThread(currentFiberStorage);
+
+				*currentThreadStorageSlot = originalThreadStorage;
+				originalThreadStorage = nullptr;
+			}
+			break;
+		}
+
+/*
+static ::Brofiler::EventDescription* BRO_CONCAT(autogenerated_description_, __LINE__) = ::Brofiler::EventDescription::Create( NAME, __FILE__, __LINE__, (unsigned long)COLOR ); \
+	::Brofiler::Category				  BRO_CONCAT(autogenerated_event_, __LINE__)( *(BRO_CONCAT(autogenerated_description_, __LINE__)) ); \
+
+		
+		BROFILER_CATEGORY
+
+*/
+
 		MT_UNUSED(debugColor);
 		MT_UNUSED(debugID);
 		MT_UNUSED(type);
@@ -284,7 +379,10 @@ public:
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-mt_thread_local Brofiler::EventStorage* Profiler::backupThreadStorage = nullptr;
+mt_thread_local Brofiler::EventStorage* Profiler::originalThreadStorage = nullptr;
+mt_thread_local Brofiler::EventStorage* Profiler::activeThreadStorage = 0;
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 MT::IProfilerEventListener* GetProfiler()
@@ -294,7 +392,7 @@ MT::IProfilerEventListener* GetProfiler()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Engine::Engine() : scheduler(0, nullptr, GetProfiler()), isAlive(true)
+Engine::Engine() : scheduler(SCHEDULER_WORKERS_COUNT, nullptr, GetProfiler()), isAlive(true)
 {
 	for (size_t i = 0; i < WORKER_THREAD_COUNT; ++i)
 	{

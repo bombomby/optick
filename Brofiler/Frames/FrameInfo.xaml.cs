@@ -25,14 +25,18 @@ namespace Profiler
     /// </summary>
     public partial class FrameInfo : UserControl
 	{
+		FrameCollection frames;
 
-		public FrameInfo()
+		public FrameInfo(FrameCollection _frames)
 		{
 			this.InitializeComponent();
 			SummaryTable.FilterApplied += new ApplyFilterEventHandler(ApplyFilterToEventTree);
 			SummaryTable.DescriptionFilterApplied += new ApplyDescriptionFilterEventHandler(ApplyDescriptionFilterToEventTree);
+			SummaryTable.DescriptionFilterApplied += new ApplyDescriptionFilterEventHandler(ApplyDescriptionFilterToFramesTimeLine);
 
 			EventTreeView.SelectedItemChanged += new RoutedPropertyChangedEventHandler<object>(EventTreeView_SelectedItemChanged);
+
+			frames = _frames;
 		}
 
 		private Data.Frame frame;
@@ -91,6 +95,30 @@ namespace Profiler
 					}), DispatcherPriority.Loaded);
 				}
 			}
+		}
+
+
+		private void ApplyDescriptionFilterToFramesTimeLine(HashSet<Object> filter)
+		{
+			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+			{
+
+				foreach (Data.Frame frame in frames)
+				{
+					EventFrame eventFrame = frame as EventFrame;
+					if (eventFrame != null)
+					{
+						if (filter == null)
+						{
+							eventFrame.FilteredDescription = "";
+						} else
+						{
+							double timeInMs = eventFrame.CalculateFilteredTime(filter);
+							eventFrame.FilteredDescription = String.Format("{0:0.000}", timeInMs);
+						}
+					}
+				}
+			}));
 		}
 
 		private void ApplyDescriptionFilterToEventTree(HashSet<Object> filter)

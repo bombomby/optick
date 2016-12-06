@@ -230,16 +230,14 @@ namespace MT
 		TPoolTaskDestroy poolDestroyFunc = fiberContext->currentTask.poolDestroyFunc;
 
 #ifdef MT_INSTRUMENTED_BUILD
-		//threadContext.NotifyTaskExecuteStateChanged( MT_SYSTEM_TASK_COLOR, MT_SYSTEM_TASK_NAME, TaskExecuteState::SUSPEND);
-		threadContext.NotifyTaskExecuteStateChanged( MT_SYSTEM_TASK_COLOR, MT_SYSTEM_TASK_NAME, TaskExecuteState::STOP);
+		threadContext.NotifyTaskExecuteStateChanged( MT_SYSTEM_TASK_COLOR, MT_SYSTEM_TASK_NAME, TaskExecuteState::STOP, MT_SYSTEM_FIBER_INDEX);
 #endif
 
 		// Run current task code
 		Fiber::SwitchTo(threadContext.schedulerFiber, fiberContext->fiber);
 
 #ifdef MT_INSTRUMENTED_BUILD
-		//threadContext.NotifyTaskExecuteStateChanged( MT_SYSTEM_TASK_COLOR, MT_SYSTEM_TASK_NAME, TaskExecuteState::RESUME);
-		threadContext.NotifyTaskExecuteStateChanged( MT_SYSTEM_TASK_COLOR, MT_SYSTEM_TASK_NAME, TaskExecuteState::START);
+		threadContext.NotifyTaskExecuteStateChanged( MT_SYSTEM_TASK_COLOR, MT_SYSTEM_TASK_NAME, TaskExecuteState::START, MT_SYSTEM_FIBER_INDEX);
 #endif
 
 		// If task was done
@@ -319,7 +317,7 @@ namespace MT
 
 #ifdef MT_INSTRUMENTED_BUILD
 			fiberContext.fiber.SetName( MT_SYSTEM_TASK_FIBER_NAME );
-			fiberContext.GetThreadContext()->NotifyTaskExecuteStateChanged( fiberContext.currentTask.debugColor, fiberContext.currentTask.debugID, TaskExecuteState::START );
+			fiberContext.GetThreadContext()->NotifyTaskExecuteStateChanged( fiberContext.currentTask.debugColor, fiberContext.currentTask.debugID, TaskExecuteState::START, (int32)fiberContext.fiberIndex);
 #endif
 
 			fiberContext.currentTask.taskFunc( fiberContext, fiberContext.currentTask.userData );
@@ -327,7 +325,7 @@ namespace MT
 
 #ifdef MT_INSTRUMENTED_BUILD
 			fiberContext.fiber.SetName( MT_SYSTEM_TASK_FIBER_NAME );
-			fiberContext.GetThreadContext()->NotifyTaskExecuteStateChanged( fiberContext.currentTask.debugColor, fiberContext.currentTask.debugID, TaskExecuteState::STOP );
+			fiberContext.GetThreadContext()->NotifyTaskExecuteStateChanged( fiberContext.currentTask.debugColor, fiberContext.currentTask.debugID, TaskExecuteState::STOP, (int32)fiberContext.fiberIndex);
 #endif
 
 			Fiber::SwitchTo(fiberContext.fiber, fiberContext.GetThreadContext()->schedulerFiber);
@@ -393,8 +391,10 @@ namespace MT
 		MT_ASSERT(waitContext.waitCounter, "Wait counter must be not null!");
 
 #ifdef MT_INSTRUMENTED_BUILD
+		context.NotifyTemporaryWorkerThreadJoin();
+
 		context.NotifyWaitStarted();
-		context.NotifyTaskExecuteStateChanged( MT_SYSTEM_TASK_COLOR, MT_SYSTEM_TASK_NAME, TaskExecuteState::START);
+		context.NotifyTaskExecuteStateChanged( MT_SYSTEM_TASK_COLOR, MT_SYSTEM_TASK_NAME, TaskExecuteState::START, MT_SYSTEM_FIBER_INDEX);
 #endif
 
 		bool isTaskStealingDisabled = context.taskScheduler->IsTaskStealingDisabled(0);
@@ -429,10 +429,11 @@ namespace MT
 		}
 
 #ifdef MT_INSTRUMENTED_BUILD
-		context.NotifyTaskExecuteStateChanged( MT_SYSTEM_TASK_COLOR, MT_SYSTEM_TASK_NAME, TaskExecuteState::STOP);
+		context.NotifyTaskExecuteStateChanged( MT_SYSTEM_TASK_COLOR, MT_SYSTEM_TASK_NAME, TaskExecuteState::STOP, MT_SYSTEM_FIBER_INDEX);
 		context.NotifyWaitFinished();
-#endif
 
+		context.NotifyTemporaryWorkerThreadLeave();
+#endif
 	}
 
 	void TaskScheduler::SchedulerFiberMain( void* userData )
@@ -464,7 +465,7 @@ namespace MT
 
 #ifdef MT_INSTRUMENTED_BUILD
 		context.NotifyThreadStarted(context.workerIndex);
-		context.NotifyTaskExecuteStateChanged( MT_SYSTEM_TASK_COLOR, MT_SYSTEM_TASK_NAME, TaskExecuteState::START);
+		context.NotifyTaskExecuteStateChanged( MT_SYSTEM_TASK_COLOR, MT_SYSTEM_TASK_NAME, TaskExecuteState::START, MT_SYSTEM_FIBER_INDEX);
 #endif
 		bool isTaskStealingDisabled = context.taskScheduler->IsTaskStealingDisabled();
 
@@ -528,7 +529,7 @@ namespace MT
 		} // main thread loop
 
 #ifdef MT_INSTRUMENTED_BUILD
-		context.NotifyTaskExecuteStateChanged( MT_SYSTEM_TASK_COLOR, MT_SYSTEM_TASK_NAME, TaskExecuteState::STOP);
+		context.NotifyTaskExecuteStateChanged( MT_SYSTEM_TASK_COLOR, MT_SYSTEM_TASK_NAME, TaskExecuteState::STOP, MT_SYSTEM_FIBER_INDEX);
 		context.NotifyThreadStoped(context.workerIndex);
 #endif
 
@@ -756,14 +757,9 @@ namespace MT
 		waitContext.exitCode = 0;
 
 		isWorkerThreadTLS = 1;
-
 		context.schedulerFiber.CreateFromCurrentThreadAndRun(SchedulerFiberWait, &waitContext);
 
 		isWorkerThreadTLS = 0;
-
-#ifdef MT_INSTRUMENTED_BUILD
-		context.NotifyThreadAssignedToFiber();
-#endif
 
 		return (waitContext.exitCode == 0);
 	}
@@ -794,14 +790,8 @@ namespace MT
 		waitContext.exitCode = 0;
 
 		isWorkerThreadTLS = 1;
-
 		context.schedulerFiber.CreateFromCurrentThreadAndRun(SchedulerFiberWait, &waitContext);
-
 		isWorkerThreadTLS = 0;
-
-#ifdef MT_INSTRUMENTED_BUILD
-		context.NotifyThreadAssignedToFiber();
-#endif
 
 		return (waitContext.exitCode == 0);
 	}

@@ -40,6 +40,7 @@ namespace MT
 
 	class ThreadId
 	{
+	protected:
 		MW_DWORD id;
 		Atomic32<uint32> isInitialized;
 

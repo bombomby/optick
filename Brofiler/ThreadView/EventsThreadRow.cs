@@ -19,9 +19,21 @@ namespace Profiler
 		DynamicMesh CallstackMeshPolys { get; set; }
         DynamicMesh CallstackMeshLines { get; set; }
 
-        double SyncLineHeight = 4.0 * RenderSettings.dpiScaleY;
-        static Color SynchronizationColor = Colors.OrangeRed;
-        static Color SynchronizationColorUser = Colors.Yellow;
+
+        double SyncLineHeight = 3.0 * RenderSettings.dpiScaleY;
+		static Color SynchronizationColor = Colors.Black;
+		static Color SynchronizationColorUser = Colors.Magenta;
+		static Color[] WorkColors = new Color[8]
+			{	Colors.Lime,
+				Colors.LimeGreen,
+				Colors.ForestGreen,
+				Colors.OliveDrab,
+
+				Colors.RoyalBlue,
+				Colors.Cyan,
+				Colors.SlateBlue,
+				Colors.LightBlue,
+			};
 
         double CallstackMarkerSize = 10.0 * RenderSettings.dpiScaleY;
         double SelectCallstackMarkerSize = 12.0 * RenderSettings.dpiScaleY;
@@ -36,10 +48,16 @@ namespace Profiler
 
         bool IsUserInitiatedSync(SyncReason reason)
         {
+			if (reason == SyncReason.Win_UserRequest || reason == SyncReason.Win_DelayExecution)
+			{
+				return true;
+			}
+
             return false;
         }
 
 		static Color CallstackColor = Colors.Red;
+		static Color SystemCallstackColor = Colors.Yellow;
 
         EventFilter Filter { get; set; }
         Mesh FilterMesh;
@@ -49,6 +67,7 @@ namespace Profiler
             Description = desc;
             EventData = data;
             Group = group;
+			MaxDepth = 1;
 
 			List<EventNode> rootCategories = new List<EventNode>();
 			List<EventNode> nodesToProcess = new List<EventNode>();
@@ -152,6 +171,48 @@ namespace Profiler
             DirectX.DynamicMesh builder = canvas.CreateMesh();
             DirectX.DynamicMesh syncBuilder = canvas.CreateMesh();
 
+			if (EventData.Sync != null && EventData.Sync.Intervals != null)
+			{
+				SyncReason stallReason = SyncReason.SyncReasonCount;
+				long stallFrom = 0;
+				for(int i = 0; i < EventData.Sync.Intervals.Count; i++)
+				{
+					SyncInterval sync = EventData.Sync.Intervals[i];
+					
+					Interval workInterval = scroll.TimeToUnit(sync);
+
+					// draw work
+					int coreColorIndex = (int)sync.Core;
+					coreColorIndex = coreColorIndex % WorkColors.Length;
+					Color WorkColor = WorkColors[coreColorIndex];
+					syncBuilder.AddRect(new Rect(workInterval.Left, RenderParams.BaseMargin / Height, workInterval.Right - workInterval.Left, SyncLineHeight / Height), WorkColor);
+
+					if (i == 0)
+					{
+						stallReason = sync.Reason;
+						stallFrom = sync.Finish;
+						continue;
+					}
+
+					long workStart = sync.Start;
+					long workFinish = sync.Finish;
+					Interval syncInterval = scroll.TimeToUnit(new Durable(stallFrom, workStart));
+
+					double syncWidth = syncInterval.Right - syncInterval.Left;
+					if (syncWidth <= 0)
+					{
+						syncWidth = 0.1;
+					}
+						
+					// draw sleep
+					Color waitColor = IsUserInitiatedSync(stallReason) ? SynchronizationColorUser : SynchronizationColor;
+					syncBuilder.AddRect(new Rect(syncInterval.Left, RenderParams.BaseMargin / Height, syncWidth, SyncLineHeight / Height), waitColor);
+
+					stallFrom = workFinish;
+					stallReason = sync.Reason;
+				}
+			}
+
             foreach (EventFrame frame in EventData.Events)
             {
                 Durable interval = Group.Board.TimeSlice;
@@ -159,27 +220,6 @@ namespace Profiler
                 foreach (EventNode node in frame.CategoriesTree.Children)
                 {
                     BuildMeshNode(builder, scroll, node, 0);
-                }
-
-                Interval frameInterval = scroll.TimeToUnit(frame.Header);
-
-                Color color = SynchronizationColor;
-                double start = frameInterval.Left;
-
-                if (frame.Synchronization != null)
-                {
-                    foreach (SyncInterval sync in frame.Synchronization)
-                    {
-                        Interval syncInterval = scroll.TimeToUnit(sync);
-
-                        if (start < syncInterval.Left)
-                        {
-                            syncBuilder.AddRect(new Rect(start, RenderParams.BaseMargin / Height, syncInterval.Left - start, SyncLineHeight / Height), color);
-                        }
-
-                        start = Math.Max(syncInterval.Right, start);
-                        color = IsUserInitiatedSync(sync.Reason) ? SynchronizationColorUser : SynchronizationColor;
-                    }
                 }
             }
 
@@ -193,7 +233,7 @@ namespace Profiler
         }
 
         public override double Height { get { return RenderParams.BaseHeight * MaxDepth; } }
-        public override string Name { get { return Description.Name; } }
+		public override string Name { get { return string.Format("{0} ({1})", Description.Name, Description.ThreadID ); } }
 
         double TextDrawThreshold = 8.0 * RenderSettings.dpiScaleX;
         double TextDrawOffset = 1.5 * RenderSettings.dpiScaleY;
@@ -235,7 +275,7 @@ namespace Profiler
                     Point b = new Point(center, offset + unitHeight);
                     Point c = new Point(center + unitWidth, offset);
 
-                    CallstackMeshPolys.AddTri(a, b, c, CallstackColor);
+					CallstackMeshPolys.AddTri(a, b, c, (callstack.Reason == CallStackReason.AutoSample) ? CallstackColor : SystemCallstackColor);
                     CallstackMeshLines.AddTri(a, b, c, Colors.Black);
                 });
 
@@ -363,31 +403,50 @@ namespace Profiler
 
             ITick tick = scroll.PixelToTime(point.X);
 
+			// show current sync info
+			if (EventData.Sync != null && EventData.Sync.Intervals != null)
+			{
+				int index = Data.Utils.BinarySearchClosestIndex(EventData.Sync.Intervals, tick.Start);
+				if (index != -1)
+				{
+					bool insideWaitInterval = false;
+					WaitInterval interval = new WaitInterval() { Start = EventData.Sync.Intervals[index].Finish, Reason = EventData.Sync.Intervals[index].Reason };
+					if (index + 1 < EventData.Sync.Intervals.Count)
+					{
+						if (EventData.Sync.Intervals[index].Finish < tick.Start && tick.Start < EventData.Sync.Intervals[index + 1].Start)
+						{
+							UInt64 threadId = EventData.Sync.Intervals[index + 1].NewThreadId;
+
+							ThreadDescription threadDesc = null;
+							int threadIndex = -1;
+							if (Group.Board.ThreadID2ThreadIndex.TryGetValue(threadId, out threadIndex))
+							{
+								threadDesc = Group.Board.Threads[threadIndex];
+							}
+
+							interval.newThreadDesc = threadDesc;
+							interval.newThreadId = threadId;
+							
+							interval.Finish = EventData.Sync.Intervals[index + 1].Start;
+							dataContext.Add(interval);
+							insideWaitInterval = true;
+						}
+					}
+
+					if (!insideWaitInterval)
+					{
+						interval.Reason = SyncReason.SyncReasonActive;
+						interval.Start = EventData.Sync.Intervals[index].Start;
+						interval.Finish = EventData.Sync.Intervals[index].Finish;
+						interval.core = (byte)EventData.Sync.Intervals[index].Core;
+						dataContext.Add(interval);
+					}
+				}
+			}
+
             if (FindNode(point, scroll, out frame, out node) != -1)
             {
                 dataContext.Add(node);
-
-                int index = Data.Utils.BinarySearchClosestIndex(frame.Synchronization, tick.Start);
-                if (index != -1)
-                {
-					WaitInterval interval = new WaitInterval() { Start = frame.Synchronization[index].Finish, Reason = frame.Synchronization[index].Reason };
-					if (index + 1 < frame.Synchronization.Count)
-					{
-						if (frame.Synchronization[index].Finish < tick.Start && frame.Tick < frame.Synchronization[index + 1].Start)
-						{
-							interval.Finish = frame.Synchronization[index + 1].Start;
-							dataContext.Add(interval);
-						}
-					}
-					else
-					{
-						if (frame.Synchronization[index].Finish < tick.Start)
-						{
-							interval.Finish = frame.Finish;
-							dataContext.Add(interval);
-						}
-					}
-				}
 
                 // build all intervals inside selected node
                 int from = Data.Utils.BinarySearchClosestIndex(frame.Synchronization, node.Entry.Start);
@@ -397,7 +456,7 @@ namespace Profiler
                 {
                     IntPair[] waitInfo = new IntPair[(int)SyncReason.SyncReasonCount];
 
-                    for (index = from; index <= to; ++index)
+					for (int index = from; index <= to; ++index)
                     {
                         SyncReason reason = frame.Synchronization[index].Reason;
                         int reasonIndex = (int)reason;
@@ -438,14 +497,22 @@ namespace Profiler
                 }
             } // FindNode
 
-			if (scroll.DrawCallstacks)
+
+
+			if (scroll.DrawCallstacks && EventData.Callstacks != null)
 			{
 				int startIndex = Data.Utils.BinarySearchClosestIndex(EventData.Callstacks, tick.Start);
+
 				for (int i = 0; (i <= startIndex + 1) && (i < EventData.Callstacks.Count) && (i != -1); ++i)
 				{
 					double pixelPos = scroll.TimeToPixel(EventData.Callstacks[i]);
 					if (Math.Abs(pixelPos - point.X) < SelectCallstackMarkerSize && point.Y < SelectCallstackMarkerSize)
 					{
+						if (EventData.Callstacks[i].Reason < CallStackReason.MaxReasonsCount)
+						{
+							dataContext.Add("\nSyscall : " + EventData.Callstacks[i].Reason.ToString());
+						}
+
 						dataContext.Add(EventData.Callstacks[i]);
 						break;
 					}

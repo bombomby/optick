@@ -20,7 +20,11 @@
 #define BRO_ALIGN_CACHE BRO_ALIGN(BRO_CACHE_LINE_SIZE)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define BRO_DEBUG_BREAK __debugbreak();
+#if MT_PLATFORM_WINDOWS
+#define IS_DEBUG_PRESENT ::IsDebuggerPresent() == TRUE
+#endif
+
+#define BRO_DEBUG_BREAK if (IS_DEBUG_PRESENT) { __debugbreak(); }
 
 #ifdef _DEBUG
 	#define BRO_ASSERT(arg, description) if (!(arg)) { BRO_DEBUG_BREAK; }
