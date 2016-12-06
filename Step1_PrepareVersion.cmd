@@ -1,10 +1,10 @@
 @echo off
 
-xcopy /Y .\ThirdParty\DevkitsInterop\*.* .\Publish\
+call PrepareVersionExt.cmd
+
 xcopy /Y .\Bin\Release\x64\*.* .\Publish\
 
 xcopy /Y .\BrofilerCore\Brofiler.h .\Publish\Include\
-xcopy /Y .\BrofilerCore\Platform\PS4\OrbisDbgHelp.h .\Publish\Include\
 
 xcopy /Y .\Bin\vs2010\x32\Debug\brofilercore.* .\Publish\Lib\vs2010\x86\debug\
 xcopy /Y .\Bin\vs2010\x32\Release\brofilercore.* .\Publish\Lib\vs2010\x86\release\

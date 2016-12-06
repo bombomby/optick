@@ -13,3 +13,10 @@ sunifdef.exe --replace --recurse --filter cpp,h,inl --discard drop --undef MT_PL
 RemoveXML.exe ./Brofiler/Brofiler.csproj
 
 del Step2_Publish.cmd
+del PrepareVersionExt.cmd
+
+pushd
+cd "./Publish/Include/"
+del /F OrbisDbgHelp.h
+popd
+
