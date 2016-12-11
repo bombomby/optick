@@ -263,6 +263,24 @@ DWORD WINAPI ETW::RunProcessTraceThreadFunction( LPVOID parameter )
 	BRO_UNUSED(status);
 	return 0;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void ETW::AdjustPrivileges()
+{
+	HANDLE token = 0;
+	if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &token))
+	{
+		TOKEN_PRIVILEGES tokenPrivileges;
+		memset(&tokenPrivileges, 0, sizeof(tokenPrivileges));
+		tokenPrivileges.PrivilegeCount = 1;
+		tokenPrivileges.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+		LookupPrivilegeValue(NULL, SE_SYSTEM_PROFILE_NAME, &tokenPrivileges.Privileges[0].Luid);
+
+		AdjustTokenPrivileges(token, FALSE, &tokenPrivileges, 0, (PTOKEN_PRIVILEGES)NULL, 0);
+		CloseHandle(token);
+	}
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ETW::ETW() 
@@ -281,6 +299,8 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads, bool autoAdd
 {
 	if (!isActive) 
 	{
+		AdjustPrivileges();
+
 		CaptureStatus::Type res = SchedulerTrace::Start(mode, threads, autoAddUnknownThreads);
 		if (res != CaptureStatus::OK)
 		{
@@ -302,6 +322,10 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads, bool autoAdd
 		if (mode & STACK_WALK)
 		{
 			traceProperties->EnableFlags |= EVENT_TRACE_FLAG_PROFILE;
+		}
+
+		if (mode & SYS_CALLS)
+		{
 			traceProperties->EnableFlags |= EVENT_TRACE_FLAG_SYSTEMCALL;
 		}
 
@@ -322,7 +346,6 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads, bool autoAdd
 		// ERROR_NO_SUCH_PRIVILEGE(1313)
 		int retryCount = 4;
 		ULONG status = CaptureStatus::OK;
-		HANDLE token = 0;
 
 		while (--retryCount >= 0)
 		{
@@ -331,17 +354,7 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads, bool autoAdd
 			switch (status)
 			{
 			case ERROR_NO_SUCH_PRIVILEGE:
-				if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &token))
-				{
-					TOKEN_PRIVILEGES tokenPrivileges;
-					memset(&tokenPrivileges, 0, sizeof(tokenPrivileges));
-					tokenPrivileges.PrivilegeCount = 1;
-					tokenPrivileges.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-					LookupPrivilegeValue(NULL, SE_SYSTEM_PROFILE_NAME, &tokenPrivileges.Privileges[0].Luid);
-
-					AdjustTokenPrivileges(token, FALSE, &tokenPrivileges, 0, (PTOKEN_PRIVILEGES)NULL, 0);
-					CloseHandle(token);
-				}
+				AdjustPrivileges();
 				break;
 
 			case ERROR_ALREADY_EXISTS:
@@ -366,39 +379,44 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads, bool autoAdd
 			return CaptureStatus::FAILED;
 		}
 
+		CLASSIC_EVENT_ID callstackSamples[4];
+		int callstackCountSamplesCount = 0;
+
 		if (mode & STACK_WALK)
 		{
-			CLASSIC_EVENT_ID callstackSamples[2];
+			callstackSamples[callstackCountSamplesCount].EventGuid = SampledProfileGuid;
+			callstackSamples[callstackCountSamplesCount].Type = SampledProfile::OPCODE;
+			++callstackCountSamplesCount;
+		}
 
-			callstackSamples[0].EventGuid = SampledProfileGuid;
-			callstackSamples[0].Type = SysCallEnter::OPCODE;
-
-			callstackSamples[1].EventGuid = SampledProfileGuid;
-			callstackSamples[1].Type = SampledProfile::OPCODE;
+		if (mode & SYS_CALLS)
+		{
+			callstackSamples[callstackCountSamplesCount].EventGuid = SampledProfileGuid;
+			callstackSamples[callstackCountSamplesCount].Type = SysCallEnter::OPCODE;
+			++callstackCountSamplesCount;
+		}
 
 /*
-			callstackSamples[2].EventGuid = CSwitchProfileGuid;
-			callstackSamples[2].Type = CSwitch::OPCODE;
+			callstackSamples[callstackCountSamplesCount].EventGuid = CSwitchProfileGuid;
+			callstackSamples[callstackCountSamplesCount].Type = CSwitch::OPCODE;
+			++callstackCountSamplesCount;
 */
 
 
-/*
-
+/*		
 		https://msdn.microsoft.com/en-us/library/windows/desktop/dd392328%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
-
 		Typically, on 64-bit computers, you cannot capture the kernel stack in certain contexts when page faults are not allowed. To enable walking the kernel stack on x64, set
 		the DisablePagingExecutive Memory Management registry value to 1. The DisablePagingExecutive registry value is located under the following registry key:
-
 		HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Memory Management
-
 */
-			status = TraceSetInformation(traceSessionHandle, TraceStackTracingInfo, &callstackSamples[0], sizeof(callstackSamples) );
+		if (callstackCountSamplesCount > 0)
+		{
+			status = TraceSetInformation(traceSessionHandle, TraceStackTracingInfo, &callstackSamples[0], sizeof(CLASSIC_EVENT_ID) * callstackCountSamplesCount);
 			if (status != ERROR_SUCCESS)
 			{
 				OutputDebugStringA("TraceSetInformation - failed\n");
 				return CaptureStatus::FAILED;
 			}
-
 		}
 
 

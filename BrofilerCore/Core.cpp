@@ -405,7 +405,7 @@ void Core::Activate( bool active )
 
 		if (active)
 		{
-			CaptureStatus::Type status = schedulerTrace->Start(SchedulerTrace::SWITCH_CONTEXTS | SchedulerTrace::STACK_WALK, threads, true);
+			CaptureStatus::Type status = schedulerTrace->Start(SchedulerTrace::ALL, threads, true);
 
 			// Let's retry with more narrow setup
 			if (status != CaptureStatus::OK)

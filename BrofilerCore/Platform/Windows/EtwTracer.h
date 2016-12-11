@@ -20,7 +20,7 @@ class ETW : public SchedulerTrace
 	bool isActive;
 
 	static DWORD WINAPI RunProcessTraceThreadFunction(LPVOID parameter);
-
+	static void AdjustPrivileges();
 public:
 
 	ETW();

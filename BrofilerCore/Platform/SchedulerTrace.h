@@ -10,9 +10,10 @@ namespace Brofiler
 	{
 		enum Mode
 		{
-			SWITCH_CONTEXTS = 0x01,
-			STACK_WALK = 0x02,
-			ALL = 0xFFFFFFFF
+			SWITCH_CONTEXTS =	1 << 0,
+			STACK_WALK =		1 << 1,
+			SYS_CALLS =			1 << 2,
+			ALL =				0xFFFFFFFF
 		};
 
 		std::vector<Brofiler::ThreadInfo> allProcessThreads;
