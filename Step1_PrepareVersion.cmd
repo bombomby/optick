@@ -1,6 +1,7 @@
 @echo off
 
-xcopy /Y .\ThirdParty\DevkitsInterop\*.* .\Publish\
+call PrepareVersionExt.cmd
+
 xcopy /Y .\Bin\Release\x64\*.* .\Publish\
 
 xcopy /Y .\BrofilerCore\Brofiler.h .\Publish\Include\

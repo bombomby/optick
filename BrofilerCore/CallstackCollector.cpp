@@ -14,16 +14,25 @@ void CallstackCollector::Add(const CallstackDesc& desc)
 		storage[0] = desc.threadID;
 		storage[1] = desc.timestamp;
 		storage[2] = desc.count;
-		memcpy(&storage[3], desc.callstack, desc.count * sizeof(uint64));
-	}
-	else
-	{
-		callstacksPool.Add() = desc.threadID;
-		callstacksPool.Add() = desc.timestamp;
-		callstacksPool.Add() = desc.count;
 
 		for (uint64 i = 0; i < desc.count; ++i)
-			callstacksPool.Add() = desc.callstack[i];
+		{
+			storage[3 + i] = desc.callstack[desc.count - i - 1];
+		}
+	} else
+	{
+		uint64& item0 = callstacksPool.Add();
+		uint64& item1 = callstacksPool.Add();
+		uint64& item2 = callstacksPool.Add();
+
+		item0 = desc.threadID;
+		item1 = desc.timestamp;
+		item2 = desc.count;
+
+		for (uint64 i = 0; i < desc.count; ++i)
+		{
+			callstacksPool.Add() = desc.callstack[desc.count - i - 1];
+		}
 	}
 }
 //////////////////////////////////////////////////////////////////////////
@@ -32,7 +41,6 @@ void CallstackCollector::Clear()
 	callstacksPool.Clear(false);
 }
 
-//////////////////////////////////////////////////////////////////////////
 bool CallstackCollector::SerializeSymbols(OutputDataStream& stream)
 {
 	typedef std::unordered_set<uint64> SymbolSet;
@@ -50,12 +58,25 @@ bool CallstackCollector::SerializeSymbols(OutputDataStream& stream)
 		MT_UNUSED(timestamp);
 		++it; //Skip Timestamp
 		uint64 count = *it;
+		count = (count & 0xFF);
 		++it; //Skip Count
+
+		bool isBadAddrFound = false;
+
 		for (uint64 i = 0; i < count; ++i)
 		{
 			uint64 address = *it;
 			++it;
-			symbolSet.insert(address);
+
+			if (address == 0)
+			{
+				isBadAddrFound = true;
+			}
+
+			if (!isBadAddrFound)
+			{
+				symbolSet.insert(address);
+			}
 		}
 	}
 
@@ -63,13 +84,26 @@ bool CallstackCollector::SerializeSymbols(OutputDataStream& stream)
 
 	std::vector<const Symbol*> symbols;
 	symbols.reserve(symbolSet.size());
+
+	std::stringstream msg;
+
+	size_t callstacksCount = symbolSet.size();
+	size_t callstackIndex = 0;
+
 	for(auto it = symbolSet.begin(); it != symbolSet.end(); ++it)
 	{
+		callstackIndex++;
+		msg.str("");
+
 		uint64 address = *it;
 		if (const Symbol* symbol = symEngine->GetSymbol(address))
 		{
 			symbols.push_back(symbol);
 		}
+
+		msg << "Resolving callstack " << (uint32)callstackIndex << " of " << (uint32)(callstacksCount+1) << std::endl;
+
+		Core::Get().DumpProgress(msg.str().c_str());
 	}
 
 	stream << symbols;
@@ -79,21 +113,20 @@ bool CallstackCollector::SerializeSymbols(OutputDataStream& stream)
 //////////////////////////////////////////////////////////////////////////
 bool CallstackCollector::SerializeCallstacks(OutputDataStream& stream)
 {
+	stream << callstacksPool;
+
 	if (!callstacksPool.IsEmpty())
 	{
-		stream << callstacksPool;
 		callstacksPool.Clear(false);
 		return true;
 	}
 
 	return false;
 }
-
 //////////////////////////////////////////////////////////////////////////
 bool CallstackCollector::IsEmpty() const
 {
 	return callstacksPool.IsEmpty();
 }
 //////////////////////////////////////////////////////////////////////////
-
 }

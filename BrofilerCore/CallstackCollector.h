@@ -5,7 +5,6 @@
 #include "MemoryPool.h"
 #include "Serialization.h"
 
-
 namespace Brofiler
 {
 	//////////////////////////////////////////////////////////////////////////
@@ -15,23 +14,25 @@ namespace Brofiler
 	{
 		uint64 threadID;
 		uint64 timestamp;
-		size_t* callstack;
+		uint64* callstack;
 		uint8 count;
 	};
+
+
 	//////////////////////////////////////////////////////////////////////////
 	class CallstackCollector
 	{
-		// Packed callstack list: {ThreadID, Timestamp, Count, u64[Count]}
+		// Packed callstack list: {ThreadID, Timestamp, Count, Callstack[Count]}
 		typedef MemoryPool<uint64, 1024 * 32> CallstacksPool;
 		CallstacksPool callstacksPool;
 	public:
 		void Add(const CallstackDesc& desc);
 		void Clear();
 
-		bool IsEmpty() const;
-
 		bool SerializeSymbols(OutputDataStream& stream);
 		bool SerializeCallstacks(OutputDataStream& stream);
+
+		bool IsEmpty() const;
 	};
 	//////////////////////////////////////////////////////////////////////////
 }

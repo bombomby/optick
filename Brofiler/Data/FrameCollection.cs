@@ -9,17 +9,40 @@ using System.Diagnostics;
 
 namespace Profiler.Data
 {
+
     public class ThreadData
     {
         public List<EventFrame> Events { get; set; }
 		public List<Callstack> Callstacks { get; set; }
         public Synchronization Sync { get; set; }
+		public FiberSynchronization FiberSync { get; set; }
         public bool IsDirty { get; set; }
 
         public ThreadData()
         {
             Events = new List<EventFrame>();
         }
+
+		public void ApplyFiberSynchronization()
+		{
+			if (FiberSync == null)
+				return;
+
+			int currentInterval = 0;
+
+			foreach (EventFrame frame in Events)
+			{
+				while (currentInterval < FiberSync.Intervals.Count && FiberSync.Intervals[currentInterval].Finish <= frame.Header.Start)
+					++currentInterval;
+
+				while (currentInterval < FiberSync.Intervals.Count && FiberSync.Intervals[currentInterval].Finish <= frame.Header.Finish)
+					frame.FiberSync.Add(FiberSync.Intervals[currentInterval++]);
+
+				if (currentInterval < FiberSync.Intervals.Count && FiberSync.Intervals[currentInterval].Start <= frame.Header.Finish)
+					frame.FiberSync.Add(FiberSync.Intervals[currentInterval]);
+			}
+		}
+
 
         public void ApplySynchronization()
         {
@@ -66,6 +89,8 @@ namespace Profiler.Data
 
     public class FrameGroup
     {
+
+		public SysCallBoard SysCallsBoard { get; protected set; }
         public EventDescriptionBoard Board { get; set; }
         public ISamplingBoard SamplingBoard { get; set; }
         public List<ThreadData> Threads { get; set; }
@@ -85,38 +110,76 @@ namespace Profiler.Data
 			Responses.Add(board.Response);
         }
 
-        public void Add(EventFrame frame)
+        public void AddFrame(EventFrame frame)
         {
 			System.Diagnostics.Debug.Assert(frame != null && frame.Response != null, "Invalid EventFrame response");
 
 			Responses.Add(frame.Response);
 
-            int index = frame.Header.ThreadIndex;
+            int threadIndex = frame.Header.ThreadIndex;
+			if (threadIndex >= 0)
+			{
+				while (threadIndex >= Threads.Count)
+				{
+					Threads.Add(new ThreadData());
+				}
+				Threads[threadIndex].Events.Add(frame);
+			} else
+			{
+				int fiberIndex = frame.Header.FiberIndex;
+				if (fiberIndex >= 0)
+				{
+					while (fiberIndex >= Fibers.Count)
+					{
+						Fibers.Add(new ThreadData());
+					}
+					Fibers[fiberIndex].Events.Add(frame);
+				}
+			}
 
-            while (index >= Threads.Count)
-                Threads.Add(new ThreadData());
 
-            Threads[index].Events.Add(frame);
         }
 
-        public void Add(Synchronization sync)
+		public void AddSynchronization(Synchronization sync)
         {
 			System.Diagnostics.Debug.Assert(sync != null && sync.Response != null, "Invalid Synchronization response");
 
 			Responses.Add(sync.Response);
 
             int index = sync.ThreadIndex;
-
-            while (index >= Threads.Count)
-                Threads.Add(new ThreadData());
-
+			while (index >= Threads.Count)
+			{
+				Threads.Add(new ThreadData());
+			}
             Threads[index].Sync = sync;
-
-            if (Board.Threads[index].IsFiber)
-                SplitFiberThread(Threads[index]);
         }
 
-		public void Add(CallstackPack pack)
+		public void AddFiberSynchronization(FiberSynchronization fiberSync)
+		{
+			System.Diagnostics.Debug.Assert(fiberSync != null && fiberSync.Response != null, "Invalid FiberSynchronization response");
+
+			Responses.Add(fiberSync.Response);
+
+			int index = fiberSync.FiberIndex;
+			while (index >= Fibers.Count)
+			{
+				Fibers.Add(new ThreadData());
+			}
+			Fibers[index].FiberSync = fiberSync;
+
+			SplitFiber(index);
+		}
+
+
+		public void AddSysCalls(SysCallBoard sysCallsBoard)
+		{
+			System.Diagnostics.Debug.Assert(sysCallsBoard != null && sysCallsBoard.Response != null, "Invalid SysCallResponse response");
+
+			Responses.Add(sysCallsBoard.Response);
+			SysCallsBoard = sysCallsBoard;
+		}
+
+		public void AddCallStackPack(CallstackPack pack)
 		{
 			System.Diagnostics.Debug.Assert(pack != null && pack.Response != null, "Invalid CallstackPack response");
 
@@ -126,11 +189,13 @@ namespace Profiler.Data
 			{
 				List<Callstack> callstacks;
 				if (pack.CallstackMap.TryGetValue(Board.Threads[i].ThreadID, out callstacks))
+				{
 					Threads[i].Callstacks = callstacks;
+				}
 			}
 		}
 
-        public void Add(SamplingDescriptionPack pack)
+		public void AddSymbolPack(SamplingDescriptionPack pack)
         {
 			System.Diagnostics.Debug.Assert(pack != null && pack.Response != null, "Invalid SamplingDescriptionPack response");
 
@@ -138,36 +203,44 @@ namespace Profiler.Data
             SamplingBoard = pack;
         }
 
-        private void SplitFiberThread(ThreadData data)
+		private void SplitFiber(int fiberIndex)
         {
-            data.ApplySynchronization();
+			ThreadData data = Fibers[fiberIndex];
+			data.ApplyFiberSynchronization();
 
             foreach (EventFrame frame in data.Events)
             {
-                foreach (SyncInterval sync in frame.Synchronization)
+                foreach (FiberSyncInterval fiberSync in frame.FiberSync)
                 {
-                    Durable border = new Durable(Math.Max(frame.Start, sync.Start), Math.Min(frame.Finish, sync.Finish));
-
-                    List<Entry> entries = new List<Entry>();
-
                     int threadIndex = 0;
-                    if (Board.ThreadID2ThreadIndex.TryGetValue(sync.Core, out threadIndex))
+					if (!Board.ThreadID2ThreadIndex.TryGetValue(fiberSync.threadId, out threadIndex))
                     {
-                        foreach (Entry entry in frame.Entries)
-                        {
-                            if (entry.Intersect(border))
-                            {
-                                entries.Add(new Entry(entry.Description, Math.Max(border.Start, entry.Start), Math.Min(border.Finish, entry.Finish)));
-                            }
-                        }
+						continue;
+					}
 
-                        if (entries.Count > 0)
+					Durable border = new Durable(Math.Max(frame.Start, fiberSync.Start), Math.Min(frame.Finish, fiberSync.Finish));
+
+					List<Entry> entries = null;
+                    foreach (Entry entry in frame.Entries)
+                    {
+                        if (entry.Intersect(border))
                         {
-                            FrameHeader header = new FrameHeader(threadIndex, border);
-                            EventFrame block = new EventFrame(header, entries, this);
-                            Threads[threadIndex].AddWithMerge(block);
+							if (entries == null)
+							{
+								entries = new List<Entry>();
+							}
+                            entries.Add(new Entry(entry.Description, Math.Max(border.Start, entry.Start), Math.Min(border.Finish, entry.Finish)));
                         }
                     }
+
+					if (entries != null && entries.Count > 0)
+                    {
+						FrameHeader header = new FrameHeader(threadIndex, fiberIndex, border);
+                        EventFrame block = new EventFrame(header, entries, this);
+                        Threads[threadIndex].AddWithMerge(block);
+                    }
+
+
                 }
             }
         }
@@ -216,17 +289,19 @@ namespace Profiler.Data
                         FrameGroup group = groups[id];
                         EventFrame frame = new EventFrame(response, group);
 
-                        group.Add(frame);
+						group.AddFrame(frame);
 
-                        if (group.Board.MainThreadIndex == frame.Header.ThreadIndex)
-                            Add(frame);
+						if (group.Board.MainThreadIndex == frame.Header.ThreadIndex)
+						{
+							Add(frame);
+						}
 
                         break;
                     }
 
                 case DataResponse.Type.SamplingFrame:
                     {
-                        Add(new SamplingFrame(response));
+						Add(new SamplingFrame(response));
                         break;
                     }
 
@@ -235,7 +310,17 @@ namespace Profiler.Data
                         int id = response.Reader.ReadInt32();
                         FrameGroup group = groups[id];
 
-                        group.Add(new Synchronization(response, group));
+						group.AddSynchronization(new Synchronization(response, group));
+
+                        break;
+                    }
+
+				case DataResponse.Type.FiberSynchronization:
+                    {
+                        int id = response.Reader.ReadInt32();
+                        FrameGroup group = groups[id];
+
+						group.AddFiberSynchronization(new FiberSynchronization(response, group));
 
                         break;
                     }
@@ -245,10 +330,21 @@ namespace Profiler.Data
                         int id = response.Reader.ReadInt32();
                         FrameGroup group = groups[id];
 
-                        group.Add(SamplingDescriptionPack.Create(response));
+                        group.AddSymbolPack(SamplingDescriptionPack.Create(response));
 
                         break;
                     }
+
+				case DataResponse.Type.SyscallPack:
+					{
+						int id = response.Reader.ReadInt32();
+						FrameGroup group = groups[id];
+
+						SysCallBoard sysCallsBoard = SysCallBoard.Create(response, group);
+						group.AddSysCalls(sysCallsBoard);
+
+						break;
+					}
 
                 case DataResponse.Type.CallstackPack:
                     {
@@ -263,8 +359,8 @@ namespace Profiler.Data
 							samplingBoard = DummySamplingBoard.Instance;
 						}
 
-						CallstackPack pack = CallstackPack.Create(response, samplingBoard);
-						group.Add(pack);
+						CallstackPack pack = CallstackPack.Create(response, samplingBoard, group.SysCallsBoard);
+						group.AddCallStackPack(pack);
 
                         break;
                     }

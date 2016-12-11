@@ -295,6 +295,15 @@ namespace Profiler.Data
 		public int SampleCount { get; private set; }
 
 		public override string Description { get { return String.Format("{0} Sampling Data", SampleCount); } }
+
+		public override string FilteredDescription
+		{
+			get
+			{
+				return "";
+			}
+		}
+
 		public override double Duration { get { return 130.0; } }
 
 		public override void Load()

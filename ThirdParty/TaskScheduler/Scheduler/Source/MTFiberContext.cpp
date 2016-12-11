@@ -51,11 +51,7 @@ namespace MT
 		if (_threadContext)
 		{
 			_threadContext->lastActiveFiberContext = this;
-
-#ifdef MT_INSTRUMENTED_BUILD	
-			_threadContext->NotifyFiberAssignedToThread( fiberIndex, _threadContext->workerIndex );
-#endif
-		}
+		} 
 
 		threadContext = _threadContext;
 	}
@@ -80,8 +76,8 @@ namespace MT
 
 		Fiber & schedulerFiber = threadContext->schedulerFiber;
 
-#ifdef MT_INSTRUMENTED_BUILD
-		threadContext->NotifyTaskExecuteStateChanged( currentTask.debugColor, currentTask.debugID, TaskExecuteState::SUSPEND );
+#ifdef MT_INSTRUMENTED_BUILD		
+		threadContext->NotifyTaskExecuteStateChanged( currentTask.debugColor, currentTask.debugID, TaskExecuteState::SUSPEND, (int32)fiberIndex);
 #endif
 
 		// Yielding, so reset thread context
@@ -91,7 +87,7 @@ namespace MT
 		Fiber::SwitchTo(fiber, schedulerFiber);
 
 #ifdef MT_INSTRUMENTED_BUILD
-		threadContext->NotifyTaskExecuteStateChanged( currentTask.debugColor, currentTask.debugID, TaskExecuteState::RESUME );
+		threadContext->NotifyTaskExecuteStateChanged( currentTask.debugColor, currentTask.debugID, TaskExecuteState::RESUME, (int32)fiberIndex);
 #endif
 	}
 
@@ -114,7 +110,7 @@ namespace MT
 		Fiber & schedulerFiber = threadContext->schedulerFiber;
 
 #ifdef MT_INSTRUMENTED_BUILD
-		threadContext->NotifyTaskExecuteStateChanged( currentTask.debugColor, currentTask.debugID, TaskExecuteState::SUSPEND );
+		threadContext->NotifyTaskExecuteStateChanged( currentTask.debugColor, currentTask.debugID, TaskExecuteState::SUSPEND, (int32)fiberIndex);
 #endif
 
 		// Yielding, so reset thread context
@@ -124,7 +120,7 @@ namespace MT
 		Fiber::SwitchTo(fiber, schedulerFiber);
 
 #ifdef MT_INSTRUMENTED_BUILD
-		threadContext->NotifyTaskExecuteStateChanged( currentTask.debugColor, currentTask.debugID, TaskExecuteState::RESUME );
+		threadContext->NotifyTaskExecuteStateChanged( currentTask.debugColor, currentTask.debugID, TaskExecuteState::RESUME, (int32)fiberIndex);
 #endif
 
 	}

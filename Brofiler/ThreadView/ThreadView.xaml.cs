@@ -103,7 +103,16 @@ namespace Profiler
                 ThreadDescription thread = group.Board.Threads[i];
                 ThreadData data = group.Threads[i];
 
-                if (data.Events.Count > 0 && !thread.IsFiber)
+				bool threadHasData = false;
+				if ((data.Callstacks != null && data.Callstacks.Count > 3) ||
+					/*(data.Sync != null && data.Sync.Intervals.Count > 0) || */
+					(data.Events != null && data.Events.Count > 0))
+					
+				{
+					threadHasData = true;
+				}
+
+                if (threadHasData)
                 {
                     EventsThreadRow row = new EventsThreadRow(group, thread, data);
                     rows.Add(row);

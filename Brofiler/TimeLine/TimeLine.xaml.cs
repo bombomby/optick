@@ -42,6 +42,14 @@ namespace Profiler
 
         WebClient checkVersion;
 
+		public FrameCollection Frames
+		{
+			get
+			{
+				return frames;
+			}
+		}
+
         public TimeLine()
         {
             this.InitializeComponent();
@@ -69,10 +77,10 @@ namespace Profiler
         {
             var postData = new Dictionary<string, string>
             {
-        { "v", "1" },
-        { "tid", "UA-58006599-1" },
-        { "cid", GetUniqueID() },
-        { "t", "pageview" },
+				{ "v", "1" },
+				{ "tid", "UA-58006599-1" },
+				{ "cid", GetUniqueID() },
+				{ "t", "pageview" },
                 { "dh", "brofiler.com" },
                 { "dp", "/app.html" },
                 { "dt", CurrentVersion.ToString() }
@@ -368,10 +376,13 @@ namespace Profiler
         {
             if (File.Exists(file))
             {
-                using (FileStream stream = new FileStream(file, FileMode.Open))
-                {
-                    Open(stream);
-                }
+				using (new WaitCursor())
+				{
+					using (FileStream stream = new FileStream(file, FileMode.Open))
+					{
+						Open(stream);
+					}
+				}
             }
         }
 
@@ -418,7 +429,10 @@ namespace Profiler
 
 					if (currentGroup != null)
 					{
-						currentGroup.Responses.ForEach(response => response.Serialize(stream));
+						currentGroup.Responses.ForEach(response => 
+						{
+							response.Serialize(stream);
+						});
 					}
 
                     stream.Close();
@@ -500,4 +514,22 @@ namespace Profiler
             return null;
         }
     }
+
+
+	public class WaitCursor : IDisposable
+	{
+		private Cursor _previousCursor;
+
+		public WaitCursor()
+		{
+			_previousCursor = Mouse.OverrideCursor;
+
+			Mouse.OverrideCursor = Cursors.Wait;
+		}
+
+		public void Dispose()
+		{
+			Mouse.OverrideCursor = _previousCursor;
+		}
+	}
 }

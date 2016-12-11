@@ -45,26 +45,34 @@ namespace Profiler.Data
         Win_MaximumWaitReason = 37,
 
 
-        SyncReasonCount
+        SyncReasonCount,
+
+		SyncReasonActive
     }
+
+
+	public enum CallStackReason
+	{
+
+		MaxReasonsCount,
+
+		SysCall = (Int32.MaxValue - 1),
+		AutoSample = Int32.MaxValue
+	}
 
     public class SyncInterval : Durable
     {
         public UInt64 Core { get; set; }
         public SyncReason Reason { get; set; }
+		public UInt64 NewThreadId { get; set; }
 
         public static SyncInterval Read(DataResponse response)
         {
             SyncInterval interval = new SyncInterval();
             interval.ReadDurable(response.Reader);
-
-            if (response.Version >= NetworkProtocol.NETWORK_PROTOCOL_VERSION_8)
-                interval.Core = response.Reader.ReadUInt64();
-            else
-                interval.Core = response.Reader.ReadUInt32();
-
-            if (response.Version >= NetworkProtocol.NETWORK_PROTOCOL_VERSION_9)
-                interval.Reason = (SyncReason)response.Reader.ReadByte();
+            interval.Core = response.Reader.ReadUInt64();
+            interval.Reason = (SyncReason)response.Reader.ReadByte();
+			interval.NewThreadId = response.Reader.ReadUInt64();
 
             return interval;
         }
@@ -73,6 +81,24 @@ namespace Profiler.Data
     public class WaitInterval : Durable
     {
         public SyncReason Reason { get; set; }
+		public byte core;
+
+		public ThreadDescription newThreadDesc;
+		public UInt64 newThreadId;
+
+		public string ReasonText
+		{
+			get
+			{
+				if (Reason < SyncReason.SyncReasonCount)
+				{
+					return Reason.ToString() + String.Format("\nNew thread \"{0}\", {1}", (newThreadDesc == null) ? "Unknown" : newThreadDesc.Name, newThreadId);
+				}
+
+				return "Active\nCPU core : " + core.ToString();
+			}
+		}
+
         public WaitInterval() { }
     }
 
@@ -124,8 +150,51 @@ namespace Profiler.Data
             int count = response.Reader.ReadInt32();
             Intervals = new List<SyncInterval>(count);
 
-            for (int i = 0; i < count; ++i)
-                Intervals.Add(SyncInterval.Read(response));
+			for (int i = 0; i < count; ++i)
+			{
+				Intervals.Add(SyncInterval.Read(response));
+			}
         }
     }
+
+
+	public class FiberSyncInterval : Durable
+	{
+		public UInt64 threadId { get; set; }
+
+		public static FiberSyncInterval Read(DataResponse response)
+		{
+			FiberSyncInterval interval = new FiberSyncInterval();
+			interval.ReadDurable(response.Reader);
+
+			interval.threadId = response.Reader.ReadUInt64();
+
+			return interval;
+		}
+	}
+
+
+	public class FiberSynchronization : IResponseHolder
+	{
+		public override DataResponse Response { get; set; }
+		public int FiberIndex { get; set; }
+		public FrameGroup Group { get; set; }
+
+		public List<FiberSyncInterval> Intervals { get; set; }
+
+		public FiberSynchronization(DataResponse response, FrameGroup group)
+		{
+			Group = group;
+			Response = response;
+			FiberIndex = response.Reader.ReadInt32();
+
+			int count = response.Reader.ReadInt32();
+			Intervals = new List<FiberSyncInterval>(count);
+
+			for (int i = 0; i < count; ++i)
+			{
+				Intervals.Add(FiberSyncInterval.Read(response));
+			}
+		}
+	}
 }

@@ -6,6 +6,11 @@
 #include "EtwTracer.h"
 #include "../../Core.h"
 
+/*
+Event Tracing Functions - API
+https://msdn.microsoft.com/en-us/library/windows/desktop/aa363795(v=vs.85).aspx
+*/
+
 namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -111,7 +116,7 @@ struct StackWalk_Event
 	uint32 StackThread;
 	
 	// Callstack head
-	size_t Stack0;
+	uint64 Stack0;
 
 	static const byte OPCODE = 32;
 };
@@ -125,53 +130,121 @@ struct SampledProfile
 	static const byte OPCODE = 46;
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct SysCallEnter
+{
+	uintptr_t SysCallAddress;
+
+	static const byte OPCODE = 51;
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct SysCallExit 
+{
+	uint32 SysCallNtStatus;
+
+	static const byte OPCODE = 52;
+};
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ce1dbfb4-137e-4da6-87b0-3f59aa102cbc 
 DEFINE_GUID(SampledProfileGuid, 0xce1dbfb4, 0x137e, 0x4da6, 0x87, 0xb0, 0x3f, 0x59, 0xaa, 0x10, 0x2c, 0xbc);
-const uint8 SAMPLED_PROFILE_OPCODE = 46;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 3d6fa8d1-fe05-11d0-9dda-00c04fd7ba7c
+DEFINE_GUID(CSwitchProfileGuid, 0x3d6fa8d1, 0xfe05, 0x11d0, 0x9d, 0xda, 0x00, 0xc0, 0x4f, 0xd7, 0xba, 0x7c);
+
+
+static DWORD currentProcessId = 0;
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 {
+	static uint8 cpuCoreIsExecutingThreadFromOurProcess[256] = { 0 };
+
 	const byte opcode = eventRecord->EventHeader.EventDescriptor.Opcode;
 
 	if (opcode == CSwitch::OPCODE)
 	{
-		if (sizeof(CSwitch) != eventRecord->UserDataLength)
-			return;
+		if (sizeof(CSwitch) == eventRecord->UserDataLength)
+		{
+			CSwitch* pSwitchEvent = (CSwitch*)eventRecord->UserData;
 
-		CSwitch* pSwitchEvent = (CSwitch*)eventRecord->UserData;
+			Brofiler::SwitchContextDesc desc;
+			desc.reason = pSwitchEvent->OldThreadWaitReason;
+			desc.cpuId = eventRecord->BufferContext.ProcessorNumber;
+			desc.oldThreadId = (uint64)pSwitchEvent->OldThreadId;
+			desc.newThreadId = (uint64)pSwitchEvent->NewThreadId;
+			desc.timestamp = eventRecord->EventHeader.TimeStamp.QuadPart;
+			SwitchContextResult res = Core::Get().ReportSwitchContext(desc);
 
-		Brofiler::SwitchContextDesc desc;
+			// track physical cpu cores used by our process
+			if (res == SCR_THREADENABLED)
+			{
+				cpuCoreIsExecutingThreadFromOurProcess[desc.cpuId] = 1;
+			}
 
-		desc.reason = pSwitchEvent->OldThreadWaitReason;
-		desc.cpuId = eventRecord->BufferContext.ProcessorNumber;
-		desc.oldThreadId = (uint64)pSwitchEvent->OldThreadId;
-		desc.newThreadId = (uint64)pSwitchEvent->NewThreadId;
-		desc.timestamp = eventRecord->EventHeader.TimeStamp.QuadPart;
-		Core::Get().ReportSwitchContext(desc);
+			if (res == SCR_THREADDISABLED)
+			{
+				cpuCoreIsExecutingThreadFromOurProcess[desc.cpuId] = 0;
+			}
+		}
+
 	}
 	else if (opcode == StackWalk_Event::OPCODE)
 	{
-		if (eventRecord->UserData && eventRecord->UserDataLength > 0)
+		if (eventRecord->UserData && eventRecord->UserDataLength >= sizeof(StackWalk_Event))
 		{
+			//TODO: Support x86 windows kernels
+			const size_t osKernelPtrSize = sizeof(uint64);
+
 			StackWalk_Event* pStackWalkEvent = (StackWalk_Event*)eventRecord->UserData;
-			uint32 count = 1 + (eventRecord->UserDataLength - sizeof(StackWalk_Event)) / sizeof(size_t);
+			uint32 count = 1 + (eventRecord->UserDataLength - sizeof(StackWalk_Event)) / osKernelPtrSize;
 
 			if (count && pStackWalkEvent->StackThread != 0)
 			{
-				CallstackDesc desc;
-				desc.threadID = pStackWalkEvent->StackThread;
-				desc.timestamp = pStackWalkEvent->EventTimeStamp;
-				desc.callstack = &pStackWalkEvent->Stack0;
-				desc.count = (uint8)count;
-				Core::Get().ReportStackWalk(desc);
+				if (pStackWalkEvent->StackProcess == currentProcessId)
+				{
+					CallstackDesc desc;
+					desc.threadID = pStackWalkEvent->StackThread;
+					desc.timestamp = pStackWalkEvent->EventTimeStamp;
+
+					static_assert(osKernelPtrSize == sizeof(uint64), "Incompatible types!");
+					desc.callstack = &pStackWalkEvent->Stack0;
+
+					desc.count = (uint8)count;
+					Core::Get().ReportStackWalk(desc);
+				}
 			}
 		}
 	}
 	else if (opcode == SampledProfile::OPCODE)
 	{
 		SampledProfile* pEvent = (SampledProfile*)eventRecord->UserData;
-		(void)pEvent->InstructionPointer;
+		BRO_UNUSED(pEvent);
+	} else if (opcode == SysCallEnter::OPCODE)
+	{
+		if (eventRecord->UserDataLength >= sizeof(SysCallEnter))
+		{
+			uint8 cpuId = eventRecord->BufferContext.ProcessorNumber;
+
+			// report event, but only if our process working on this physical core
+			if (cpuCoreIsExecutingThreadFromOurProcess[cpuId])
+			{
+				SysCallEnter* pEventEnter = (SysCallEnter*)eventRecord->UserData;
+
+				SysCallDesc desc;
+				desc.timestamp = eventRecord->EventHeader.TimeStamp.QuadPart;
+				desc.id = pEventEnter->SysCallAddress;
+				Core::Get().ReportSysCall(desc);
+			}
+		}
+	} else if (opcode == SysCallExit::OPCODE)
+	{
+		SysCallExit* pEventExit = (SysCallExit*)eventRecord->UserData;
+		BRO_UNUSED(pEventExit);
 	}
+	
+
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static ULONG WINAPI OnBufferRecord(_In_ PEVENT_TRACE_LOGFILE Buffer)
@@ -181,6 +254,7 @@ static ULONG WINAPI OnBufferRecord(_In_ PEVENT_TRACE_LOGFILE Buffer)
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const TRACEHANDLE INVALID_TRACEHANDLE = (TRACEHANDLE)-1;
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 DWORD WINAPI ETW::RunProcessTraceThreadFunction( LPVOID parameter )
 {
@@ -191,40 +265,53 @@ DWORD WINAPI ETW::RunProcessTraceThreadFunction( LPVOID parameter )
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-ETW::ETW() : isActive(false), sessionHandle(INVALID_TRACEHANDLE), openedHandle(INVALID_TRACEHANDLE), processThreadHandle(INVALID_HANDLE_VALUE)
+ETW::ETW() 
+	: isActive(false)
+	, traceSessionHandle(INVALID_TRACEHANDLE)
+	, openedHandle(INVALID_TRACEHANDLE)
+	, processThreadHandle(INVALID_HANDLE_VALUE)
 {
 	ULONG bufferSize = sizeof(EVENT_TRACE_PROPERTIES) + sizeof(KERNEL_LOGGER_NAME);
-	sessionProperties =(EVENT_TRACE_PROPERTIES*) malloc(bufferSize);
+	traceProperties = (EVENT_TRACE_PROPERTIES*)malloc(bufferSize);
+
+	currentProcessId = GetCurrentProcessId();
 }
 
-CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads)
+CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads, bool autoAddUnknownThreads)
 {
 	if (!isActive) 
 	{
-		CaptureStatus::Type res = SchedulerTrace::Start(mode, threads);
+		CaptureStatus::Type res = SchedulerTrace::Start(mode, threads, autoAddUnknownThreads);
 		if (res != CaptureStatus::OK)
+		{
+			OutputDebugStringA("SchedulerTrace::Start - failed\n");
 			return res;
+		}
 
 		ULONG bufferSize = sizeof(EVENT_TRACE_PROPERTIES) + sizeof(KERNEL_LOGGER_NAME);
-		ZeroMemory(sessionProperties, bufferSize);
-		sessionProperties->Wnode.BufferSize = bufferSize;
-		sessionProperties->LoggerNameOffset = sizeof(EVENT_TRACE_PROPERTIES);
-
-		sessionProperties->EnableFlags = 0;
+		ZeroMemory(traceProperties, bufferSize);
+		traceProperties->Wnode.BufferSize = bufferSize;
+		traceProperties->LoggerNameOffset = sizeof(EVENT_TRACE_PROPERTIES);
+		traceProperties->EnableFlags = 0;
 
 		if (mode & SWITCH_CONTEXTS)
-			sessionProperties->EnableFlags |= EVENT_TRACE_FLAG_CSWITCH;
+		{
+			traceProperties->EnableFlags |= EVENT_TRACE_FLAG_CSWITCH;
+		}
 
 		if (mode & STACK_WALK)
-			sessionProperties->EnableFlags |= EVENT_TRACE_FLAG_PROFILE;
+		{
+			traceProperties->EnableFlags |= EVENT_TRACE_FLAG_PROFILE;
+			traceProperties->EnableFlags |= EVENT_TRACE_FLAG_SYSTEMCALL;
+		}
 
-		sessionProperties->EnableFlags |= EVENT_TRACE_FLAG_FILE_IO;
-
-		sessionProperties->LogFileMode = EVENT_TRACE_REAL_TIME_MODE;
-
-		sessionProperties->Wnode.Flags = WNODE_FLAG_TRACED_GUID;
-		sessionProperties->Wnode.ClientContext = 1;
-		sessionProperties->Wnode.Guid = SystemTraceControlGuid;
+		traceProperties->LogFileMode = EVENT_TRACE_REAL_TIME_MODE;
+		traceProperties->Wnode.Flags = WNODE_FLAG_TRACED_GUID;
+		//
+		// https://msdn.microsoft.com/en-us/library/windows/desktop/aa364160(v=vs.85).aspx
+		// Clock resolution = QPC
+		traceProperties->Wnode.ClientContext = 1;
+		traceProperties->Wnode.Guid = SystemTraceControlGuid;
 
 		// ERROR_BAD_LENGTH(24): The Wnode.BufferSize member of Properties specifies an incorrect size. Properties does not have sufficient space allocated to hold a copy of SessionName.
 		// ERROR_ALREADY_EXISTS(183): A session with the same name or GUID is already running.
@@ -239,11 +326,7 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads)
 
 		while (--retryCount >= 0)
 		{
-			CLASSIC_EVENT_ID sampleEventID;
-			sampleEventID.EventGuid = SampledProfileGuid;
-			sampleEventID.Type = SampledProfile::OPCODE;
-
-			status = StartTrace(&sessionHandle, KERNEL_LOGGER_NAME, sessionProperties);
+			status = StartTrace(&traceSessionHandle, KERNEL_LOGGER_NAME, traceProperties);
 
 			switch (status)
 			{
@@ -262,7 +345,7 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads)
 				break;
 
 			case ERROR_ALREADY_EXISTS:
-				ControlTrace(0, KERNEL_LOGGER_NAME, sessionProperties, EVENT_TRACE_CONTROL_STOP);
+				ControlTrace(0, KERNEL_LOGGER_NAME, traceProperties, EVENT_TRACE_CONTROL_STOP);
 				break;
 
 			case ERROR_ACCESS_DENIED:
@@ -278,34 +361,65 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads)
 		}
 
 		if (status != ERROR_SUCCESS)
+		{
+			OutputDebugStringA("StartTrace - failed\n");
 			return CaptureStatus::FAILED;
+		}
+
+		if (mode & STACK_WALK)
+		{
+			CLASSIC_EVENT_ID callstackSamples[2];
+
+			callstackSamples[0].EventGuid = SampledProfileGuid;
+			callstackSamples[0].Type = SysCallEnter::OPCODE;
+
+			callstackSamples[1].EventGuid = SampledProfileGuid;
+			callstackSamples[1].Type = SampledProfile::OPCODE;
+
+/*
+			callstackSamples[2].EventGuid = CSwitchProfileGuid;
+			callstackSamples[2].Type = CSwitch::OPCODE;
+*/
+
+
+/*
+
+		https://msdn.microsoft.com/en-us/library/windows/desktop/dd392328%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
+
+		Typically, on 64-bit computers, you cannot capture the kernel stack in certain contexts when page faults are not allowed. To enable walking the kernel stack on x64, set
+		the DisablePagingExecutive Memory Management registry value to 1. The DisablePagingExecutive registry value is located under the following registry key:
+
+		HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Memory Management
+
+*/
+			status = TraceSetInformation(traceSessionHandle, TraceStackTracingInfo, &callstackSamples[0], sizeof(callstackSamples) );
+			if (status != ERROR_SUCCESS)
+			{
+				OutputDebugStringA("TraceSetInformation - failed\n");
+				return CaptureStatus::FAILED;
+			}
+
+		}
+
 
 		ZeroMemory(&logFile, sizeof(EVENT_TRACE_LOGFILE));
-
 		logFile.LoggerName = KERNEL_LOGGER_NAME;
 		logFile.ProcessTraceMode = (PROCESS_TRACE_MODE_REAL_TIME | PROCESS_TRACE_MODE_EVENT_RECORD | PROCESS_TRACE_MODE_RAW_TIMESTAMP);
 		logFile.EventRecordCallback = OnRecordEvent;
 		logFile.BufferCallback = OnBufferRecord;
-
-		if (mode & STACK_WALK)
-		{
-			CLASSIC_EVENT_ID sampleEventID;
-			sampleEventID.EventGuid = SampledProfileGuid;
-			sampleEventID.Type = SAMPLED_PROFILE_OPCODE;
-
-			status = TraceSetInformation(sessionHandle, TraceStackTracingInfo, &sampleEventID, sizeof(CLASSIC_EVENT_ID));
-			if (status != ERROR_SUCCESS)
-				return CaptureStatus::FAILED;
-		}
-
 		openedHandle = OpenTrace(&logFile);
 		if (openedHandle == INVALID_TRACEHANDLE)
+		{
+			OutputDebugStringA("OpenTrace - failed\n");
 			return CaptureStatus::FAILED;
+		}
 
 		DWORD threadID;
 		processThreadHandle = CreateThread(0, 0, RunProcessTraceThreadFunction, this, 0, &threadID);
 		
 		isActive = true;
+
+		OutputDebugStringA("Start - done\n");
 	}
 
 	return CaptureStatus::OK;
@@ -313,34 +427,39 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool ETW::Stop()
 {
-	if (!SchedulerTrace::Stop())
-		return false;
-
-	if (isActive)
+	if (!isActive)
 	{
-		ULONG controlTraceResult = ControlTrace(openedHandle, KERNEL_LOGGER_NAME, sessionProperties, EVENT_TRACE_CONTROL_STOP);
-
-		// ERROR_CTX_CLOSE_PENDING(7007L): The call was successful. The ProcessTrace function will stop after it has processed all real-time events in its buffers (it will not receive any new events).
-		// ERROR_BUSY(170L): Prior to Windows Vista, you cannot close the trace until the ProcessTrace function completes.
-		// ERROR_INVALID_HANDLE(6L): One of the following is true: TraceHandle is NULL. TraceHandle is INVALID_HANDLE_VALUE.
-		ULONG closeTraceStatus = CloseTrace(openedHandle);
-
-		// Wait for ProcessThread to finish
-		WaitForSingleObject(processThreadHandle, INFINITE);
-		BOOL wasThreadClosed = CloseHandle(processThreadHandle);
-
-		isActive = false;
-
-		return wasThreadClosed && closeTraceStatus == ERROR_SUCCESS && controlTraceResult == ERROR_SUCCESS;
+		return false;
 	}
 
-	return false;
+	OutputDebugStringA("Stop\n");
+
+	ULONG controlTraceResult = ControlTrace(openedHandle, KERNEL_LOGGER_NAME, traceProperties, EVENT_TRACE_CONTROL_STOP);
+
+	// ERROR_CTX_CLOSE_PENDING(7007L): The call was successful. The ProcessTrace function will stop after it has processed all real-time events in its buffers (it will not receive any new events).
+	// ERROR_BUSY(170L): Prior to Windows Vista, you cannot close the trace until the ProcessTrace function completes.
+	// ERROR_INVALID_HANDLE(6L): One of the following is true: TraceHandle is NULL. TraceHandle is INVALID_HANDLE_VALUE.
+	ULONG closeTraceStatus = CloseTrace(openedHandle);
+
+	// Wait for ProcessThread to finish
+	WaitForSingleObject(processThreadHandle, INFINITE);
+	BOOL wasThreadClosed = CloseHandle(processThreadHandle);
+
+	isActive = false;
+
+	if (!SchedulerTrace::Stop())
+	{
+		return false;
+	}
+
+	return wasThreadClosed && (closeTraceStatus == ERROR_SUCCESS) && (controlTraceResult == ERROR_SUCCESS);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ETW::~ETW()
 {
 	Stop();
-	delete sessionProperties;
+	free (traceProperties);
+	traceProperties = nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 SchedulerTrace* SchedulerTrace::Get()
@@ -352,4 +471,3 @@ SchedulerTrace* SchedulerTrace::Get()
 }
 
 #endif
-

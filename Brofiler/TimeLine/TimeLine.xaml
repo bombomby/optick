@@ -38,7 +38,7 @@
 		<DataTemplate x:Key="TimeLineItemTemplate">
       <Grid x:Name="rect" Height="163" Width="14" Margin="0,0,0,0" >
         <local:TimeLineItem x:Name="timeLineItem" Height="{Binding Duration, Converter={StaticResource FrameHeightConverter}}" Width="Auto" VerticalAlignment="Bottom" Padding="0" Margin="0" />
-        <Label x:Name="frameDescriptionText" Content="{Binding Description, Mode=OneTime}" Width="Auto" VerticalAlignment="Bottom" Height="Auto" FontSize="12" Padding="0" Margin="-1,0,0,3" SnapsToDevicePixels="True" FontWeight="Bold" Grid.ColumnSpan="2" >
+        <Label Content="{Binding Description, Mode=OneTime}" Width="Auto" VerticalAlignment="Bottom" Height="Auto" FontSize="12" Padding="0" Margin="-1,0,0,3" SnapsToDevicePixels="True" FontWeight="Bold" Grid.ColumnSpan="2" >
 			<Label.LayoutTransform>
 				<TransformGroup>
 					<ScaleTransform/>
@@ -48,7 +48,19 @@
 				</TransformGroup>
 			</Label.LayoutTransform>
 		</Label>
-	  </Grid>
+
+        <Label Content="{Binding FilteredDescription, Mode=OneWay}" Width="Auto" VerticalAlignment="Top" Height="Auto" FontFamily="Consolas" FontSize="12" Padding="0" Margin="-1,0,0,3" SnapsToDevicePixels="True" Grid.ColumnSpan="2" >
+            <Label.LayoutTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="-90"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </Label.LayoutTransform>
+        </Label>
+
+    </Grid>
 	  <DataTemplate.Triggers>
         <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}, Mode=FindAncestor}}" Value="true">
           <Setter TargetName="timeLineItem" Property="BorderThickness" Value="2" />

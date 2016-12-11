@@ -61,22 +61,26 @@ void Event::Stop(EventData& data)
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void SyncData::StartWork(EventStorage* storage, uint64_t core)
+void FiberSyncData::AttachToThread(EventStorage* storage, uint64_t threadId)
 {
 	if (storage)
 	{
-		SyncData& data = storage->synchronizationBuffer.Add();
+		FiberSyncData& data = storage->fiberSyncBuffer.Add();
 		data.Start();
 		data.finish = LLONG_MAX;
-		data.core = core;
+		data.threadId = threadId;
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void SyncData::StopWork(EventStorage* storage)
+void FiberSyncData::DetachFromThread(EventStorage* storage)
 {
 	if (storage)
-		if (SyncData* syncData = storage->synchronizationBuffer.Back())
+	{
+		if (FiberSyncData* syncData = storage->fiberSyncBuffer.Back())
+		{
 			syncData->Stop();
+		}
+	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream & operator<<(OutputDataStream &stream, const EventDescription &ob)
@@ -97,14 +101,23 @@ OutputDataStream& operator<<(OutputDataStream& stream, const EventData& ob)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const SyncData& ob)
 {
-	return stream << (EventTime)(ob) << ob.core << ob.reason;
+	return stream << (EventTime)(ob) << ob.core << ob.reason << ob.newThreadId;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+OutputDataStream& operator<<(OutputDataStream& stream, const FiberSyncData& ob)
+{
+	return stream << (EventTime)(ob) << ob.threadId;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Category::Category(const EventDescription& description) : Event(description)
 {
 	if (data)
+	{
 		if (EventStorage* storage = Core::storage)
+		{
 			storage->RegisterCategory(*data);
+		}
+	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

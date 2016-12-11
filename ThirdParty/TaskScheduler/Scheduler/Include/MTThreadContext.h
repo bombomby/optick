@@ -34,6 +34,7 @@
 #define MT_SYSTEM_TASK_COLOR (MT::Color::Yellow)
 #define MT_SYSTEM_TASK_NAME "SchedulerTask"
 #define MT_SYSTEM_TASK_FIBER_NAME "IdleFiber"
+#define MT_SYSTEM_FIBER_INDEX (int32)(-1)
 
 #endif
 
@@ -123,7 +124,7 @@ namespace MT
 			void NotifyThreadStarted(uint32 threadIndex);
 			void NotifyThreadStoped(uint32 threadIndex);
 
-			void NotifyTaskExecuteStateChanged(MT::Color::Type debugColor, const mt_char* debugID, TaskExecuteState::Type type);
+			void NotifyTaskExecuteStateChanged(MT::Color::Type debugColor, const mt_char* debugID, TaskExecuteState::Type type, int32 fiberIndex);
 
 			void NotifyThreadIdleStarted(uint32 threadIndex);
 			void NotifyThreadIdleFinished(uint32 threadIndex);
@@ -131,8 +132,9 @@ namespace MT
 			void NotifyWaitStarted();
 			void NotifyWaitFinished();
 
-			void NotifyFiberAssignedToThread(uint32 fiberIndex, uint32 threadIndex);
-			void NotifyThreadAssignedToFiber();
+			void NotifyTemporaryWorkerThreadJoin();
+			void NotifyTemporaryWorkerThreadLeave();
+
 #endif
 
 			static size_t GetMemoryRequrementInBytesForDescBuffer();

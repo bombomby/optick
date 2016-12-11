@@ -23,21 +23,6 @@
 	#define USE_BROFILER 1
 #endif
 
-#if _XBOX_ONE
-#define BRO_XBOX (1)
-#elif __ORBIS__
-#define BRO_ORBIS (1)
-#elif _WIN32
-#define BRO_WINDOWS (1)
-#elif __APPLE_CC__
-#define BRO_OSX (1)
-#else
-#define BRO_POSIX (1)
-#endif
-
-#if defined(BRO_WINDOWS)
-	#define USE_BROFILER_SAMPLING (USE_BROFILER && !BRO_UWP)
-#endif
 
 
 
@@ -229,10 +214,11 @@ BROFILER_API bool IsActive();
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct EventStorage;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API bool RegisterFiber(const char* name, EventStorage** slot);
+BROFILER_API bool RegisterFiber(uint64_t fiberId, EventStorage** slot);
 BROFILER_API bool RegisterThread(const char* name);
 BROFILER_API bool UnRegisterThread();
-BROFILER_API EventStorage** GetEventStorageSlot();
+BROFILER_API EventStorage** GetEventStorageSlotForCurrentThread();
+BROFILER_API bool IsFiberStorage(EventStorage* fiberStorage);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct EventDescription;
 struct Frame;
@@ -254,10 +240,17 @@ struct EventData : public EventTime
 struct BROFILER_API SyncData : public EventTime
 {
 	uint64_t core;
+	uint64_t newThreadId;
 	int8_t reason;
+};
 
-	static void StartWork(EventStorage* storage, uint64_t core);
-	static void StopWork(EventStorage* storage);
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct BROFILER_API FiberSyncData : public EventTime
+{
+	uint64_t threadId;
+
+	static void AttachToThread(EventStorage* storage, uint64_t threadId);
+	static void DetachFromThread(EventStorage* storage);
 };
 
 

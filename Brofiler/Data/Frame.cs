@@ -13,6 +13,7 @@ namespace Profiler.Data
     public DataResponse Response { get; private set; }
 
     public virtual String Description { get; set; }
+	public virtual String FilteredDescription { get; set; }
     public virtual double Duration { get; set; }
 
     public bool IsLoaded { get; protected set; }
