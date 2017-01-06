@@ -16,14 +16,15 @@ namespace Profiler
 
 		Mesh Mesh { get; set; }
 		Mesh SyncMesh { get; set; }
-		DynamicMesh CallstackMeshPolys { get; set; }
+        Mesh SyncWorkMesh { get; set; }
+        DynamicMesh CallstackMeshPolys { get; set; }
         DynamicMesh CallstackMeshLines { get; set; }
 
 
         double SyncLineHeight = 3.0 * RenderSettings.dpiScaleY;
-		static Color SynchronizationColor = Colors.Black;
-		static Color SynchronizationColorUser = Colors.Magenta;
-		static Color[] WorkColors = new Color[8]
+		static Color SynchronizationColor = Colors.Magenta;
+        static Color SynchronizationColorUser = Colors.OrangeRed;
+        static Color[] WorkColors = new Color[8]
 			{	Colors.Lime,
 				Colors.LimeGreen,
 				Colors.ForestGreen,
@@ -48,12 +49,12 @@ namespace Profiler
 
         bool IsUserInitiatedSync(SyncReason reason)
         {
-			if (reason == SyncReason.Win_UserRequest || reason == SyncReason.Win_DelayExecution)
+			if (SyncReason.Win_UserRequest < reason && reason < SyncReason.Win_MaximumWaitReason)
 			{
-				return true;
+				return false;
 			}
 
-            return false;
+            return true;
         }
 
 		static Color CallstackColor = Colors.Red;
@@ -170,24 +171,27 @@ namespace Profiler
             // Build Mesh
             DirectX.DynamicMesh builder = canvas.CreateMesh();
             DirectX.DynamicMesh syncBuilder = canvas.CreateMesh();
+            DirectX.DynamicMesh syncWorkBuilder = canvas.CreateMesh();
 
-			if (EventData.Sync != null && EventData.Sync.Intervals != null)
+            if (EventData.Sync != null && EventData.Sync.Intervals != null)
 			{
 				SyncReason stallReason = SyncReason.SyncReasonCount;
 				long stallFrom = 0;
+                int frameSyncIndex = 0;
+
 				for(int i = 0; i < EventData.Sync.Intervals.Count; i++)
 				{
 					SyncInterval sync = EventData.Sync.Intervals[i];
 					
 					Interval workInterval = scroll.TimeToUnit(sync);
 
-					// draw work
-					int coreColorIndex = (int)sync.Core;
-					coreColorIndex = coreColorIndex % WorkColors.Length;
-					Color WorkColor = WorkColors[coreColorIndex];
-					syncBuilder.AddRect(new Rect(workInterval.Left, RenderParams.BaseMargin / Height, workInterval.Right - workInterval.Left, SyncLineHeight / Height), WorkColor);
+                    //draw work
+                    int coreColorIndex = (int)sync.Core;
+                    coreColorIndex = coreColorIndex % WorkColors.Length;
+                    Color WorkColor = WorkColors[coreColorIndex];
+                    syncWorkBuilder.AddRect(new Rect(workInterval.Left, RenderParams.BaseMargin / Height, workInterval.Right - workInterval.Left, SyncLineHeight / Height), WorkColor);
 
-					if (i == 0)
+                    if (i == 0)
 					{
 						stallReason = sync.Reason;
 						stallFrom = sync.Finish;
@@ -196,17 +200,25 @@ namespace Profiler
 
 					long workStart = sync.Start;
 					long workFinish = sync.Finish;
-					Interval syncInterval = scroll.TimeToUnit(new Durable(stallFrom, workStart));
 
-					double syncWidth = syncInterval.Right - syncInterval.Left;
-					if (syncWidth <= 0)
-					{
-						syncWidth = 0.1;
-					}
-						
-					// draw sleep
-					Color waitColor = IsUserInitiatedSync(stallReason) ? SynchronizationColorUser : SynchronizationColor;
-					syncBuilder.AddRect(new Rect(syncInterval.Left, RenderParams.BaseMargin / Height, syncWidth, SyncLineHeight / Height), waitColor);
+                    while (frameSyncIndex < EventData.Events.Count && EventData.Events[frameSyncIndex].Finish < stallFrom)
+                        ++frameSyncIndex;
+
+                    //Ignoring all the waiting outside marked work to simplify the view
+                    if (frameSyncIndex < EventData.Events.Count && EventData.Events[frameSyncIndex].Start <= workStart)
+                    {
+                        Interval syncInterval = scroll.TimeToUnit(new Durable(stallFrom, workStart));
+
+                        double syncWidth = syncInterval.Right - syncInterval.Left;
+                        if (syncWidth <= 0)
+                        {
+                            syncWidth = 0.1;
+                        }
+
+                        // draw sleep
+                        Color waitColor = IsUserInitiatedSync(stallReason) ? SynchronizationColorUser : SynchronizationColor;
+                        syncBuilder.AddRect(new Rect(syncInterval.Left, RenderParams.BaseMargin / Height, syncWidth, SyncLineHeight / Height), waitColor);
+                    }
 
 					stallFrom = workFinish;
 					stallReason = sync.Reason;
@@ -225,11 +237,14 @@ namespace Profiler
 
             Mesh = builder.Freeze(canvas.RenderDevice);
             SyncMesh = syncBuilder.Freeze(canvas.RenderDevice);
+            SyncWorkMesh = syncWorkBuilder.Freeze(canvas.RenderDevice);
 
-			CallstackMeshPolys = canvas.CreateMesh();
+            CallstackMeshPolys = canvas.CreateMesh();
+            CallstackMeshPolys.Projection = Mesh.ProjectionType.Pixel;
 
             CallstackMeshLines = canvas.CreateMesh();
             CallstackMeshLines.Geometry = Mesh.GeometryType.Lines;
+            CallstackMeshLines.Projection = Mesh.ProjectionType.Pixel;
         }
 
         public override double Height { get { return RenderParams.BaseHeight * MaxDepth; } }
@@ -245,7 +260,6 @@ namespace Profiler
 
             if (layer == DirectXCanvas.Layer.Background)
             {
-
                 if (Mesh != null)
                 {
                     Mesh.World = world;
@@ -258,10 +272,16 @@ namespace Profiler
                     canvas.Draw(FilterMesh);
                 }
 
-                if (SyncMesh != null)
+                if (SyncMesh != null && scroll.SyncDraw == ThreadScroll.SyncDrawType.Wait)
                 {
                     SyncMesh.World = world;
                     canvas.Draw(SyncMesh);
+                }
+
+                if (SyncWorkMesh != null && scroll.SyncDraw == ThreadScroll.SyncDrawType.Work)
+                {
+                    SyncWorkMesh.World = world;
+                    canvas.Draw(SyncWorkMesh);
                 }
 
                 Data.Utils.ForEachInsideInterval(EventData.Events, scroll.ViewTime, frame =>
@@ -298,13 +318,13 @@ namespace Profiler
             {
                 if (CallstackMeshPolys != null && CallstackMeshLines != null && scroll.DrawCallstacks)
                 {
-                    double unitWidth = scroll.PixelToUnitLength(CallstackMarkerSize * 0.5);
-                    double unitHeight = (CallstackMarkerSize / RenderParams.BaseHeight) / MaxDepth;
+                    double width = CallstackMarkerSize * 0.5;
+                    double height = (CallstackMarkerSize / RenderParams.BaseHeight) / MaxDepth;
                     double offset = (CallstackMarkerOffset / RenderParams.BaseHeight) / MaxDepth;
 
                     Data.Utils.ForEachInsideInterval(EventData.Callstacks, scroll.ViewTime, callstack =>
                     {
-                        double center = scroll.TimeToUnit(callstack);
+                        double center = scroll.TimeToPixel(callstack);
 
                         Point a = new Point(center - unitWidth, offset);
                         Point b = new Point(center, offset + unitHeight);

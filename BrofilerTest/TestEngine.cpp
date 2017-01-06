@@ -54,7 +54,7 @@ void SlowFunction2()
 template<unsigned long N>
 struct SimpleTask
 {
-	MT_DECLARE_TASK(SimpleTask, MT::StackRequirements::STANDARD, MT::TaskPriority::NORMAL, MT::Color::Blue);
+	MT_DECLARE_TASK(SimpleTask, MT::StackRequirements::STANDARD, MT::TaskPriority::NORMAL, MT::Color::LightBlue);
 
 	float value;
 
@@ -63,7 +63,7 @@ struct SimpleTask
 	void Do(MT::FiberContext& ctx)
 	{
 		{
-			BROFILER_CATEGORY("BeforeYield", Brofiler::Color::Green);
+			BROFILER_CATEGORY("BeforeYield", Brofiler::Color::PaleGreen);
 
 			for (unsigned long i = 0; i < N; ++i)
 				value = (value + sin((float)i)) * 0.5f;
@@ -72,7 +72,7 @@ struct SimpleTask
 		ctx.Yield();
 
 		{
-			BROFILER_CATEGORY("AfterYield", Brofiler::Color::Red);
+			BROFILER_CATEGORY("AfterYield", Brofiler::Color::SandyBrown);
 
 			for (unsigned long i = 0; i < N; ++i)
 				value = (value + cos((float)i)) * 0.5f;
@@ -140,22 +140,26 @@ bool Engine::Update()
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdateInput()
-{ BROFILER_CATEGORY( "UpdateInput", Brofiler::Color::SteelBlue )
+{
+	BROFILER_CATEGORY("UpdateInput", Brofiler::Color::SteelBlue);
 	SlowFunction2();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdateMessages()
-{ BROFILER_CATEGORY( "UpdateMessages", Brofiler::Color::Orange )
+{
+	BROFILER_CATEGORY("UpdateMessages", Brofiler::Color::Orange);
 	SlowFunction<REPEAT_COUNT>();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdateLogic()
-{ BROFILER_CATEGORY( "UpdateLogic", Brofiler::Color::Orchid )
+{
+	BROFILER_CATEGORY("UpdateLogic", Brofiler::Color::Orchid);
 	SlowFunction<REPEAT_COUNT>();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdateTasks()
-{ BROFILER_CATEGORY( "UpdateTasks", Brofiler::Color::SkyBlue )
+{
+	BROFILER_CATEGORY("UpdateTasks", Brofiler::Color::SkyBlue);
 	RootTask<16> task;
 	scheduler.RunAsync(MT::TaskGroup::Default(), &task, 1);
 
@@ -168,17 +172,20 @@ void Engine::UpdateTasks()
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdateScene()
-{ BROFILER_CATEGORY( "UpdateScene", Brofiler::Color::SkyBlue )
+{
+	BROFILER_CATEGORY("UpdateScene", Brofiler::Color::SkyBlue);
 	SlowFunction<REPEAT_COUNT>();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::Draw()
-{ BROFILER_CATEGORY( "Draw", Brofiler::Color::Salmon )
+{
+	BROFILER_CATEGORY("Draw", Brofiler::Color::Salmon);
 	SlowFunction<REPEAT_COUNT>();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdatePhysics()
-{ BROFILER_CATEGORY( "UpdatePhysics", Brofiler::Color::Wheat )
+{ 
+	//BROFILER_CATEGORY("UpdatePhysics", Brofiler::Color::Wheat);
 	MT::SpinSleepMilliSeconds(20);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

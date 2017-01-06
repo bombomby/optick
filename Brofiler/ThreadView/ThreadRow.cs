@@ -102,6 +102,14 @@ namespace Profiler
         }
 
 		public bool DrawCallstacks { get; set; }
+        
+        public enum SyncDrawType
+        {
+            Wait,
+            Work,
+        }
+
+        public SyncDrawType SyncDraw { get; set; }
     }
 
     public abstract class ThreadRow
