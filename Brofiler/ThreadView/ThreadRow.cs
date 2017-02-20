@@ -119,7 +119,7 @@ namespace Profiler
         public abstract String Name { get; }
         public FrameGroup Group { get; set; }
 
-        public abstract void Render(DirectX.DirectXCanvas canvas, ThreadScroll scroll, DirectXCanvas.Layer layer);
+        public abstract void Render(DirectX.DirectXCanvas canvas, ThreadScroll scroll, DirectXCanvas.Layer layer, Rect box);
         public abstract void BuildMesh(DirectX.DirectXCanvas canvas, ThreadScroll scroll);
 
         public abstract void OnMouseMove(Point point, ThreadScroll scroll);
@@ -162,7 +162,7 @@ namespace Profiler
             BackgroundMeshTris = builderHeader.Freeze(canvas.RenderDevice);
         }
 
-        public override void Render(DirectXCanvas canvas, ThreadScroll scroll, DirectXCanvas.Layer layer)
+        public override void Render(DirectXCanvas canvas, ThreadScroll scroll, DirectXCanvas.Layer layer, Rect box)
         {
             if (layer == DirectXCanvas.Layer.Background)
             {

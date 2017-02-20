@@ -48,6 +48,20 @@ namespace Profiler.DirectX
             IsDirty = true;
         }
 
+        public void AddRect(System.Windows.Point[] rect, System.Windows.Media.Color color)
+        {
+            int index = Vertices.Count;
+            SharpDX.Color c = Utils.Convert(color);
+            for (int i = 0; i < 4; ++i)
+                Vertices.Add(new Mesh.Vertex() { Position = new Vector2((float)rect[i].X, (float)rect[i].Y), Color = c });
+
+            foreach (int i in GetBoxIndicesList())
+                Indices.Add(index + i);
+
+            IsDirty = true;
+        }
+
+
         public void AddRect(Rect rect, System.Windows.Media.Color[] colors)
         {
             int index = Vertices.Count;

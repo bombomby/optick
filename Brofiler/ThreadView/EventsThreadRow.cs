@@ -36,9 +36,7 @@ namespace Profiler
 				Colors.LightBlue,
 			};
 
-        double CallstackMarkerSize = 10.0 * RenderSettings.dpiScaleY;
-        double SelectCallstackMarkerSize = 12.0 * RenderSettings.dpiScaleY;
-        double CallstackMarkerOffset = -1.5 * RenderSettings.dpiScaleY;
+        double CallstackMarkerRadius = 4.0 * RenderSettings.dpiScaleY;
 
         struct IntPair
         {
@@ -253,7 +251,7 @@ namespace Profiler
         double TextDrawThreshold = 8.0 * RenderSettings.dpiScaleX;
         double TextDrawOffset = 1.5 * RenderSettings.dpiScaleY;
 
-        public override void Render(DirectX.DirectXCanvas canvas, ThreadScroll scroll, DirectXCanvas.Layer layer)
+        public override void Render(DirectX.DirectXCanvas canvas, ThreadScroll scroll, DirectXCanvas.Layer layer, Rect box)
         {
             SharpDX.Matrix world = SharpDX.Matrix.Scaling((float)scroll.Zoom, (float)((Height - 2.0 * RenderParams.BaseMargin) / scroll.Height), 1.0f);
             world.TranslationVector = new SharpDX.Vector3(-(float)(scroll.ViewUnit.Left * scroll.Zoom), (float)((Offset + 1.0 * RenderParams.BaseMargin) / scroll.Height), 0.0f);
@@ -318,27 +316,28 @@ namespace Profiler
             {
                 if (CallstackMeshPolys != null && CallstackMeshLines != null && scroll.DrawCallstacks)
                 {
-                    double width = CallstackMarkerSize * 0.5;
-                    double height = (CallstackMarkerSize / RenderParams.BaseHeight) / MaxDepth;
-                    double offset = (CallstackMarkerOffset / RenderParams.BaseHeight) / MaxDepth;
+                    double width = CallstackMarkerRadius;
+                    double height = CallstackMarkerRadius;
+                    double offset = (box.Top + box.Bottom) * 0.5;
 
                     Data.Utils.ForEachInsideInterval(EventData.Callstacks, scroll.ViewTime, callstack =>
                     {
                         double center = scroll.TimeToPixel(callstack);
 
-                        Point a = new Point(center - unitWidth, offset);
-                        Point b = new Point(center, offset + unitHeight);
-                        Point c = new Point(center + unitWidth, offset);
+                        Point[] points = new Point[] { new Point(center - width, offset), new Point(center, offset - height), new Point(center + width, offset), new Point(center, offset + height) };
 
-                        CallstackMeshPolys.AddTri(a, b, c, (callstack.Reason == CallStackReason.AutoSample) ? CallstackColor : SystemCallstackColor);
-                        CallstackMeshLines.AddTri(a, b, c, Colors.Black);
+                        Color fillColor = (callstack.Reason == CallStackReason.AutoSample) ? CallstackColor : SystemCallstackColor;
+                        Color strokeColor = Colors.Black;
+
+                        CallstackMeshPolys.AddRect(points, fillColor);
+                        CallstackMeshLines.AddRect(points, strokeColor);
                     });
 
                     CallstackMeshPolys.Update(canvas.RenderDevice);
                     CallstackMeshLines.Update(canvas.RenderDevice);
 
-                    CallstackMeshPolys.World = world;
-                    CallstackMeshLines.World = world;
+                    //CallstackMeshPolys.World = world;
+                    //CallstackMeshLines.World = world;
 
                     canvas.Draw(CallstackMeshPolys);
                     canvas.Draw(CallstackMeshLines);
@@ -532,10 +531,10 @@ namespace Profiler
 			{
 				int startIndex = Data.Utils.BinarySearchClosestIndex(EventData.Callstacks, tick.Start);
 
-				for (int i = 0; (i <= startIndex + 1) && (i < EventData.Callstacks.Count) && (i != -1); ++i)
+				for (int i = startIndex; (i <= startIndex + 1) && (i < EventData.Callstacks.Count) && (i != -1); ++i)
 				{
 					double pixelPos = scroll.TimeToPixel(EventData.Callstacks[i]);
-					if (Math.Abs(pixelPos - point.X) < SelectCallstackMarkerSize && point.Y < SelectCallstackMarkerSize)
+					if (Math.Abs(pixelPos - point.X) < CallstackMarkerRadius * 1.2)
 					{
 						if (EventData.Callstacks[i].Reason < CallStackReason.MaxReasonsCount)
 						{
