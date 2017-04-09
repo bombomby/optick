@@ -443,4 +443,8 @@
   <ItemGroup>
     <EmbeddedResource Include="DirectX\Fonts\SegoeUI_28_Normal_0.png" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="AutoEmbedLibs\MahApps.Metro.dll" />
+    <EmbeddedResource Include="AutoEmbedLibs\System.Windows.Interactivity.dll" />
+  </ItemGroup>
 </Project>
