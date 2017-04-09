@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MahApps.Metro.Controls;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows;
@@ -15,8 +16,8 @@ namespace Profiler
 	/// <summary>
 	/// Interaction logic for SourceWindow.xaml
 	/// </summary>
-	public partial class SourceWindow : Window
-	{
+	public partial class SourceWindow : MetroWindow
+    {
 		public SourceWindow()
 		{
 			this.InitializeComponent();

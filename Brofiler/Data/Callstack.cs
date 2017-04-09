@@ -103,7 +103,7 @@ namespace Profiler.Data
 					result.CallstackMap.Add(threadID, callstacks);
 				}
 
-                callstack.Reverse();
+                //callstack.Reverse();
                 callstacks.Add(callstack);
 
 				i += (3 + count);

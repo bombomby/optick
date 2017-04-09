@@ -61,7 +61,8 @@
 				SelectionChanged="SummaryTable_SelectionChanged" 
 				KeyDown="SummaryTable_KeyDown" 
 				Sorting="SummaryTable_Sorting"
-				TextOptions.TextFormattingMode="Display">
+				TextOptions.TextFormattingMode="Display"
+                HeadersVisibility="Column">
       <DataGrid.Resources>
         <Style TargetType="DataGridRow">
           <EventSetter Event="MouseDoubleClick" Handler="Row_DoubleClick"/>

@@ -1,29 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net.Mime;
-using System.Text;
-using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Net.Sockets;
-using System.Net;
 using Profiler.Data;
+using MahApps.Metro.Controls;
 
 namespace Profiler
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : MetroWindow
     {
         public MainWindow()
         {
@@ -41,9 +29,9 @@ namespace Profiler
 
         void frameTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (frameTabs.SelectedItem is CloseableTabItem)
+            if (frameTabs.SelectedItem is TabItem)
             {
-                var dataContext = (frameTabs.SelectedItem as CloseableTabItem).DataContext;
+                var dataContext = (frameTabs.SelectedItem as TabItem).DataContext;
 
                 if (dataContext is Data.EventFrame)
                 {
@@ -89,15 +77,15 @@ namespace Profiler
             Data.Frame frame = args.Frame;
             foreach (var tab in frameTabs.Items)
             {
-                if (tab is CloseableTabItem)
+                if (tab is TabItem)
                 {
-                    CloseableTabItem item = (CloseableTabItem)tab;
+                    TabItem item = (TabItem)tab;
                     if (item.DataContext.Equals(frame))
                     {
-                        frameTabs.SelectedItem = item;
-						if (item.frameInfo != null)
+                        FrameInfo frameInfo = item.Content as FrameInfo;
+						if (frameInfo != null)
 						{
-							item.frameInfo.FocusOnNode(focusRange);
+                            frameInfo.FocusOnNode(focusRange);
 						}
                         return;
                     }
@@ -105,17 +93,8 @@ namespace Profiler
             }
 
 
-/*
-			CloseableTabItem curr = frameTabs.SelectedItem as CloseableTabItem;
-			string currFiltredText = null;
-			if (curr != null && curr.frameInfo != null)
-			{
-				currFiltredText = curr.frameInfo.SummaryTable.FilterText.FilterText.Text;
-			}
- */ 
-
-            CloseableTabItem tabItem = new CloseableTabItem() { Header = "Loading...", DataContext = frame };
-
+            CloseableTabItem tabItem = new CloseableTabItem() { Header = "Loading...", DataContext = frame, CloseButtonEnabled = true };
+            
 			FrameInfo info = new FrameInfo(timeLine.Frames) { Height = Double.NaN, Width = Double.NaN, DataContext = null };
             info.DataContextChanged += new DependencyPropertyChangedEventHandler((object sender, DependencyPropertyChangedEventArgs e) => { tabItem.Header = frame.Description; });
             info.SelectedTreeNodeChanged += new SelectedTreeNodeChangedHandler(FrameInfo_OnSelectedTreeNodeChanged);

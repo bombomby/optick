@@ -32,7 +32,8 @@ namespace Profiler
         List<ThreadRow> rows = new List<ThreadRow>();
         Dictionary<int, ThreadRow> id2row = new Dictionary<int, ThreadRow>();
 
-        SolidColorBrush AlternativeBackground;
+        SolidColorBrush BroBackground;
+        SolidColorBrush BroAlternativeBackground;
         SolidColorBrush FrameSelection;
         SolidColorBrush FrameHover;
         Color MeasureBackground;
@@ -40,7 +41,8 @@ namespace Profiler
 
         void InitColors()
         {
-            AlternativeBackground = FindResource("BroAlternative") as SolidColorBrush;
+            BroBackground = FindResource("BroBackground") as SolidColorBrush;
+            BroAlternativeBackground = FindResource("BroAlternative") as SolidColorBrush;
             FrameSelection = FindResource("BroFrameSelection") as SolidColorBrush;
             FrameHover = FindResource("BroFrameHover") as SolidColorBrush;
             MeasureBackground = Color.FromArgb(100, 0, 0, 0);
@@ -89,13 +91,13 @@ namespace Profiler
 
             if (group == null)
                 return;
-            
+
             rows.Add(new HeaderThreadRow(group)
             {
-                GradientTop = Colors.LightGray,
-                GradientBottom = Colors.Gray,
-                SplitLines = Colors.White,
-                TextColor = Colors.Black
+                GradientTop = (BroAlternativeBackground as SolidColorBrush).Color,
+                GradientBottom = (BroBackground as SolidColorBrush).Color,
+                SplitLines = (BroBackground as SolidColorBrush).Color,
+                TextColor = Colors.Gray
             });
 
             for (int i = 0; i < Math.Min(group.Board.Threads.Count, group.Threads.Count); ++i)
@@ -154,8 +156,8 @@ namespace Profiler
 
                 if (threadIndex % 2 == 1)
                 {
-                    labelName.Background = AlternativeBackground;
-                    backgroundBuilder.AddRect(new Rect(0.0, offset / scroll.Height, 1.0, row.Height / scroll.Height), AlternativeBackground.Color);
+                    labelName.Background = BroAlternativeBackground;
+                    backgroundBuilder.AddRect(new Rect(0.0, offset / scroll.Height, 1.0, row.Height / scroll.Height), BroAlternativeBackground.Color);
                 }
 
                 ThreadList.Children.Add(labelName);

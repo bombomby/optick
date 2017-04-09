@@ -5,41 +5,41 @@
 	x:Name="UserControl" mc:Ignorable="d" MaxHeight="1000" Height="538"
 	TextOptions.TextFormattingMode="Display"
   d:DataContext="{Binding Source={x:Static Profiler_Data:TestEventFrame.Frame}}" d:DesignWidth="778" Width="778">
-	<UserControl.Resources>
-    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-		<local:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
-		<local:CategoryWidthConverter x:Key="CategoryWidthConverter"/>
-		<ItemsPanelTemplate x:Key="CategoryListStyle">
-			<StackPanel Height="Auto" Width="Auto" Orientation="Horizontal"/>
-		</ItemsPanelTemplate>
-		<Style x:Key="ButtonFocusVisual">
-			<Setter Property="Control.Template">
-				<Setter.Value>
-					<ControlTemplate>
-						<Rectangle Margin="2" SnapsToDevicePixels="true" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2"/>
-					</ControlTemplate>
-				</Setter.Value>
-			</Setter>
-		</Style>
-		<LinearGradientBrush x:Key="ButtonNormalBackground" EndPoint="0,1" StartPoint="0,0">
-			<GradientStop Color="#F3F3F3" Offset="0"/>
-			<GradientStop Color="#EBEBEB" Offset="0.5"/>
-			<GradientStop Color="#DDDDDD" Offset="0.5"/>
-			<GradientStop Color="#CDCDCD" Offset="1"/>
-		</LinearGradientBrush>
-		<SolidColorBrush x:Key="ButtonNormalBorder" Color="#FF707070"/>
-		<Style x:Key="SkipSelectionButtonStyle" TargetType="{x:Type Button}">
-			<Setter Property="FocusVisualStyle" Value="{StaticResource ButtonFocusVisual}"/>
-			<Setter Property="Background" Value="{StaticResource ButtonNormalBackground}"/>
-			<Setter Property="BorderBrush" Value="{StaticResource ButtonNormalBorder}"/>
-			<Setter Property="BorderThickness" Value="1"/>
-			<Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
-			<Setter Property="HorizontalContentAlignment" Value="Center"/>
-			<Setter Property="VerticalContentAlignment" Value="Center"/>
-			<Setter Property="Padding" Value="1"/>
-		</Style>
-		<SolidColorBrush x:Key="ListBorder" Color="#828790"/>
-		<!--<Style x:Key="CategoryListBoxStyle" TargetType="{x:Type ListBoxItem}">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <local:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
+        <local:CategoryWidthConverter x:Key="CategoryWidthConverter"/>
+        <ItemsPanelTemplate x:Key="CategoryListStyle">
+            <StackPanel Height="Auto" Width="Auto" Orientation="Horizontal"/>
+        </ItemsPanelTemplate>
+        <Style x:Key="ButtonFocusVisual">
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Rectangle Margin="2" SnapsToDevicePixels="true" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <LinearGradientBrush x:Key="ButtonNormalBackground" EndPoint="0,1" StartPoint="0,0">
+            <GradientStop Color="#F3F3F3" Offset="0"/>
+            <GradientStop Color="#EBEBEB" Offset="0.5"/>
+            <GradientStop Color="#DDDDDD" Offset="0.5"/>
+            <GradientStop Color="#CDCDCD" Offset="1"/>
+        </LinearGradientBrush>
+        <SolidColorBrush x:Key="ButtonNormalBorder" Color="#FF707070"/>
+        <Style x:Key="SkipSelectionButtonStyle" TargetType="{x:Type Button}">
+            <Setter Property="FocusVisualStyle" Value="{StaticResource ButtonFocusVisual}"/>
+            <Setter Property="Background" Value="{StaticResource ButtonNormalBackground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource ButtonNormalBorder}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Padding" Value="1"/>
+        </Style>
+        <SolidColorBrush x:Key="ListBorder" Color="#828790"/>
+        <!--<Style x:Key="CategoryListBoxStyle" TargetType="{x:Type ListBoxItem}">
 			<Setter Property="Template">
 				<Setter.Value>
 					<ControlTemplate TargetType="{x:Type ListBoxItem}">
@@ -48,40 +48,40 @@
 				</Setter.Value>
 			</Setter>
 		</Style>-->
-		<Color x:Key="TableAlternationColor">#FFC8C8C8</Color>
-		<Storyboard x:Key="OnMouseEnter1">
-			<DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="TreeToolPanel">
-				<EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="1"/>
-			</DoubleAnimationUsingKeyFrames>
-		</Storyboard>
-		<Storyboard x:Key="OnMouseLeave1">
-			<DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="TreeToolPanel">
-				<EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="0.5"/>
-			</DoubleAnimationUsingKeyFrames>
-		</Storyboard>
-	</UserControl.Resources>
-	<UserControl.Triggers>
-		<EventTrigger RoutedEvent="UIElement.MouseEnter" SourceName="TreeToolPanel">
-			<BeginStoryboard x:Name="OnMouseEnter1_BeginStoryboard1" Storyboard="{StaticResource OnMouseEnter1}"/>
-		</EventTrigger>
-		<EventTrigger RoutedEvent="UIElement.MouseLeave" SourceName="TreeToolPanel">
-			<BeginStoryboard x:Name="OnMouseLeave1_BeginStoryboard" Storyboard="{StaticResource OnMouseLeave1}"/>
-		</EventTrigger>
-	</UserControl.Triggers>
+        <Color x:Key="TableAlternationColor">#FFC8C8C8</Color>
+        <Storyboard x:Key="OnMouseEnter1">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="TreeToolPanel">
+                <EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="1"/>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+        <Storyboard x:Key="OnMouseLeave1">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="TreeToolPanel">
+                <EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="0.5"/>
+            </DoubleAnimationUsingKeyFrames>
+        </Storyboard>
+    </UserControl.Resources>
+    <UserControl.Triggers>
+        <EventTrigger RoutedEvent="UIElement.MouseEnter" SourceName="TreeToolPanel">
+            <BeginStoryboard x:Name="OnMouseEnter1_BeginStoryboard1" Storyboard="{StaticResource OnMouseEnter1}"/>
+        </EventTrigger>
+        <EventTrigger RoutedEvent="UIElement.MouseLeave" SourceName="TreeToolPanel">
+            <BeginStoryboard x:Name="OnMouseLeave1_BeginStoryboard" Storyboard="{StaticResource OnMouseLeave1}"/>
+        </EventTrigger>
+    </UserControl.Triggers>
 
-	<Grid x:Name="LayoutRoot">
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition/>
-		</Grid.RowDefinitions>
-		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="2*"/>
-			<ColumnDefinition Width="3*"/>
-		</Grid.ColumnDefinitions>
-		<TreeView Grid.Row="1" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling" x:Name="EventTreeView" DataContext="{Binding Root}" ItemsSource="{Binding Children}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="0" >
+    <Grid x:Name="LayoutRoot">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="3*"/>
+        </Grid.ColumnDefinitions>
+        <TreeView Grid.Row="1" BorderThickness="0" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling" x:Name="EventTreeView" DataContext="{Binding Root}" ItemsSource="{Binding Children}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="0" >
             <TreeView.Resources>
-				<HierarchicalDataTemplate DataType="{x:Type Profiler_Data:BaseTreeNode}" ItemsSource="{Binding Children}">
-					<Grid Width="Auto" Margin="1">
+                <HierarchicalDataTemplate DataType="{x:Type Profiler_Data:BaseTreeNode}" ItemsSource="{Binding Children}">
+                    <Grid Width="Auto" Margin="1">
                         <Grid.ContextMenu>
                             <ContextMenu>
                                 <MenuItem Header="Show Source Code" Click="MenuShowSourceCode">
@@ -103,48 +103,48 @@
                             </ContextMenu>
                         </Grid.ContextMenu>
                         <Grid.ColumnDefinitions>
-							<ColumnDefinition Width="88"/>
-							<ColumnDefinition Width="*" />
-							<ColumnDefinition Width="*" />
-							<ColumnDefinition Width="Auto"/>
-						</Grid.ColumnDefinitions>
-						<Label x:Name="TotalText" Grid.Column="0" Content="{Binding Duration, Mode=OneWay}" ContentStringFormat="{}{0:0.###}" Padding="2,0,0,0" FontWeight="Bold">
-							<Label.Background>
-								<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-									<LinearGradientBrush.RelativeTransform>
-										<TransformGroup>
-											<ScaleTransform CenterY="0.5" CenterX="0.5"/>
-											<SkewTransform CenterY="0.5" CenterX="0.5"/>
-											<RotateTransform Angle="-90" CenterY="0.5" CenterX="0.5"/>
-											<TranslateTransform/>
-										</TransformGroup>
-									</LinearGradientBrush.RelativeTransform>
-									<GradientStop Color="Tomato" Offset="{Binding Ratio, Mode=OneWay}"/>
-									<GradientStop Color="LimeGreen" Offset="{Binding Ratio, Mode=OneWay}"/>
-								</LinearGradientBrush>
-							</Label.Background>
-						</Label>
-						<Label x:Name="SelfText" Grid.Column="0" Content="{Binding SelfDuration, Mode=OneTime}" ContentStringFormat="{}{0:0.###}" Padding="0,0,4,0" HorizontalAlignment="Right" Foreground="White" FontSize="8pt" />
-						<Label Grid.Column="1" Content="{Binding Name, Mode=OneTime}" Padding="4,0,0,0" />
-            <Label Grid.Column="2" Content="{Binding Path, Mode=OneTime}" Padding="4,0,0,0" Foreground="Gray" ContentStringFormat="{}[{0}]" Visibility="{Binding IsChecked, ElementName=ShowPathButton, Converter={StaticResource BooleanToVisibilityConverter}}" />
-					</Grid>
-					<HierarchicalDataTemplate.Triggers>
-						<DataTrigger Binding="{Binding IsChecked, ElementName=ShowPercentButton}" Value="True">
-							<Setter TargetName="TotalText" Property="Content" Value="{Binding TotalPercent, Mode=OneWay}" />
-							<Setter TargetName="TotalText" Property="ContentStringFormat" Value="{}{0:0.##}%" />
-							<Setter TargetName="SelfText" Property="Content" Value="{Binding SelfPercent, Mode=OneWay}" />
-							<Setter TargetName="SelfText" Property="ContentStringFormat" Value="{}{0:0.##}%" />
-						</DataTrigger>
-					</HierarchicalDataTemplate.Triggers>
-				</HierarchicalDataTemplate>
-				<!-- <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ActiveCaptionColorKey}}" x:Key="{x:Static SystemColors.HighlightBrushKey}"/> -->
-			</TreeView.Resources>
-			<TreeView.ItemContainerStyle>
+                            <ColumnDefinition Width="88"/>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Label x:Name="TotalText" Grid.Column="0" Content="{Binding Duration, Mode=OneWay}" ContentStringFormat="{}{0:0.###}" Padding="2,0,0,0" FontWeight="Bold">
+                            <Label.Background>
+                                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                    <LinearGradientBrush.RelativeTransform>
+                                        <TransformGroup>
+                                            <ScaleTransform CenterY="0.5" CenterX="0.5"/>
+                                            <SkewTransform CenterY="0.5" CenterX="0.5"/>
+                                            <RotateTransform Angle="-90" CenterY="0.5" CenterX="0.5"/>
+                                            <TranslateTransform/>
+                                        </TransformGroup>
+                                    </LinearGradientBrush.RelativeTransform>
+                                    <GradientStop Color="Tomato" Offset="{Binding Ratio, Mode=OneWay}"/>
+                                    <GradientStop Color="LimeGreen" Offset="{Binding Ratio, Mode=OneWay}"/>
+                                </LinearGradientBrush>
+                            </Label.Background>
+                        </Label>
+                        <Label x:Name="SelfText" Grid.Column="0" Content="{Binding SelfDuration, Mode=OneTime}" ContentStringFormat="{}{0:0.###}" Padding="0,0,4,0" HorizontalAlignment="Right" Foreground="White" FontSize="8pt" />
+                        <Label Grid.Column="1" Content="{Binding Name, Mode=OneTime}" Padding="4,0,0,0" />
+                        <Label Grid.Column="2" Content="{Binding Path, Mode=OneTime}" Padding="4,0,0,0" Foreground="Gray" ContentStringFormat="{}[{0}]" Visibility="{Binding IsChecked, ElementName=ShowPathButton, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                    </Grid>
+                    <HierarchicalDataTemplate.Triggers>
+                        <DataTrigger Binding="{Binding IsChecked, ElementName=ShowPercentButton}" Value="True">
+                            <Setter TargetName="TotalText" Property="Content" Value="{Binding TotalPercent, Mode=OneWay}" />
+                            <Setter TargetName="TotalText" Property="ContentStringFormat" Value="{}{0:0.##}%" />
+                            <Setter TargetName="SelfText" Property="Content" Value="{Binding SelfPercent, Mode=OneWay}" />
+                            <Setter TargetName="SelfText" Property="ContentStringFormat" Value="{}{0:0.##}%" />
+                        </DataTrigger>
+                    </HierarchicalDataTemplate.Triggers>
+                </HierarchicalDataTemplate>
+                <!-- <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ActiveCaptionColorKey}}" x:Key="{x:Static SystemColors.HighlightBrushKey}"/> -->
+            </TreeView.Resources>
+            <TreeView.ItemContainerStyle>
                 <Style TargetType="{x:Type TreeViewItem}">
                     <Style.Resources>
-                        <!-- Style the inactive selection the same as active -->
-                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}"  Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}"/>
-                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="{DynamicResource {x:Static SystemColors.HighlightTextColorKey}}"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}"  Color="{StaticResource AccentColor}"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightBrushKey}"  Color="{StaticResource AccentColor2}"/>
+                        <SolidColorBrush x:Key="{x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}" Color="{StaticResource IdealForegroundColor}"/>
                     </Style.Resources>
                     <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
                     <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
@@ -152,25 +152,25 @@
                 </Style>
             </TreeView.ItemContainerStyle>
         </TreeView>
-		<local:FrameDataTable Grid.Row="0" Grid.RowSpan="2" Width="Auto" RenderTransformOrigin="0.461,0.52" Grid.Column="9" DataContext="{Binding Board}" x:Name="SummaryTable" Margin="4,0,0,0" />
-		<GridSplitter ResizeDirection="Columns" Width="4" Grid.Column="1" HorizontalAlignment="Left" Grid.RowSpan="2"/>
-    <Grid>
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="1*" />
-        <ColumnDefinition Width="Auto" />
-      </Grid.ColumnDefinitions>
-      <Label Content="{Binding DeatiledDescription}" Grid.Column="0" FontWeight="Bold" />
-      <StackPanel x:Name="TreeToolPanel" VerticalAlignment="Center" Orientation="Horizontal" HorizontalAlignment="Right" Opacity="0.5" Grid.Column="1">
-        <ToggleButton x:Name="FilterByTime" VerticalAlignment="Top" IsChecked="True" Height="24" ToolTip="Hides all nodes with small time" FontWeight="Bold" Width="24" Click="RefreshFilter" Margin="1,1,0,1">
-            <ContentControl Style="{StaticResource appbar_timer}" Margin="-6"/>
+        <local:FrameDataTable Grid.Row="0" Grid.RowSpan="2" Width="Auto" RenderTransformOrigin="0.461,0.52" Grid.Column="9" DataContext="{Binding Board}" x:Name="SummaryTable" Margin="4,0,0,0" />
+        <GridSplitter ResizeDirection="Columns" Width="6" Grid.Column="1" HorizontalAlignment="Left" Grid.RowSpan="2"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Label Content="{Binding DeatiledDescription}" Grid.Column="0" FontWeight="Bold" />
+            <StackPanel x:Name="TreeToolPanel" VerticalAlignment="Center" Orientation="Horizontal" HorizontalAlignment="Right" Opacity="0.5" Grid.Column="1">
+                <ToggleButton x:Name="FilterByTime" VerticalAlignment="Top" IsChecked="True" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" ToolTip="Hides all nodes with small time" FontWeight="Bold" Click="RefreshFilter" Margin="1,1,0,1">
+            <ContentControl Style="{StaticResource appbar_timer}" Margin="-13"/>
         </ToggleButton>
-        <TextBox x:Name="TimeLimit" Width="45" Text="0.001" FontWeight="Bold" Margin="0,0,1,0" VerticalAlignment="Center" BorderThickness="2,1,2,2" />
-        <ToggleButton x:Name="FocusCallStack" VerticalAlignment="Top" Height="24" ToolTip="Focus on callstacks" FontWeight="Bold" Width="24" Click="RefreshFilter" Margin="1,1,0,1">
-            <ContentControl Style="{StaticResource appbar_crosshair}" Margin="-6"/>
+                <TextBox x:Name="TimeLimit" Width="45" Height="{StaticResource DefaultButtonSize}" Padding="0" Text="0.001" FontWeight="Bold" Margin="1,1,0,0" VerticalAlignment="Top" HorizontalAlignment="Center" />
+                <ToggleButton x:Name="FocusCallStack" VerticalAlignment="Top" Height="{StaticResource DefaultButtonSize}" ToolTip="Focus on callstacks" FontWeight="Bold" Width="{StaticResource DefaultButtonSize}" Click="RefreshFilter" Margin="1,1,0,1">
+            <ContentControl Style="{StaticResource appbar_crosshair}" Margin="-13"/>
         </ToggleButton>
-        <ToggleButton x:Name="ShowPercentButton" Content="%" VerticalAlignment="Top" Height="24" FontSize="18.667" Padding="1,-4,1,-1" ToolTip="Show events in percent" FontWeight="Bold" Width="24" Margin="1,1,0,1" Foreground="#FF333333"/>
-        <ToggleButton x:Name="ShowPathButton" VerticalAlignment="Top" Height="24" ToolTip="Show source path" FontWeight="Bold" Width="24" Margin="1">
-            <ContentControl Style="{StaticResource appbar_folder}" Margin="-6"/>
+                <ToggleButton x:Name="ShowPercentButton" Content="%" VerticalAlignment="Top" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" FontSize="18.667" Padding="1,-4,1,-1" ToolTip="Show events in percent" FontWeight="Bold"  Margin="1,1,0,1" />
+                <ToggleButton x:Name="ShowPathButton" VerticalAlignment="Top" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" ToolTip="Show source path" FontWeight="Bold" Margin="1">
+            <ContentControl Style="{StaticResource appbar_folder}" Margin="-13"/>
         </ToggleButton>
         </StackPanel>
     </Grid>

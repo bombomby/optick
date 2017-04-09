@@ -1,15 +1,29 @@
-﻿<Window
+﻿<Controls:MetroWindow
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:Profiler" 
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="Profiler.MainWindow"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+        xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        mc:Ignorable="d" x:Class="Profiler.MainWindow"
         Title="What the hell is going on?" 
         Height="700" Width="900" 
         Drop="Window_Drop" DragEnter="Window_DragEnter" 
         AllowDrop="True"
         Icon="icon.ico" TextOptions.TextFormattingMode="Display"
+        TitleCaps="False"
+        TitlebarHeight="28"
+        IconBitmapScalingMode="HighQuality"
+        BorderBrush="{DynamicResource AccentColorBrush}"
+        GlowBrush="{DynamicResource AccentColorBrush}"
+        BorderThickness="1"
+        ResizeMode="CanResizeWithGrip"
     >
-
+    <Controls:MetroWindow.RightWindowCommands>
+        <Controls:WindowCommands>
+            <Button Content="settings" />
+        </Controls:WindowCommands>
+    </Controls:MetroWindow.RightWindowCommands>
     <Grid>
     	<Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -26,6 +40,6 @@
         <local:ThreadView x:Name="ThreadView" Height="Auto" MinHeight="1" HorizontalAlignment="Stretch" Margin="0" VerticalAlignment="Stretch" Width="Auto" />
       </Grid>
     </Expander>
-    <TabControl Margin="0" Grid.Row="3" Name="frameTabs" />
+        <Controls:MetroTabControl Margin="0" Grid.Row="3" Name="frameTabs" Controls:TabControlHelper.IsUnderlined="True"/>
 	</Grid>
-</Window>
+</Controls:MetroWindow>

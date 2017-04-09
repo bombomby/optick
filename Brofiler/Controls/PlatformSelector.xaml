@@ -5,16 +5,16 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Profiler"
              mc:Ignorable="d" 
-             d:DesignWidth="400" Height="24">
+             d:DesignWidth="400" Height="Auto">
     <UserControl.Resources>
         <local:StringToResource x:Key="StringToResource" />
     </UserControl.Resources>
     <StackPanel Orientation="Horizontal">
-        <ComboBox x:Name="comboBox" HorizontalAlignment="Left" VerticalAlignment="Top" Width="Auto" MinWidth="200" Height="Auto" SelectedIndex="0" SelectionChanged="comboBox_SelectionChanged">
+        <ComboBox x:Name="comboBox" HorizontalAlignment="Left" VerticalAlignment="Top" Width="Auto" MinWidth="200" Height="Auto" SelectedIndex="0" SelectionChanged="comboBox_SelectionChanged" MinHeight="{StaticResource DefaultButtonSize}">
             <ComboBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal" Margin="0,-4">
-                        <Border Width="24" Height="24" >
+                        <Border Width="16" Height="16" >
                             <ContentControl Style="{Binding Icon, Converter={StaticResource StringToResource}}" Margin="-6" />
                         </Border>
                         <Label MinWidth="68" Content="{Binding Name}" Margin="0" FontWeight="Bold" />

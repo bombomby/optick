@@ -221,7 +221,8 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 	{
 		SampledProfile* pEvent = (SampledProfile*)eventRecord->UserData;
 		BRO_UNUSED(pEvent);
-	} else if (opcode == SysCallEnter::OPCODE)
+	} 
+	else if (opcode == SysCallEnter::OPCODE)
 	{
 		if (eventRecord->UserDataLength >= sizeof(SysCallEnter))
 		{
@@ -238,7 +239,8 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 				Core::Get().ReportSysCall(desc);
 			}
 		}
-	} else if (opcode == SysCallExit::OPCODE)
+	} 
+	else if (opcode == SysCallExit::OPCODE)
 	{
 		SysCallExit* pEventExit = (SysCallExit*)eventRecord->UserData;
 		BRO_UNUSED(pEventExit);
@@ -419,6 +421,18 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads, bool autoAdd
 			}
 		}
 
+		bool highFrequencySampling = true;
+		if (highFrequencySampling)
+		{
+			TRACE_PROFILE_INTERVAL itnerval = { 0 };
+			itnerval.Interval = 1221;
+			memset(&itnerval, 0, sizeof(TRACE_PROFILE_INTERVAL));
+			status = TraceSetInformation(traceSessionHandle, TraceSampledProfileIntervalInfo, &itnerval, sizeof(TRACE_PROFILE_INTERVAL));
+			if (status != ERROR_SUCCESS)
+			{
+				OutputDebugStringA("TraceSetInformation - failed\n");
+			}
+		}
 
 		ZeroMemory(&logFile, sizeof(EVENT_TRACE_LOGFILE));
 		logFile.LoggerName = KERNEL_LOGGER_NAME;

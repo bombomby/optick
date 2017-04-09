@@ -431,8 +431,13 @@ namespace Profiler
 
             ITick tick = scroll.PixelToTime(point.X);
 
-			// show current sync info
-			if (EventData.Sync != null && EventData.Sync.Intervals != null)
+            if (FindNode(point, scroll, out frame, out node) != -1)
+            {
+                dataContext.Add(node);
+            }
+
+            // show current sync info
+            if (EventData.Sync != null && EventData.Sync.Intervals != null)
 			{
 				int index = Data.Utils.BinarySearchClosestIndex(EventData.Sync.Intervals, tick.Start);
 				if (index != -1)
@@ -472,10 +477,8 @@ namespace Profiler
 				}
 			}
 
-            if (FindNode(point, scroll, out frame, out node) != -1)
+            if (node != null)
             {
-                dataContext.Add(node);
-
                 // build all intervals inside selected node
                 int from = Data.Utils.BinarySearchClosestIndex(frame.Synchronization, node.Entry.Start);
                 int to = Data.Utils.BinarySearchClosestIndex(frame.Synchronization, node.Entry.Finish);

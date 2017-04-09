@@ -68,14 +68,14 @@ namespace Profiler.Data
 
   public class EventBoardItem : BoardItem<EventDescription, EventNode>
   {
-    [DisplayName("S")]
-    public bool IsSampling
-    { 
-      get { return Description.IsSampling; } 
-      set { Description.IsSampling = value; } 
-    }
+        [DisplayName("S")]
+        public bool IsSampling
+        {
+            get { return Description.IsSampling; }
+            set { Description.IsSampling = value; }
+        }
 
-    [ColumnWidth(400)]
+        [ColumnWidth(400)]
     public String Function { get { return Description.Name; } }
 
 		[DisplayName("Self%")]
@@ -118,13 +118,6 @@ namespace Profiler.Data
 
   public class SamplingBoardItem : BoardItem<SamplingDescription, SamplingNode>
   {
-		[DisplayName("H")]
-		public bool IsHooked
-		{
-			get { return Description.IsHooked; }
-			set { Description.IsHooked = value; }
-		}
-
     [ColumnWidth(400)]
     public String Function { get { return Description.Name; } }
 

@@ -84,7 +84,7 @@ namespace Profiler
     private IPAddress ipAddress;
     private int port = -1;
 
-		const int PORT_RANGE = 8;
+		const int PORT_RANGE = 4;
 
 		private bool CheckConnection()
 		{
@@ -92,12 +92,14 @@ namespace Profiler
 			{
 				if (!client.Connected)
 				{
-					for (int currentPort = port; currentPort < port + PORT_RANGE; ++currentPort)
+					for (int currentPort = port + PORT_RANGE - 1; currentPort >= port; --currentPort)
 					{
 						try
 						{
 							client.Connect(new IPEndPoint(ipAddress, currentPort));
-							return true;
+                            NetworkStream stream = client.GetStream();
+ 
+                            return true;
 						}
 						catch (SocketException) { }
 					}

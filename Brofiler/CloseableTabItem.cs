@@ -6,10 +6,11 @@ using System.Windows;
 using System.Windows.Controls;
 using Profiler.Data;
 using System.Windows.Input;
+using MahApps.Metro.Controls;
 
 namespace Profiler
 {
-	public class CloseableTabItem : TabItem
+	public class CloseableTabItem : MetroTabItem
 	{
 		private FrameInfo _frameInfo;
 

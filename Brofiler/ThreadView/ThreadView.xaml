@@ -17,19 +17,19 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
-        <StackPanel Margin="0,-22,2,0" HorizontalAlignment="Right" x:Name="ThreadToolsPanel" Grid.Column="1" VerticalAlignment="Top" Orientation="Horizontal">
-            <ToggleButton x:Name="ShowSyncWorkButton" ToolTip="Show Work" Width="20" Height="20" Margin="0,0,1,0" Padding="-5" Click="ShowSyncWorkButton_Click">
+        <StackPanel Margin="0,-30,2,0" HorizontalAlignment="Right" x:Name="ThreadToolsPanel" Grid.Column="1" VerticalAlignment="Top" Orientation="Horizontal">
+            <ToggleButton x:Name="ShowSyncWorkButton" ToolTip="Show Work" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" Margin="0,0,1,0" Padding="-5" Click="ShowSyncWorkButton_Click">
                 <ContentControl Style="{StaticResource appbar_suitcase}" />
             </ToggleButton>
-            <ToggleButton x:Name="ShowCallstacksButton" ToolTip="Show Callstacks" Width="20" Height="20" Margin="0,0,4,0" Padding="-8" Click="ShowCallstacksButton_Click">
+            <ToggleButton x:Name="ShowCallstacksButton" ToolTip="Show Callstacks" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" Margin="0,0,4,0" Padding="-8" Click="ShowCallstacksButton_Click">
                 <ContentControl Style="{StaticResource appbar_camera_flash}" />
             </ToggleButton>
-            <Profiler:SearchBox x:Name="search" Width="200"  />
+            <Profiler:SearchBox x:Name="search" Width="200" />
         </StackPanel>
         <DX:DirectXCanvas x:Name="surface" Height="Auto" Grid.Row="0" Grid.Column="1" Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
         </DX:DirectXCanvas>
-        <Popup x:Name="SurfacePopup" StaysOpen="False" Placement="Mouse" PopupAnimation="Fade" IsEnabled="False" Focusable="False" IsHitTestVisible="False">
-            <Border BorderThickness="1" Background="#FFE6E6E6" BorderBrush="SlateGray" >
+        <Popup x:Name="SurfacePopup" StaysOpen="False" Placement="Mouse" PopupAnimation="Fade" IsEnabled="False" Focusable="False" IsHitTestVisible="False" AllowsTransparency="True">
+            <Border BorderThickness="1" Background="{StaticResource BroContentBackground}" BorderBrush="{StaticResource AccentColorBrush}">
                 <ItemsControl ItemsSource="{Binding}" Margin="0">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>

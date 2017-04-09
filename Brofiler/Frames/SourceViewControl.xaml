@@ -15,6 +15,7 @@
 				FontFamily="Consolas"
 				FontSize="12pt"
 				SyntaxHighlighting="C++"
-        IsReadOnly="True" />
+                Background="White"
+                IsReadOnly="True" />
   </Grid>
 </UserControl>

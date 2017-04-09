@@ -113,7 +113,7 @@ project "BrofilerCore"
 
 if _OPTIONS['platform'] ~= "orbis" then
 	kind "SharedLib"
-	defines { "PROFILER_EXPORTS" }
+	defines { "BROFILER_EXPORTS" }
 else
 	kind "StaticLib"
 end
@@ -170,7 +170,7 @@ end
 project "TaskScheduler"
 
 	excludes { "ThirdParty/TaskScheduler/Scheduler/Source/MTDefaultAppInterop.cpp", }
-        kind "StaticLib"
+	kind "StaticLib"
  	flags {"NoPCH"}
 	defines {"USE_BROFILER=1"}
  	files {

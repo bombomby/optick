@@ -38,7 +38,7 @@
 		<DataTemplate x:Key="TimeLineItemTemplate">
       <Grid x:Name="rect" Height="163" Width="14" Margin="0,0,0,0" >
         <local:TimeLineItem x:Name="timeLineItem" Height="{Binding Duration, Converter={StaticResource FrameHeightConverter}}" Width="Auto" VerticalAlignment="Bottom" Padding="0" Margin="0" />
-        <Label Content="{Binding Description, Mode=OneTime}" Width="Auto" VerticalAlignment="Bottom" Height="Auto" FontSize="12" Padding="0" Margin="-1,0,0,3" SnapsToDevicePixels="True" FontWeight="Bold" Grid.ColumnSpan="2" >
+        <Label Content="{Binding Description, Mode=OneTime}" Foreground="Black" Width="Auto" VerticalAlignment="Bottom" Height="Auto" FontSize="12" Padding="0" Margin="-1,0,0,3" SnapsToDevicePixels="True" FontWeight="Bold" Grid.ColumnSpan="2" >
 			<Label.LayoutTransform>
 				<TransformGroup>
 					<ScaleTransform/>
@@ -62,9 +62,9 @@
 
     </Grid>
 	  <DataTemplate.Triggers>
-        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}, Mode=FindAncestor}}" Value="true">
+        <!--<DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}, Mode=FindAncestor}}" Value="true">
           <Setter TargetName="timeLineItem" Property="BorderThickness" Value="2" />
-        </DataTrigger>
+        </DataTrigger>-->
 			</DataTemplate.Triggers>
 		</DataTemplate>
 		<Storyboard x:Key="OnLoaded1" RepeatBehavior="Forever">
@@ -88,14 +88,14 @@
     
 	<Grid x:Name="LayoutRoot">
 		<Grid.RowDefinitions>
-			<RowDefinition Height="0.139*"/>
+			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="190"/>
 		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="0.299*"/>
 			<ColumnDefinition Width="Auto"/>
 		</Grid.ColumnDefinitions>
-        <ListView x:Name="frameList" ItemsPanel="{DynamicResource TimeLaneLayoutTemplate}" ItemTemplate="{DynamicResource TimeLineItemTemplate}" ItemsSource="{Binding Mode=OneWay}" DataContext="{Binding Mode=OneWay}" SelectionChanged="frameList_SelectionChanged" Grid.Row="1" Margin="0,2,0,0" Padding="0" d:LayoutOverrides="Width" TextOptions.TextFormattingMode="Display" SelectedIndex="-1">
+        <ListView x:Name="frameList" BorderThickness="0" ItemsPanel="{DynamicResource TimeLaneLayoutTemplate}" ItemTemplate="{DynamicResource TimeLineItemTemplate}" ItemsSource="{Binding Mode=OneWay}" DataContext="{Binding Mode=OneWay}" SelectionChanged="frameList_SelectionChanged" Grid.Row="1" Margin="0,2,0,0" Padding="0" d:LayoutOverrides="Width" TextOptions.TextFormattingMode="Display" SelectedIndex="-1">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="Margin" Value="0"/>
@@ -103,25 +103,25 @@
                 </Style>
             </ListView.ItemContainerStyle>
         </ListView>
-        <StackPanel Orientation="Horizontal" Margin="0" Grid.ColumnSpan="2" HorizontalAlignment="Left">
-        <ToggleButton x:Name="StartButton" Width="24" Height="24" Unchecked="StartButton_Unchecked" Checked="StartButton_Checked" ToolTip="Start Profiling Session" Padding="-6">
+        <StackPanel Orientation="Horizontal" Margin="0" Grid.ColumnSpan="2" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <ToggleButton x:Name="StartButton" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" Unchecked="StartButton_Unchecked" Checked="StartButton_Checked" ToolTip="Start Profiling Session" Padding="-6">
                 <ContentControl Style="{StaticResource appbar_control_play}" />
             </ToggleButton>
-            <Button x:Name="OpenButton" Click="OpenButton_Click" HorizontalAlignment="Left" Width="24" Height="24" VerticalAlignment="Center" ToolTip="Open Saved Session" Margin="1,0,0,0" Padding="-6">
+            <Button x:Name="OpenButton" Click="OpenButton_Click" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Open Saved Session" Margin="1,0,0,0" Padding="-6">
                 <ContentControl Style="{StaticResource appbar_folder_open}" />
             </Button>
-            <Button x:Name="SaveButton" Click="SaveButton_Click" HorizontalAlignment="Left" Width="24" Height="24" VerticalAlignment="Center" ToolTip="Save Active Session" Margin="1,0,0,0" Padding="-6">
+            <Button x:Name="SaveButton" Click="SaveButton_Click" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Save Active Session" Margin="1,0,0,0" Padding="-6">
                 <ContentControl Style="{StaticResource appbar_save}" />
             </Button>
-            <Button x:Name="ClearButton" Click="ClearButton_Click" HorizontalAlignment="Left" Width="24" Height="24" VerticalAlignment="Center" ToolTip="Clear Active Session" Margin="1,0,0,0" Padding="-6">
+            <Button x:Name="ClearButton" Click="ClearButton_Click" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Clear Active Session" Margin="1,0,0,0" Padding="-6">
                 <ContentControl Style="{StaticResource appbar_delete}" />
             </Button>
-            <Button x:Name="ClearSampling" Click="ClearSamplingButton_Click" HorizontalAlignment="Left" Width="24" Height="24" VerticalAlignment="Center" ToolTip="Clear All Sampling Flags" Margin="1,0,0,0" Padding="-6">
+            <Button x:Name="ClearSampling" Click="ClearSamplingButton_Click" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Clear All Sampling Flags" Margin="1,0,0,0" Padding="-6">
                 <ContentControl Style="{StaticResource appbar_clean}" />
             </Button>
-            <local:PlatformSelector x:Name="PlatformCombo" Margin="4,0,0,0" VerticalAlignment="Center" />
+            <local:PlatformSelector x:Name="PlatformCombo" Margin="4,0,0,0" VerticalAlignment="Top" Height="{StaticResource DefaultButtonSize}"/>
         <StackPanel x:Name="warningBlock"  Orientation="Horizontal">
-            <Image x:Name="warningIcon" Source="Icons/Warning-icon.png" Margin="5,0,0,0" Width="24" Height="24" />
+                <Image x:Name="warningIcon" Source="Icons/Warning-icon.png" Margin="5,0,0,0" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" />
             <TextBlock VerticalAlignment="Center" TextTrimming="WordEllipsis" Width="Auto"><Hyperlink x:Name="warningUrl" RequestNavigate="Hyperlink_RequestNavigate"><Run x:Name="warningText" Text="ClickMe"/></Hyperlink></TextBlock>
         </StackPanel>
     </StackPanel>
