@@ -24,6 +24,12 @@ extern "C" Brofiler::EventData* NextEvent()
 namespace Brofiler
 {
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ThreadDescription::ThreadDescription(const char* threadName, const MT::ThreadId& id, bool _fromOtherProcess) : threadID(id), fromOtherProcess(_fromOtherProcess)
+{
+	strcpy_s(name, threadName);
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int64_t GetHighPrecisionTime()
@@ -599,6 +605,13 @@ BROFILER_API bool IsFiberStorage(EventStorage* fiberStorage)
 BROFILER_API bool RegisterThread(const char* name)
 {
 	return Core::Get().RegisterThread(ThreadDescription(name, MT::ThreadId::Self(), false), &Core::storage);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+BROFILER_API bool RegisterThread(const wchar_t* name)
+{
+	char mbName[ThreadDescription::THREAD_NAME_LENGTH];
+	wcstombs(mbName, name, ThreadDescription::THREAD_NAME_LENGTH);
+	return Core::Get().RegisterThread(ThreadDescription(mbName, MT::ThreadId::Self(), false), &Core::storage);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 BROFILER_API bool UnRegisterThread()

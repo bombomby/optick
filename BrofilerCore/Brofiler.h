@@ -11,7 +11,7 @@
 #endif
 
 
-#if BRO_GCC
+#if defined(BRO_GCC)
 #define __BRO_DECORATED_FUNCTION__ __PRETTY_FUNCTION__
 #elif BRO_MSVC
 #define __BRO_DECORATED_FUNCTION__ __FUNCSIG__
@@ -216,6 +216,7 @@ struct EventStorage;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 BROFILER_API bool RegisterFiber(uint64_t fiberId, EventStorage** slot);
 BROFILER_API bool RegisterThread(const char* name);
+BROFILER_API bool RegisterThread(const wchar_t* name);
 BROFILER_API bool UnRegisterThread();
 BROFILER_API EventStorage** GetEventStorageSlotForCurrentThread();
 BROFILER_API bool IsFiberStorage(EventStorage* fiberStorage);
@@ -303,6 +304,11 @@ struct BROFILER_API Category : public Event
 struct ThreadScope
 {
 	ThreadScope(const char* name)
+	{
+		RegisterThread(name);
+	}
+
+	ThreadScope(const wchar_t* name)
 	{
 		RegisterThread(name);
 	}

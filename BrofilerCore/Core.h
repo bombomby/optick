@@ -99,15 +99,13 @@ struct EventStorage
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct ThreadDescription
 {
-	const char* name;
+	static const int THREAD_NAME_LENGTH = 128;
+
+	char name[THREAD_NAME_LENGTH];
 	MT::ThreadId threadID;
 	bool fromOtherProcess;
 
-	ThreadDescription(const char* threadName, const MT::ThreadId& id, bool _fromOtherProcess)
-		: name(threadName)
-		, threadID(id)
-		, fromOtherProcess(_fromOtherProcess)
-	{}
+	ThreadDescription(const char* threadName, const MT::ThreadId& id, bool _fromOtherProcess);
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct FiberDescription
