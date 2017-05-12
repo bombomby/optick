@@ -42,11 +42,37 @@ namespace Profiler.DirectX
 
         public SharpDX.Direct3D11.VertexBufferBinding VertexBufferBinding;
 
-        public SharpDX.Matrix World { get; set; }
+        public System.Windows.Media.Matrix WorldTransform { get; set; }
+
+        private System.Windows.Media.Matrix localTransform = System.Windows.Media.Matrix.Identity;
+        private System.Windows.Media.Matrix inverseLocalTransform = System.Windows.Media.Matrix.Identity;
+
+        public System.Windows.Rect AABB { get; set; }
+
+        public System.Windows.Media.Matrix LocalTransform
+        {
+            get
+            {
+                return localTransform;
+            }
+            set
+            {
+                localTransform = value;
+                inverseLocalTransform = value;
+                inverseLocalTransform.Invert();
+            }
+        }
+
+        public System.Windows.Media.Matrix InverseLocalTransform
+        {
+            get { return inverseLocalTransform; }
+        }
 
         public Mesh()
         {
-            World = SharpDX.Matrix.Identity;
+            WorldTransform = System.Windows.Media.Matrix.Identity;
+            LocalTransform = System.Windows.Media.Matrix.Identity;
+            AABB = new System.Windows.Rect();
         }
 
         public void Dispose()

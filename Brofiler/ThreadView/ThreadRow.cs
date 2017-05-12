@@ -166,11 +166,10 @@ namespace Profiler
         {
             if (layer == DirectXCanvas.Layer.Background)
             {
-                SharpDX.Matrix world = SharpDX.Matrix.Scaling((float)scroll.Zoom, 1.0f, 1.0f);
-                world.TranslationVector = new SharpDX.Vector3(-(float)(scroll.ViewUnit.Left * scroll.Zoom), 0.0f, 0.0f);
+                Matrix world = new Matrix(scroll.Zoom, 0.0, 0.0, 1.0, -scroll.ViewUnit.Left * scroll.Zoom, 0.0);
 
-                BackgroundMeshLines.World = world;
-                BackgroundMeshTris.World = world;
+                BackgroundMeshLines.WorldTransform = world;
+                BackgroundMeshTris.WorldTransform = world;
 
                 canvas.Draw(BackgroundMeshTris);
                 canvas.Draw(BackgroundMeshLines);

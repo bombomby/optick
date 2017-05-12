@@ -246,9 +246,29 @@ namespace Profiler.DirectX
             RenderCanvas.Refresh();
         }
         
+        public struct Stats
+        {
+            public int DIPs { get; set; }
+            public int Tris { get; set; }
+            public void Reset()
+            {
+                DIPs = 0;
+                Tris = 0;
+            }
+            public void Add(int triCount)
+            {
+                Tris += triCount;
+                DIPs += 1;
+            }
+        }
+
+        public Stats Statistics = new Stats();
+
         private void RenderCanvas_Paint(object sender, System.Windows.Forms.PaintEventArgs e)
         {
             var context = RenderDevice.ImmediateContext;
+
+            Statistics.Reset();
 
             context.ClearRenderTargetView(RTView, ConvertColor(Background));
 
@@ -261,9 +281,6 @@ namespace Profiler.DirectX
                 }
             }
 
-            //DelayedDrawList.ForEach(mesh => Draw(mesh));
-            //DelayedDrawList.Clear();
-
             SwapChain.Present(0, PresentFlags.None);
         }
 
@@ -272,7 +289,20 @@ namespace Profiler.DirectX
             if (mesh != null && mesh.Fragment != null && mesh.VertexBuffer != null && mesh.IndexBuffer != null)
             {
                 WP.View = mesh.Projection == Mesh.ProjectionType.Unit ? UnitView : PixelView;
-                WP.World = mesh.World;
+
+                System.Windows.Media.Matrix world = System.Windows.Media.Matrix.Multiply(mesh.LocalTransform, mesh.WorldTransform);
+                WP.World = Utils.Convert(world);
+
+                SharpDX.Matrix vw = SharpDX.Matrix.Multiply(WP.World, WP.View);
+                Vector4 posA = Vector2.Transform(new Vector2((float)mesh.AABB.Left, (float)mesh.AABB.Bottom), vw);
+                Vector4 posB = Vector2.Transform(new Vector2((float)mesh.AABB.Right, (float)mesh.AABB.Top), vw);
+
+                float minX = Math.Min(posA.X, posB.X);
+                float maxX = Math.Max(posA.X, posB.X);
+
+                if (maxX < -1f || minX > 1f)
+                    return;
+
 
                 PrimitiveTopology topology = mesh.Geometry == Mesh.GeometryType.Polygons ? PrimitiveTopology.TriangleList : PrimitiveTopology.LineList;
                 int indexCount = (mesh.Geometry == Mesh.GeometryType.Polygons ? 3 : 2) * mesh.PrimitiveCount;
@@ -281,15 +311,10 @@ namespace Profiler.DirectX
                 Setup(mesh.Fragment, mesh.VertexBufferBinding, mesh.IndexBuffer, topology);
                 RenderDevice.ImmediateContext.DrawIndexed(indexCount, 0, 0);
                 SetAlphaBlend(false);
+
+                Statistics.Add(mesh.PrimitiveCount);
             }
         }
-
-        //List<Mesh> DelayedDrawList = new List<Mesh>();
-
-        //public void DrawLater(Mesh mesh)
-        //{
-        //    DelayedDrawList.Add(mesh);
-        //}
 
         public void SetAlphaBlend(bool isOn)
         {

@@ -34,8 +34,10 @@ namespace Profiler.DirectX
             return Geometry == Mesh.GeometryType.Polygons ? TriIndices : TriLineIndices;
         }
 
-        public void AddRect(Rect rect, System.Windows.Media.Color color)
+        public virtual void AddRect(Rect rect, System.Windows.Media.Color color)
         {
+            rect = new Rect(InverseLocalTransform.Transform(rect.Location), new Size(InverseLocalTransform.M11 * rect.Size.Width, InverseLocalTransform.M22 * rect.Size.Height));
+
             int index = Vertices.Count;
             SharpDX.Color c = Utils.Convert(color);
             Vertices.Add(new Mesh.Vertex() { Position = new Vector2((float)rect.Left, (float)rect.Top), Color = c });
@@ -48,12 +50,15 @@ namespace Profiler.DirectX
             IsDirty = true;
         }
 
-        public void AddRect(System.Windows.Point[] rect, System.Windows.Media.Color color)
+        public virtual void AddRect(System.Windows.Point[] rect, System.Windows.Media.Color color)
         {
             int index = Vertices.Count;
             SharpDX.Color c = Utils.Convert(color);
             for (int i = 0; i < 4; ++i)
-                Vertices.Add(new Mesh.Vertex() { Position = new Vector2((float)rect[i].X, (float)rect[i].Y), Color = c });
+            {
+                System.Windows.Point p = InverseLocalTransform.Transform(rect[i]);
+                Vertices.Add(new Mesh.Vertex() { Position = new Vector2((float)p.X, (float)p.Y), Color = c });
+            }
 
             foreach (int i in GetBoxIndicesList())
                 Indices.Add(index + i);
@@ -62,8 +67,10 @@ namespace Profiler.DirectX
         }
 
 
-        public void AddRect(Rect rect, System.Windows.Media.Color[] colors)
+        public virtual void AddRect(Rect rect, System.Windows.Media.Color[] colors)
         {
+            rect = new Rect(InverseLocalTransform.Transform(rect.Location), new Size(InverseLocalTransform.M11 * rect.Size.Width, InverseLocalTransform.M22 * rect.Size.Height));
+
             int index = Vertices.Count;
             Vertices.Add(new Mesh.Vertex() { Position = new Vector2((float)rect.Left, (float)rect.Top), Color = Utils.Convert(colors[0]) });
             Vertices.Add(new Mesh.Vertex() { Position = new Vector2((float)rect.Right, (float)rect.Top), Color = Utils.Convert(colors[1]) });
@@ -75,8 +82,12 @@ namespace Profiler.DirectX
             IsDirty = true;
         }
 
-        public void AddTri(System.Windows.Point a, System.Windows.Point b, System.Windows.Point c, System.Windows.Media.Color color)
+        public virtual void AddTri(System.Windows.Point a, System.Windows.Point b, System.Windows.Point c, System.Windows.Media.Color color)
         {
+            a = InverseLocalTransform.Transform(a);
+            b = InverseLocalTransform.Transform(b);
+            c = InverseLocalTransform.Transform(c);
+
             int index = Vertices.Count;
             SharpDX.Color vertexColor = Utils.Convert(color);
             Vertices.Add(new Mesh.Vertex() { Position = new Vector2((float)a.X, (float)a.Y), Color = vertexColor });
@@ -85,6 +96,23 @@ namespace Profiler.DirectX
 
             foreach (int i in GetTriIndicesList())
                 Indices.Add(index + i);
+
+            IsDirty = true;
+        }
+
+        public virtual void AddLine(System.Windows.Point start, System.Windows.Point finish, System.Windows.Media.Color color)
+        {
+            start = InverseLocalTransform.Transform(start);
+            finish = InverseLocalTransform.Transform(finish);
+
+            Debug.Assert(Geometry == Mesh.GeometryType.Lines);
+
+            int index = Vertices.Count;
+            SharpDX.Color c = Utils.Convert(color);
+            Vertices.Add(new Mesh.Vertex() { Position = new Vector2((float)start.X, (float)start.Y), Color = c });
+            Vertices.Add(new Mesh.Vertex() { Position = new Vector2((float)finish.X, (float)finish.Y), Color = c });
+            Indices.Add(index + 0);
+            Indices.Add(index + 1);
 
             IsDirty = true;
         }
@@ -112,27 +140,32 @@ namespace Profiler.DirectX
                 return null;
 
             Mesh mesh = new Mesh();
+
+            System.Windows.Point minP = Utils.Convert(Vertices[0].Position);
+            System.Windows.Point maxP = Utils.Convert(Vertices[0].Position);
+
+            mesh.AABB = new Rect(Utils.Convert(Vertices[0].Position), new Size());
+            foreach (var v in Vertices)
+            {
+                System.Windows.Point p = Utils.Convert(v.Position);
+                minP.X = Math.Min(minP.X, p.X);
+                minP.Y = Math.Min(minP.Y, p.Y);
+                maxP.X = Math.Max(maxP.X, p.X);
+                maxP.Y = Math.Max(maxP.Y, p.Y);
+            }
+
+            mesh.AABB = new Rect(minP, maxP);
+
             mesh.VertexBuffer = Vertices.Freeze(device);
             mesh.IndexBuffer = Indices.Freeze(device);
             mesh.VertexBufferBinding = new VertexBufferBinding(mesh.VertexBuffer, Marshal.SizeOf(typeof(Mesh.Vertex)), 0);
             mesh.PrimitiveCount = Geometry == Mesh.GeometryType.Polygons ? Indices.Count / 3 : Indices.Count / 2;
             mesh.Geometry = Geometry;
             mesh.Projection = Projection;
-            mesh.World = World;
+            mesh.WorldTransform = WorldTransform;
+            mesh.LocalTransform = LocalTransform;
             mesh.Fragment = Fragment;
             return mesh;
-        }
-
-        public void AddLine(System.Windows.Point start, System.Windows.Point finish, System.Windows.Media.Color color)
-        {
-            Debug.Assert(Geometry == Mesh.GeometryType.Lines);
-
-            int index = Vertices.Count;
-            SharpDX.Color c = Utils.Convert(color);
-            Vertices.Add(new Mesh.Vertex() { Position = new Vector2((float)start.X, (float)start.Y), Color = c });
-            Vertices.Add(new Mesh.Vertex() { Position = new Vector2((float)finish.X, (float)finish.Y), Color = c });
-            Indices.Add(index + 0);
-            Indices.Add(index + 1);
         }
 
         public DynamicMesh(Device device)

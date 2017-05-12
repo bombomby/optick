@@ -14,9 +14,9 @@ namespace Profiler
         ThreadData EventData { get; set; }
         int MaxDepth { get; set; }
 
-		Mesh Mesh { get; set; }
-		Mesh SyncMesh { get; set; }
-        Mesh SyncWorkMesh { get; set; }
+		List<Mesh> Blocks { get; set; }
+		List<Mesh> SyncMesh { get; set; }
+        List<Mesh> SyncWorkMesh { get; set; }
         DynamicMesh CallstackMeshPolys { get; set; }
         DynamicMesh CallstackMeshLines { get; set; }
 
@@ -146,7 +146,7 @@ namespace Profiler
 			}
         }
 
-        void BuildMeshNode(DirectX.DynamicMesh builder, ThreadScroll scroll, EventNode node, int level)
+        void BuildMeshNode(DirectX.ComplexDynamicMesh builder, ThreadScroll scroll, EventNode node, int level)
         {
             if (level == MaxDepth)
                 return;
@@ -164,12 +164,14 @@ namespace Profiler
             }
         }
 
+        const int DIPSplitCount = 20;
+
         public override void BuildMesh(DirectX.DirectXCanvas canvas, ThreadScroll scroll)
         {
             // Build Mesh
-            DirectX.DynamicMesh builder = canvas.CreateMesh();
-            DirectX.DynamicMesh syncBuilder = canvas.CreateMesh();
-            DirectX.DynamicMesh syncWorkBuilder = canvas.CreateMesh();
+            DirectX.ComplexDynamicMesh builder = new ComplexDynamicMesh(canvas, DIPSplitCount);
+            DirectX.ComplexDynamicMesh syncBuilder = new ComplexDynamicMesh(canvas, DIPSplitCount);
+            DirectX.ComplexDynamicMesh syncWorkBuilder = new ComplexDynamicMesh(canvas, DIPSplitCount);
 
             if (EventData.Sync != null && EventData.Sync.Intervals != null)
 			{
@@ -233,7 +235,7 @@ namespace Profiler
                 }
             }
 
-            Mesh = builder.Freeze(canvas.RenderDevice);
+            Blocks = builder.Freeze(canvas.RenderDevice);
             SyncMesh = syncBuilder.Freeze(canvas.RenderDevice);
             SyncWorkMesh = syncWorkBuilder.Freeze(canvas.RenderDevice);
 
@@ -251,35 +253,41 @@ namespace Profiler
         double TextDrawThreshold = 8.0 * RenderSettings.dpiScaleX;
         double TextDrawOffset = 1.5 * RenderSettings.dpiScaleY;
 
+        static int drawIndex = -1;
+
+        public static void Draw(DirectX.DirectXCanvas canvas, List<Mesh> meshes, Matrix world)
+        {
+            meshes.ForEach(mesh =>
+            {
+                mesh.WorldTransform = world;
+                canvas.Draw(mesh);
+            });
+        }
+
         public override void Render(DirectX.DirectXCanvas canvas, ThreadScroll scroll, DirectXCanvas.Layer layer, Rect box)
         {
-            SharpDX.Matrix world = SharpDX.Matrix.Scaling((float)scroll.Zoom, (float)((Height - 2.0 * RenderParams.BaseMargin) / scroll.Height), 1.0f);
-            world.TranslationVector = new SharpDX.Vector3(-(float)(scroll.ViewUnit.Left * scroll.Zoom), (float)((Offset + 1.0 * RenderParams.BaseMargin) / scroll.Height), 0.0f);
+            Matrix world = new Matrix(scroll.Zoom, 0.0, 0.0, (Height - 2.0 * RenderParams.BaseMargin) / scroll.Height,
+                                      -(scroll.ViewUnit.Left * scroll.Zoom), 
+                                      (Offset + 1.0 * RenderParams.BaseMargin) / scroll.Height);
 
             if (layer == DirectXCanvas.Layer.Background)
             {
-                if (Mesh != null)
-                {
-                    Mesh.World = world;
-                    canvas.Draw(Mesh);
-                }
+                Draw(canvas, Blocks, world);
 
                 if (FilterMesh != null)
                 {
-                    FilterMesh.World = world;
+                    FilterMesh.WorldTransform = world;
                     canvas.Draw(FilterMesh);
                 }
 
-                if (SyncMesh != null && scroll.SyncDraw == ThreadScroll.SyncDrawType.Wait)
+                if (scroll.SyncDraw == ThreadScroll.SyncDrawType.Wait)
                 {
-                    SyncMesh.World = world;
-                    canvas.Draw(SyncMesh);
+                    Draw(canvas, SyncMesh, world);
                 }
 
                 if (SyncWorkMesh != null && scroll.SyncDraw == ThreadScroll.SyncDrawType.Work)
                 {
-                    SyncWorkMesh.World = world;
-                    canvas.Draw(SyncWorkMesh);
+                    Draw(canvas, SyncWorkMesh, world);
                 }
 
                 Data.Utils.ForEachInsideInterval(EventData.Events, scroll.ViewTime, frame =>

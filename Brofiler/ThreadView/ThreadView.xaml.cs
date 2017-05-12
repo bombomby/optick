@@ -134,11 +134,6 @@ namespace Profiler
 
             ThreadList.Margin = new Thickness(0, 0, 3, 0);
 
-            if (BackgroundMesh != null)
-                BackgroundMesh.Dispose();
-
-            DynamicMesh backgroundBuilder = surface.CreateMesh();
-
             double offset = 0.0;
 
             for (int threadIndex = 0; threadIndex < rows.Count; ++threadIndex)
@@ -155,12 +150,33 @@ namespace Profiler
                 Grid.SetRow(labelName, threadIndex);
 
                 if (threadIndex % 2 == 1)
-                {
                     labelName.Background = BroAlternativeBackground;
-                    backgroundBuilder.AddRect(new Rect(0.0, offset / scroll.Height, 1.0, row.Height / scroll.Height), BroAlternativeBackground.Color);
-                }
 
                 ThreadList.Children.Add(labelName);
+                offset += row.Height;
+            }
+
+            InitBackgroundMesh();
+        }
+
+        private void InitBackgroundMesh()
+        {
+            if (BackgroundMesh != null)
+                BackgroundMesh.Dispose();
+
+            DynamicMesh backgroundBuilder = surface.CreateMesh();
+            backgroundBuilder.Projection = Mesh.ProjectionType.Pixel;
+
+            double offset = 0.0;
+
+            for (int threadIndex = 0; threadIndex < rows.Count; ++threadIndex)
+            {
+                ThreadRow row = rows[threadIndex];
+                row.Offset = offset;
+
+                if (threadIndex % 2 == 1)
+                    backgroundBuilder.AddRect(new Rect(0.0, offset, scroll.Width, row.Height), BroAlternativeBackground.Color);
+
                 offset += row.Height;
             }
 
@@ -498,6 +514,7 @@ namespace Profiler
         void ThreadView_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             scroll.Width = surface.ActualWidth * RenderSettings.dpiScaleX;
+            InitBackgroundMesh();
         }
 
         void Search_DelayedTextChanged(string text)
