@@ -421,12 +421,12 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads, bool autoAdd
 			}
 		}
 
-		bool highFrequencySampling = true;
+		bool highFrequencySampling = false;
 		if (highFrequencySampling)
 		{
 			TRACE_PROFILE_INTERVAL itnerval = { 0 };
-			itnerval.Interval = 1221;
 			memset(&itnerval, 0, sizeof(TRACE_PROFILE_INTERVAL));
+			itnerval.Interval = 1221;
 			status = TraceSetInformation(traceSessionHandle, TraceSampledProfileIntervalInfo, &itnerval, sizeof(TRACE_PROFILE_INTERVAL));
 			if (status != ERROR_SUCCESS)
 			{
