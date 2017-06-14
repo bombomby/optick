@@ -5,11 +5,16 @@ using System.IO;
 using System.Windows;
 using System.Threading;
 using System.Windows.Media;
+using System.ComponentModel;
 
 namespace Profiler.Data
 {
-	public abstract class BaseTreeNode : DependencyObject
+	public abstract class BaseTreeNode : INotifyPropertyChanged
 	{
+		private bool isExpanded;
+		private bool isSelected;
+		private Visibility visible;
+
 		public BaseTreeNode Parent { get; private set; }
 		public BaseTreeNode RootParent { get; private set; }
 		public List<BaseTreeNode> Children { get; private set; }
@@ -19,6 +24,14 @@ namespace Profiler.Data
 		public double SelfDuration { get { return Duration - ChildrenDuration; } }
 
 		public abstract String Name { get; }
+
+		public event PropertyChangedEventHandler PropertyChanged;
+		private void Raise(string propertyName)
+		{
+			var tmp = PropertyChanged;
+			if (tmp != null)
+				tmp(this, new PropertyChangedEventArgs(propertyName));
+		}
 
 		public double Ratio
         {
@@ -33,27 +46,55 @@ namespace Profiler.Data
 
 		public abstract String Path { get; }
 
-		public static readonly DependencyProperty ExpandedProperty = DependencyProperty.Register("IsExpanded", typeof(Boolean), typeof(BaseTreeNode));
 		public bool IsExpanded
 		{
-			get { return (bool)GetValue(ExpandedProperty); }
-			set { SetValue(ExpandedProperty, value); }
+			get 
+			{
+				return isExpanded;
+			}
+			set 
+			{
+				if (isExpanded != value)
+				{
+					isExpanded = value;
+					Raise("IsExpanded");
+				}
+			}
 		}
 
-		public static readonly DependencyProperty SelectedProperty = DependencyProperty.Register("IsSelected", typeof(Boolean), typeof(BaseTreeNode));
 		public bool IsSelected
 		{
-			get { return (bool)GetValue(SelectedProperty); }
-			set { SetValue(SelectedProperty, value); }
+			get
+			{
+				return isSelected;
+			}
+			set
+			{
+				if (isSelected != value)
+				{
+					isSelected = value;
+					Raise("IsSelected");
+				}
+			}
 		}
 
 
-		public static readonly DependencyProperty VisibleProperty = DependencyProperty.Register("Visible", typeof(Visibility), typeof(BaseTreeNode));
 		public Visibility Visible
 		{
-			get { return (Visibility)GetValue(VisibleProperty); }
-			set { SetValue(VisibleProperty, value); }
+			get
+			{
+				return visible;
+			}
+			set
+			{
+				if (visible != value)
+				{
+					visible = value;
+					Raise("Visible");
+				}
+			}
 		}
+		
 
 		public void ApplyFilterTerminal(FilterMode mode)
 		{
