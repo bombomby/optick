@@ -189,7 +189,7 @@ namespace Profiler
                     int coreColorIndex = (int)sync.Core;
                     coreColorIndex = coreColorIndex % WorkColors.Length;
                     Color WorkColor = WorkColors[coreColorIndex];
-                    syncWorkBuilder.AddRect(new Rect(workInterval.Left, RenderParams.BaseMargin / Height, workInterval.Right - workInterval.Left, SyncLineHeight / Height), WorkColor);
+                    syncWorkBuilder.AddRect(new Rect(workInterval.Left, 0, workInterval.Right - workInterval.Left, SyncLineHeight / Height), WorkColor);
 
                     if (i == 0)
 					{
