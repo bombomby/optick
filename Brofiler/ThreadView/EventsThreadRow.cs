@@ -217,7 +217,7 @@ namespace Profiler
 
                         // draw sleep
                         Color waitColor = IsUserInitiatedSync(stallReason) ? SynchronizationColorUser : SynchronizationColor;
-                        syncBuilder.AddRect(new Rect(syncInterval.Left, RenderParams.BaseMargin / Height, syncWidth, SyncLineHeight / Height), waitColor);
+                        syncBuilder.AddRect(new Rect(syncInterval.Left, 0, syncWidth, SyncLineHeight / Height), waitColor);
                     }
 
 					stallFrom = workFinish;
