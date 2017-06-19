@@ -220,9 +220,12 @@ namespace Profiler.Data
 
 					Durable border = new Durable(Math.Max(frame.Start, fiberSync.Start), Math.Min(frame.Finish, fiberSync.Finish));
 
+					int lastIndex = Utils.BinarySearchClosestIndex( frame.Entries, border.Finish );
+
 					List<Entry> entries = null;
-                    foreach (Entry entry in frame.Entries)
+					for ( int i = 0; i <= lastIndex; i++ )
                     {
+						Entry entry = frame.Entries[i];
                         if (entry.Intersect(border))
                         {
 							if (entries == null)

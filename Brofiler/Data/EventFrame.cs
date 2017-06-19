@@ -70,7 +70,7 @@ namespace Profiler.Data
         public FrameHeader Header { get; private set; }
         public long Tick { get { return Header.Start; } }
 
-        private List<Entry> entries;
+		private EventTree categoriesTree;
 
         private EventTree root = null;
         public Profiler.Data.EventTree Root
@@ -78,13 +78,17 @@ namespace Profiler.Data
             get
             {
                 if (root == null)
-                    Load();
+				{
+					lock ( loading )
+					{
+						if ( root == null )
+							root = new EventTree( this, Entries );
+					}
+				}
 
                 return root;
             }
         }
-
-        private BinaryReader reader = null;
 
         public long Start { get { return Header.Start; } }
         public long Finish { get { return Header.Finish; } }
@@ -149,7 +153,13 @@ namespace Profiler.Data
             get
             {
                 if (board == null)
-                    Load();
+				{
+					lock ( loading )
+					{
+						if ( board == null )
+							board = new Board<EventBoardItem, EventDescription, EventNode>( Root );
+					}
+				}
 
                 return board;
             }
@@ -160,28 +170,33 @@ namespace Profiler.Data
         {
             get
             {
-                Load();
-
                 if (shortBoard == null)
-                    shortBoard = new ShortBoard(entries);
+                    shortBoard = new ShortBoard(Entries);
 
                 return shortBoard;
             }
         }
 
-        public List<Entry> Entries
-        {
-            get
-            {
-                if (entries == null)
-                    Load();
+	    public List<Entry> Entries { get; private set; }
+	    public List<Entry> Categories { get; private set; }
 
-                return entries;
-            }
-        }
+	    public EventTree CategoriesTree
+	    {
+		    get
+		    {
+				if ( categoriesTree == null )
+				{
+					lock ( loading )
+					{
+						if ( categoriesTree == null )
+							categoriesTree = new EventTree( this, Categories );
+					}
+				}
 
-        public List<Entry> Categories { get; private set; }
-        public EventTree CategoriesTree { get; private set; }
+			    return categoriesTree;
+		    }
+	    }
+
         public List<Data.SyncInterval> Synchronization { get; private set; }
 		public List<Data.FiberSyncInterval> FiberSync { get; private set; }
 
@@ -204,22 +219,13 @@ namespace Profiler.Data
 
         Object loading = new object();
 
-        public override void Load()
-        {
-            lock (loading)
-            {
-                if (!IsLoaded)
-                {
-                    entries = ReadEventList(reader, DescriptionBoard);
-
-                    root = new EventTree(this, entries);
-                    board = new Board<EventBoardItem, EventDescription, EventNode>(root);
-
-                    reader = null;
-                    IsLoaded = true;
-                }
-            }
-        }
+	    public override void Load()
+	    {
+		    // invoke lazy init;
+		    IsLoaded = CategoriesTree != null &&
+		               Root != null &&
+		               Board != null;
+	    }
 
         static List<EventData> ReadEventTimeList(BinaryReader reader)
         {
@@ -281,17 +287,19 @@ namespace Profiler.Data
             Entries.AddRange(frame.Entries);
             Entries.Sort();
 
-            root = new EventTree(this, Entries);
-            board = new Board<EventBoardItem, EventDescription, EventNode>(root);
-
-            CategoriesTree = new EventTree(this, Categories);
+			if ( root != null )
+				root = new EventTree( this, Entries );
+			if ( board != null )
+				board = new Board<EventBoardItem, EventDescription, EventNode>( root );
+			if ( categoriesTree != null )
+				categoriesTree = new EventTree( this, Categories );
         }
 
         protected void ReadInternal(BinaryReader reader)
         {
             Header = FrameHeader.Read(reader);
             Categories = ReadEventList(reader, DescriptionBoard);
-            CategoriesTree = new EventTree(this, Categories);
+			Entries = ReadEventList( reader, DescriptionBoard );
 
             Synchronization = new List<SyncInterval>();
 			FiberSync = new List<FiberSyncInterval>();
@@ -309,7 +317,7 @@ namespace Profiler.Data
 
         public EventFrame(DataResponse response, FrameGroup group) : base(response)
         {
-            reader = response.Reader;
+            BinaryReader reader = response.Reader;
             Group = group;
             ReadInternal(reader);
         }
@@ -320,7 +328,7 @@ namespace Profiler.Data
             Group = group;
             Categories = new List<Entry>();
 
-            this.entries = entries;
+            Entries = entries;
 			foreach (Entry entry in entries)
 			{
 				if (entry.Description.Color.A != 0)
@@ -329,7 +337,7 @@ namespace Profiler.Data
 				}
 			}
 
-            CategoriesTree = new EventTree(this, Categories);
+            categoriesTree = new EventTree(this, Categories);
 
             root = new EventTree(this, Entries);
             board = new Board<EventBoardItem, EventDescription, EventNode>(root);
