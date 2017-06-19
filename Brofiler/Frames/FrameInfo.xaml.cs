@@ -15,6 +15,7 @@ using Profiler.Data;
 using System.Threading;
 using System.Windows.Threading;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace Profiler
 {
@@ -60,7 +61,7 @@ namespace Profiler
 			if (FilterByTime.IsChecked ?? true)
 			{
 				double limit = 0.0;
-				if (Double.TryParse(TimeLimit.Text.Replace('.', ','), out limit))
+				if (Double.TryParse(TimeLimit.Text.Replace(',', '.'), NumberStyles.Any, CultureInfo.InvariantCulture, out limit))
 					mode.TimeLimit = limit;
 			}
 
