@@ -475,7 +475,7 @@ bool Core::RegisterThread(const ThreadDescription& description, EventStorage** s
 	ThreadEntry* entry = new (MT::Memory::Alloc(sizeof(ThreadEntry), BRO_CACHE_LINE_SIZE)) ThreadEntry(description, slot);
 	threads.push_back(entry);
 
-	if (isActive && slot != nullptr && *slot != nullptr)
+	if (isActive && slot != nullptr)
 		*slot = &entry->storage;
 
 	return true;
