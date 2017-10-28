@@ -7,11 +7,10 @@
 namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-static MT::Mutex g_lock;
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventDescription* EventDescription::Create(const char* eventName, const char* fileName, const unsigned long fileLine, const unsigned long eventColor /*= Color::Null*/)
 {
-	MT::ScopedGuard guard(g_lock);
+	static MT::Mutex creationLock;
+	MT::ScopedGuard guard(creationLock);
 
 	EventDescription* result = EventDescriptionBoard::Get().CreateDescription();
 	result->name = eventName;
