@@ -26,9 +26,6 @@ class Server
 	~Server();
 
 	bool InitConnection();
-
-	static void AsyncAccept(void* server);
-	bool Accept();
 public:
 	void Send(DataResponse::Type type, OutputDataStream& stream = OutputDataStream::Empty);
 	void Update();

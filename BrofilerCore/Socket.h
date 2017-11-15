@@ -108,6 +108,19 @@ namespace Brofiler
 #endif
 	}
 
+	inline bool SetSocketBlockingMode(TcpSocket socket, bool isBlocking)
+	{
+#ifdef USE_WINDOWS_SOCKETS
+		unsigned long mode = isBlocking ? 0 : 1;
+		return (ioctlsocket(socket, FIONBIO, &mode) == 0) ? true : false;
+#else
+		int flags = fcntl(fd, F_GETFL, 0);
+		if (flags < 0) return false;
+		flags = blocking ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);
+		return (fcntl(fd, F_SETFL, flags) == 0) ? true : false;
+#endif
+	}
+
 
 	class Socket
 	{
@@ -152,13 +165,15 @@ namespace Brofiler
 			}
 		}
 	public:
-		Socket() : acceptSocket(0), listenSocket(0)
+		Socket() : acceptSocket(-1), listenSocket(-1)
 		{
 #ifdef USE_WINDOWS_SOCKETS
 			Wsa::Init();
 #endif
 			listenSocket = ::socket(AF_INET, SOCK_STREAM, SOCKET_PROTOCOL_TCP);
 			BRO_ASSERT(IsValidSocket(listenSocket), "Can't create socket");
+
+			SetSocketBlockingMode(listenSocket, false);
 		}
 
 		~Socket()
@@ -189,13 +204,17 @@ namespace Brofiler
 			BRO_ASSERT(result == 0, "Can't start listening");
 		}
 
-		void Accept()
+		bool Accept()
 		{ 
 			TcpSocket incomingSocket = ::accept(listenSocket, nullptr, nullptr);
-			BRO_ASSERT(IsValidSocket(incomingSocket), "Can't accept socket");
 
-			MT::ScopedGuard guard(lock);
-			acceptSocket = incomingSocket;
+			if (IsValidSocket(incomingSocket))
+			{
+				MT::ScopedGuard guard(lock);
+				acceptSocket = incomingSocket;
+			}
+
+			return IsValidSocket(acceptSocket);
 		}
 
 		bool Send(const char *buf, size_t len)
