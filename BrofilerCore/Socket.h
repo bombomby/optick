@@ -165,7 +165,7 @@ namespace Brofiler
 			}
 		}
 	public:
-		Socket() : acceptSocket(-1), listenSocket(-1)
+		Socket() : acceptSocket((TcpSocket)-1), listenSocket((TcpSocket)-1)
 		{
 #ifdef USE_WINDOWS_SOCKETS
 			Wsa::Init();

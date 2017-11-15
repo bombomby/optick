@@ -24,7 +24,8 @@ namespace Profiler
         {
             this.InitializeComponent();
             Init();
-            textEditor.TextArea.DefaultInputHandler.NestedInputHandlers.Add(new SearchInputHandler(textEditor.TextArea));
+            SearchPanel.Install(textEditor.TextArea);
+            //textEditor.TextArea.DefaultInputHandler.NestedInputHandlers.Add(new SearchInputHandler(textEditor.TextArea));
         }
 
         private void DataGrid_AutoGeneratingColumn(object sender, System.Windows.Controls.DataGridAutoGeneratingColumnEventArgs e)

@@ -253,8 +253,6 @@ namespace Profiler
         double TextDrawThreshold = 8.0 * RenderSettings.dpiScaleX;
         double TextDrawOffset = 1.5 * RenderSettings.dpiScaleY;
 
-        static int drawIndex = -1;
-
         public static void Draw(DirectX.DirectXCanvas canvas, List<Mesh> meshes, Matrix world)
         {
             meshes.ForEach(mesh =>

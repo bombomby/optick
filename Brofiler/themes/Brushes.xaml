@@ -2,7 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:options="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
                     >
-    <Color x:Key="BroBorderColor">#FF555555</Color>
+    <Color x:Key="BroBorderColor">#FF888888</Color>
+    <!--<Color x:Key="BroBorderColor">Red</Color>-->
  
     <SolidColorBrush x:Key="BroBorder" Color="{StaticResource BroBorderColor}" />
     <SolidColorBrush x:Key="BroForeground" Color="#FF171717" options:Freeze="True" />
