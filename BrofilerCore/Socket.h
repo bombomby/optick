@@ -114,10 +114,10 @@ namespace Brofiler
 		unsigned long mode = isBlocking ? 0 : 1;
 		return (ioctlsocket(socket, FIONBIO, &mode) == 0) ? true : false;
 #else
-		int flags = fcntl(fd, F_GETFL, 0);
+		int flags = fcntl(socket, F_GETFL, 0);
 		if (flags < 0) return false;
-		flags = blocking ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);
-		return (fcntl(fd, F_SETFL, flags) == 0) ? true : false;
+		flags = isBlocking ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);
+		return (fcntl(socket, F_SETFL, flags) == 0) ? true : false;
 #endif
 	}
 
@@ -212,6 +212,7 @@ namespace Brofiler
 			{
 				MT::ScopedGuard guard(lock);
 				acceptSocket = incomingSocket;
+				SetSocketBlockingMode(acceptSocket, true);
 			}
 
 			return IsValidSocket(acceptSocket);
