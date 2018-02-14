@@ -53,8 +53,28 @@ namespace Profiler.Data
         }
 
         private int id;
+        private Color forceColor;
 
         public Color Color { get; private set; }
+        public Color ForceColor
+        {
+            get
+            {
+                if (forceColor.A == 0)
+                {
+                    if (Color.A > 0)
+                    {
+                        forceColor = Color;
+                    }
+                    else
+                    {
+                        Random rnd = new Random(FullName.GetHashCode());
+                        forceColor = Color.FromRgb((byte)rnd.Next(), (byte)rnd.Next(), (byte)rnd.Next());
+                    }
+                }
+                return forceColor;
+            }
+        }
         public Brush Brush { get; private set; }
 
         public bool IsSleep { get { return Color == Colors.White; } }

@@ -42,7 +42,7 @@ namespace Profiler
 			Rectangle rect = new Rectangle();
 			rect.Width = double.NaN;
 			rect.Height = height;
-			rect.Fill = new SolidColorBrush(node.Entry.Description.Color);
+			rect.Fill = new SolidColorBrush(node.Entry.Description.ForceColor);
 
 			double startTime = (node.Entry.StartMS - frameStartMS);
 			rect.Margin = new Thickness(0, FrameHeightConverter.Convert(startTime), 0, 0);

@@ -12,7 +12,7 @@
         AllowDrop="True"
         Icon="icon.ico" TextOptions.TextFormattingMode="Display"
         TitleCaps="False"
-        TitlebarHeight="28"
+        TitlebarHeight="24"
         IconBitmapScalingMode="HighQuality"
         BorderBrush="{DynamicResource AccentColorBrush}"
         GlowBrush="{DynamicResource AccentColorBrush}"
