@@ -72,6 +72,17 @@ EventDescription* EventDescriptionBoard::CreateDescription()
 	return desc;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void EventDescriptionBoard::DeleteAllDescriptions()
+{
+	MT::ScopedGuard guard(GetBoardLock());
+	for (auto it = board.begin(); it != board.end(); ++it)
+	{
+		EventDescription* desc = *it;
+		delete desc;
+	}
+	board.clear();
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator << ( OutputDataStream& stream, const EventDescriptionBoard& ob)
 {
 	MT::ScopedGuard guard(GetBoardLock());

@@ -271,6 +271,7 @@ struct BROFILER_API EventDescription
 	uint32_t color;
 
 	static EventDescription* Create(const char* eventName, const char* fileName, const unsigned long fileLine, const unsigned long eventColor = Color::Null);
+	static void DeleteAllDescriptions();
 private:
 	friend class EventDescriptionBoard;
 	EventDescription();

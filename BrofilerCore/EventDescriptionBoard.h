@@ -13,6 +13,7 @@ class EventDescriptionBoard
 	static EventDescriptionBoard instance;
 public:
 	EventDescription* CreateDescription();
+	void DeleteAllDescriptions();
 
 	static EventDescriptionBoard& Get();
 
