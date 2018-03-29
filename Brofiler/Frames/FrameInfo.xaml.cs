@@ -115,7 +115,10 @@ namespace Profiler
 						} else
 						{
 							double timeInMs = eventFrame.CalculateFilteredTime(filter);
-							eventFrame.FilteredDescription = String.Format("{0:0.000}", timeInMs);
+							if (timeInMs > 0)
+								eventFrame.FilteredDescription = String.Format("{0:0.000}", timeInMs);
+							else
+								eventFrame.FilteredDescription = "";
 						}
 					}
 				}
