@@ -12,6 +12,20 @@
         <ItemsPanelTemplate x:Key="CategoryListStyle">
             <StackPanel Height="Auto" Width="Auto" Orientation="Horizontal"/>
         </ItemsPanelTemplate>
+        <Style x:Key="LabelUnderscoreStyle" BasedOn="{StaticResource {x:Type Label}}" TargetType="Label">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Label">
+                        <Border>
+                            <ContentPresenter
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                RecognizesAccessKey="False" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <Style x:Key="ButtonFocusVisual">
             <Setter Property="Control.Template">
                 <Setter.Value>
@@ -125,8 +139,8 @@
                             </Label.Background>
                         </Label>
                         <Label x:Name="SelfText" Grid.Column="0" Content="{Binding SelfDuration, Mode=OneTime}" ContentStringFormat="{}{0:0.###}" Padding="0,0,4,0" HorizontalAlignment="Right" Foreground="White" FontSize="8pt" />
-                        <Label Grid.Column="1" Content="{Binding Name, Mode=OneTime}" Padding="4,0,0,0" />
-                        <Label Grid.Column="2" Content="{Binding Path, Mode=OneTime}" Padding="4,0,0,0" Foreground="Gray" ContentStringFormat="{}[{0}]" Visibility="{Binding IsChecked, ElementName=ShowPathButton, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        <Label Grid.Column="1" Content="{Binding Name, Mode=OneTime}" Padding="4,0,0,0" Style="{StaticResource LabelUnderscoreStyle}"/>
+                        <Label Grid.Column="2" Content="{Binding Path, Mode=OneTime}" Padding="4,0,0,0" Style="{StaticResource LabelUnderscoreStyle}" Foreground="Gray" ContentStringFormat="{}[{0}]" Visibility="{Binding IsChecked, ElementName=ShowPathButton, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     </Grid>
                     <HierarchicalDataTemplate.Triggers>
                         <DataTrigger Binding="{Binding IsChecked, ElementName=ShowPercentButton}" Value="True">
