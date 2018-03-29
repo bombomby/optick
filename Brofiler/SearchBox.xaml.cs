@@ -64,7 +64,7 @@ namespace Profiler
 		{
 			if (e.Key == Key.Enter || e.SystemKey == Key.Enter)
 			{
-				TextEnter(FilterText.Text);
+				TextEnter?.Invoke(FilterText.Text);
 			}
 		}
 
