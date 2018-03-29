@@ -8,6 +8,23 @@
              xmlns:DX="clr-namespace:Profiler.DirectX"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" Height="Auto">
+
+    <UserControl.Resources>
+        <Style x:Key="LabelUnderscoreStyle" BasedOn="{StaticResource {x:Type Label}}" TargetType="Label">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Label">
+                    <Border>
+                        <ContentPresenter
+                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                            RecognizesAccessKey="False" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        </Style>
+    </UserControl.Resources>
     <Grid Height="Auto" Name="panel">
         <Grid.RowDefinitions>
             <RowDefinition Height="280*" />
