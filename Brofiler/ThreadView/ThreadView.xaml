@@ -62,7 +62,7 @@
                                     <ColumnDefinition Width="*"></ColumnDefinition>
                                 </Grid.ColumnDefinitions>
                                 <Rectangle Grid.Column="0" Margin="4,0,0,0" Width="16" Height="16" Fill="{Binding Brush}" Stroke="Black" StrokeThickness="1" RadiusX="2" RadiusY="2" />
-                                <Label Grid.Column="1" Margin="0" Content="{Binding Name, Mode=OneTime}" FontWeight="Bold" />
+                                <Label Grid.Column="1" Margin="0" Content="{Binding Name, Mode=OneTime}" FontWeight="Bold" Style="{StaticResource LabelUnderscoreStyle}" />
                                 <Label Grid.Column="2" HorizontalAlignment="Right" HorizontalContentAlignment="Right" Content="{Binding Duration, Mode=OneTime}" ContentStringFormat="{}{0:0.###} ms" FontWeight="Bold" />
                             </Grid>
                         </DataTemplate>
