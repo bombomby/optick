@@ -35,20 +35,6 @@ namespace Profiler.Data
 
     public class SamplingDescription : Description
     {
-        private bool isHooked = false;
-        public bool IsHooked
-        {
-            get { return isHooked; }
-            set
-            {
-                if (isHooked != value)
-                {
-                    ProfilerClient.Get().SendMessage(new SetupHookMessage(Address, value));
-                    isHooked = value;
-                }
-            }
-        }
-
         public UInt64 Address { get; private set; }
         public String Module { get; private set; }
 
@@ -68,10 +54,10 @@ namespace Profiler.Data
         {
             SamplingDescription description = new SamplingDescription();
             description.Address = reader.ReadUInt64();
-            description.Module = System.Text.Encoding.Unicode.GetString(reader.ReadBytes(reader.ReadInt32()));
-            description.FullName = System.Text.Encoding.Unicode.GetString(reader.ReadBytes(reader.ReadInt32()));
+            description.Module = Utils.ReadBinaryString(reader);
+            description.FullName = Utils.ReadBinaryString(reader);
 
-            String file = System.Text.Encoding.Unicode.GetString(reader.ReadBytes(reader.ReadInt32()));
+            String file = Utils.ReadBinaryString(reader);
             description.Path = new FileLine(file, reader.ReadInt32());
 
             return description;

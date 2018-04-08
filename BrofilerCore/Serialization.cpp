@@ -65,6 +65,12 @@ namespace Brofiler
 		return stream;
 	}
 
+	OutputDataStream & operator<<(OutputDataStream &stream, float val)
+	{
+		stream.write((char*)&val, sizeof(float));
+		return stream;
+	}
+
 	OutputDataStream & operator<<(OutputDataStream &stream, const std::string& val)
 	{
 		stream << (uint32)val.size();
@@ -79,6 +85,12 @@ namespace Brofiler
 		stream << (uint32)count;
 		if (!val.empty())
 			stream.write((char*)(&val[0]), count);
+		return stream;
+	}
+
+	InputDataStream &operator >> (InputDataStream &stream, int16 &val)
+	{
+		stream.read((char*)&val, sizeof(int16));
 		return stream;
 	}
 
@@ -97,6 +109,12 @@ namespace Brofiler
 	InputDataStream & operator>>( InputDataStream &stream, byte &val )
 	{
 		stream.read( (char*)&val, sizeof(byte) );
+		return stream;
+	}
+
+	InputDataStream & operator >> (InputDataStream &stream, uint16 &val)
+	{
+		stream.read((char*)&val, sizeof(uint16));
 		return stream;
 	}
 

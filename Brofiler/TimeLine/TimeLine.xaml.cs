@@ -25,6 +25,7 @@ using System.Reflection;
 using System.Diagnostics;
 using System.Web;
 using System.Net.NetworkInformation;
+using System.ComponentModel;
 
 namespace Profiler
 {
@@ -40,8 +41,6 @@ namespace Profiler
 
         Object criticalSection = new Object();
 
-        WebClient checkVersion;
-
 		public FrameCollection Frames
 		{
 			get
@@ -55,127 +54,25 @@ namespace Profiler
             this.InitializeComponent();
             this.DataContext = frames;
 
-            warningBlock.Visibility = Visibility.Collapsed;
-
-            this.Loaded += new RoutedEventHandler(TimeLine_Loaded);
-
-
             statusToError.Add(ETWStatus.ETW_ERROR_ACCESS_DENIED, new KeyValuePair<string, string>("ETW can't start: launch your game as administrator to collect context switches", "https://github.com/bombomby/brofiler/wiki/Event-Tracing-for-Windows"));
             statusToError.Add(ETWStatus.ETW_ERROR_ALREADY_EXISTS, new KeyValuePair<string, string>("ETW session already started (Reboot should help)", "https://github.com/bombomby/brofiler/wiki/Event-Tracing-for-Windows"));
             statusToError.Add(ETWStatus.ETW_FAILED, new KeyValuePair<string, string>("ETW session failed", "https://github.com/bombomby/brofiler/wiki/Event-Tracing-for-Windows"));
         }
 
-        Version CurrentVersion { get { return Assembly.GetExecutingAssembly().GetName().Version; } }
-
-        String GetUniqueID()
+        public void LoadFile(string file)
         {
-            NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
-            return nics.Length > 0 ? nics[0].GetPhysicalAddress().ToString() : new Random().Next().ToString();
-        }
-
-        void SendReportToGoogleAnalytics()
-        {
-            var postData = new Dictionary<string, string>
+            if (File.Exists(file))
             {
-				{ "v", "1" },
-				{ "tid", "UA-58006599-1" },
-				{ "cid", GetUniqueID() },
-				{ "t", "pageview" },
-                { "dh", "brofiler.com" },
-                { "dp", "/app.html" },
-                { "dt", CurrentVersion.ToString() }
-            };
-
-            StringBuilder text = new StringBuilder();
-
-            foreach (var pair in postData)
-            {
-                if (text.Length != 0)
-                    text.Append("&");
-
-                text.Append(String.Format("{0}={1}", pair.Key, HttpUtility.UrlEncode(pair.Value)));
-            }
-
-            using (WebClient client = new WebClient())
-            {
-                client.UploadStringAsync(new Uri("http://www.google-analytics.com/collect"), "POST", text.ToString());
-            }
-        }
-
-        void TimeLine_Loaded(object sender, RoutedEventArgs e)
-        {
-            checkVersion = new WebClient();
-
-            checkVersion.CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
-            checkVersion.DownloadStringCompleted += new DownloadStringCompletedEventHandler(OnVersionDownloaded);
-
-            try
-            {
-                checkVersion.DownloadStringAsync(new Uri("http://brofiler.com/update"));
-            }
-            catch (Exception ex)
-            {
-                Debug.Print(ex.Message);
-            }
-
-        }
-
-        void OnVersionDownloaded(object sender, DownloadStringCompletedEventArgs e)
-        {
-            if (e.Cancelled || e.Error != null || String.IsNullOrEmpty(e.Result))
-                return;
-
-            try
-            {
-                SendReportToGoogleAnalytics();
-
-                XmlDocument doc = new XmlDocument();
-                doc.LoadXml(e.Result);
-
-                XmlElement versionNode = doc.SelectSingleNode("//div[@id='version']") as XmlElement;
-
-                if (versionNode != null)
+                using (new WaitCursor())
                 {
-                    Version version = Version.Parse(versionNode.InnerText);
-
-                    if (version != CurrentVersion)
+                    using (FileStream stream = new FileStream(file, FileMode.Open))
                     {
-                        XmlElement messageNode = doc.SelectSingleNode("//div[@id='message']") as XmlElement;
-                        String message = messageNode != null ? messageNode.InnerText : String.Empty;
-
-                        XmlElement urlNode = doc.SelectSingleNode("//div[@id='url']") as XmlElement;
-                        String url = urlNode != null ? urlNode.InnerText : String.Empty;
-
-                        ShowWarning(message, url);
+                        Open(stream);
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                Debug.Print(ex.Message);
-            }
         }
-
-        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
-        {
-            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
-            e.Handled = true;
-        }
-
-        void ShowWarning(String message, String url)
-        {
-            if (!String.IsNullOrEmpty(message))
-            {
-                warningText.Text = message;
-                warningUrl.NavigateUri = new Uri(url);
-                warningBlock.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                warningBlock.Visibility = Visibility.Collapsed;
-            }
-        }
-
+        
         private bool Open(Stream stream)
         {
             DataResponse response = DataResponse.Create(stream);
@@ -257,7 +154,7 @@ namespace Profiler
                         KeyValuePair<string, string> warning;
                         if (statusToError.TryGetValue(status, out warning))
                         {
-                            ShowWarning(warning.Key, warning.Value);
+                            RaiseEvent(new ShowWarningEventArgs(warning.Key, warning.Value));
                         }
                         break;
 
@@ -322,16 +219,38 @@ namespace Profiler
             }
         }
 
+        public class ShowWarningEventArgs : RoutedEventArgs
+        {
+            public String Message { get; set; }
+            public String URL { get; set; }
+
+            public ShowWarningEventArgs(String message, String url)
+                : base(ShowWarningEvent)
+            {
+                Message = message;
+                URL = url;
+            }
+        }
+
+
         public delegate void FocusFrameEventHandler(object sender, FocusFrameEventArgs e);
+        public delegate void ShowWarningEventHandler(object sender, ShowWarningEventArgs e);
 
         public ClearAllFramesHandler OnClearAllFrames;
 
         public static readonly RoutedEvent FocusFrameEvent = EventManager.RegisterRoutedEvent("FocusFrame", RoutingStrategy.Bubble, typeof(FocusFrameEventHandler), typeof(TimeLine));
+        public static readonly RoutedEvent ShowWarningEvent = EventManager.RegisterRoutedEvent("ShowWarning", RoutingStrategy.Bubble, typeof(ShowWarningEventArgs), typeof(TimeLine));
 
         public event RoutedEventHandler FocusFrame
         {
             add { AddHandler(FocusFrameEvent, value); }
             remove { RemoveHandler(FocusFrameEvent, value); }
+        }
+
+        public event RoutedEventHandler ShowWarning
+        {
+            add { AddHandler(ShowWarningEvent, value); }
+            remove { RemoveHandler(ShowWarningEvent, value); }
         }
         #endregion
 
@@ -343,51 +262,7 @@ namespace Profiler
             }
         }
 
-        public void Close()
-        {
-            if (socketThread != null)
-            {
-                socketThread.Abort();
-                socketThread = null;
-            }
-        }
-
-        private void SafeCopy(Stream from, Stream to)
-        {
-            long pos = from.Position;
-            from.Seek(0, SeekOrigin.Begin);
-            from.CopyTo(to);
-            from.Seek(pos, SeekOrigin.Begin);
-        }
-
-        private void OpenButton_Click(object sender, System.Windows.RoutedEventArgs e)
-        {
-            OpenFileDialog dlg = new OpenFileDialog();
-            dlg.Filter = "Brofiler files (*.prof)|*.prof";
-            dlg.Title = "Load profiler results?";
-            if (dlg.ShowDialog() == true)
-            {
-                LoadFile(dlg.FileName);
-            }
-
-        }
-
-        public void LoadFile(string file)
-        {
-            if (File.Exists(file))
-            {
-				using (new WaitCursor())
-				{
-					using (FileStream stream = new FileStream(file, FileMode.Open))
-					{
-						Open(stream);
-					}
-				}
-            }
-        }
-
-
-        private void SaveButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        public void Save()
         {
             SaveFileDialog dlg = new SaveFileDialog();
             dlg.Filter = "Brofiler files (*.prof)|*.prof";
@@ -402,45 +277,54 @@ namespace Profiler
                     HashSet<EventDescriptionBoard> boards = new HashSet<EventDescriptionBoard>();
                     HashSet<FrameGroup> groups = new HashSet<FrameGroup>();
 
-					FrameGroup currentGroup = null;
+                    FrameGroup currentGroup = null;
 
                     foreach (Frame frame in frames)
                     {
-						if (frame is EventFrame)
-						{
-							EventFrame eventFrame = frame as EventFrame;
-							if (eventFrame.Group != currentGroup && currentGroup != null)
-							{
-								currentGroup.Responses.ForEach(response => response.Serialize(stream));
-							}
-							currentGroup = eventFrame.Group;
-						}
-						else if (frame is SamplingFrame)
-						{
-							if (currentGroup != null)
-							{
-								currentGroup.Responses.ForEach(response => response.Serialize(stream));
-								currentGroup = null;
-							}
+                        if (frame is EventFrame)
+                        {
+                            EventFrame eventFrame = frame as EventFrame;
+                            if (eventFrame.Group != currentGroup && currentGroup != null)
+                            {
+                                currentGroup.Responses.ForEach(response => response.Serialize(stream));
+                            }
+                            currentGroup = eventFrame.Group;
+                        }
+                        else if (frame is SamplingFrame)
+                        {
+                            if (currentGroup != null)
+                            {
+                                currentGroup.Responses.ForEach(response => response.Serialize(stream));
+                                currentGroup = null;
+                            }
 
-							(frame as SamplingFrame).Response.Serialize(stream);
-						}
+                            (frame as SamplingFrame).Response.Serialize(stream);
+                        }
                     }
 
-					if (currentGroup != null)
-					{
-						currentGroup.Responses.ForEach(response => 
-						{
-							response.Serialize(stream);
-						});
-					}
+                    if (currentGroup != null)
+                    {
+                        currentGroup.Responses.ForEach(response =>
+                        {
+                            response.Serialize(stream);
+                        });
+                    }
 
                     stream.Close();
                 }
             }
         }
 
-        private void ClearButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        public void Close()
+        {
+            if (socketThread != null)
+            {
+                socketThread.Abort();
+                socketThread = null;
+            }
+        }
+
+        public void Clear()
         {
             lock (frames)
             {
@@ -450,35 +334,14 @@ namespace Profiler
             OnClearAllFrames();
         }
 
-        private void ClearSamplingButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        private void FrameFilterSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            ProfilerClient.Get().SendMessage(new TurnSamplingMessage(-1, false));
+            ICollectionView view = CollectionViewSource.GetDefaultView(frameList.ItemsSource);
+            view.Filter = new Predicate<object>((item) => { return (item is Frame) ? (item as Frame).Duration >= FrameFilterSlider.Value : true; });
         }
 
-        private void ClearHooksButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        public void StartCapture()
         {
-            ProfilerClient.Get().SendMessage(new SetupHookMessage(0, false));
-        }
-
-        private void StartButton_Unchecked(object sender, System.Windows.RoutedEventArgs e)
-        {
-            ProfilerClient.Get().SendMessage(new StopMessage());
-        }
-
-        private void StartButton_Checked(object sender, System.Windows.RoutedEventArgs e)
-        {
-            var platform = PlatformCombo.ActivePlatform;
-
-            if (platform == null)
-                return;
-
-            Properties.Settings.Default.DefaultIP = platform.IP.ToString();
-            Properties.Settings.Default.DefaultPort = platform.Port;
-            Properties.Settings.Default.Save();
-
-            ProfilerClient.Get().IpAddress = platform.IP;
-            ProfilerClient.Get().Port = platform.Port;
-
             StartMessage message = new StartMessage();
             if (ProfilerClient.Get().SendMessage(message))
             {
@@ -501,7 +364,7 @@ namespace Profiler
     {
         public static double Convert(double value)
         {
-            return 2.0 * value;
+            return 1.85 * value;
         }
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

@@ -14,13 +14,16 @@ namespace Profiler.Data
         public int ThreadIndex { get; private set; }
 		public int FiberIndex { get; private set; }
 
-        public static FrameHeader Read(BinaryReader reader)
+        public static FrameHeader Read(DataResponse response)
         {
             FrameHeader header = new FrameHeader();
-            header.ThreadIndex = reader.ReadInt32();
-			header.FiberIndex = reader.ReadInt32();
+            header.ThreadIndex = response.Reader.ReadInt32();
+            if (response.ApplicationID == NetworkProtocol.BROFILER_APP_ID)
+            {
+                header.FiberIndex = response.Reader.ReadInt32();
+            }
 
-            header.ReadEventData(reader);
+            header.ReadEventData(response.Reader);
             return header;
         }
 
@@ -295,11 +298,11 @@ namespace Profiler.Data
 				categoriesTree = new EventTree( this, Categories );
         }
 
-        protected void ReadInternal(BinaryReader reader)
+        protected void ReadInternal(DataResponse response)
         {
-            Header = FrameHeader.Read(reader);
-            Categories = ReadEventList(reader, DescriptionBoard);
-			Entries = ReadEventList( reader, DescriptionBoard );
+            Header = FrameHeader.Read(response);
+            Categories = ReadEventList(response.Reader, DescriptionBoard);
+			Entries = ReadEventList(response.Reader, DescriptionBoard );
 
             Synchronization = new List<SyncInterval>();
 			FiberSync = new List<FiberSyncInterval>();
@@ -319,7 +322,7 @@ namespace Profiler.Data
         {
             BinaryReader reader = response.Reader;
             Group = group;
-            ReadInternal(reader);
+            ReadInternal(response);
         }
 
         public EventFrame(FrameHeader header, List<Entry> entries, FrameGroup group) : base(null)

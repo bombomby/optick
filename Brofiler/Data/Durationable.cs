@@ -16,9 +16,16 @@ namespace Profiler.Data
         long Finish { get; }
     }
 
-    public class Tick : ITick
+    public struct Tick : ITick
     {
         public long Start { get; set; }
+    }
+
+    public class TimeSettings
+    {
+        public Double TicksToMs { get; set; }
+        public Int64 Origin { get; set; }
+        public Int32 PrecisionCut { get; set; }
     }
 
     public class Durable :  IDurable
@@ -35,11 +42,11 @@ namespace Profiler.Data
 			get { return TicksToMs(Finish); }
 		}
 
-		private static double freq = 1;
-		public static void InitFrequency(long frequency)
+		private static TimeSettings settings = null;
+		public static void InitSettings(TimeSettings s)
 		{
-			freq = 1000.0 / (double)frequency;
-		}
+            settings = s;
+        }
 
 		public double Duration
 		{
@@ -59,7 +66,7 @@ namespace Profiler.Data
 
         public static double TicksToMs(long duration)
 		{
-			return freq * duration;
+			return settings.TicksToMs * duration;
 		}
 
         internal bool Intersect(long value)
@@ -74,13 +81,18 @@ namespace Profiler.Data
 
         public static long MsToTick(double ms)
 		{
-			return (long)(ms / freq);
+			return (long)(ms / settings.TicksToMs);
 		}
+
+        public static Int64 ReadTime(BinaryReader reader)
+        {
+            return settings.Origin > 0 ? (((Int64)reader.ReadUInt32() << settings.PrecisionCut) + settings.Origin) : reader.ReadInt64();
+        }
 
 		public void ReadDurable(BinaryReader reader)
 		{
-			Start = reader.ReadInt64();
-			Finish = reader.ReadInt64();
+            Start = ReadTime(reader);
+			Finish = ReadTime(reader);
 		}
 
         public Durable Normalize()

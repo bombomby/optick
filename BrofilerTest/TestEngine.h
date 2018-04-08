@@ -36,6 +36,7 @@ namespace Test
 		bool Update();
 
 		void UpdatePhysics();
+		void UpdateRecursive();
 
 		bool IsAlive() const { return isAlive; }
 	};

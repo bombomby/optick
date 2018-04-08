@@ -207,9 +207,13 @@
     <Compile Include="DirectX\Mesh.cs" />
     <Compile Include="DirectX\DynamicMesh.cs" />
     <Compile Include="DirectX\RenderSettings.cs" />
+    <Compile Include="DirectX\ScrollableWinFormsHost.cs" />
     <Compile Include="DirectX\TextManager.cs" />
     <Compile Include="DirectX\TextureLoader.cs" />
     <Compile Include="DirectX\Utils.cs" />
+    <Compile Include="SettingsWindow.xaml.cs">
+      <DependentUpon>SettingsWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ThreadView\EventsThreadRow.cs" />
     <Compile Include="Frames\FrameDataTable.xaml.cs">
       <DependentUpon>FrameDataTable.xaml</DependentUpon>
@@ -281,6 +285,10 @@
       <ContainsDesignTimeResources>true</ContainsDesignTimeResources>
     </Page>
     <Page Include="SearchBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SettingsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

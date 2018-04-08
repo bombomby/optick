@@ -9,18 +9,24 @@ namespace Profiler
 {
     public struct NetworkProtocol
     {
-/*
-        public const UInt32 NETWORK_PROTOCOL_VERSION_6  = 6; 
-        public const UInt32 NETWORK_PROTOCOL_VERSION_7  = 7; // Changed ThreadID - uint32 => uint64
-        public const UInt32 NETWORK_PROTOCOL_VERSION_8  = 8; // Changed CoreID in SyncData - uint32 => uint64
-        public const UInt32 NETWORK_PROTOCOL_VERSION_9  = 9; // Added thread synchronization wait reason
-        public const UInt32 NETWORK_PROTOCOL_VERSION_10 = 10; // Added StackWalk event
-		public const UInt32 NETWORK_PROTOCOL_VERSION_11 = 11; // Added thread synchronization switch to thread ID
- */ 
-		public const UInt32 NETWORK_PROTOCOL_VERSION_12 = 12; // Added separate fiber sync data stream
+        /*
+                public const UInt32 NETWORK_PROTOCOL_VERSION_6  = 6; 
+                public const UInt32 NETWORK_PROTOCOL_VERSION_7  = 7; // Changed ThreadID - uint32 => uint64
+                public const UInt32 NETWORK_PROTOCOL_VERSION_8  = 8; // Changed CoreID in SyncData - uint32 => uint64
+                public const UInt32 NETWORK_PROTOCOL_VERSION_9  = 9; // Added thread synchronization wait reason
+                public const UInt32 NETWORK_PROTOCOL_VERSION_10 = 10; // Added StackWalk event
+                public const UInt32 NETWORK_PROTOCOL_VERSION_11 = 11; // Added thread synchronization switch to thread ID
+                public const UInt32 NETWORK_PROTOCOL_VERSION_12 = 12; // Added separate fiber sync data stream
+                ...
+         */
 
-		public const UInt32 NETWORK_PROTOCOL_VERSION = NETWORK_PROTOCOL_VERSION_12;
-		public const UInt32 NETWORK_PROTOCOL_MIN_VERSION = NETWORK_PROTOCOL_VERSION_12;
+        public const UInt32 NETWORK_PROTOCOL_VERSION_18 = 18; // Bumped version
+
+        public const UInt32 NETWORK_PROTOCOL_VERSION = NETWORK_PROTOCOL_VERSION_18;
+		public const UInt32 NETWORK_PROTOCOL_MIN_VERSION = NETWORK_PROTOCOL_VERSION_18;
+
+
+        public const UInt16 BROFILER_APP_ID = 0xB50F;
     }
 
 	public abstract class IResponseHolder
@@ -32,25 +38,33 @@ namespace Profiler
     {
         public enum Type
         {
-            FrameDescriptionBoard = 0,
-            EventFrame = 1,
-            SamplingFrame = 2,
-            Synchronization = 3,
-            NullFrame = 4,
-            ReportProgress = 5,
-            Handshake = 6,
-            SymbolPack = 7,
-            CallstackPack = 8,
-			SyscallPack = 9,
-			FiberSynchronization = 10,
-        }
+            FrameDescriptionBoard,
+            EventFrame,
+            SamplingFrame,
+            NullFrame,
+            ReportProgress,
+            Handshake,
+            Reserved_0,
+            SynchronizationData,
+            TagsPack,
+            CallstackDescriptionBoard,
+            CallstackPack,
+            Reserved_1,
+            Reserved_2,
+            Reserved_3,
+            Reserved_4,
 
+            FiberSynchronizationData = 1 << 8,
+            SyscallPack,
+        }
+        public UInt16 ApplicationID { get; set; }
         public Type ResponseType { get; set; }
         public UInt32 Version { get; set; }
         public BinaryReader Reader { get; set; }
 
-        public DataResponse(Type type, UInt32 version, BinaryReader reader)
+        public DataResponse(UInt16 appID, Type type, UInt32 version, BinaryReader reader)
         {
+            ApplicationID = appID;
             ResponseType = type;
             Version = version;
             Reader = reader;
@@ -66,7 +80,7 @@ namespace Profiler
         public String SerializeToBase64()
         {
             MemoryStream stream = new MemoryStream();
-            Serialize(ResponseType, Reader.BaseStream, stream);
+            Serialize(ApplicationID, ResponseType, Reader.BaseStream, stream);
             stream.Position = 0;
 
             byte[] data = new byte[stream.Length];
@@ -74,12 +88,13 @@ namespace Profiler
             return Convert.ToBase64String(data);
         }
 
-        public static void Serialize(DataResponse.Type type, Stream data, Stream result)
+        public static void Serialize(UInt16 appID, DataResponse.Type type, Stream data, Stream result)
         {
             BinaryWriter writer = new BinaryWriter(result);
             writer.Write(NetworkProtocol.NETWORK_PROTOCOL_VERSION);
             writer.Write((UInt32)data.Length);
-            writer.Write((UInt32)type);
+            writer.Write((UInt16)type);
+            writer.Write((UInt16)appID);
 
             long position = data.Position;
             data.Seek(0, SeekOrigin.Begin);
@@ -92,7 +107,8 @@ namespace Profiler
             BinaryWriter writer = new BinaryWriter(result);
             writer.Write((UInt32)Version);
             writer.Write((UInt32)Reader.BaseStream.Length);
-            writer.Write((UInt32)ResponseType);
+            writer.Write((UInt16)ResponseType);
+            writer.Write((UInt16)ApplicationID);
 
             long position = Reader.BaseStream.Position;
             Reader.BaseStream.Seek(0, SeekOrigin.Begin);
@@ -111,10 +127,11 @@ namespace Profiler
             {
                 uint version = reader.ReadUInt32();
                 uint length = reader.ReadUInt32();
-                DataResponse.Type responseType = (DataResponse.Type)reader.ReadUInt32();
+                UInt16 responseType = reader.ReadUInt16();
+                UInt16 applicationId = reader.ReadUInt16();
                 byte[] bytes = reader.ReadBytes((int)length);
 
-                return new DataResponse(responseType, version, new BinaryReader(new MemoryStream(bytes)));
+                return new DataResponse(applicationId, (DataResponse.Type)responseType, version, new BinaryReader(new MemoryStream(bytes)));
             }
             catch (EndOfStreamException) { }
 
@@ -139,10 +156,12 @@ namespace Profiler
     public abstract class Message
     {
         public static UInt32 MESSAGE_MARK = 0xB50FB50F;
+        public static UInt16 APPLICATION_ID = 0;
 
-        public abstract Int32 GetMessageType();
+        public abstract Int16 GetMessageType();
         public virtual void Write(BinaryWriter writer)
         {
+            writer.Write(APPLICATION_ID);
             writer.Write(GetMessageType());
         }
     }
@@ -153,7 +172,7 @@ namespace Profiler
         {
         }
 
-        public override Int32 GetMessageType()
+        public override Int16 GetMessageType()
         {
             return (Int32)MessageType.Start;
         }
@@ -166,9 +185,9 @@ namespace Profiler
 
     class StopMessage : Message
     {
-        public override Int32 GetMessageType()
+        public override Int16 GetMessageType()
         {
-            return (Int32)MessageType.Stop;
+            return (Int16)MessageType.Stop;
         }
     }
 
@@ -183,9 +202,9 @@ namespace Profiler
             this.isActive = isActive;
         }
 
-        public override Int32 GetMessageType()
+        public override Int16 GetMessageType()
         {
-            return (Int32)MessageType.TurnSampling;
+            return (Int16)MessageType.TurnSampling;
         }
 
         public override void Write(BinaryWriter writer)
@@ -195,29 +214,4 @@ namespace Profiler
             writer.Write(isActive);
         }
     }
-
-    class SetupHookMessage : Message
-    {
-        UInt64 address;
-        bool isHooked;
-
-        public SetupHookMessage(UInt64 address, bool isHooked)
-        {
-            this.address = address;
-            this.isHooked = isHooked;
-        }
-
-        public override Int32 GetMessageType()
-        {
-            return (Int32)MessageType.SetupHook;
-        }
-
-        public override void Write(BinaryWriter writer)
-        {
-            base.Write(writer);
-            writer.Write(address);
-            writer.Write(isHooked);
-        }
-    }
-
 }

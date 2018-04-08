@@ -208,6 +208,33 @@ namespace Brofiler
 namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct Mode
+{
+	enum Type
+	{
+		OFF = 0x0,
+		INSTRUMENTATION_CATEGORIES = (1 << 0),
+		INSTRUMENTATION_EVENTS = (1 << 1),
+		INSTRUMENTATION = (INSTRUMENTATION_CATEGORIES | INSTRUMENTATION_EVENTS),
+		SAMPLING = (1 << 2),
+		TAGS = (1 << 3),
+		AUTOSAMPLING = (1 << 4),
+		SWITCH_CONTEXT = (1 << 5),
+		IO = (1 << 6),
+		GPU = (1 << 7),
+		END_SCREENSHOT = (1 << 8),
+		RESERVED_0 = (1 << 9),
+		RESERVED_1 = (1 << 10),
+		HW_COUNTERS = (1 << 11),
+		LIVE = (1 << 12),
+		RESERVED_2 = (1 << 13),
+		RESERVED_3 = (1 << 14),
+		RESERVED_4 = (1 << 15),
+
+		DEFAULT = INSTRUMENTATION & AUTOSAMPLING & SWITCH_CONTEXT & IO & GPU,
+	};
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 BROFILER_API int64_t GetHighPrecisionTime();
 BROFILER_API void NextFrame();
 BROFILER_API bool IsActive();
@@ -240,8 +267,9 @@ struct EventData : public EventTime
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct BROFILER_API SyncData : public EventTime
 {
-	uint64_t core;
 	uint64_t newThreadId;
+	uint64_t oldThreadId;
+	uint8_t core;
 	int8_t reason;
 };
 
@@ -269,8 +297,10 @@ struct BROFILER_API EventDescription
 	uint32_t line;
 	uint32_t index;
 	uint32_t color;
+	uint32_t filter;
+	float budget;
 
-	static EventDescription* Create(const char* eventName, const char* fileName, const unsigned long fileLine, const unsigned long eventColor = Color::Null);
+	static EventDescription* Create(const char* eventName, const char* fileName, const unsigned long fileLine, const unsigned long eventColor = Color::Null, const unsigned long filter = 0, float budget = 0.0f);
 private:
 	friend class EventDescriptionBoard;
 	EventDescription();

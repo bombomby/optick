@@ -1,49 +1,50 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Profiler.Data
 {
     public enum SyncReason
     {
+        // Windows and XBox
         Win_Executive = 0,
-        Win_FreePage = 1,
-        Win_PageIn = 2,
-        Win_PoolAllocation = 3,
-        Win_DelayExecution = 4,
-        Win_Suspended = 5,
-        Win_UserRequest = 6,
-        Win_WrExecutive = 7,
-        Win_WrFreePage = 8,
-        Win_WrPageIn = 9,
-        Win_WrPoolAllocation = 10,
-        Win_WrDelayExecution = 11,
-        Win_WrSuspended = 12,
-        Win_WrUserRequest = 13,
-        Win_WrEventPair = 14,
-        Win_WrQueue = 15,
-        Win_WrLpcReceive = 16,
-        Win_WrLpcReply = 17,
-        Win_WrVirtualMemory = 18,
-        Win_WrPageOut = 19,
-        Win_WrRendezvous = 20,
-        Win_WrKeyedEvent = 21,
-        Win_WrTerminated = 22,
-        Win_WrProcessInSwap = 23,
-        Win_WrCpuRateControl = 24,
-        Win_WrCalloutStack = 25,
-        Win_WrKernel = 26,
-        Win_WrResource = 27,
-        Win_WrPushLock = 28,
-        Win_WrMutex = 29,
-        Win_WrQuantumEnd = 30,
-        Win_WrDispatchInt = 31,
-        Win_WrPreempted = 32,
-        Win_WrYieldExecution = 33,
-        Win_WrFastMutex = 34,
-        Win_WrGuardedMutex = 35,
-        Win_WrRundown = 36,
-        Win_MaximumWaitReason = 37,
-
+        Win_FreePage,
+        Win_PageIn,
+        Win_PoolAllocation,
+        Win_DelayExecution,
+        Win_Suspended,
+        Win_UserRequest,
+        Win_WrExecutive,
+        Win_WrFreePage,
+        Win_WrPageIn,
+        Win_WrPoolAllocation,
+        Win_WrDelayExecution,
+        Win_WrSuspended,
+        Win_WrUserRequest,
+        Win_WrEventPair,
+        Win_WrQueue,
+        Win_WrLpcReceive,
+        Win_WrLpcReply,
+        Win_WrVirtualMemory,
+        Win_WrPageOut,
+        Win_WrRendezvous,
+        Win_WrKeyedEvent,
+        Win_WrTerminated,
+        Win_WrProcessInSwap,
+        Win_WrCpuRateControl,
+        Win_WrCalloutStack,
+        Win_WrKernel,
+        Win_WrResource,
+        Win_WrPushLock,
+        Win_WrMutex,
+        Win_WrQuantumEnd,
+        Win_WrDispatchInt,
+        Win_WrPreempted,
+        Win_WrYieldExecution,
+        Win_WrFastMutex,
+        Win_WrGuardedMutex,
+        Win_WrRundown,
+        Win_MaximumWaitReason,
 
         SyncReasonCount,
 
@@ -60,22 +61,32 @@ namespace Profiler.Data
 		AutoSample = Int32.MaxValue
 	}
 
+    public struct SyncEvent : IComparable<SyncEvent>
+    {
+        public Tick Timestamp;
+        public UInt64 OldThreadID;
+        public UInt64 NewThreadID;
+        public byte CPUID;
+        public SyncReason Reason;
+        public SyncEvent(BinaryReader reader)
+        {
+            Timestamp = new Tick() { Start = Durable.ReadTime(reader) };
+            OldThreadID = reader.ReadUInt64();
+            NewThreadID = reader.ReadUInt64();
+            CPUID = reader.ReadByte();
+            Reason = (SyncReason)reader.ReadByte();
+        }
+        public int CompareTo(SyncEvent other)
+        {
+            return Timestamp.Start.CompareTo(other.Timestamp.Start);
+        }
+    }
+
     public class SyncInterval : Durable
     {
-        public UInt64 Core { get; set; }
         public SyncReason Reason { get; set; }
 		public UInt64 NewThreadId { get; set; }
-
-        public static SyncInterval Read(DataResponse response)
-        {
-            SyncInterval interval = new SyncInterval();
-            interval.ReadDurable(response.Reader);
-            interval.Core = response.Reader.ReadUInt64();
-            interval.Reason = (SyncReason)response.Reader.ReadByte();
-			interval.NewThreadId = response.Reader.ReadUInt64();
-
-            return interval;
-        }
+        public byte Core { get; set; }
     }
 
     public class WaitInterval : Durable
@@ -132,29 +143,82 @@ namespace Profiler.Data
 
     public class NodeWaitIntervalList : List<NodeWaitInterval> {}
 
-
-    public class Synchronization : IResponseHolder
+    public class SynchronizationMap : IResponseHolder
     {
         public override DataResponse Response { get; set; }
-        public int ThreadIndex { get; set; }
         public FrameGroup Group { get; set; }
+        public Dictionary<UInt64, Synchronization> SyncMap { get; set; }
 
-        public List<SyncInterval> Intervals { get; set; }
-
-        public Synchronization(DataResponse response, FrameGroup group)
+        public SynchronizationMap(DataResponse response, FrameGroup group)
         {
-            Group = group;
             Response = response;
-            ThreadIndex = response.Reader.ReadInt32();
+            SyncMap = new Dictionary<UInt64, Synchronization>();
 
             int count = response.Reader.ReadInt32();
-            Intervals = new List<SyncInterval>(count);
+            List<SyncEvent> events = new List<SyncEvent>(count);
+            for (int i = 0; i < count; ++i)
+                events.Add(new SyncEvent(response.Reader));
 
-			for (int i = 0; i < count; ++i)
-			{
-				Intervals.Add(SyncInterval.Read(response));
-			}
+            events.Sort();
+
+            for (int i = 0; i < count; ++i)
+            {
+                SyncEvent scEvent = events[i];
+
+                if (scEvent.OldThreadID != 0)
+                {
+                    Synchronization oldSync = null;
+                    if (!SyncMap.TryGetValue(scEvent.OldThreadID, out oldSync))
+                    {
+                        oldSync = new Synchronization();
+                        SyncMap.Add(scEvent.OldThreadID, oldSync);
+                    }
+
+                    if (oldSync.Count > 0)
+                    {
+                        SyncInterval interval = oldSync[oldSync.Count - 1];
+                        interval.Reason = scEvent.Reason;
+                        interval.Finish = scEvent.Timestamp.Start;
+                        interval.NewThreadId = scEvent.NewThreadID;
+                    }
+                }
+
+                if (scEvent.NewThreadID != 0)
+                {
+                    Synchronization newSync = null;
+                    if (!SyncMap.TryGetValue(scEvent.NewThreadID, out newSync))
+                    {
+                        newSync = new Synchronization();
+                        SyncMap.Add(scEvent.NewThreadID, newSync);
+                    }
+
+                    SyncInterval data = new SyncInterval()
+                    {
+                        Start = scEvent.Timestamp.Start,
+                        Finish = long.MaxValue,
+                        Core = scEvent.CPUID,
+                    };
+
+                    while (newSync.Count > 0)
+                    {
+                        SyncInterval previous = newSync[newSync.Count - 1];
+                        if (previous.Finish <= data.Start)
+                            break;
+
+                        newSync.RemoveAt(newSync.Count - 1);
+                    }
+
+                    newSync.Add(data);
+                }
+            }
+
         }
+    }
+
+
+    public class Synchronization : List<SyncInterval>
+    {
+        public bool IsWait { get; set; }
     }
 
 

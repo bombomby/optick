@@ -5,6 +5,16 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using Profiler.Data;
 using MahApps.Metro.Controls;
+using System.Net;
+using System.Xml;
+using System.Diagnostics;
+using System.Windows.Navigation;
+using System.Reflection;
+using System.Net.NetworkInformation;
+using System.Collections.Generic;
+using System.Text;
+using System.Web;
+using System.Net.Cache;
 
 namespace Profiler
 {
@@ -21,10 +31,19 @@ namespace Profiler
             this.AddHandler(TimeLine.FocusFrameEvent, new TimeLine.FocusFrameEventHandler(this.OpenTab));
 
             timeLine.OnClearAllFrames += new ClearAllFramesHandler(ClearAllTabs);
-
+            timeLine.ShowWarning += TimeLine_ShowWarning;
             frameTabs.SelectionChanged += new SelectionChangedEventHandler(frameTabs_SelectionChanged);
+            warningBlock.Visibility = Visibility.Collapsed;
 
             ParseCommandLine();
+
+            
+        }
+
+        private void TimeLine_ShowWarning(object sender, RoutedEventArgs e)
+        {
+            TimeLine.ShowWarningEventArgs args = e as TimeLine.ShowWarningEventArgs;
+            ShowWarning(args.Message, args.URL.ToString());
         }
 
         void frameTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -141,9 +160,9 @@ namespace Profiler
             }
         }
 
-        private void Window_Drop(object sender, DragEventArgs e)
+        private void Window_Drop(object sender, System.Windows.DragEventArgs e)
         {
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            string[] files = (string[])e.Data.GetData(System.Windows.DataFormats.FileDrop);
             foreach (string file in files)
             {
                 LoadFile(file);
@@ -160,11 +179,187 @@ namespace Profiler
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
                 e.Effects = DragDropEffects.Copy;
         }
+
+
+        Version CurrentVersion { get { return Assembly.GetExecutingAssembly().GetName().Version; } }
+
+        String GetUniqueID()
+        {
+            NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
+            return nics.Length > 0 ? nics[0].GetPhysicalAddress().ToString() : new Random().Next().ToString();
+        }
+
+        void SendReportToGoogleAnalytics()
+        {
+            var postData = new Dictionary<string, string>
+            {
+                { "v", "1" },
+                { "tid", "UA-58006599-1" },
+                { "cid", GetUniqueID() },
+                { "t", "pageview" },
+                { "dh", "brofiler.com" },
+                { "dp", "/app.html" },
+                { "dt", CurrentVersion.ToString() }
+            };
+
+            StringBuilder text = new StringBuilder();
+
+            foreach (var pair in postData)
+            {
+                if (text.Length != 0)
+                    text.Append("&");
+
+                text.Append(String.Format("{0}={1}", pair.Key, HttpUtility.UrlEncode(pair.Value)));
+            }
+
+            using (WebClient client = new WebClient())
+            {
+                client.UploadStringAsync(new Uri("http://www.google-analytics.com/collect"), "POST", text.ToString());
+            }
+        }
+
+        WebClient checkVersion;
+
+        void MainToolBar_Loaded(object sender, RoutedEventArgs e)
+        {
+            checkVersion = new WebClient();
+
+            checkVersion.CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
+            checkVersion.DownloadStringCompleted += new DownloadStringCompletedEventHandler(OnVersionDownloaded);
+
+            try
+            {
+                checkVersion.DownloadStringAsync(new Uri("http://brofiler.com/update"));
+            }
+            catch (Exception ex)
+            {
+                Debug.Print(ex.Message);
+            }
+
+        }
+
+        void OnVersionDownloaded(object sender, DownloadStringCompletedEventArgs e)
+        {
+            if (e.Cancelled || e.Error != null || String.IsNullOrEmpty(e.Result))
+                return;
+
+            try
+            {
+                SendReportToGoogleAnalytics();
+
+                XmlDocument doc = new XmlDocument();
+                doc.LoadXml(e.Result);
+
+                XmlElement versionNode = doc.SelectSingleNode("//div[@id='version']") as XmlElement;
+
+                if (versionNode != null)
+                {
+                    Version version = Version.Parse(versionNode.InnerText);
+
+                    if (version != CurrentVersion)
+                    {
+                        XmlElement messageNode = doc.SelectSingleNode("//div[@id='message']") as XmlElement;
+                        String message = messageNode != null ? messageNode.InnerText : String.Empty;
+
+                        XmlElement urlNode = doc.SelectSingleNode("//div[@id='url']") as XmlElement;
+                        String url = urlNode != null ? urlNode.InnerText : String.Empty;
+
+                        ShowWarning(message, url);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.Print(ex.Message);
+            }
+        }
+
+        private void Hyperlink_RequestNavigate(object sender, RequestNavigateEventArgs e)
+        {
+            Process.Start(new ProcessStartInfo(e.Uri.AbsoluteUri));
+            e.Handled = true;
+        }
+
+        void ShowWarning(String message, String url)
+        {
+            if (!String.IsNullOrEmpty(message))
+            {
+                warningText.Text = message;
+                warningUrl.NavigateUri = new Uri(url);
+                warningBlock.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                warningBlock.Visibility = Visibility.Collapsed;
+            }
+        }
+
+
+        private void SafeCopy(Stream from, Stream to)
+        {
+            long pos = from.Position;
+            from.Seek(0, SeekOrigin.Begin);
+            from.CopyTo(to);
+            from.Seek(pos, SeekOrigin.Begin);
+        }
+
+        private void OpenButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            System.Windows.Forms.OpenFileDialog dlg = new System.Windows.Forms.OpenFileDialog();
+            dlg.Filter = "Brofiler files (*.prof)|*.prof";
+            dlg.Title = "Load profiler results?";
+            if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                LoadFile(dlg.FileName);
+            }
+        }
+
+        private void SaveButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            timeLine.Save();
+        }
+
+        private void ClearButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            timeLine.Clear();
+        }
+
+        private void ClearSamplingButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            ProfilerClient.Get().SendMessage(new TurnSamplingMessage(-1, false));
+        }
+
+        private void StartButton_Unchecked(object sender, System.Windows.RoutedEventArgs e)
+        {
+            ProfilerClient.Get().SendMessage(new StopMessage());
+        }
+
+        private void StartButton_Checked(object sender, System.Windows.RoutedEventArgs e)
+        {
+            var platform = PlatformCombo.ActivePlatform;
+
+            if (platform == null)
+                return;
+
+            Properties.Settings.Default.DefaultIP = platform.IP.ToString();
+            Properties.Settings.Default.DefaultPort = platform.Port;
+            Properties.Settings.Default.Save();
+
+            ProfilerClient.Get().IpAddress = platform.IP;
+            ProfilerClient.Get().Port = platform.Port;
+
+            timeLine.StartCapture();
+        }
+
+        private void SettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            SettingsWindow settingsWindow = new SettingsWindow();
+            settingsWindow.Show();
+        }
     }
 
 
-
-	public static class Extensions
+    public static class Extensions
 	{
 		// extension method
 		public static T GetChildOfType<T>(this DependencyObject depObj) where T : DependencyObject

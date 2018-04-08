@@ -159,7 +159,7 @@ static DWORD currentProcessId = 0;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 {
-	static uint8 cpuCoreIsExecutingThreadFromOurProcess[256] = { 0 };
+	//static uint8 cpuCoreIsExecutingThreadFromOurProcess[256] = { 0 };
 
 	const byte opcode = eventRecord->EventHeader.EventDescriptor.Opcode;
 
@@ -175,20 +175,8 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 			desc.oldThreadId = (uint64)pSwitchEvent->OldThreadId;
 			desc.newThreadId = (uint64)pSwitchEvent->NewThreadId;
 			desc.timestamp = eventRecord->EventHeader.TimeStamp.QuadPart;
-			SwitchContextResult res = Core::Get().ReportSwitchContext(desc);
-
-			// track physical cpu cores used by our process
-			if (res == SCR_THREADENABLED)
-			{
-				cpuCoreIsExecutingThreadFromOurProcess[desc.cpuId] = 1;
-			}
-
-			if (res == SCR_THREADDISABLED)
-			{
-				cpuCoreIsExecutingThreadFromOurProcess[desc.cpuId] = 0;
-			}
+			Core::Get().ReportSwitchContext(desc);
 		}
-
 	}
 	else if (opcode == StackWalk_Event::OPCODE)
 	{
@@ -226,10 +214,10 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 	{
 		if (eventRecord->UserDataLength >= sizeof(SysCallEnter))
 		{
-			uint8 cpuId = eventRecord->BufferContext.ProcessorNumber;
+			//uint8 cpuId = eventRecord->BufferContext.ProcessorNumber;
 
 			// report event, but only if our process working on this physical core
-			if (cpuCoreIsExecutingThreadFromOurProcess[cpuId])
+			// if (cpuCoreIsExecutingThreadFromOurProcess[cpuId])
 			{
 				SysCallEnter* pEventEnter = (SysCallEnter*)eventRecord->UserData;
 

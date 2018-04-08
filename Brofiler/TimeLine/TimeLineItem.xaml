@@ -10,7 +10,8 @@
 	xmlns:Profiler_Data="clr-namespace:Profiler.Data"
   d:DataContext="{Binding Source={x:Static Profiler_Data:TestEventFrame.Frame}}"
   Width="Auto" BorderBrush="Black">
-	
 
-	<Grid x:Name="LayoutRoot" Background="#FFB0B0B0" VerticalAlignment="Stretch" />
+
+    <Grid x:Name="LayoutRoot" Background="Red" VerticalAlignment="Stretch" />
+
 </UserControl>

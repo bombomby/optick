@@ -197,7 +197,7 @@ namespace Profiler
         DynamicMesh HoverMesh;
         DynamicMesh MeasureMesh;
 
-        const double DefaultFrameZoom = 1.25;
+        const double DefaultFrameZoom = 1.05;
 
         public void FocusOn(EventFrame frame, EventNode node)
         {

@@ -9,23 +9,24 @@
 namespace Brofiler
 {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	struct SysCallDesc
+	struct SwitchContextDesc
 	{
 		int64_t timestamp;
-		uint64 id;
+		uint64 oldThreadId;
+		uint64 newThreadId;
+		uint8 cpuId;
+		uint8 reason;
 	};
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	OutputDataStream &operator << (OutputDataStream &stream, const SysCallDesc &ob);
 	//////////////////////////////////////////////////////////////////////////
-	class SysCallCollector
+	OutputDataStream &operator << (OutputDataStream &stream, const SwitchContextDesc &ob);
+	//////////////////////////////////////////////////////////////////////////
+	class SwitchContextCollector
 	{
-		// Packed syscall events: {timestamp, id}
-		typedef MemoryPool<SysCallDesc, 1024 * 32> SysCallPool;
-		SysCallPool syscallPool;
+		typedef MemoryPool<SwitchContextDesc, 1024 * 32> SwitchContextPool;
+		SwitchContextPool switchContextPool;
 	public:
-		void Add(const SysCallDesc& desc);
+		void Add(const SwitchContextDesc& desc);
 		void Clear();
-
 		bool Serialize(OutputDataStream& stream);
 	};
 	//////////////////////////////////////////////////////////////////////////

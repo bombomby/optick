@@ -6,6 +6,7 @@
 
     <Color x:Key="BlackColor">#FFEEEEEE</Color>
     <Color x:Key="WhiteColor">#FF3F3F3F</Color>
+    <Color x:Key="AlternativeColor">#FF2E2E2E</Color>
     <Color x:Key="ContentBackColor">#FF2E2E2E</Color>
 
     <Color x:Key="Gray1">#FFF9F9F9</Color>

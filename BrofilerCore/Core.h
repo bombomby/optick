@@ -6,6 +6,7 @@
 #include "Serialization.h"
 #include "CallstackCollector.h"
 #include "SysCallCollector.h"
+#include "SwitchContextCollector.h"
 
 #include <map>
 
@@ -64,7 +65,6 @@ struct EventStorage
 {
 	EventBuffer eventBuffer;
 	CategoryBuffer categoryBuffer; 
-	SynchronizationBuffer synchronizationBuffer;
 	FiberSyncBuffer fiberSyncBuffer;
 
 	MT::Atomic32<uint32> isSampling;
@@ -87,7 +87,6 @@ struct EventStorage
 	{
 		eventBuffer.Clear(preserveContent);
 		categoryBuffer.Clear(preserveContent);
-		synchronizationBuffer.Clear(preserveContent);
 		fiberSyncBuffer.Clear(preserveContent);
 	}
 
@@ -103,9 +102,12 @@ struct ThreadDescription
 
 	char name[THREAD_NAME_LENGTH];
 	MT::ThreadId threadID;
+	int32 maxDepth;
+	int32 priority;
+	uint32 mask;
 	bool fromOtherProcess;
 
-	ThreadDescription(const char* threadName, const MT::ThreadId& id, bool _fromOtherProcess);
+	ThreadDescription(const char* threadName, const MT::ThreadId& id, bool _fromOtherProcess, int32 maxDepth = 1, int32 priority = 0, uint32 mask = 0);
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct FiberDescription
@@ -140,24 +142,6 @@ struct FiberEntry
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-enum SwitchContextResult
-{
-	SCR_OTHERPROCESS = 0,   // context switch in other process
-	SCR_INSIDEPROCESS = 3,  // context switch in our process
-	SCR_THREADENABLED = 1,  // enabled thread in our process
-	SCR_THREADDISABLED = 2, // disabled thread in our process
-};
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct SwitchContextDesc
-{
-	int64_t timestamp;
-	uint64 oldThreadId;
-	uint64 newThreadId;
-	uint8 cpuId;
-	uint8 reason;
-};
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef std::vector<ThreadEntry*> ThreadList;
 typedef std::vector<FiberEntry*> FiberList;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -188,6 +172,7 @@ class Core
 
 	CallstackCollector callstackCollector;
 	SysCallCollector syscallCollector;
+	SwitchContextCollector switchContextCollector;
 
 	void UpdateEvents();
 	void Update();
@@ -206,6 +191,8 @@ class Core
 	void DumpFiber(const FiberEntry& entry, const EventTime& timeSlice, ScopeData& scope);
 
 	void CleanupThreadsAndFibers();
+
+	uint32 DumpBoard(uint32 mode, EventTime timeSlice);
 public:
 	void Activate(bool active);
 	bool isActive;
@@ -229,7 +216,7 @@ public:
 	const std::vector<ThreadEntry*>& GetThreads() const;
 
 	// Report switch context event
-	SwitchContextResult ReportSwitchContext(const SwitchContextDesc& desc);
+	bool ReportSwitchContext(const SwitchContextDesc& desc);
 
 	// Report switch context event
 	bool ReportStackWalk(const CallstackDesc& desc);
@@ -247,7 +234,7 @@ public:
 	bool IsTimeToReportProgress() const;
 
 	// Serialize and send frames
-	void DumpFrames();
+	void DumpFrames(uint32 mode = Mode::DEFAULT);
 
 	// Serialize and send sampling data
 	void DumpSamplingData();

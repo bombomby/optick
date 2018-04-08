@@ -25,7 +25,8 @@ namespace Brofiler
 {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-ThreadDescription::ThreadDescription(const char* threadName, const MT::ThreadId& id, bool _fromOtherProcess) : threadID(id), fromOtherProcess(_fromOtherProcess)
+ThreadDescription::ThreadDescription(const char* threadName, const MT::ThreadId& id, bool _fromOtherProcess, int32 _maxDepth /*= 1*/, int32 _priority /*= 0*/, uint32 _mask /*= 0*/)
+	: threadID(id), fromOtherProcess(_fromOtherProcess), maxDepth(_maxDepth), priority(_priority), mask(_mask)
 {
 	strcpy_s(name, threadName);
 }
@@ -89,16 +90,6 @@ void Core::DumpThread(const ThreadEntry& entry, const EventTime& timeSlice, Scop
 {
 	// Events
 	DumpEvents(entry.storage, timeSlice, scope);
-
-	if (!entry.storage.synchronizationBuffer.IsEmpty())
-	{
-		OutputDataStream synchronizationStream;
-		synchronizationStream << scope.header.boardNumber;
-		synchronizationStream << scope.header.threadNumber;
-		synchronizationStream << entry.storage.synchronizationBuffer;
-		Server::Get().Send(DataResponse::Synchronization, synchronizationStream);
-	}
-
 	BRO_ASSERT(entry.storage.fiberSyncBuffer.IsEmpty(), "Fiber switch events in native threads?");
 }
 
@@ -114,14 +105,12 @@ void Core::DumpFiber(const FiberEntry& entry, const EventTime& timeSlice, ScopeD
 		fiberSynchronizationStream << scope.header.boardNumber;
 		fiberSynchronizationStream << scope.header.fiberNumber;
 		fiberSynchronizationStream << entry.storage.fiberSyncBuffer;
-		Server::Get().Send(DataResponse::FiberSynchronization, fiberSynchronizationStream);
+		Server::Get().Send(DataResponse::FiberSynchronizationData, fiberSynchronizationStream);
 	}
-
-	BRO_ASSERT(entry.storage.synchronizationBuffer.IsEmpty(), "Native thread events in fiber?");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Core::DumpFrames()
+void Core::DumpFrames(uint32 mode)
 {
 	if (frames.empty() || threads.empty())
 		return;
@@ -131,34 +120,14 @@ void Core::DumpFrames()
 	//Graphics::Image image;
 	//graphics.GetScreenshot(image);
 
-	uint32 mainThreadIndex = 0;
-
-	for (size_t i = 0; i < threads.size(); ++i)
-	{
-		if (threads[i]->description.threadID.IsEqual(mainThreadID))
-		{
-			mainThreadIndex = (uint32)i;
-		}
-	}
-
 	EventTime timeSlice;
 	timeSlice.start = frames.front().start;
 	timeSlice.finish = frames.back().finish;
 
-	OutputDataStream boardStream;
-
-	static uint32 boardNumber = 0;
-	boardStream << ++boardNumber;
-	boardStream << MT::GetFrequency();
-	boardStream << timeSlice;
-	boardStream << threads;
-	boardStream << fibers;
-	boardStream << mainThreadIndex;
-	boardStream << EventDescriptionBoard::Get();
-	Server::Get().Send(DataResponse::FrameDescriptionBoard, boardStream);
+	uint32 boardNumber = DumpBoard(mode, timeSlice);
 
 	ScopeData threadScope;
-	threadScope.header.boardNumber = (uint32)boardNumber;
+	threadScope.header.boardNumber = boardNumber;
 	threadScope.header.fiberNumber = -1;
 
 	for (size_t i = 0; i < threads.size(); ++i)
@@ -180,6 +149,14 @@ void Core::DumpFrames()
 	CleanupThreadsAndFibers();
 
 	{
+		DumpProgress("Serializing SwitchContexts");
+		OutputDataStream switchContextsStream;
+		switchContextsStream << boardNumber;
+		switchContextCollector.Serialize(switchContextsStream);
+		Server::Get().Send(DataResponse::SynchronizationData, switchContextsStream);
+	}
+
+	{
 		DumpProgress("Serializing SysCalls");
 		OutputDataStream callstacksStream;
 		callstacksStream << boardNumber;
@@ -193,7 +170,7 @@ void Core::DumpFrames()
 		OutputDataStream symbolsStream;
 		symbolsStream << boardNumber;
 		callstackCollector.SerializeSymbols(symbolsStream);
-		Server::Get().Send(DataResponse::SymbolPack, symbolsStream);
+		Server::Get().Send(DataResponse::CallstackDescriptionBoard, symbolsStream);
 
 		DumpProgress("Serializing callstacks");
 		OutputDataStream callstacksStream;
@@ -201,9 +178,6 @@ void Core::DumpFrames()
 		callstackCollector.SerializeCallstacks(callstacksStream);
 		Server::Get().Send(DataResponse::CallstackPack, callstacksStream);
 	}
-
-
-
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpSamplingData()
@@ -247,6 +221,37 @@ void Core::CleanupThreadsAndFibers()
 	fibers.clear();
 */
 }
+
+uint32 Core::DumpBoard(uint32 mode, EventTime timeSlice)
+{
+	uint32 mainThreadIndex = 0;
+
+	for (size_t i = 0; i < threads.size(); ++i)
+		if (threads[i]->description.threadID.IsEqual(mainThreadID))
+			mainThreadIndex = (uint32)i;
+
+	OutputDataStream boardStream;
+
+	static uint32 boardNumber = 0;
+	boardStream << ++boardNumber;
+	boardStream << MT::GetFrequency();
+	boardStream << (uint64)0; // Origin
+	boardStream << (uint32)0; // Precision
+	boardStream << timeSlice;
+	boardStream << threads;
+	boardStream << fibers;
+	boardStream << mainThreadIndex;
+	boardStream << EventDescriptionBoard::Get();
+	boardStream << (uint32)0; // Tags
+	boardStream << (uint32)0; // Run
+	boardStream << (uint32)0; // Filters
+	boardStream << (uint32)0; // ThreadDescs
+	boardStream << mode; // Mode
+	Server::Get().Send(DataResponse::FrameDescriptionBoard, boardStream);
+
+	return boardNumber;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core::Core() : progressReportedLastTimestampMS(0), isActive(false)
 {
@@ -292,78 +297,22 @@ void Core::ReportSysCall(const SysCallDesc& desc)
 {
 	syscallCollector.Add(desc);
 }
-
-
-#define THREAD_DISABLED_BIT (1)
-#define THREAD_ENABLED_BIT (2)
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-SwitchContextResult Core::ReportSwitchContext(const SwitchContextDesc& desc)
+bool Core::ReportSwitchContext(const SwitchContextDesc& desc)
 {
 	if (!schedulerTrace)
 	{
-		return SCR_OTHERPROCESS;
-	}
-
-	int state = 0;
-
-	// finalize work interval
-	auto oldThreadIt = schedulerTrace->activeThreadsIDs.find(desc.oldThreadId);
-	if (oldThreadIt != schedulerTrace->activeThreadsIDs.end())
-	{
-		ThreadEntry* entry = oldThreadIt->second;
-		if (entry)
-		{
-			if (SyncData* time = entry->storage.synchronizationBuffer.Back())
-			{
-				time->finish = desc.timestamp;
-				time->reason = desc.reason;
-				time->newThreadId = desc.newThreadId;
-			}
-			state |= THREAD_DISABLED_BIT;
-
-			// early exit
-			if ((state & THREAD_DISABLED_BIT) != 0 && (state & THREAD_ENABLED_BIT) != 0)
-			{
-				return SCR_INSIDEPROCESS;
-			}
-		}
+		return false;
 	}
 
 	// finalize work interval
-	auto newThreadIt = schedulerTrace->activeThreadsIDs.find(desc.newThreadId);
-	if (newThreadIt != schedulerTrace->activeThreadsIDs.end())
+	// auto oldThreadIt = schedulerTrace->activeThreadsIDs.find(desc.oldThreadId);
+	// if (oldThreadIt != schedulerTrace->activeThreadsIDs.end())
 	{
-		ThreadEntry* entry = newThreadIt->second;
-		if (entry)
-		{
-			SyncData& time = entry->storage.synchronizationBuffer.Add();
-			time.start = desc.timestamp;
-			time.finish = time.start;
-			time.core = desc.cpuId;
-			time.newThreadId = 0;
-
-			state |= THREAD_ENABLED_BIT;
-
-			// early exit
-			if ((state & THREAD_DISABLED_BIT) != 0 && (state & THREAD_ENABLED_BIT) != 0)
-			{
-				return SCR_INSIDEPROCESS;
-			}
-		}
+		switchContextCollector.Add(desc);
 	}
 
-	if (state == 0)
-	{
-		return SCR_OTHERPROCESS;
-	}
-
-	if ((state & THREAD_DISABLED_BIT) != 0)
-	{
-		return SCR_THREADDISABLED;
-	}
-
-	return SCR_THREADENABLED;
+	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -564,7 +513,7 @@ OutputDataStream& operator<<(OutputDataStream& stream, const ScopeData& ob)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const ThreadDescription& description)
 {
-	return stream << description.threadID.AsUInt64() << description.name;
+	return stream << description.threadID.AsUInt64() << description.name << description.maxDepth << description.priority << description.mask;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const ThreadEntry* entry)

@@ -8,5 +8,8 @@
     <Setting Name="DefaultPort" Type="System.Int16" Scope="User">
       <Value Profile="(Default)">31313</Value>
     </Setting>
+    <Setting Name="TargetFrameTime" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">33.3</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

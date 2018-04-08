@@ -7,7 +7,7 @@
 namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-EventDescription* EventDescription::Create(const char* eventName, const char* fileName, const unsigned long fileLine, const unsigned long eventColor /*= Color::Null*/)
+EventDescription* EventDescription::Create(const char* eventName, const char* fileName, const unsigned long fileLine, const unsigned long eventColor /*= Color::Null*/, const unsigned long filter /*= 0*/, float budget /*= 0.0f*/)
 {
 	static MT::Mutex creationLock;
 	MT::ScopedGuard guard(creationLock);
@@ -17,6 +17,8 @@ EventDescription* EventDescription::Create(const char* eventName, const char* fi
 	result->file = fileName;
 	result->line = fileLine;
 	result->color = eventColor;
+	result->budget = budget;
+	result->filter = filter;
 	return result;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -85,7 +87,7 @@ void FiberSyncData::DetachFromThread(EventStorage* storage)
 OutputDataStream & operator<<(OutputDataStream &stream, const EventDescription &ob)
 {
 	byte flags = (ob.isSampling ? 0x1 : 0);
-	return stream << ob.name << ob.file << ob.line << ob.color << flags;
+	return stream << ob.name << ob.file << ob.line << ob.filter << ob.color << ob.budget << flags;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const EventTime& ob)

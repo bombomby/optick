@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -71,6 +72,11 @@ namespace Profiler.Data
                 if (interval.Intersect(frames[i].Start))
                     action(frames[i]);
             }
+        }
+
+        public static String ReadBinaryString(BinaryReader reader)
+        {
+            return System.Text.Encoding.Unicode.GetString(reader.ReadBytes(reader.ReadInt32()));
         }
 
     }

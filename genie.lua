@@ -12,7 +12,7 @@ outFolderRoot = "Bin/" .. _ACTION .. "/";
 isVisualStudio = false
 isUWP = false
 
-if _ACTION == "vs2010" or _ACTION == "vs2012" or _ACTION == "vs2015" then
+if _ACTION == "vs2010" or _ACTION == "vs2012" or _ACTION == "vs2015" or _ACTION == "vs2017" then
 	if _OPTIONS['platform'] ~= "orbis"  then
 		isVisualStudio = true
 	end
@@ -36,13 +36,13 @@ end
 
 solution "Brofiler"
 	language "C++"
-	startproject "BrofilerTest"
+	windowstargetplatformversion "10.0.15063.0"
+	startproject "BrofilerWindowsTest"
 
 	location ( outputFolder )
 	flags { "NoManifest", "ExtraWarnings", "Unicode" }
 	optimization_flags = { "OptimizeSpeed" }
 
-	
 if isVisualStudio then
 	debugdir (outFolderRoot)
 	buildoptions { 
@@ -209,8 +209,7 @@ project "BrofilerTest"
 
 	links {
 		"BrofilerCore",
-		"TaskScheduler",
-		"BrofilerCore"
+		"TaskScheduler"
 	}
 	
 if isUWP then

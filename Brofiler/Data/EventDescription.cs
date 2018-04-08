@@ -69,13 +69,16 @@ namespace Profiler.Data
                     else
                     {
                         Random rnd = new Random(FullName.GetHashCode());
-                        forceColor = Color.FromRgb((byte)rnd.Next(), (byte)rnd.Next(), (byte)rnd.Next());
+                        Color color = Color.FromRgb((byte)rnd.Next(), (byte)rnd.Next(), (byte)rnd.Next());
+                        forceColor = DirectX.Utils.GetLuminance(color) < 0.33 ? Color.FromRgb((byte)(255 - color.R), (byte)(255 - color.G), (byte)(255 - color.B)) : color;
                     }
                 }
                 return forceColor;
             }
         }
         public Brush Brush { get; private set; }
+        public UInt32 Filter { get; private set; }
+        public float Budget { get; private set; }
 
         public bool IsSleep { get { return Color == Colors.White; } }
 
@@ -102,8 +105,9 @@ namespace Profiler.Data
             desc.id = id;
 
             int fileLength = reader.ReadInt32();
-            desc.Path = new FileLine(new String(reader.ReadChars(fileLength)), reader.ReadInt32());
-
+            String file = new String(reader.ReadChars(fileLength));
+            desc.Path = new FileLine(file, reader.ReadInt32());
+            desc.Filter = reader.ReadUInt32();
             UInt32 color = reader.ReadUInt32();
             desc.Color = Color.FromArgb((byte)(color >> 24),
                                         (byte)(color >> 16),
@@ -111,7 +115,7 @@ namespace Profiler.Data
                                         (byte)(color));
 
             desc.Brush = new SolidColorBrush(desc.Color);
-
+            desc.Budget = reader.ReadSingle();
             byte flags = reader.ReadByte();
             desc.isSampling = (flags & IS_SAMPLING_FLAG) != 0;
 
@@ -141,7 +145,9 @@ namespace Profiler.Data
     {
         public String Name { get; set; }
         public UInt64 ThreadID { get; set; }
-        public int MaxDepth { get; set; }
+        public Int32 MaxDepth { get; set; }
+        public Int32 Priority { get; set; }
+        public Int32 Mask { get; set; }
 
         public static ThreadDescription Read(DataResponse response)
         {
@@ -151,7 +157,9 @@ namespace Profiler.Data
             res.ThreadID = reader.ReadUInt64();
             int nameLength = reader.ReadInt32();
             res.Name = new String(reader.ReadChars(nameLength));
-            res.MaxDepth = 1; // TODO: reader.ReadInt32();
+            res.MaxDepth = reader.ReadInt32();
+            res.Priority = reader.ReadInt32();
+            res.Mask = reader.ReadInt32();
             return res;
         }
     }
@@ -160,10 +168,9 @@ namespace Profiler.Data
     {
         public Stream BaseStream { get; private set; }
         public int ID { get; private set; }
-        public Int64 Frequency { get; private set; }
         public Durable TimeSlice { get; private set; }
         public int MainThreadIndex { get; private set; }
-
+        public TimeSettings TimeSettings { get; private set; }
         public List<ThreadDescription> Threads { get; private set; }
         public Dictionary<UInt64, int> ThreadID2ThreadIndex { get; private set; }
 		public List<FiberDescription> Fibers { get; private set; }
@@ -187,12 +194,16 @@ namespace Profiler.Data
         {
             BinaryReader reader = response.Reader;
 
-            EventDescriptionBoard desc = new EventDescriptionBoard() { Response = response };
+            EventDescriptionBoard desc = new EventDescriptionBoard();
+            desc.Response = response;
             desc.BaseStream = reader.BaseStream;
             desc.ID = reader.ReadInt32();
 
-            desc.Frequency = reader.ReadInt64();
-            Durable.InitFrequency(desc.Frequency);
+            desc.TimeSettings = new TimeSettings();
+            desc.TimeSettings.TicksToMs = 1000.0 / (double)reader.ReadInt64();
+            desc.TimeSettings.Origin = reader.ReadInt64();
+            desc.TimeSettings.PrecisionCut = reader.ReadInt32();
+            Durable.InitSettings(desc.TimeSettings);
 
             desc.TimeSlice = new Durable();
             desc.TimeSlice.ReadDurable(reader);
@@ -219,12 +230,15 @@ namespace Profiler.Data
                 }
             }
 
-            int fibersCount = reader.ReadInt32();
-			desc.Fibers = new List<FiberDescription>(fibersCount);
-            for (int i = 0; i < fibersCount; ++i)
+            if (response.ApplicationID == NetworkProtocol.BROFILER_APP_ID)
             {
-				FiberDescription fiberDesc = FiberDescription.Read(response);
-				desc.Fibers.Add(fiberDesc);
+                int fibersCount = reader.ReadInt32();
+                desc.Fibers = new List<FiberDescription>(fibersCount);
+                for (int i = 0; i < fibersCount; ++i)
+                {
+                    FiberDescription fiberDesc = FiberDescription.Read(response);
+                    desc.Fibers.Add(fiberDesc);
+                }
             }
 
             desc.MainThreadIndex = reader.ReadInt32();
@@ -234,6 +248,19 @@ namespace Profiler.Data
             {
                 desc.board.Add(EventDescription.Read(reader, i));
             }
+
+            // TODO: Tags
+
+            // TODO: Run Info
+
+            // TODO: Run Info
+
+            // TODO: Filters
+
+            // TODO: Mode
+
+            // TODO: Thread Descriptions
+
             return desc;
         }
 

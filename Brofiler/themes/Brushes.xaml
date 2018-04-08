@@ -9,7 +9,7 @@
     <SolidColorBrush x:Key="BroForeground" Color="#FF171717" options:Freeze="True" />
     <SolidColorBrush x:Key="BroBackground" Color="{StaticResource WhiteColor}" options:Freeze="True" />
     <SolidColorBrush x:Key="BroContentBackground" Color="{StaticResource ContentBackColor}" options:Freeze="True" />
-    <SolidColorBrush x:Key="BroAlternative" Color="#FF2E2E2E" options:Freeze="True" />
+    <SolidColorBrush x:Key="BroAlternative" Color="{StaticResource AlternativeColor}" options:Freeze="True" />
     <SolidColorBrush x:Key="BroFrameSelection" Color="Red" options:Freeze="True"/>
     <SolidColorBrush x:Key="BroFrameHover" Color="Black" options:Freeze="True"/>
 

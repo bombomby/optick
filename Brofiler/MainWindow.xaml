@@ -7,7 +7,7 @@
         xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         mc:Ignorable="d" x:Class="Profiler.MainWindow"
         Title="What the hell is going on?" 
-        Height="700" Width="900" 
+        Height="920" Width="1280" 
         Drop="Window_Drop" DragEnter="Window_DragEnter" 
         AllowDrop="True"
         Icon="icon.ico" TextOptions.TextFormattingMode="Display"
@@ -18,28 +18,74 @@
         GlowBrush="{DynamicResource AccentColorBrush}"
         BorderThickness="1"
         ResizeMode="CanResizeWithGrip"
+        x:Name="TheMainWindow"
     >
+    <Controls:MetroWindow.Resources>
+        <local:ThreadViewHeightConverter x:Key="ThreadViewHeightConverter" />
+    </Controls:MetroWindow.Resources>
     <Controls:MetroWindow.RightWindowCommands>
         <Controls:WindowCommands>
-            <Button Content="settings" />
+            <Button Content="settings" Click="SettingsButton_Click" />
         </Controls:WindowCommands>
     </Controls:MetroWindow.RightWindowCommands>
     <Grid>
     	<Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-    		<RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="1*"/>
     	</Grid.RowDefinitions>
+        <Grid>
+            <StackPanel Orientation="Horizontal" Margin="0" Grid.ColumnSpan="2" HorizontalAlignment="Left" VerticalAlignment="Top">
+                <ToggleButton x:Name="StartButton" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" Unchecked="StartButton_Unchecked" Checked="StartButton_Checked" ToolTip="Start Profiling Session" Padding="-6">
+                    <ToggleButton.Resources>
+                        <Style TargetType="ToggleButton" BasedOn="{StaticResource SquareButtonStyle}">
+                            <Setter Property="BorderThickness" Value="1" />
+                            <Setter Property="BorderBrush" Value="{StaticResource BroBorder}" />
+                            <Setter Property="MinHeight" Value="16" />
+                            <Style.Triggers>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter Property="BorderBrush" Value="{StaticResource AccentBaseColorBrush}" />
+                                    <Setter Property="Background" Value="{StaticResource BroAlternative}" />
+                                    <Setter Property="ContentTemplate">
+                                        <Setter.Value>
+                                            <DataTemplate>
+                                                <DataTemplate.Resources>
+                                                    <SolidColorBrush x:Key="IconsColor">Red</SolidColorBrush>
+                                                </DataTemplate.Resources>
+                                                <ContentControl Style="{DynamicResource appbar_control_stop}" />
+                                            </DataTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ToggleButton.Resources>
+                    <ContentControl Style="{DynamicResource appbar_control_play}" />
+                </ToggleButton>
+                <Button x:Name="OpenButton" Click="OpenButton_Click" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Open Saved Session" Margin="1,0,0,0" Padding="-6">
+                    <ContentControl Style="{StaticResource appbar_folder_open}" />
+                </Button>
+                <Button x:Name="SaveButton" Click="SaveButton_Click" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Save Active Session" Margin="1,0,0,0" Padding="-6">
+                    <ContentControl Style="{StaticResource appbar_save}" />
+                </Button>
+                <Button x:Name="ClearButton" Click="ClearButton_Click" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Clear Active Session" Margin="1,0,0,0" Padding="-6">
+                    <ContentControl Style="{StaticResource appbar_delete}" />
+                </Button>
+                <local:PlatformSelector x:Name="PlatformCombo" Margin="4,0,0,0" VerticalAlignment="Top" Height="{StaticResource DefaultButtonSize}"/>
+                <StackPanel x:Name="warningBlock"  Orientation="Horizontal">
+                    <Image x:Name="warningIcon" Source="Icons/Warning-icon.png" Margin="5,0,0,0" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" />
+                    <TextBlock VerticalAlignment="Center" TextTrimming="WordEllipsis" Width="Auto"><Hyperlink x:Name="warningUrl" RequestNavigate="Hyperlink_RequestNavigate"><Run x:Name="warningText" Text="ClickMe"/></Hyperlink></TextBlock>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
         <!--<c:WindowHeader Title="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}}, Path=Title}" Icon="icon.ico" />-->
         <Border Grid.Row="1">
 			<local:TimeLine Margin="2" x:Name="timeLine" />
 	    </Border>
-    <Expander Header="Threads (block info = Ctrl + LMB)" Margin="1" Grid.Row="2" VerticalContentAlignment="Stretch" UseLayoutRounding="False" IsExpanded="True">
-      <Grid>
-        <local:ThreadView x:Name="ThreadView" Height="Auto" MinHeight="1" HorizontalAlignment="Stretch" Margin="0" VerticalAlignment="Stretch" Width="Auto" />
-      </Grid>
-    </Expander>
+        <Expander Grid.Row="2" Header="Threads (block info = Ctrl + LMB)" Margin="1" VerticalContentAlignment="Stretch" UseLayoutRounding="False" IsExpanded="True">
+            <local:ThreadView x:Name="ThreadView" Height="Auto" MaxHeight="{Binding ActualHeight, ElementName=TheMainWindow, Converter={StaticResource ThreadViewHeightConverter}, ConverterParameter=600}" MinHeight="1" HorizontalAlignment="Stretch" Margin="0" VerticalAlignment="Stretch" Width="Auto" />
+        </Expander>
         <Controls:MetroTabControl Margin="0" Grid.Row="3" Name="frameTabs" Controls:TabControlHelper.IsUnderlined="True"/>
 	</Grid>
 </Controls:MetroWindow>

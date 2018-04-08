@@ -53,14 +53,14 @@ namespace Profiler.Data
 
             foreach (EventFrame frame in Events)
             {
-                while (currentInterval < Sync.Intervals.Count && Sync.Intervals[currentInterval].Finish <= frame.Header.Start)
+                while (currentInterval < Sync.Count && Sync[currentInterval].Finish <= frame.Header.Start)
                     ++currentInterval;
 
-                while (currentInterval < Sync.Intervals.Count && Sync.Intervals[currentInterval].Finish <= frame.Header.Finish)
-                    frame.Synchronization.Add(Sync.Intervals[currentInterval++]);
+                while (currentInterval < Sync.Count && Sync[currentInterval].Finish <= frame.Header.Finish)
+                    frame.Synchronization.Add(Sync[currentInterval++]);
 
-                if (currentInterval < Sync.Intervals.Count && Sync.Intervals[currentInterval].Start <= frame.Header.Finish)
-                    frame.Synchronization.Add(Sync.Intervals[currentInterval]);
+                if (currentInterval < Sync.Count && Sync[currentInterval].Start <= frame.Header.Finish)
+                    frame.Synchronization.Add(Sync[currentInterval]);
             }
         }
 
@@ -140,18 +140,19 @@ namespace Profiler.Data
 
         }
 
-		public void AddSynchronization(Synchronization sync)
+		public void AddSynchronization(SynchronizationMap syncMap)
         {
-			System.Diagnostics.Debug.Assert(sync != null && sync.Response != null, "Invalid Synchronization response");
+			Responses.Add(syncMap.Response);
 
-			Responses.Add(sync.Response);
-
-            int index = sync.ThreadIndex;
-			while (index >= Threads.Count)
-			{
-				Threads.Add(new ThreadData());
-			}
-            Threads[index].Sync = sync;
+            for (int i = 0; i < Math.Min(Board.Threads.Count, Threads.Count); ++i)
+            {
+                ThreadDescription desc = Board.Threads[i];
+                Synchronization sync = null;
+                if (syncMap.SyncMap.TryGetValue(desc.ThreadID, out sync))
+                {
+                    Threads[i].Sync = sync;
+                }
+            }
         }
 
 		public void AddFiberSynchronization(FiberSynchronization fiberSync)
@@ -185,7 +186,7 @@ namespace Profiler.Data
 
 			Responses.Add(pack.Response);
 
-			for (int i = 0; i < Board.Threads.Count; ++i)
+			for (int i = 0; i < Threads.Count; ++i)
 			{
 				List<Callstack> callstacks;
 				if (pack.CallstackMap.TryGetValue(Board.Threads[i].ThreadID, out callstacks))
@@ -308,17 +309,17 @@ namespace Profiler.Data
                         break;
                     }
 
-                case DataResponse.Type.Synchronization:
+                case DataResponse.Type.SynchronizationData:
                     {
                         int id = response.Reader.ReadInt32();
                         FrameGroup group = groups[id];
 
-						group.AddSynchronization(new Synchronization(response, group));
+						group.AddSynchronization(new SynchronizationMap(response, group));
 
                         break;
                     }
 
-				case DataResponse.Type.FiberSynchronization:
+				case DataResponse.Type.FiberSynchronizationData:
                     {
                         int id = response.Reader.ReadInt32();
                         FrameGroup group = groups[id];
@@ -328,7 +329,7 @@ namespace Profiler.Data
                         break;
                     }
 
-                case DataResponse.Type.SymbolPack:
+                case DataResponse.Type.CallstackDescriptionBoard:
                     {
                         int id = response.Reader.ReadInt32();
                         FrameGroup group = groups[id];
@@ -365,6 +366,12 @@ namespace Profiler.Data
 						CallstackPack pack = CallstackPack.Create(response, samplingBoard, group.SysCallsBoard);
 						group.AddCallStackPack(pack);
 
+                        break;
+                    }
+
+                default:
+                    {
+                        Debug.Fail("Skipping response: ", response.ResponseType.ToString());
                         break;
                     }
             }

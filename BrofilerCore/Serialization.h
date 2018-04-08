@@ -33,6 +33,7 @@ namespace Brofiler
 		friend OutputDataStream &operator << ( OutputDataStream &stream, char val );
 		friend OutputDataStream &operator << ( OutputDataStream &stream, byte val );
 		friend OutputDataStream &operator << (OutputDataStream &stream, int8 val);
+		friend OutputDataStream &operator << (OutputDataStream &stream, float val);
 		friend OutputDataStream &operator << ( OutputDataStream &stream, const std::string& val );
 		friend OutputDataStream &operator << ( OutputDataStream &stream, const std::wstring& val );
 	};
@@ -98,6 +99,8 @@ namespace Brofiler
 		}
 
 		friend InputDataStream &operator >> ( InputDataStream &stream, byte &val );
+		friend InputDataStream &operator >> (InputDataStream &stream, int16 &val);
+		friend InputDataStream &operator >> (InputDataStream &stream, uint16 &val);
 		friend InputDataStream &operator >> ( InputDataStream &stream, int32 &val );
 		friend InputDataStream &operator >> ( InputDataStream &stream, uint32 &val );
 		friend InputDataStream &operator >> ( InputDataStream &stream, int64 &val );

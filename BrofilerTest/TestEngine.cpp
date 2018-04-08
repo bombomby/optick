@@ -20,8 +20,9 @@ void WorkerThread(void* _engine)
 	while (engine->IsAlive())
 	{
 		// Emulate "wait for events" message
-		MT::Thread::Sleep(5); 
+		MT::Thread::Sleep(10); 
 		engine->UpdatePhysics();
+		engine->UpdateRecursive();
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -189,6 +190,24 @@ void Engine::UpdatePhysics()
 { 
 	BROFILER_CATEGORY("UpdatePhysics", Brofiler::Color::Wheat);
 	MT::SpinSleepMilliSeconds(20);
+}
+
+template<int N>
+void RecursiveUpdate(int sleep)
+{
+	PROFILE;
+	MT::SpinSleepMicroSeconds(sleep);
+	RecursiveUpdate<N - 1>(sleep);
+	RecursiveUpdate<N - 1>(sleep);
+}
+
+template<>
+void RecursiveUpdate<0>(int) {}
+
+void Engine::UpdateRecursive()
+{
+	PROFILE;
+	RecursiveUpdate<4>(500);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

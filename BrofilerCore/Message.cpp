@@ -58,7 +58,10 @@ public:
 
 		size_t length = str.Length();
 
-		int32 messageType = IMessage::COUNT;
+		uint16 applicationID = 0;
+		uint16 messageType = IMessage::COUNT;
+
+		str >> applicationID;
 		str >> messageType;
 
 		BRO_VERIFY( 0 <= messageType && messageType < IMessage::COUNT && factory[messageType] != nullptr, "Unknown message type!", return nullptr )

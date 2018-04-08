@@ -34,19 +34,19 @@ namespace Profiler
 
 		void InitNode(EventNode node, double frameStartMS, int level)
 		{
-			double height = FrameHeightConverter.Convert(node.Entry.Duration);
+			double duration = FrameHeightConverter.Convert(node.Entry.Duration);
 
-			if (height < 6.0 && level != 0)
+			if (duration < 2.0 && level != 0)
 				return;
 
 			Rectangle rect = new Rectangle();
 			rect.Width = double.NaN;
-			rect.Height = height;
+			rect.Height = duration;
 			rect.Fill = new SolidColorBrush(node.Entry.Description.ForceColor);
 
 			double startTime = (node.Entry.StartMS - frameStartMS);
-			rect.Margin = new Thickness(0, FrameHeightConverter.Convert(startTime), 0, 0);
-			rect.VerticalAlignment = VerticalAlignment.Top;
+			rect.Margin = new Thickness(0, 0, 0, FrameHeightConverter.Convert(startTime));
+			rect.VerticalAlignment = VerticalAlignment.Bottom;
 
 			LayoutRoot.Children.Add(rect);
 
@@ -54,18 +54,18 @@ namespace Profiler
 			{
 				InitNode(child, frameStartMS, level + 1);
 			}
-		}
+        }
 
-		void Init()
+        void Init()
 		{
 			if (DataContext is Data.EventFrame)
 			{
-        Data.EventFrame frame = (Data.EventFrame)DataContext;
+                Data.EventFrame frame = (Data.EventFrame)DataContext;
 				LayoutRoot.Children.Clear();
 
 				double frameStartMS = frame.Header.StartMS;
 
-				foreach (EventNode node in frame.CategoriesTree.Children)
+				foreach (EventNode node in frame.Root.Children)
 				{
 					InitNode(node, frameStartMS, 0);
 				}

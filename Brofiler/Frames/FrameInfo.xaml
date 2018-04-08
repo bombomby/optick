@@ -2,7 +2,7 @@
 	xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
 	xmlns:Custom="http://schemas.microsoft.com/wpf/2008/toolkit"
 	x:Class="Profiler.FrameInfo"
-	x:Name="UserControl" mc:Ignorable="d" MaxHeight="1000" Height="538"
+	x:Name="UserControl" mc:Ignorable="d" Height="538"
 	TextOptions.TextFormattingMode="Display"
   d:DataContext="{Binding Source={x:Static Profiler_Data:TestEventFrame.Frame}}" d:DesignWidth="778" Width="778">
     <UserControl.Resources>

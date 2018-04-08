@@ -69,7 +69,7 @@ namespace Profiler
             EventData = data;
             Group = group;
             MaxDepth = 1;
-            IsExpanded = false;
+            IsExpanded = true;
 
             List<EventNode> rootCategories = new List<EventNode>();
             List<EventNode> nodesToProcess = new List<EventNode>();
@@ -176,15 +176,15 @@ namespace Profiler
             DirectX.ComplexDynamicMesh syncBuilder = new ComplexDynamicMesh(canvas, DIPSplitCount);
             DirectX.ComplexDynamicMesh syncWorkBuilder = new ComplexDynamicMesh(canvas, DIPSplitCount);
 
-            if (EventData.Sync != null && EventData.Sync.Intervals != null)
+            if (EventData.Sync != null && EventData.Sync != null)
             {
                 SyncReason stallReason = SyncReason.SyncReasonCount;
                 long stallFrom = 0;
                 int frameSyncIndex = 0;
 
-                for (int i = 0; i < EventData.Sync.Intervals.Count; i++)
+                for (int i = 0; i < EventData.Sync.Count; i++)
                 {
-                    SyncInterval sync = EventData.Sync.Intervals[i];
+                    SyncInterval sync = EventData.Sync[i];
 
                     Interval workInterval = scroll.TimeToUnit(sync);
 
@@ -451,18 +451,18 @@ namespace Profiler
             }
 
             // show current sync info
-            if (EventData.Sync != null && EventData.Sync.Intervals != null)
+            if (EventData.Sync != null && EventData.Sync != null)
 			{
-				int index = Data.Utils.BinarySearchClosestIndex(EventData.Sync.Intervals, tick.Start);
+				int index = Data.Utils.BinarySearchClosestIndex(EventData.Sync, tick.Start);
 				if (index != -1)
 				{
 					bool insideWaitInterval = false;
-					WaitInterval interval = new WaitInterval() { Start = EventData.Sync.Intervals[index].Finish, Reason = EventData.Sync.Intervals[index].Reason };
-					if (index + 1 < EventData.Sync.Intervals.Count)
+					WaitInterval interval = new WaitInterval() { Start = EventData.Sync[index].Finish, Reason = EventData.Sync[index].Reason };
+					if (index + 1 < EventData.Sync.Count)
 					{
-						if (EventData.Sync.Intervals[index].Finish < tick.Start && tick.Start < EventData.Sync.Intervals[index + 1].Start)
+						if (EventData.Sync[index].Finish < tick.Start && tick.Start < EventData.Sync[index + 1].Start)
 						{
-							UInt64 threadId = EventData.Sync.Intervals[index + 1].NewThreadId;
+							UInt64 threadId = EventData.Sync[index + 1].NewThreadId;
 
 							ThreadDescription threadDesc = null;
 							int threadIndex = -1;
@@ -474,7 +474,7 @@ namespace Profiler
 							interval.newThreadDesc = threadDesc;
 							interval.newThreadId = threadId;
 							
-							interval.Finish = EventData.Sync.Intervals[index + 1].Start;
+							interval.Finish = EventData.Sync[index + 1].Start;
 							dataContext.Add(interval);
 							insideWaitInterval = true;
 						}
@@ -483,9 +483,9 @@ namespace Profiler
 					if (!insideWaitInterval)
 					{
 						interval.Reason = SyncReason.SyncReasonActive;
-						interval.Start = EventData.Sync.Intervals[index].Start;
-						interval.Finish = EventData.Sync.Intervals[index].Finish;
-						interval.core = (byte)EventData.Sync.Intervals[index].Core;
+						interval.Start = EventData.Sync[index].Start;
+						interval.Finish = EventData.Sync[index].Finish;
+						interval.core = (byte)EventData.Sync[index].Core;
 						dataContext.Add(interval);
 					}
 				}
