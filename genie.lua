@@ -36,7 +36,9 @@ end
 
 solution "Brofiler"
 	language "C++"
+if _ACTION == "vs2017" then
 	windowstargetplatformversion "10.0.15063.0"
+end
 	startproject "BrofilerWindowsTest"
 
 	location ( outputFolder )
