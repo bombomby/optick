@@ -37,6 +37,7 @@ namespace Profiler
         SolidColorBrush FrameSelection;
         SolidColorBrush FrameHover;
         Color MeasureBackground;
+        Color HoverBackground;
 
 
         void InitColors()
@@ -46,6 +47,7 @@ namespace Profiler
             FrameSelection = FindResource("BroFrameSelection") as SolidColorBrush;
             FrameHover = FindResource("BroFrameHover") as SolidColorBrush;
             MeasureBackground = Color.FromArgb(100, 0, 0, 0);
+            HoverBackground = Color.FromArgb(170, 0, 0, 0);
         }
 
         class RowsDescription
@@ -183,19 +185,44 @@ namespace Profiler
             BackgroundMesh = backgroundBuilder.Freeze(surface.RenderDevice);
         }
 
-		private void Row_EventNodeSelected(ThreadRow row, EventFrame frame, EventNode node, ITick tick)
+		private void Row_EventNodeSelected(ThreadRow row, EventFrame frame, EventNode node)
         {
-			RaiseEvent(new TimeLine.FocusFrameEventArgs(TimeLine.FocusFrameEvent, frame, node, tick));
+            EventFrame focusFrame = frame;
+            if (node != null && node.Entry.CompareTo(frame.Header) != 0)
+                focusFrame = new EventFrame(frame, node);
+            RaiseEvent(new TimeLine.FocusFrameEventArgs(TimeLine.FocusFrameEvent, focusFrame, null));
         }
 
-        private void Row_EventNodeHover(Rect rect, ThreadRow row, EventNode node)
+        private void Row_EventNodeHover(Point mousePos, Rect rect, ThreadRow row, EventNode node)
         {
-            HoverMesh.AddRect(rect, FrameHover.Color);
+            if (node != null)
+            {
+                //HoverLines.AddRect(rect, FrameHover.Color);
+                ToolTip = new TooltipInfo { Text = String.Format("{0}   {1:0.000}ms", node.Name, node.Duration), Rect = rect };
+            }
+            else
+            {
+                ToolTip = new TooltipInfo();
+            }
         }
 
         DynamicMesh SelectionMesh;
         DynamicMesh HoverMesh;
+        DynamicMesh HoverLines;
         DynamicMesh MeasureMesh;
+        TooltipInfo ToolTip;
+
+        struct TooltipInfo
+        {
+            public String Text;
+            public Rect Rect;
+
+            internal void Reset()
+            {
+                Text = String.Empty;
+                Rect = new Rect();
+            }
+        }
 
         const double DefaultFrameZoom = 1.05;
 
@@ -213,7 +240,6 @@ namespace Profiler
                 scroll.ViewUnit.Normalize();
                 UpdateBar();
             }
-
 
             UpdateSurface();
         }
@@ -237,9 +263,14 @@ namespace Profiler
             SelectionMesh.Projection = Mesh.ProjectionType.Pixel;
             SelectionMesh.Geometry = Mesh.GeometryType.Lines;
 
+            HoverLines = surface.CreateMesh();
+            HoverLines.Projection = Mesh.ProjectionType.Pixel;
+            HoverLines.Geometry = Mesh.GeometryType.Lines;
+
             HoverMesh = surface.CreateMesh();
             HoverMesh.Projection = Mesh.ProjectionType.Pixel;
-            HoverMesh.Geometry = Mesh.GeometryType.Lines;
+            HoverMesh.Geometry = Mesh.GeometryType.Polygons;
+            HoverMesh.UseAlpha = true;
 
             MeasureMesh = surface.CreateMesh();
             MeasureMesh.Projection = Mesh.ProjectionType.Pixel;
@@ -277,9 +308,10 @@ namespace Profiler
 
         private void RenderCanvas_MouseLeave(object sender, EventArgs e)
         {
-				Mouse.OverrideCursor = null;
+			Mouse.OverrideCursor = null;
             Input.IsDrag = false;
             Input.IsSelect = false;
+            ToolTip.Reset();
 			UpdateSurface();
         }
 
@@ -423,6 +455,12 @@ namespace Profiler
                 scroll.ViewUnit.Left += (prevWidth - scroll.ViewUnit.Width) * ratio;
                 scroll.ViewUnit.Normalize();
 
+                ThreadRow row = GetRow(e.Y);
+                if (row != null)
+                {
+                    row.OnMouseMove(new Point(e.X, e.Y - row.Offset), scroll);
+                }
+
                 UpdateBar();
                 UpdateSurface();
             }
@@ -482,8 +520,30 @@ namespace Profiler
             }
         }
 
+        static Size ToolTipMargin = new Size(4, 2);
+        static Vector ToolTipOffset = new Vector(0, -3);
+
         void DrawHover(DirectXCanvas canvas)
         {
+            if (!String.IsNullOrWhiteSpace(ToolTip.Text))
+            {
+                Size size = surface.Text.Measure(ToolTip.Text);
+
+                Rect textArea = new Rect(Input.MousePosition.X - size.Width * 0.5 + ToolTipOffset.X, ToolTip.Rect.Top - size.Height + ToolTipOffset.Y, size.Width, size.Height);
+                surface.Text.Draw(textArea.TopLeft, ToolTip.Text, Colors.White, TextAlignment.Left);
+
+                textArea.Inflate(ToolTipMargin);
+                HoverMesh.AddRect(textArea, HoverBackground);
+            }
+
+            if (!ToolTip.Rect.IsEmpty)
+            {
+                HoverLines.AddRect(ToolTip.Rect, FrameHover.Color);
+            }
+
+            HoverLines.Update(canvas.RenderDevice);
+            canvas.Draw(HoverLines);
+
             HoverMesh.Update(canvas.RenderDevice);
             canvas.Draw(HoverMesh);
         }

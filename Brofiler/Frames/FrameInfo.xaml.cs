@@ -196,7 +196,7 @@ namespace Profiler
 						return false;
 					}
 
-					if (treeEventNode.Entry.Intersect(focusRange))
+					if (treeEventNode.Entry.Contains(focusRange))
 					{
 						treePath.Add(curNode);
 

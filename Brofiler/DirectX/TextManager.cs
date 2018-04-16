@@ -117,10 +117,22 @@ namespace Profiler.DirectX
             TextMesh.UseAlpha = true;
         }
 
+        public Size Measure(String text)
+        {
+            Size2F size = new Size2F(0, 0);
+            foreach (char c in text.ToCharArray())
+            {
+                Size2F symbolSize = SegoeUI.Symbols[c].Size;
+                size.Width = size.Width + SegoeUI.Symbols[c].Advance;
+                size.Height = Math.Max(size.Height, SegoeUI.Symbols[c].Size.Height);
+            }
+            return new Size(size.Width, size.Height);
+        }
+
         public void Draw(System.Windows.Point pos, String text, System.Windows.Media.Color color, TextAlignment alignment = TextAlignment.Left, double maxWidth = double.MaxValue)
         {
             Color textColor = Utils.Convert(color);
-
+            pos = new System.Windows.Point((int)pos.X, (int)pos.Y);
 
             char[] str = text.ToCharArray();
 

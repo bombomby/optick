@@ -84,10 +84,6 @@ namespace Profiler
 			{
 				focusRange = args.Node.Entry;
 			}
-			else if (args.Tick != null)
-			{
-				focusRange = new Durable(args.Tick.Start, args.Tick.Start + 1 );
-			}
             else if (args.Frame is EventFrame)
             {
                 focusRange = (args.Frame as EventFrame).Header;
@@ -102,10 +98,7 @@ namespace Profiler
                     if (item.DataContext.Equals(frame))
                     {
                         FrameInfo frameInfo = item.Content as FrameInfo;
-						if (frameInfo != null)
-						{
-                            frameInfo.FocusOnNode(focusRange);
-						}
+                        frameTabs.SelectedItem = tab;
                         return;
                     }
                 }

@@ -361,10 +361,10 @@ namespace Profiler
 
         }
 
-        public delegate void EventNodeHoverHandler(Rect rect, ThreadRow row, EventNode node);
+        public delegate void EventNodeHoverHandler(Point mousePos, Rect rect, ThreadRow row, EventNode node);
         public event EventNodeHoverHandler EventNodeHover;
 
-        public delegate void EventNodeSelectedHandler(ThreadRow row, EventFrame frame, EventNode node, ITick tick);
+        public delegate void EventNodeSelectedHandler(ThreadRow row, EventFrame frame, EventNode node);
         public event EventNodeSelectedHandler EventNodeSelected;
 
 		public EventFrame FindFrame(ITick tick)
@@ -430,11 +430,11 @@ namespace Profiler
             {
                 Interval interval = scroll.TimeToPixel(node.Entry);
                 Rect rect = new Rect(interval.Left, Offset + level * RenderParams.BaseHeight + RenderParams.BaseMargin, interval.Width, RenderParams.BaseHeight - RenderParams.BaseMargin);
-                EventNodeHover(rect, this, node);
+                EventNodeHover(point, rect, this, node);
             }
             else
             {
-                EventNodeHover(new Rect(), this, null);
+                EventNodeHover(point, new Rect(), this, null);
             }
         }
 
@@ -579,7 +579,7 @@ namespace Profiler
 				}
 				if (frame != null)
 				{
-					EventNodeSelected(this, frame, node, tick);
+					EventNodeSelected(this, frame, node);
 				}
 			}
         }

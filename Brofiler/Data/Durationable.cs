@@ -79,6 +79,17 @@ namespace Profiler.Data
             return Start <= other.Finish && Finish >= other.Start;
         }
 
+        internal bool Contains(IDurable other)
+        {
+            return Start <= other.Start && Finish >= other.Finish;
+        }
+
+        internal bool Within(IDurable other)
+        {
+            return Start >= other.Start && Finish <= other.Finish;
+        }
+
+
         public static long MsToTick(double ms)
 		{
 			return (long)(ms / settings.TicksToMs);

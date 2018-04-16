@@ -325,20 +325,20 @@ namespace Profiler.Data
             ReadInternal(response);
         }
 
-        public EventFrame(FrameHeader header, List<Entry> entries, FrameGroup group) : base(null)
+        private void Init(FrameHeader header, List<Entry> entries, FrameGroup group)
         {
             Header = header;
             Group = group;
             Categories = new List<Entry>();
 
             Entries = entries;
-			foreach (Entry entry in entries)
-			{
-				if (entry.Description.Color.A != 0)
-				{
-					Categories.Add(entry);
-				}
-			}
+            foreach (Entry entry in entries)
+            {
+                if (entry.Description.Color.A != 0)
+                {
+                    Categories.Add(entry);
+                }
+            }
 
             categoriesTree = new EventTree(this, Categories);
 
@@ -346,9 +346,21 @@ namespace Profiler.Data
             board = new Board<EventBoardItem, EventDescription, EventNode>(root);
 
             Synchronization = new List<SyncInterval>();
-			FiberSync = new List<FiberSyncInterval>();
+            FiberSync = new List<FiberSyncInterval>();
 
             IsLoaded = true;
+        }
+
+        public EventFrame(FrameHeader header, List<Entry> entries, FrameGroup group) : base(null)
+        {
+            Init(header, entries, group);
+        }
+
+        public EventFrame(EventFrame frame, EventNode node) : base(null)
+        {
+            List<Entry> entries = new List<Entry>();
+            node.ForEach((n, level) => { entries.Add((n as EventNode).Entry); return true; });
+            Init(new FrameHeader(frame.Header.ThreadIndex, frame.Header.FiberIndex, new Durable(node.Entry.Start, node.Entry.Finish)), entries, frame.Group);
         }
     }
 }
