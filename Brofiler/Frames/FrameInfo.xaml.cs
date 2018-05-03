@@ -236,6 +236,8 @@ namespace Profiler
 					finalNode.IsExpanded = false;
 					finalNode.IsSelected = true;
 
+					SelectedTreeNodeChanged(DataContext as Data.Frame, finalNode);
+
 					// focus on finalNode
 					if (root != null)
 					{
