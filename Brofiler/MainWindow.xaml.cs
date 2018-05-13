@@ -95,6 +95,7 @@ namespace Profiler
                 if (tab is TabItem)
                 {
                     TabItem item = (TabItem)tab;
+                    frameTabs.SelectedItem = item;
                     if (item.DataContext.Equals(frame))
                     {
                         FrameInfo frameInfo = item.Content as FrameInfo;
