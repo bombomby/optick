@@ -3,17 +3,16 @@
 #include <unordered_map>
 #include "ThreadsEnumerator.h"
 
-
 namespace Brofiler
 {
 	struct SchedulerTrace
 	{
 		enum Mode
 		{
-			SWITCH_CONTEXTS =	1 << 0,
-			STACK_WALK =		1 << 1,
-			SYS_CALLS =			1 << 2,
-			ALL =				0xFFFFFFFF
+			SWITCH_CONTEXTS = 1 << 0,
+			STACK_WALK = 1 << 1,
+			SYS_CALLS = 1 << 2,
+			ALL = 0xFFFFFFFF
 		};
 
 		std::vector<Brofiler::ThreadInfo> allProcessThreads;

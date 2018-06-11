@@ -7,7 +7,6 @@ namespace Brofiler
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	typedef std::vector<uintptr_t> CallStack;
 
-
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	struct CallStackTreeNode
 	{
@@ -22,7 +21,7 @@ namespace Brofiler
 
 		CallStackTreeNode(uint64 address) : dwArddress(address), invokeCount(0)
 		{
-		} 
+		}
 
 		bool Merge(const CallStack& callstack, size_t index)
 		{
@@ -44,13 +43,13 @@ namespace Brofiler
 
 			// Didn't find node => create one
 			children.push_back(CallStackTreeNode(address));
-			return children.back().Merge(callstack, index - 1); 
+			return children.back().Merge(callstack, index - 1);
 		}
 
 		void CollectAddresses(std::unordered_set<uint64>& addresses) const
 		{
 			addresses.insert(dwArddress);
-			for(auto it = children.begin(); it != children.end(); ++it)
+			for (auto it = children.begin(); it != children.end(); ++it)
 			{
 				it->CollectAddresses(addresses);
 			}
@@ -61,7 +60,7 @@ namespace Brofiler
 			stream << (uint64)dwArddress << invokeCount;
 
 			stream << (uint32)children.size();
-			for(auto it = children.begin(); it != children.end(); ++it)
+			for (auto it = children.begin(); it != children.end(); ++it)
 			{
 				it->Serialize(stream);
 			}
@@ -87,11 +86,8 @@ namespace Brofiler
 
 		static SamplingProfiler* Get();
 
-
 	protected:
 
 		std::list<CallStack> callstacks;
-
 	};
-
 }

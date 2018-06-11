@@ -2,57 +2,57 @@
 
 namespace Brofiler
 {
-//////////////////////////////////////////////////////////////////////////
-CaptureStatus::Type SchedulerTrace::Start(int mode, const ThreadList& threads, bool autoAddUnknownThreads)
-{
-	if ((mode & STACK_WALK) != 0 && autoAddUnknownThreads != false)
+	//////////////////////////////////////////////////////////////////////////
+	CaptureStatus::Type SchedulerTrace::Start(int mode, const ThreadList& threads, bool autoAddUnknownThreads)
 	{
-		Core::Get().DumpProgress("Enumerate threads");
-
-		if (EnumerateAllThreads(allProcessThreads))
+		if ((mode & STACK_WALK) != 0 && autoAddUnknownThreads != false)
 		{
-			for(auto it = allProcessThreads.begin(); it != allProcessThreads.end(); ++it)
+			Core::Get().DumpProgress("Enumerate threads");
+
+			if (EnumerateAllThreads(allProcessThreads))
 			{
-				const Brofiler::ThreadInfo& threadInfo = *it;
-				if (Core::Get().IsRegistredThread(threadInfo.id))
+				for (auto it = allProcessThreads.begin(); it != allProcessThreads.end(); ++it)
 				{
-					continue;
+					const Brofiler::ThreadInfo& threadInfo = *it;
+					if (Core::Get().IsRegistredThread(threadInfo.id))
+					{
+						continue;
+					}
+
+					// TODO: threadInfo.name.c_str() - is pointer to temporary memory!!!!
+					const char* threadName = threadInfo.name.c_str();
+
+					if (threadInfo.name.empty() || threadInfo.name.length() < 1)
+					{
+						threadName = "Unknown";
+					}
+
+					ThreadDescription threadDesc(threadName, threadInfo.id, threadInfo.fromOtherProcess);
+					Core::Get().RegisterThread(threadDesc, nullptr);
 				}
+			}
 
-				// TODO: threadInfo.name.c_str() - is pointer to temporary memory!!!!
-				const char* threadName = threadInfo.name.c_str();
+			Core::Get().DumpProgress("Starting");
+		}
 
-				if (threadInfo.name.empty() || threadInfo.name.length() < 1)
-				{
-					threadName = "Unknown";
-				}
-
-				ThreadDescription threadDesc(threadName, threadInfo.id, threadInfo.fromOtherProcess);
-				Core::Get().RegisterThread(threadDesc, nullptr);
+		BRO_UNUSED(mode);
+		activeThreadsIDs.clear();
+		for (auto it = threads.begin(); it != threads.end(); ++it)
+		{
+			ThreadEntry* entry = *it;
+			if (entry->isAlive && !entry->description.fromOtherProcess)
+			{
+				activeThreadsIDs.insert(std::make_pair(entry->description.threadID.AsUInt64(), entry));
 			}
 		}
 
-		Core::Get().DumpProgress("Starting");
+		return CaptureStatus::OK;
 	}
-
-	BRO_UNUSED(mode);
-	activeThreadsIDs.clear();
-	for(auto it = threads.begin(); it != threads.end(); ++it)
+	//////////////////////////////////////////////////////////////////////////
+	bool SchedulerTrace::Stop()
 	{
-		ThreadEntry* entry = *it;
-		if (entry->isAlive && !entry->description.fromOtherProcess)
-		{
-			activeThreadsIDs.insert(std::make_pair(entry->description.threadID.AsUInt64(), entry));
-		}
+		activeThreadsIDs.clear();
+		return true;
 	}
-
-	return CaptureStatus::OK;
-}
-//////////////////////////////////////////////////////////////////////////
-bool SchedulerTrace::Stop()
-{
-	activeThreadsIDs.clear();
-	return true;
-}
-//////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////
 }

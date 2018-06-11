@@ -7,29 +7,29 @@
 
 namespace Brofiler
 {
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class ETW : public SchedulerTrace
-{
-	EVENT_TRACE_PROPERTIES *traceProperties;
-	EVENT_TRACE_LOGFILE logFile;
-	TRACEHANDLE traceSessionHandle;
-	TRACEHANDLE openedHandle;
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	class ETW : public SchedulerTrace
+	{
+		EVENT_TRACE_PROPERTIES *traceProperties;
+		EVENT_TRACE_LOGFILE logFile;
+		TRACEHANDLE traceSessionHandle;
+		TRACEHANDLE openedHandle;
 
-	HANDLE processThreadHandle;
+		HANDLE processThreadHandle;
 
-	bool isActive;
+		bool isActive;
 
-	static DWORD WINAPI RunProcessTraceThreadFunction(LPVOID parameter);
-	static void AdjustPrivileges();
-public:
+		static DWORD WINAPI RunProcessTraceThreadFunction(LPVOID parameter);
+		static void AdjustPrivileges();
+	public:
 
-	ETW();
-	~ETW();
+		ETW();
+		~ETW();
 
-	virtual CaptureStatus::Type Start(int mode, const ThreadList& threads, bool autoAddUnknownThreads) override;
-	virtual bool Stop();
-};
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		virtual CaptureStatus::Type Start(int mode, const ThreadList& threads, bool autoAddUnknownThreads) override;
+		virtual bool Stop();
+	};
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 #endif

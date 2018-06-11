@@ -16,7 +16,7 @@
 
 namespace Brofiler
 {
-	class OutputDataStream : private std::ostringstream 
+	class OutputDataStream : private std::ostringstream
 	{
 	public:
 		static OutputDataStream Empty;
@@ -25,16 +25,16 @@ namespace Brofiler
 		std::string GetData();
 
 		// It is important to make private inheritance in order to avoid collision with default operator implementation
-		friend OutputDataStream &operator << ( OutputDataStream &stream, const char* val );
-		friend OutputDataStream &operator << ( OutputDataStream &stream, int val );
-		friend OutputDataStream &operator << ( OutputDataStream &stream, uint64 val );
-		friend OutputDataStream &operator << ( OutputDataStream &stream, uint32 val );
-		friend OutputDataStream &operator << ( OutputDataStream &stream, int64 val );
-		friend OutputDataStream &operator << ( OutputDataStream &stream, char val );
-		friend OutputDataStream &operator << ( OutputDataStream &stream, byte val );
+		friend OutputDataStream &operator << (OutputDataStream &stream, const char* val);
+		friend OutputDataStream &operator << (OutputDataStream &stream, int val);
+		friend OutputDataStream &operator << (OutputDataStream &stream, uint64 val);
+		friend OutputDataStream &operator << (OutputDataStream &stream, uint32 val);
+		friend OutputDataStream &operator << (OutputDataStream &stream, int64 val);
+		friend OutputDataStream &operator << (OutputDataStream &stream, char val);
+		friend OutputDataStream &operator << (OutputDataStream &stream, byte val);
 		friend OutputDataStream &operator << (OutputDataStream &stream, int8 val);
-		friend OutputDataStream &operator << ( OutputDataStream &stream, const std::string& val );
-		friend OutputDataStream &operator << ( OutputDataStream &stream, const std::wstring& val );
+		friend OutputDataStream &operator << (OutputDataStream &stream, const std::string& val);
+		friend OutputDataStream &operator << (OutputDataStream &stream, const std::wstring& val);
 	};
 
 	template<class T>
@@ -42,7 +42,7 @@ namespace Brofiler
 	{
 		stream << (uint32)val.size();
 
-		for(auto it = val.begin(); it != val.end(); ++it)
+		for (auto it = val.begin(); it != val.end(); ++it)
 		{
 			const T& element = *it;
 			stream << element;
@@ -97,14 +97,12 @@ namespace Brofiler
 			return true;
 		}
 
-		friend InputDataStream &operator >> ( InputDataStream &stream, byte &val );
-		friend InputDataStream &operator >> ( InputDataStream &stream, int32 &val );
-		friend InputDataStream &operator >> ( InputDataStream &stream, uint32 &val );
-		friend InputDataStream &operator >> ( InputDataStream &stream, int64 &val );
-		friend InputDataStream &operator >> ( InputDataStream &stream, uint64 &val );
+		friend InputDataStream &operator >> (InputDataStream &stream, byte &val);
+		friend InputDataStream &operator >> (InputDataStream &stream, int32 &val);
+		friend InputDataStream &operator >> (InputDataStream &stream, uint32 &val);
+		friend InputDataStream &operator >> (InputDataStream &stream, int64 &val);
+		friend InputDataStream &operator >> (InputDataStream &stream, uint64 &val);
 	};
-
-
 }
 
 #if MT_MSVC_COMPILER_FAMILY

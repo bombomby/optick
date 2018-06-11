@@ -9,8 +9,6 @@
 
 namespace Brofiler
 {
-
-
 	bool EnumerateAllThreads(std::vector<ThreadInfo>& threads)
 	{
 		char tempBuffer[MAX_PATH];
@@ -33,7 +31,7 @@ namespace Brofiler
 				if (te.dwSize >= FIELD_OFFSET(THREADENTRY32, th32OwnerProcessID) + sizeof(te.th32OwnerProcessID))
 				{
 					bool isFound = false;
-					for(auto it = threads.begin(); it != threads.end(); ++it)
+					for (auto it = threads.begin(); it != threads.end(); ++it)
 					{
 						if (it->id.AsUInt64() == (uint64)te.th32ThreadID)
 						{
@@ -53,14 +51,14 @@ namespace Brofiler
 							threadFromOtherProcess = true;
 							threadName = nullptr;
 
-							HANDLE procHandle = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,FALSE, te.th32OwnerProcessID);
+							HANDLE procHandle = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, te.th32OwnerProcessID);
 							if (procHandle)
 							{
 								if (GetModuleFileNameExA(procHandle, 0, tempBuffer, MAX_PATH))
 								{
 									const char* fileName = &tempBuffer[0];
 									const char* p = fileName;
-									while(*p)
+									while (*p)
 									{
 										if (*p == '\\' || *p == '/')
 										{
@@ -73,7 +71,7 @@ namespace Brofiler
 								}
 
 								CloseHandle(procHandle);
-							} 
+							}
 						}
 
 						if (!threadName)
@@ -91,7 +89,6 @@ namespace Brofiler
 
 		return true;
 	}
-
 }
 
 #endif

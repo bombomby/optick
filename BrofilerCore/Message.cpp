@@ -7,145 +7,145 @@
 
 namespace Brofiler
 {
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct MessageHeader
-{
-	uint32 mark;
-	uint32 length;
-
-	static const uint32 MESSAGE_MARK = 0xB50FB50F;
-
-	bool IsValid() const { return mark == MESSAGE_MARK; }
-
-	MessageHeader() : mark(0), length(0) {}
-};
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class MessageFactory
-{
-	typedef IMessage* (*MessageCreateFunction)(InputDataStream& str);
-	MessageCreateFunction factory[IMessage::COUNT];
-
-	template<class T>
-	void RegisterMessage()
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	struct MessageHeader
 	{
-		factory[T::GetMessageType()] = T::Create;
-	}
+		uint32 mark;
+		uint32 length;
 
-	MessageFactory()
+		static const uint32 MESSAGE_MARK = 0xB50FB50F;
+
+		bool IsValid() const { return mark == MESSAGE_MARK; }
+
+		MessageHeader() : mark(0), length(0) {}
+	};
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	class MessageFactory
 	{
-		memset(&factory[0], 0, sizeof(MessageCreateFunction));
+		typedef IMessage* (*MessageCreateFunction)(InputDataStream& str);
+		MessageCreateFunction factory[IMessage::COUNT];
 
-		RegisterMessage<StartMessage>();
-		RegisterMessage<StopMessage>();
-		RegisterMessage<TurnSamplingMessage>();
-
-		for (uint32 msg = 0; msg < IMessage::COUNT; ++msg)
+		template<class T>
+		void RegisterMessage()
 		{
-			BRO_ASSERT(factory[msg] != nullptr, "Message is not registered to factory");
+			factory[T::GetMessageType()] = T::Create;
 		}
-	}
-public:
-	static MessageFactory& Get()
-	{
-		static MessageFactory instance;
-		return instance;
-	}
 
-	IMessage* Create(InputDataStream& str)
+		MessageFactory()
+		{
+			memset(&factory[0], 0, sizeof(MessageCreateFunction));
+
+			RegisterMessage<StartMessage>();
+			RegisterMessage<StopMessage>();
+			RegisterMessage<TurnSamplingMessage>();
+
+			for (uint32 msg = 0; msg < IMessage::COUNT; ++msg)
+			{
+				BRO_ASSERT(factory[msg] != nullptr, "Message is not registered to factory");
+			}
+		}
+	public:
+		static MessageFactory& Get()
+		{
+			static MessageFactory instance;
+			return instance;
+		}
+
+		IMessage* Create(InputDataStream& str)
+		{
+			MessageHeader header;
+			str.Read(header);
+
+			size_t length = str.Length();
+
+			int32 messageType = IMessage::COUNT;
+			str >> messageType;
+
+			BRO_VERIFY(0 <= messageType && messageType < IMessage::COUNT && factory[messageType] != nullptr, "Unknown message type!", return nullptr)
+
+				IMessage* result = factory[messageType](str);
+
+			if (header.length + str.Length() != length)
+			{
+				BRO_FAILED("Message Stream is corrupted! Invalid Protocol?")
+					return nullptr;
+			}
+
+			return result;
+		}
+	};
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	OutputDataStream& operator<<(OutputDataStream& os, const DataResponse& val)
+	{
+		return os << val.version << (uint32)val.type;
+	}
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	IMessage* IMessage::Create(InputDataStream& str)
 	{
 		MessageHeader header;
-		str.Read(header);
 
-		size_t length = str.Length();
-
-		int32 messageType = IMessage::COUNT;
-		str >> messageType;
-
-		BRO_VERIFY( 0 <= messageType && messageType < IMessage::COUNT && factory[messageType] != nullptr, "Unknown message type!", return nullptr )
-
-		IMessage* result = factory[messageType](str);
-
-		if (header.length + str.Length() != length)
+		while (str.Peek(header))
 		{
-			BRO_FAILED("Message Stream is corrupted! Invalid Protocol?")
-			return nullptr;
+			if (header.IsValid())
+			{
+				if (str.Length() < header.length + sizeof(MessageHeader))
+					break; // Not enough data yet
+
+				return MessageFactory::Get().Create(str);
+			}
+			else
+			{
+				// Some garbage in the stream?
+				str.Skip(1);
+			}
 		}
 
-		return result;
+		return nullptr;
 	}
-};
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-OutputDataStream& operator<<(OutputDataStream& os, const DataResponse& val)
-{
-	return os << val.version << (uint32)val.type;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-IMessage* IMessage::Create(InputDataStream& str)
-{
-	MessageHeader header;
-
-	while (str.Peek(header))
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	void StartMessage::Apply()
 	{
-		if (header.IsValid())
-		{
-			if (str.Length() < header.length + sizeof(MessageHeader))
-				break; // Not enough data yet
+		Core::Get().Activate(true);
 
-			return MessageFactory::Get().Create(str);
-		} 
-		else
+		if (EventDescriptionBoard::Get().HasSamplingEvents())
 		{
-			// Some garbage in the stream?
-			str.Skip(1);
+			Core::Get().StartSampling();
 		}
 	}
-
-	return nullptr;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void StartMessage::Apply()
-{
-	Core::Get().Activate(true);
-
-	if (EventDescriptionBoard::Get().HasSamplingEvents())
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	IMessage* StartMessage::Create(InputDataStream&)
 	{
-		Core::Get().StartSampling();
+		return new StartMessage();
 	}
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-IMessage* StartMessage::Create(InputDataStream&)
-{
-	return new StartMessage();
-}
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void StopMessage::Apply()
-{
-	Core& core = Core::Get();
-	core.Activate(false);
-	core.DumpFrames();
-	core.DumpSamplingData();
-	Server::Get().Send(DataResponse::NullFrame, OutputDataStream::Empty);
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-IMessage* StopMessage::Create(InputDataStream&)
-{
-	return new StopMessage();
-}
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	void StopMessage::Apply()
+	{
+		Core& core = Core::Get();
+		core.Activate(false);
+		core.DumpFrames();
+		core.DumpSamplingData();
+		Server::Get().Send(DataResponse::NullFrame, OutputDataStream::Empty);
+	}
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	IMessage* StopMessage::Create(InputDataStream&)
+	{
+		return new StopMessage();
+	}
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-IMessage* TurnSamplingMessage::Create( InputDataStream& stream )
-{
-	TurnSamplingMessage* msg = new TurnSamplingMessage();
-	stream >> msg->index;
-	stream >> msg->isSampling;
-	return msg;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void TurnSamplingMessage::Apply()
-{
-	EventDescriptionBoard::Get().SetSamplingFlag(index, isSampling != 0);
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	IMessage* TurnSamplingMessage::Create(InputDataStream& stream)
+	{
+		TurnSamplingMessage* msg = new TurnSamplingMessage();
+		stream >> msg->index;
+		stream >> msg->isSampling;
+		return msg;
+	}
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	void TurnSamplingMessage::Apply()
+	{
+		EventDescriptionBoard::Get().SetSamplingFlag(index, isSampling != 0);
+	}
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

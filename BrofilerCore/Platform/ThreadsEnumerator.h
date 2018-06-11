@@ -8,13 +8,11 @@ namespace Brofiler
 {
 	struct ThreadIdExt : public MT::ThreadId
 	{
-
 		ThreadIdExt(uint32 _id)
 		{
 			id = _id;
 			isInitialized.Store(1);
 		}
-
 	};
 
 	struct ThreadInfo
@@ -35,10 +33,7 @@ namespace Brofiler
 			, fromOtherProcess(_fromOtherProcess)
 		{
 		}
-
 	};
 
-
 	extern bool EnumerateAllThreads(std::vector<ThreadInfo> & threads);
-
 }

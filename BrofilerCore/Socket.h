@@ -2,7 +2,6 @@
 #include "Common.h"
 #include <string>
 
-
 #if MT_MSVC_COMPILER_FAMILY
 #pragma warning( push )
 
@@ -10,17 +9,13 @@
 #pragma warning( disable : 4127 )
 #endif
 
-
-
 #if MT_PLATFORM_WINDOWS
 #define USE_WINDOWS_SOCKETS (1)
 #else
 #define USE_BERKELEY_SOCKETS (1)
 #endif
 
-
 #define SOCKET_PROTOCOL_TCP (6)
-
 
 #if USE_BERKELEY_SOCKETS
 
@@ -31,7 +26,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 typedef int TcpSocket;
-
 
 #elif USE_WINDOWS_SOCKETS
 
@@ -80,7 +74,6 @@ namespace Brofiler
 	};
 #endif
 
-
 	inline bool IsValidSocket(TcpSocket socket)
 	{
 #ifdef USE_WINDOWS_SOCKETS
@@ -107,7 +100,6 @@ namespace Brofiler
 		socket = -1;
 #endif
 	}
-
 
 	class Socket
 	{
@@ -143,7 +135,7 @@ namespace Brofiler
 		}
 
 		void Disconnect()
-		{ 
+		{
 			MT::ScopedGuard guard(lock);
 
 			if (!IsValidSocket(acceptSocket))
@@ -190,7 +182,7 @@ namespace Brofiler
 		}
 
 		void Accept()
-		{ 
+		{
 			TcpSocket incomingSocket = ::accept(listenSocket, nullptr, nullptr);
 			BRO_ASSERT(IsValidSocket(incomingSocket), "Can't accept socket");
 
@@ -215,7 +207,7 @@ namespace Brofiler
 		}
 
 		int Receive(char *buf, int len)
-		{ 
+		{
 			MT::ScopedGuard guard(lock);
 
 			if (!IsValidSocket(acceptSocket))
@@ -224,7 +216,7 @@ namespace Brofiler
 			FD_ZERO(&recieveSet);
 			FD_SET(acceptSocket, &recieveSet);
 
-			static timeval lim = {0};
+			static timeval lim = { 0 };
 
 #if USE_BERKELEY_SOCKETS
 			if (::select(acceptSocket + 1, &recieveSet, nullptr, nullptr, &lim) == 1)
@@ -241,7 +233,6 @@ namespace Brofiler
 		}
 	};
 }
-
 
 #if MT_MSVC_COMPILER_FAMILY
 #pragma warning( pop )
