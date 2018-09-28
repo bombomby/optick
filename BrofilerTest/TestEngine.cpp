@@ -29,6 +29,11 @@ void OnBrofilerStateChanged(Brofiler::BroState state)
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+float randf()
+{
+	return ((float)rand()) / (float)RAND_MAX;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void WorkerThread(void* _engine)
 {
 	Engine* engine = (Engine*)_engine;
@@ -47,16 +52,22 @@ static const unsigned long REPEAT_COUNT = 128 * 1024;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<unsigned long N>
 void SlowFunction()
-{ PROFILE
+{ 
+	BROFILE;
 	// Make it static to fool compiler and prevent it from skipping
 	static float value = 0.0f;
 	
+	BROFILER_TAG("Before", value);
+
 	for (unsigned long i = 0; i < N; ++i)
 		value = (value + sin((float)i)) * 0.5f;
+
+	BROFILER_TAG("After", value);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void SlowFunction2()
-{ PROFILE
+{ 
+	BROFILE;
 	// Make it static to fool compiler and prevent it from skipping
 	static std::vector<float> values(1024 * 1024);
 
@@ -174,6 +185,17 @@ void Engine::UpdateMessages()
 void Engine::UpdateLogic()
 {
 	BROFILER_CATEGORY("UpdateLogic", Brofiler::Color::Orchid);
+
+	static const char* name[3] = { "Alive", "Bob", "Craig" };
+
+	int index = rand() % 3;
+
+	BROFILER_TAG("PlayerName", name[index]);
+	BROFILER_TAG("Position", 123.0f, 456.0f, 789.0f);
+	BROFILER_TAG("Health", 100);
+	BROFILER_TAG("Height(cm)", 176.3f);
+	BROFILER_TAG("Address", (uint64)&name[index]);
+
 	SlowFunction<REPEAT_COUNT>();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -206,6 +228,7 @@ void Engine::Draw()
 void Engine::UpdatePhysics()
 { 
 	BROFILER_CATEGORY("UpdatePhysics", Brofiler::Color::Wheat);
+	BROFILER_TAG("Position", 123.0f, 456.0f, 789.0f);
 	MT::SpinSleepMilliSeconds(20);
 }
 

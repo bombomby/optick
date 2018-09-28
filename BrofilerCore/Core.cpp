@@ -51,7 +51,7 @@ void Core::DumpProgress(const char* message)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Core::DumpEvents(const EventStorage& entry, const EventTime& timeSlice, ScopeData& scope)
+void Core::DumpEvents(EventStorage& entry, const EventTime& timeSlice, ScopeData& scope)
 {
 	if (!entry.eventBuffer.IsEmpty())
 	{
@@ -81,19 +81,49 @@ void Core::DumpEvents(const EventStorage& entry, const EventTime& timeSlice, Sco
 		});
 
 		scope.Send();
+
+		entry.eventBuffer.Clear(false);
 	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Core::DumpThread(const ThreadEntry& entry, const EventTime& timeSlice, ScopeData& scope)
+void Core::DumpTags(EventStorage& entry, ScopeData& scope)
+{
+	if (!entry.tagFloatBuffer.IsEmpty() ||
+		!entry.tagS32Buffer.IsEmpty() ||
+		!entry.tagU64Buffer.IsEmpty() ||
+		!entry.tagPointBuffer.IsEmpty() ||
+		!entry.tagStringBuffer.IsEmpty())
+	{
+		OutputDataStream tagStream;
+		tagStream << scope.header.boardNumber << scope.header.threadNumber;
+		tagStream  
+			<< (uint32)0
+			<< entry.tagFloatBuffer
+			<< (uint32)0
+			<< entry.tagS32Buffer
+			<< entry.tagU64Buffer
+			<< entry.tagPointBuffer
+			<< (uint32)0
+			<< (uint32)0
+			<< entry.tagStringBuffer;
+		Server::Get().Send(DataResponse::TagsPack, tagStream);
+
+		entry.ClearTags(false);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Core::DumpThread(ThreadEntry& entry, const EventTime& timeSlice, ScopeData& scope)
 {
 	// Events
 	DumpEvents(entry.storage, timeSlice, scope);
+	DumpTags(entry.storage, scope);
 	BRO_ASSERT(entry.storage.fiberSyncBuffer.IsEmpty(), "Fiber switch events in native threads?");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Core::DumpFiber(const FiberEntry& entry, const EventTime& timeSlice, ScopeData& scope)
+void Core::DumpFiber(FiberEntry& entry, const EventTime& timeSlice, ScopeData& scope)
 {
 	// Events
 	DumpEvents(entry.storage, timeSlice, scope);
@@ -565,6 +595,11 @@ BROFILER_API bool AttachSummary(const char* key, const char* value)
 BROFILER_API bool AttachFile(BroFile::Type type, const char* name, const uint8_t* data, size_t size)
 {
 	return Core::Get().AttachFile(type, name, data, size);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+OutputDataStream& operator<<(OutputDataStream& stream, const BroPoint& ob)
+{
+	return stream << ob.x << ob.y << ob.z;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 BROFILER_API void NextFrame()

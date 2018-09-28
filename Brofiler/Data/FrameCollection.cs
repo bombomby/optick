@@ -16,6 +16,7 @@ namespace Profiler.Data
 		public List<Callstack> Callstacks { get; set; }
         public Synchronization Sync { get; set; }
 		public FiberSynchronization FiberSync { get; set; }
+        public TagsPack Tags { get; set; }
         public bool IsDirty { get; set; }
 
         public ThreadData()
@@ -269,6 +270,12 @@ namespace Profiler.Data
                 data.ApplySynchronization();
             }
         }
+
+        internal void Add(TagsPack pack)
+        {
+            Threads[pack.ThreadIndex].Tags = pack;
+            
+        }
     }
 
     public class FrameCollection : ObservableCollection<Frame>
@@ -388,6 +395,19 @@ namespace Profiler.Data
 						CallstackPack pack = CallstackPack.Create(response, samplingBoard, group.SysCallsBoard);
 						group.AddCallStackPack(pack);
 
+                        break;
+                    }
+
+                case DataResponse.Type.TagsPack:
+                    {
+                        int id = response.Reader.ReadInt32();
+                        if (groups.ContainsKey(id))
+                        {
+                            FrameGroup group = groups[id];
+
+                            TagsPack pack = new TagsPack(response, group);
+                            group.Add(pack);
+                        }
                         break;
                     }
 

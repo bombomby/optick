@@ -58,18 +58,61 @@ struct ScopeData
 	void Clear();
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-OutputDataStream& operator << ( OutputDataStream& stream, const ScopeData& ob);
+template<int N>
+struct BroString
+{
+	char data[N];
+	BroString() {}
+	BroString<N>& operator=(const char* text) { strcpy_s(data, text); return *this; }
+	BroString(const char* text) { *this = text; }
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct BroPoint
+{
+	float x, y, z;
+	BroPoint() {}
+	BroPoint(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
+	BroPoint(float pos[3]) : x(pos[0]), y(pos[1]), z(pos[2]) {}
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<int N>
+OutputDataStream& operator<<(OutputDataStream& stream, const BroString<N>& ob)
+{
+	return stream << ob.data;
+}
+OutputDataStream& operator<<(OutputDataStream& stream, const BroPoint& ob);
+OutputDataStream& operator<<(OutputDataStream& stream, const ScopeData& ob);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef MemoryPool<EventData, 1024> EventBuffer;
 typedef MemoryPool<const EventData*, 32> CategoryBuffer;
 typedef MemoryPool<SyncData, 1024> SynchronizationBuffer;
 typedef MemoryPool<FiberSyncData, 1024> FiberSyncBuffer;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+typedef BroString<32> ShortString;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+typedef TagData<float> TagFloat;
+typedef TagData<int32> TagS32;
+typedef TagData<uint64> TagU64;
+typedef TagData<BroPoint> TagPoint;
+typedef TagData<ShortString> TagString;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+typedef MemoryPool<TagFloat, 128> TagFloatBuffer;
+typedef MemoryPool<TagS32, 128> TagS32Buffer;
+typedef MemoryPool<TagU64, 128> TagU64Buffer;
+typedef MemoryPool<TagPoint, 64> TagPointBuffer;
+typedef MemoryPool<TagString, 64> TagStringBuffer;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct EventStorage
 {
 	EventBuffer eventBuffer;
 	CategoryBuffer categoryBuffer; 
 	FiberSyncBuffer fiberSyncBuffer;
+
+	TagFloatBuffer tagFloatBuffer;
+	TagS32Buffer tagS32Buffer;
+	TagU64Buffer tagU64Buffer;
+	TagPointBuffer tagPointBuffer;
+	TagStringBuffer tagStringBuffer;
 
 	bool isFiberStorage;
 
@@ -91,6 +134,16 @@ struct EventStorage
 		eventBuffer.Clear(preserveContent);
 		categoryBuffer.Clear(preserveContent);
 		fiberSyncBuffer.Clear(preserveContent);
+		ClearTags(preserveContent);
+	}
+
+	void ClearTags(bool preserveContent)
+	{
+		tagFloatBuffer.Clear(preserveContent);
+		tagS32Buffer.Clear(preserveContent);
+		tagU64Buffer.Clear(preserveContent);
+		tagPointBuffer.Clear(preserveContent);
+		tagStringBuffer.Clear(preserveContent);
 	}
 
 	void Reset()
@@ -202,9 +255,10 @@ class Core
 	void SendHandshakeResponse(CaptureStatus::Type status);
 
 
-	void DumpEvents(const EventStorage& entry, const EventTime& timeSlice, ScopeData& scope);
-	void DumpThread(const ThreadEntry& entry, const EventTime& timeSlice, ScopeData& scope);
-	void DumpFiber(const FiberEntry& entry, const EventTime& timeSlice, ScopeData& scope);
+	void DumpEvents(EventStorage& entry, const EventTime& timeSlice, ScopeData& scope);
+	void DumpTags(EventStorage& entry, ScopeData& scope);
+	void DumpThread(ThreadEntry& entry, const EventTime& timeSlice, ScopeData& scope);
+	void DumpFiber(FiberEntry& entry, const EventTime& timeSlice, ScopeData& scope);
 
 	void CleanupThreadsAndFibers();
 

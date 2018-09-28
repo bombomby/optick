@@ -61,6 +61,11 @@ public:
 		return chunk->data[index++];
 	}
 
+	BRO_INLINE void Push(const T& item)
+	{
+		Add() = item;
+	}
+
 	BRO_INLINE T* TryAdd(int count)
 	{
 		if (index + count <= SIZE)

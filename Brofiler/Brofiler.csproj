@@ -144,9 +144,6 @@
     <Reference Include="MahApps.Metro, Version=1.6.5.1, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\MahApps.Metro.1.6.5\lib\net46\MahApps.Metro.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Maps.MapControl.WPF, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.Maps.MapControl.WPF.1.0.0.3\lib\net40-Client\Microsoft.Maps.MapControl.WPF.dll</HintPath>
-    </Reference>
     <Reference Include="PresentationFramework.Aero" />
     <Reference Include="SharpDX">
       <HintPath>AutoEmbedLibs\SharpDX.dll</HintPath>
@@ -220,6 +217,7 @@
     <Compile Include="Data\SourceView.cs" />
     <Compile Include="Data\Summary.cs" />
     <Compile Include="Data\Synchronization.cs" />
+    <Compile Include="Data\Tag.cs" />
     <Compile Include="Data\Utils.cs" />
     <Compile Include="DirectX\ComplexDynamicMesh.cs" />
     <Compile Include="DirectX\DirectXCanvas.xaml.cs">
