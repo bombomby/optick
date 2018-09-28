@@ -1,5 +1,9 @@
 #pragma once
-#include "Brofiler.h"
+#include <mutex>
+#include <thread>
+
+#include "Common.h"
+#include "ThreadID.h"
 
 #include "Event.h"
 #include "MemoryPool.h"
@@ -9,12 +13,12 @@
 #include "SwitchContextCollector.h"
 
 #include <map>
+#include <list>
 
 namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct SchedulerTrace;
-struct SamplingProfiler;
 struct SymbolEngine;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct ScopeHeader
@@ -67,7 +71,6 @@ struct EventStorage
 	CategoryBuffer categoryBuffer; 
 	FiberSyncBuffer fiberSyncBuffer;
 
-	MT::Atomic32<uint32> isSampling;
 	bool isFiberStorage;
 
 	EventStorage();
@@ -101,13 +104,13 @@ struct ThreadDescription
 	static const int THREAD_NAME_LENGTH = 128;
 
 	char name[THREAD_NAME_LENGTH];
-	MT::ThreadId threadID;
+	ThreadID threadID;
 	int32 maxDepth;
 	int32 priority;
 	uint32 mask;
 	bool fromOtherProcess;
 
-	ThreadDescription(const char* threadName, const MT::ThreadId& id, bool _fromOtherProcess, int32 maxDepth = 1, int32 priority = 0, uint32 mask = 0);
+	ThreadDescription(const char* threadName, ThreadID id, bool _fromOtherProcess, int32 maxDepth = 1, int32 priority = 0, uint32 mask = 0);
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct FiberDescription
@@ -159,9 +162,8 @@ struct CaptureStatus
 
 class Core
 {
-	MT::Mutex lock;
-
-	MT::ThreadId mainThreadID;
+	std::recursive_mutex coreLock;
+	ThreadID mainThreadID;
 
 	ThreadList threads;
 	FiberList fibers;
@@ -169,10 +171,24 @@ class Core
 	int64 progressReportedLastTimestampMS;
 
 	std::vector<EventTime> frames;
+	uint32 boardNumber;
 
 	CallstackCollector callstackCollector;
 	SysCallCollector syscallCollector;
 	SwitchContextCollector switchContextCollector;
+
+	std::vector<std::pair<std::string, std::string>> summary;
+
+	struct Attachment
+	{
+		std::string name;
+		std::vector<uint8_t> data;
+		BroFile::Type type;
+		Attachment(BroFile::Type t, const char* n) : type(t), name(n) {}
+	};
+	std::list<Attachment> attachments;
+
+	BroStateCallback stateCallback;
 
 	void UpdateEvents();
 	void Update();
@@ -192,16 +208,13 @@ class Core
 
 	void CleanupThreadsAndFibers();
 
-	uint32 DumpBoard(uint32 mode, EventTime timeSlice);
+	void DumpBoard(uint32 mode, EventTime timeSlice);
 public:
 	void Activate(bool active);
 	bool isActive;
 
 	// Active Frame (is used as buffer)
-	static mt_thread_local EventStorage* storage;
-
-	// Controls sampling routine
-	SamplingProfiler* samplingProfiler;
+	static bro_thread_local EventStorage* storage;
 
 	// Resolves symbols
 	SymbolEngine* symbolEngine;
@@ -224,9 +237,6 @@ public:
 	// Report syscall event
 	void ReportSysCall(const SysCallDesc& desc);
 
-	// Starts sampling process
-	void StartSampling();
-
 	// Serialize and send current profiling progress
 	void DumpProgress(const char* message = "");
 
@@ -236,20 +246,29 @@ public:
 	// Serialize and send frames
 	void DumpFrames(uint32 mode = Mode::DEFAULT);
 
-	// Serialize and send sampling data
-	void DumpSamplingData();
+	// Serialize and send frames
+	void DumpSummary();
 
 	// Registers thread and create EventStorage
 	bool RegisterThread(const ThreadDescription& description, EventStorage** slot);
 
 	// UnRegisters thread
-	bool UnRegisterThread(MT::ThreadId threadId);
+	bool UnRegisterThread(ThreadID threadId);
 
 	// Check is registered thread
-	bool IsRegistredThread(MT::ThreadId id);
+	bool IsRegistredThread(ThreadID id);
 
 	// Registers finer and create EventStorage
 	bool RegisterFiber(const FiberDescription& description, EventStorage** slot);
+
+	// Sets state change callback
+	bool SetStateChangedCallback(BroStateCallback cb);
+
+	// Attaches a key-value pair to the next capture
+	bool AttachSummary(const char* key, const char* value);
+
+	// Attaches a screenshot to the current capture
+	bool AttachFile(BroFile::Type type, const char* name, const uint8_t* data, size_t size);
 
 	// NOT Thread Safe singleton (performance)
 	static BRO_INLINE Core& Get() { return notThreadSafeInstance; }

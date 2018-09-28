@@ -1,8 +1,6 @@
 #pragma once
 #include "Core.h"
-#include <unordered_map>
-#include "ThreadsEnumerator.h"
-
+#include <unordered_set>
 
 namespace Brofiler
 {
@@ -16,8 +14,7 @@ namespace Brofiler
 			ALL =				0xFFFFFFFF
 		};
 
-		std::vector<Brofiler::ThreadInfo> allProcessThreads;
-		std::unordered_map<uint64, ThreadEntry*> activeThreadsIDs;
+		std::unordered_set<uint64> activeThreadsIDs;
 
 		virtual CaptureStatus::Type Start(int mode, const ThreadList& threads, bool autoAddUnknownThreads);
 		virtual bool Stop();

@@ -1,12 +1,11 @@
 #include "Core.h"
 #include "Common.h"
 #include "Event.h"
+#include "Timer.h"
 #include "ProfilerServer.h"
 #include "EventDescriptionBoard.h"
-#include "Thread.h"
 
 #include "Platform/SchedulerTrace.h"
-#include "Platform/SamplingProfiler.h"
 #include "Platform/SymbolEngine.h"
 
 
@@ -25,7 +24,7 @@ namespace Brofiler
 {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-ThreadDescription::ThreadDescription(const char* threadName, const MT::ThreadId& id, bool _fromOtherProcess, int32 _maxDepth /*= 1*/, int32 _priority /*= 0*/, uint32 _mask /*= 0*/)
+ThreadDescription::ThreadDescription(const char* threadName, ThreadID id, bool _fromOtherProcess, int32 _maxDepth /*= 1*/, int32 _priority /*= 0*/, uint32 _mask /*= 0*/)
 	: threadID(id), fromOtherProcess(_fromOtherProcess), maxDepth(_maxDepth), priority(_priority), mask(_mask)
 {
 	strcpy_s(name, threadName);
@@ -35,14 +34,14 @@ ThreadDescription::ThreadDescription(const char* threadName, const MT::ThreadId&
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int64_t GetHighPrecisionTime()
 {
-	return MT::GetHighFrequencyTime();
+	return GetHighFrequencyTime();
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpProgress(const char* message)
 {
-	progressReportedLastTimestampMS = MT::GetTimeMilliSeconds();
+	progressReportedLastTimestampMS = GetTimeMilliSeconds();
 
 	OutputDataStream stream;
 	stream << message;
@@ -115,16 +114,25 @@ void Core::DumpFrames(uint32 mode)
 	if (frames.empty() || threads.empty())
 		return;
 
-	DumpProgress("Collecting Frame Events...");
+	++boardNumber;
 
-	//Graphics::Image image;
-	//graphics.GetScreenshot(image);
+	DumpProgress("Generating summary...");
+
+	if (stateCallback != nullptr)
+	{
+		DumpProgress("Generating summary...");
+		stateCallback(BRO_DUMP_CAPTURE);
+	}
+
+	DumpSummary();
+
+	DumpProgress("Collecting Frame Events...");
 
 	EventTime timeSlice;
 	timeSlice.start = frames.front().start;
 	timeSlice.finish = frames.back().finish;
 
-	uint32 boardNumber = DumpBoard(mode, timeSlice);
+	DumpBoard(mode, timeSlice);
 
 	ScopeData threadScope;
 	threadScope.header.boardNumber = boardNumber;
@@ -180,30 +188,48 @@ void Core::DumpFrames(uint32 mode)
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Core::DumpSamplingData()
+void Core::DumpSummary()
 {
-	if (samplingProfiler->StopSampling())
+	OutputDataStream stream;
+
+	// Board Number
+	stream << boardNumber;
+
+	// Frames
+	double frequency = (double)GetFrequency();
+	stream << (uint32_t)frames.size();
+	for (const EventTime& frame : frames)
 	{
-		DumpProgress("Collecting Sampling Events...");
-
-		OutputDataStream stream;
-		samplingProfiler->Serialize(stream);
-
-		DumpProgress("Sending Message With Sampling Data...");
-		Server::Get().Send(DataResponse::SamplingFrame, stream);
+		double frameTimeMs = 1000.0 * (frame.finish - frame.start) / frequency;
+		stream << (float)frameTimeMs;
 	}
+
+	// Summary
+	stream << (uint32_t)summary.size();
+	for (size_t i = 0; i < summary.size(); ++i)
+		stream << summary[i].first << summary[i].second;
+	summary.clear();
+
+	// Attachments
+	stream << (uint32_t)attachments.size();
+	for (const Attachment& att : attachments)
+		stream << (uint32_t)att.type << att.name << att.data;
+	attachments.clear();
+
+	// Send
+	Server::Get().Send(DataResponse::SummaryPack, stream);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::CleanupThreadsAndFibers()
 {
-	MT::ScopedGuard guard(lock);
+	std::lock_guard<std::recursive_mutex> lock(coreLock);
 
 	for (ThreadList::iterator it = threads.begin(); it != threads.end();)
 	{
 		if (!(*it)->isAlive)
 		{
 			(*it)->~ThreadEntry();
-			MT::Memory::Free(*it);
+			Memory::Free(*it);
 			it = threads.erase(it);
 		}
 		else
@@ -211,30 +237,20 @@ void Core::CleanupThreadsAndFibers()
 			++it;
 		}
 	}
-
-/*
-	for (FiberList::iterator it = fibers.begin(); it != fibers.end(); ++it)
-	{
-		(*it)->~FiberEntry();
-		MT::Memory::Free(*it);
-	}
-	fibers.clear();
-*/
 }
 
-uint32 Core::DumpBoard(uint32 mode, EventTime timeSlice)
+void Core::DumpBoard(uint32 mode, EventTime timeSlice)
 {
 	uint32 mainThreadIndex = 0;
 
 	for (size_t i = 0; i < threads.size(); ++i)
-		if (threads[i]->description.threadID.IsEqual(mainThreadID))
+		if (threads[i]->description.threadID == mainThreadID)
 			mainThreadIndex = (uint32)i;
 
 	OutputDataStream boardStream;
 
-	static uint32 boardNumber = 0;
-	boardStream << ++boardNumber;
-	boardStream << MT::GetFrequency();
+	boardStream << boardNumber;
+	boardStream << GetFrequency();
 	boardStream << (uint64)0; // Origin
 	boardStream << (uint32)0; // Precision
 	boardStream << timeSlice;
@@ -248,21 +264,19 @@ uint32 Core::DumpBoard(uint32 mode, EventTime timeSlice)
 	boardStream << (uint32)0; // ThreadDescs
 	boardStream << mode; // Mode
 	Server::Get().Send(DataResponse::FrameDescriptionBoard, boardStream);
-
-	return boardNumber;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Core::Core() : progressReportedLastTimestampMS(0), isActive(false)
+Core::Core() : progressReportedLastTimestampMS(0), isActive(false), stateCallback(nullptr), boardNumber(0)
 {
+	mainThreadID = GetThreadID();
 	schedulerTrace = SchedulerTrace::Get();
-	samplingProfiler = SamplingProfiler::Get();
 	symbolEngine = SymbolEngine::Get();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::Update()
 {
-	MT::ScopedGuard guard(lock);
+	std::lock_guard<std::recursive_mutex> lock(coreLock);
 	
 	if (isActive)
 	{
@@ -284,11 +298,6 @@ void Core::Update()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::UpdateEvents()
 {
-	if (!mainThreadID.IsValid())
-	{
-		mainThreadID = MT::ThreadId::Self();
-	}
-
 	Server::Get().Update();
 }
 
@@ -333,11 +342,6 @@ bool Core::ReportStackWalk(const CallstackDesc& desc)
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Core::StartSampling()
-{
-	samplingProfiler->StartSampling(threads);
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::Activate( bool active )
 {
 	if (isActive != active)
@@ -349,14 +353,6 @@ void Core::Activate( bool active )
 			ThreadEntry* entry = *it;
 			entry->Activate(active);
 		}
-
-/*
-		for(auto it = fibers.begin(); it != fibers.end(); ++it)
-		{
-			FiberEntry* entry = *it;
-			entry->Activate(active);
-		}
-*/
 
 		if (active)
 		{
@@ -372,6 +368,9 @@ void Core::Activate( bool active )
 		{
 			schedulerTrace->Stop();
 		}
+
+		if (stateCallback != nullptr)
+			stateCallback(isActive ? BRO_START_CAPTURE : BRO_STOP_CAPTURE);
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -382,15 +381,12 @@ void Core::DumpCapturingProgress()
 	if (isActive)
 		stream << "Capturing Frame " << (uint32)frames.size() << std::endl;
 
-	if (samplingProfiler->IsActive())
-		stream << "Sample Count " << (uint32)samplingProfiler->GetCollectedCount() << std::endl;
-
 	DumpProgress(stream.str().c_str());
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::IsTimeToReportProgress() const
 {
-	return MT::GetTimeMilliSeconds() > progressReportedLastTimestampMS + 200;
+	return GetTimeMilliSeconds() > progressReportedLastTimestampMS + 200;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::SendHandshakeResponse(CaptureStatus::Type status)
@@ -402,13 +398,14 @@ void Core::SendHandshakeResponse(CaptureStatus::Type status)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Core::IsRegistredThread(MT::ThreadId id)
+bool Core::IsRegistredThread(ThreadID id)
 {
-	MT::ScopedGuard guard(lock);
+	std::lock_guard<std::recursive_mutex> lock(coreLock);
+
 	for (ThreadList::iterator it = threads.begin(); it != threads.end(); ++it)
 	{
 		ThreadEntry* entry = *it;
-		if (entry->description.threadID.IsEqual(id))
+		if (entry->description.threadID == id)
 		{
 			return true;
 		}
@@ -420,8 +417,9 @@ bool Core::IsRegistredThread(MT::ThreadId id)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::RegisterThread(const ThreadDescription& description, EventStorage** slot)
 {
-	MT::ScopedGuard guard(lock);
-	ThreadEntry* entry = new (MT::Memory::Alloc(sizeof(ThreadEntry), BRO_CACHE_LINE_SIZE)) ThreadEntry(description, slot);
+	std::lock_guard<std::recursive_mutex> lock(coreLock);
+
+	ThreadEntry* entry = new (Memory::Alloc(sizeof(ThreadEntry))) ThreadEntry(description, slot);
 	threads.push_back(entry);
 
 	if (isActive && slot != nullptr)
@@ -430,18 +428,19 @@ bool Core::RegisterThread(const ThreadDescription& description, EventStorage** s
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Core::UnRegisterThread(MT::ThreadId threadID)
+bool Core::UnRegisterThread(ThreadID threadID)
 {
-	MT::ScopedGuard guard(lock);
+	std::lock_guard<std::recursive_mutex> lock(coreLock);
+
 	for (ThreadList::iterator it = threads.begin(); it != threads.end(); ++it)
 	{
 		ThreadEntry* entry = *it;
-		if (entry->description.threadID.IsEqual(threadID) && entry->isAlive)
+		if (entry->description.threadID == threadID && entry->isAlive)
 		{
 			if (!isActive)
 			{
 				entry->~ThreadEntry();
-				MT::Memory::Free(entry);
+				Memory::Free(entry);
 				threads.erase(it);
 				return true;
 			}
@@ -458,29 +457,49 @@ bool Core::UnRegisterThread(MT::ThreadId threadID)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::RegisterFiber(const FiberDescription& description, EventStorage** slot)
 {
-	MT::ScopedGuard guard(lock);
-	FiberEntry* entry = new (MT::Memory::Alloc(sizeof(FiberEntry), BRO_CACHE_LINE_SIZE)) FiberEntry(description);
+	std::lock_guard<std::recursive_mutex> lock(coreLock);
+	FiberEntry* entry = new (Memory::Alloc(sizeof(FiberEntry))) FiberEntry(description);
 	fibers.push_back(entry);
 	entry->storage.isFiberStorage = true;
 	*slot = &entry->storage;
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool Core::SetStateChangedCallback(BroStateCallback cb)
+{
+	stateCallback = cb;
+	return stateCallback != nullptr;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool Core::AttachSummary(const char* key, const char* value)
+{
+	summary.push_back(make_pair(std::string(key), std::string(value)));
+	return true;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool Core::AttachFile(BroFile::Type type, const char* name, const uint8_t* data, size_t size)
+{
+	attachments.push_back(Attachment(type, name));
+	Attachment& attachment = attachments.back();
+	attachment.data = std::vector<uint8_t>(data, data + size);
+	return true;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core::~Core()
 {
-	MT::ScopedGuard guard(lock);
+	std::lock_guard<std::recursive_mutex> lock(coreLock);
 
 	for (ThreadList::iterator it = threads.begin(); it != threads.end(); ++it)
 	{
 		(*it)->~ThreadEntry();
-		MT::Memory::Free((*it));
+		Memory::Free((*it));
 	}
 	threads.clear();
 
 	for (FiberList::iterator it = fibers.begin(); it != fibers.end(); ++it)
 	{
 		(*it)->~FiberEntry();
-		MT::Memory::Free((*it));
+		Memory::Free((*it));
 	}
 	fibers.clear();
 }
@@ -490,7 +509,7 @@ const std::vector<ThreadEntry*>& Core::GetThreads() const
 	return threads;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-mt_thread_local EventStorage* Core::storage = nullptr;
+bro_thread_local EventStorage* Core::storage = nullptr;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core Core::notThreadSafeInstance;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -513,7 +532,9 @@ OutputDataStream& operator<<(OutputDataStream& stream, const ScopeData& ob)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const ThreadDescription& description)
 {
-	return stream << description.threadID.AsUInt64() << description.name << description.maxDepth << description.priority << description.mask;
+	// VS TODO: Fix thread id!
+	uint64 threadID = *(uint32*)(&description.threadID);
+	return stream << threadID << description.name << description.maxDepth << description.priority << description.mask;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const ThreadEntry* entry)
@@ -529,6 +550,21 @@ OutputDataStream& operator<<(OutputDataStream& stream, const FiberDescription& d
 OutputDataStream& operator<<(OutputDataStream& stream, const FiberEntry* entry)
 {
 	return stream << entry->description;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+BROFILER_API bool SetStateChangedCallback(BroStateCallback cb)
+{
+	return Core::Get().SetStateChangedCallback(cb);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+BROFILER_API bool AttachSummary(const char* key, const char* value)
+{
+	return Core::Get().AttachSummary(key, value);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+BROFILER_API bool AttachFile(BroFile::Type type, const char* name, const uint8_t* data, size_t size)
+{
+	return Core::Get().AttachFile(type, name, data, size);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 BROFILER_API void NextFrame()
@@ -553,19 +589,19 @@ BROFILER_API bool IsFiberStorage(EventStorage* fiberStorage)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 BROFILER_API bool RegisterThread(const char* name)
 {
-	return Core::Get().RegisterThread(ThreadDescription(name, MT::ThreadId::Self(), false), &Core::storage);
+	return Core::Get().RegisterThread(ThreadDescription(name, GetThreadID(), false), &Core::storage);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 BROFILER_API bool RegisterThread(const wchar_t* name)
 {
 	char mbName[ThreadDescription::THREAD_NAME_LENGTH];
 	wcstombs(mbName, name, ThreadDescription::THREAD_NAME_LENGTH);
-	return Core::Get().RegisterThread(ThreadDescription(mbName, MT::ThreadId::Self(), false), &Core::storage);
+	return Core::Get().RegisterThread(ThreadDescription(mbName, GetThreadID(), false), &Core::storage);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 BROFILER_API bool UnRegisterThread()
 {
-	return Core::Get().UnRegisterThread(MT::ThreadId::Self());
+	return Core::Get().UnRegisterThread(GetThreadID());
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 BROFILER_API bool RegisterFiber(uint64 fiberId, EventStorage** slot)
@@ -573,7 +609,7 @@ BROFILER_API bool RegisterFiber(uint64 fiberId, EventStorage** slot)
 	return Core::Get().RegisterFiber(FiberDescription(fiberId), slot);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-EventStorage::EventStorage(): isSampling(0), isFiberStorage(false)
+EventStorage::EventStorage(): isFiberStorage(false)
 {
 	 
 }

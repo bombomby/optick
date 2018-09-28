@@ -1,5 +1,6 @@
 #include "Brofiler.h"
 #include "TestEngine.h"
+#include "TestImage.h"
 #include <math.h>
 #include <vector>
 #include <MTProfilerEventListener.h>
@@ -11,6 +12,22 @@ static const size_t SCHEDULER_WORKERS_COUNT = 0;
 
 namespace Test
 {
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void OnBrofilerStateChanged(Brofiler::BroState state)
+{
+	if (state == Brofiler::BRO_DUMP_CAPTURE)
+	{
+		Brofiler::AttachSummary("Version", "v2.0");
+		Brofiler::AttachSummary("Build", __DATE__ " " __TIME__);
+
+		// Attach text file
+		char* textFile = "Hello World!";
+		Brofiler::AttachFile(Brofiler::BroFile::BRO_OTHER, "Test.txt", (uint8_t*)textFile, strlen(textFile));
+
+		// Attach screenshot
+		Brofiler::AttachFile(Brofiler::BroFile::BRO_IMAGE, Brofiler::TestImage::Name, Brofiler::TestImage::Data, Brofiler::TestImage::Size);
+	}
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void WorkerThread(void* _engine)
 {
@@ -422,6 +439,8 @@ MT::IProfilerEventListener* GetProfiler()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Engine::Engine() : scheduler(SCHEDULER_WORKERS_COUNT, nullptr, GetProfiler()), isAlive(true)
 {
+	Brofiler::SetStateChangedCallback(OnBrofilerStateChanged);
+
 	for (size_t i = 0; i < WORKER_THREAD_COUNT; ++i)
 	{
 		workers[i].Start(1024*1024, WorkerThread, this);

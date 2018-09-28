@@ -4,7 +4,7 @@ newoption {
 }
 
 if not _ACTION then
-	_ACTION="vs2012"
+	_ACTION="vs2017"
 end
 
 outFolderRoot = "Bin/" .. _ACTION .. "/";
@@ -13,11 +13,8 @@ isVisualStudio = false
 isUWP = false
 
 if _ACTION == "vs2010" or _ACTION == "vs2012" or _ACTION == "vs2015" or _ACTION == "vs2017" then
-	if _OPTIONS['platform'] ~= "orbis"  then
-		isVisualStudio = true
-	end
+	isVisualStudio = true
 end
-
 
 if _OPTIONS["UWP"] then
 	isUWP = true
@@ -122,7 +119,6 @@ end
 
 	includedirs
 	{
-		"ThirdParty/TaskScheduler/Scheduler/Include",
 		"BrofilerCore"
 	}
 
@@ -163,8 +159,12 @@ end
 			"BrofilerCore/Concurrency.h",
 			"BrofilerCore/HPTimer.h",
 			"BrofilerCore/HPTimer.cpp",
+			"BrofilerCore/Memory.h",
+			"BrofilerCore/Memory.cpp",
 			"BrofilerCore/MemoryPool.h",
-			"BrofilerCore/Thread.h",
+			"BrofilerCore/Platform.h",
+			"BrofilerCore/Timer.h",
+			"BrofilerCore/ThreadID.h",
 			"BrofilerCore/Types.h",
 		},
 	}

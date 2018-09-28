@@ -6,7 +6,7 @@
     <!--<Color x:Key="BroBorderColor">Red</Color>-->
  
     <SolidColorBrush x:Key="BroBorder" Color="{StaticResource BroBorderColor}" />
-    <SolidColorBrush x:Key="BroForeground" Color="#FF171717" options:Freeze="True" />
+    <SolidColorBrush x:Key="BroForeground" Color="{StaticResource BlackColor}" options:Freeze="True" />
     <SolidColorBrush x:Key="BroBackground" Color="{StaticResource WhiteColor}" options:Freeze="True" />
     <SolidColorBrush x:Key="BroContentBackground" Color="{StaticResource ContentBackColor}" options:Freeze="True" />
     <SolidColorBrush x:Key="BroAlternative" Color="{StaticResource AlternativeColor}" options:Freeze="True" />

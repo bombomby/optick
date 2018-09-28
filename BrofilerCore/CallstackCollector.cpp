@@ -49,13 +49,14 @@ bool CallstackCollector::SerializeSymbols(OutputDataStream& stream)
 	for (CallstacksPool::const_iterator it = callstacksPool.begin(); it != callstacksPool.end();)
 	{
 		CallstacksPool::const_iterator startIt = it;
-		MT_UNUSED(startIt);
+		BRO_UNUSED(startIt);
 
 		uint64 threadID = *it;
-		MT_UNUSED(threadID);
+		BRO_UNUSED(threadID);
 		++it; //Skip ThreadID
 		uint64 timestamp = *it;
-		MT_UNUSED(timestamp);
+		BRO_UNUSED
+		(timestamp);
 		++it; //Skip Timestamp
 		uint64 count = *it;
 		count = (count & 0xFF);

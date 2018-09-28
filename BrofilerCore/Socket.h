@@ -3,7 +3,7 @@
 #include <string>
 
 
-#if MT_MSVC_COMPILER_FAMILY
+#if BRO_MSVC_COMPILER_FAMILY
 #pragma warning( push )
 
 //C4127. Conditional expression is constant
@@ -12,7 +12,7 @@
 
 
 
-#if MT_PLATFORM_WINDOWS
+#if BRO_PLATFORM_WINDOWS
 #define USE_WINDOWS_SOCKETS (1)
 #else
 #define USE_BERKELEY_SOCKETS (1)
@@ -130,7 +130,7 @@ namespace Brofiler
 
 		fd_set recieveSet;
 
-		MT::Mutex lock;
+		std::recursive_mutex socketLock;
 		std::wstring errorMessage;
 
 		void Close()
@@ -157,7 +157,7 @@ namespace Brofiler
 
 		void Disconnect()
 		{ 
-			MT::ScopedGuard guard(lock);
+			std::lock_guard<std::recursive_mutex> lock(socketLock);
 
 			if (!IsValidSocket(acceptSocket))
 			{
@@ -210,7 +210,7 @@ namespace Brofiler
 
 			if (IsValidSocket(incomingSocket))
 			{
-				MT::ScopedGuard guard(lock);
+				std::lock_guard<std::recursive_mutex> lock(socketLock);
 				acceptSocket = incomingSocket;
 				SetSocketBlockingMode(acceptSocket, true);
 			}
@@ -220,7 +220,7 @@ namespace Brofiler
 
 		bool Send(const char *buf, size_t len)
 		{
-			MT::ScopedGuard guard(lock);
+			std::lock_guard<std::recursive_mutex> lock(socketLock);
 
 			if (!IsValidSocket(acceptSocket))
 				return false;
@@ -236,7 +236,7 @@ namespace Brofiler
 
 		int Receive(char *buf, int len)
 		{ 
-			MT::ScopedGuard guard(lock);
+			std::lock_guard<std::recursive_mutex> lock(socketLock);
 
 			if (!IsValidSocket(acceptSocket))
 				return 0;
@@ -263,6 +263,6 @@ namespace Brofiler
 }
 
 
-#if MT_MSVC_COMPILER_FAMILY
+#if BRO_MSVC_COMPILER_FAMILY
 #pragma warning( pop )
 #endif

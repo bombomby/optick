@@ -2,7 +2,6 @@
 
 #include <windows.h>
 #include <vector>
-#include <MTTypes.h>
 #include "EtwTracer.h"
 #include "../../Core.h"
 

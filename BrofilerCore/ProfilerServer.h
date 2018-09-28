@@ -1,5 +1,8 @@
 #pragma once
 
+#include <mutex>
+#include <thread>
+
 #include "Message.h"
 
 namespace Brofiler
@@ -14,11 +17,9 @@ class Server
 	static const int BIFFER_SIZE = 1024;
 	char buffer[BIFFER_SIZE];
 
-	MT::Thread acceptThread;
-
 	Socket* socket;
 
-	MT::Mutex lock;
+	std::recursive_mutex socketLock;
 
 	bool isInitialized;
 	

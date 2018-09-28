@@ -4,7 +4,7 @@
 #include <sstream>
 #include "MemoryPool.h"
 
-#if MT_MSVC_COMPILER_FAMILY
+#if BRO_MSVC_COMPILER_FAMILY
 #pragma warning( push )
 
 //C4250. inherits 'std::basic_ostream'
@@ -32,8 +32,8 @@ namespace Brofiler
 		friend OutputDataStream &operator << ( OutputDataStream &stream, int64 val );
 		friend OutputDataStream &operator << ( OutputDataStream &stream, char val );
 		friend OutputDataStream &operator << ( OutputDataStream &stream, byte val );
-		friend OutputDataStream &operator << (OutputDataStream &stream, int8 val);
-		friend OutputDataStream &operator << (OutputDataStream &stream, float val);
+		friend OutputDataStream &operator << ( OutputDataStream &stream, int8 val);
+		friend OutputDataStream &operator << ( OutputDataStream &stream, float val);
 		friend OutputDataStream &operator << ( OutputDataStream &stream, const std::string& val );
 		friend OutputDataStream &operator << ( OutputDataStream &stream, const std::wstring& val );
 	};
@@ -110,6 +110,6 @@ namespace Brofiler
 
 }
 
-#if MT_MSVC_COMPILER_FAMILY
+#if BRO_MSVC_COMPILER_FAMILY
 #pragma warning( pop )
 #endif

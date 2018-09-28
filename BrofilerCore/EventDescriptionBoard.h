@@ -16,9 +16,6 @@ public:
 
 	static EventDescriptionBoard& Get();
 
-	void SetSamplingFlag(int index, bool flag);
-	bool HasSamplingEvents() const;
-
 	const std::vector<EventDescription*>& GetEvents() const;
 
 	~EventDescriptionBoard();

@@ -1,6 +1,6 @@
 #pragma once
 #include "Common.h"
-#include <new>
+#include "Memory.h"
 
 namespace Brofiler
 {
@@ -19,7 +19,7 @@ struct MemoryChunk
 		if (next)
 		{
 			next->~MemoryChunk();
-			MT::Memory::Free(next);
+			Memory::Free(next);
 			next = 0;
 			prev = 0;
 		}
@@ -42,7 +42,7 @@ class MemoryPool
 		index = 0;
 		if (!chunk->next)
 		{
-			void* ptr = MT::Memory::Alloc(sizeof(Chunk), BRO_CACHE_LINE_SIZE);
+			void* ptr = Memory::Alloc(sizeof(Chunk));
 			chunk->next = new (ptr) Chunk();
 			chunk->next->prev = chunk;
 		}
@@ -106,7 +106,7 @@ public:
 			if (root.next)
 			{
 				root.next->~MemoryChunk();
-				MT::Memory::Free(root.next);
+				Memory::Free(root.next);
 				root.next = 0;
 			}
 		}

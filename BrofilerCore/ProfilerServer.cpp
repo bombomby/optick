@@ -4,7 +4,7 @@
 #include "Socket.h"
 #include "Message.h"
 
-#if MT_PLATFORM_WINDOWS
+#if BRO_PLATFORM_WINDOWS
 #pragma comment( lib, "ws2_32.lib" )
 #else
 #error Platform is not defined!
@@ -23,7 +23,7 @@ Server::Server(short port) : socket(new Socket()), isInitialized(false)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Server::Update()
 {
-	MT::ScopedGuard guard(lock);
+	std::lock_guard<std::recursive_mutex> lock(socketLock);
 
 	if (!InitConnection())
 		return;
@@ -43,7 +43,7 @@ void Server::Update()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Server::Send(DataResponse::Type type, OutputDataStream& stream)
 {
-	MT::ScopedGuard guard(lock);
+	std::lock_guard<std::recursive_mutex> lock(socketLock);
 
 	std::string data = stream.GetData();
 
@@ -59,8 +59,6 @@ bool Server::InitConnection()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Server::~Server()
 {
-	acceptThread.Join();
-
 	if (socket)
 	{
 		delete socket;

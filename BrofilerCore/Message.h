@@ -27,9 +27,12 @@ struct DataResponse
 		Reserved_2 = 12,				
 		Reserved_3 = 13,				
 		Reserved_4 = 14,				
+		//...
+		Reserved_255 = 255,
 
 		FiberSynchronizationData = 1 << 8, // Synchronization Data for the Fibers
 		SyscallPack,
+		SummaryPack,
 	};
 
 	uint32 version;

@@ -59,7 +59,7 @@ namespace Profiler
             statusToError.Add(ETWStatus.ETW_FAILED, new KeyValuePair<string, string>("ETW session failed", "https://github.com/bombomby/brofiler/wiki/Event-Tracing-for-Windows"));
         }
 
-        public void LoadFile(string file)
+        public bool LoadFile(string file)
         {
             if (File.Exists(file))
             {
@@ -68,9 +68,11 @@ namespace Profiler
                     using (FileStream stream = new FileStream(file, FileMode.Open))
                     {
                         Open(stream);
+                        return true;
                     }
                 }
             }
+            return false;
         }
         
         private bool Open(Stream stream)
@@ -260,7 +262,7 @@ namespace Profiler
             }
         }
 
-        public void Save()
+        public String Save()
         {
             SaveFileDialog dlg = new SaveFileDialog();
             dlg.Filter = "Brofiler files (*.prof)|*.prof";
@@ -310,7 +312,10 @@ namespace Profiler
 
                     stream.Close();
                 }
+                return dlg.FileName;
             }
+
+            return null;
         }
 
         public void Close()

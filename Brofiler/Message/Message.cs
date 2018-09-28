@@ -21,8 +21,9 @@ namespace Profiler
          */
 
         public const UInt32 NETWORK_PROTOCOL_VERSION_18 = 18; // Bumped version
+        public const UInt32 NETWORK_PROTOCOL_VERSION_20 = 20; // Added Summary
 
-        public const UInt32 NETWORK_PROTOCOL_VERSION = NETWORK_PROTOCOL_VERSION_18;
+        public const UInt32 NETWORK_PROTOCOL_VERSION = NETWORK_PROTOCOL_VERSION_20;
 		public const UInt32 NETWORK_PROTOCOL_MIN_VERSION = NETWORK_PROTOCOL_VERSION_18;
 
 
@@ -56,6 +57,7 @@ namespace Profiler
 
             FiberSynchronizationData = 1 << 8,
             SyscallPack,
+            SummaryPack,
         }
         public UInt16 ApplicationID { get; set; }
         public Type ResponseType { get; set; }

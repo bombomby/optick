@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Web;
 using System.Net.Cache;
+using Profiler.Controls;
 
 namespace Profiler
 {
@@ -37,8 +38,19 @@ namespace Profiler
 
             ParseCommandLine();
 
-            
+            AddHandler(OpenCaptureEvent, new OpenCaptureEventHandler(MainWindow_OpenCapture));
         }
+
+        private void MainWindow_OpenCapture(object sender, OpenCaptureEventArgs e)
+        {
+            timeLine.Clear();
+            HamburgerMenuControl.SelectedItem = CaptureMenuItem;
+            HamburgerMenuControl.Content = CaptureMenuItem;
+            timeLine.LoadFile(e.Path);
+        }
+
+        public delegate void OpenCaptureEventHandler(object sender, OpenCaptureEventArgs e);
+        public static readonly RoutedEvent OpenCaptureEvent = EventManager.RegisterRoutedEvent("OpenCaptureEvent", RoutingStrategy.Bubble, typeof(OpenCaptureEventHandler), typeof(MainWindow));
 
         private void TimeLine_ShowWarning(object sender, RoutedEventArgs e)
         {
@@ -164,7 +176,10 @@ namespace Profiler
 
         private void LoadFile(string file)
         {
-            timeLine.LoadFile(file);
+            if (timeLine.LoadFile(file))
+            {
+                FileHistory.Add(file);
+            }
         }
 
         private void Window_DragEnter(object sender, DragEventArgs e)
@@ -309,7 +324,11 @@ namespace Profiler
 
         private void SaveButton_Click(object sender, System.Windows.RoutedEventArgs e)
         {
-            timeLine.Save();
+            String path = timeLine.Save();
+            if (path != null)
+            {
+                FileHistory.Add(path);
+            }
         }
 
         private void ClearButton_Click(object sender, System.Windows.RoutedEventArgs e)
@@ -348,6 +367,11 @@ namespace Profiler
         {
             SettingsWindow settingsWindow = new SettingsWindow();
             settingsWindow.Show();
+        }
+
+        private void HamburgerMenuControl_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            HamburgerMenuControl.Content = e.ClickedItem;
         }
     }
 

@@ -1,6 +1,5 @@
 #pragma once
-#include <MTTypes.h>
-
+#include "Types.h"
 #include "Brofiler.h"
 #include "MemoryPool.h"
 #include "Serialization.h"

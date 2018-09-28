@@ -248,6 +248,44 @@ BROFILER_API bool UnRegisterThread();
 BROFILER_API EventStorage** GetEventStorageSlotForCurrentThread();
 BROFILER_API bool IsFiberStorage(EventStorage* fiberStorage);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+enum BroState
+{
+	// Starting a new capture
+	BRO_START_CAPTURE,
+	// Stopping current capture
+	BRO_STOP_CAPTURE,
+	// Dumping capture to the GUI
+	// Useful for attaching summary and screenshot to the capture
+	BRO_DUMP_CAPTURE,
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Sets a state change callback
+typedef void (*BroStateCallback)(BroState state);
+BROFILER_API bool SetStateChangedCallback(BroStateCallback cb);
+
+// Attaches a key-value pair to the capture's summary
+// Example: AttachSummary("Version", "v12.0.1");
+//			AttachSummary("Platform", "Windows");
+//			AttachSummary("Config", "Release_x64");
+//			AttachSummary("Settings", "Ultra");
+//			AttachSummary("Map", "Atlantida");
+//			AttachSummary("Position", "123.0,120.0,41.1");
+//			AttachSummary("CPU", "Intel(R) Xeon(R) CPU E5410@2.33GHz");
+//			AttachSummary("GPU", "NVIDIA GeForce GTX 980 Ti");
+BROFILER_API bool AttachSummary(const char* key, const char* value);
+
+struct BroFile
+{
+	enum Type
+	{
+		// Supported formats: PNG, JPEG, BMP, TIFF
+		BRO_IMAGE,
+		BRO_OTHER,
+	};
+};
+// Attaches a file to the current capture
+BROFILER_API bool AttachFile(BroFile::Type type, const char* name, const uint8_t* data, size_t size);
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct EventDescription;
 struct Frame;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -286,8 +324,6 @@ struct BROFILER_API FiberSyncData : public EventTime
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct BROFILER_API EventDescription
 {
-	bool isSampling;		
-
 	// HOT  \\
 	// Have to place "hot" variables at the beginning of the class (here will be some padding)
 	// COLD //

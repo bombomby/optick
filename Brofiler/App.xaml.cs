@@ -18,7 +18,7 @@ namespace Profiler
     static App()
     {
 			AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
-    }
+        }
 
 		static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
 		{

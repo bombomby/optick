@@ -96,6 +96,7 @@ namespace Profiler.Data
         public List<ThreadData> Threads { get; set; }
         public List<ThreadData> Fibers { get; set; }
 		public ThreadData MainThread { get { return Threads[Board.MainThreadIndex]; } }
+        public SummaryPack Summary { get; set; }
 
 		public List<DataResponse> Responses { get; set; }
 
@@ -204,7 +205,13 @@ namespace Profiler.Data
             SamplingBoard = pack;
         }
 
-		private void SplitFiber(int fiberIndex)
+        internal void AddSummary(SummaryPack summary)
+        {
+            Responses.Insert(0, summary.Response);
+            Summary = summary;
+        }
+
+        private void SplitFiber(int fiberIndex)
         {
 			ThreadData data = Fibers[fiberIndex];
 			data.ApplyFiberSynchronization();
@@ -267,6 +274,7 @@ namespace Profiler.Data
     public class FrameCollection : ObservableCollection<Frame>
     {
         Dictionary<int, FrameGroup> groups = new Dictionary<int, FrameGroup>();
+        Dictionary<int, SummaryPack> summaries = new Dictionary<int, SummaryPack>();
 
         public void Flush()
         {
@@ -274,16 +282,30 @@ namespace Profiler.Data
                 group.UpdateEventsSynchronization();
 
             groups.Clear();
+            summaries.Clear();
         }
 
         public void Add(DataResponse response)
         {
             switch (response.ResponseType)
             {
+                case DataResponse.Type.SummaryPack:
+                    {
+                        SummaryPack summary = new SummaryPack(response);
+                        summaries[summary.BoardID] = summary;
+                        break;
+                    }
+
                 case DataResponse.Type.FrameDescriptionBoard:
                     {
                         EventDescriptionBoard board = EventDescriptionBoard.Read(response);
-                        groups[board.ID] = new FrameGroup(board);
+                        FrameGroup group = new FrameGroup(board);
+                        groups[board.ID] = group;
+
+                        SummaryPack summary = null;
+                        if (summaries.TryGetValue(board.ID, out summary))
+                            group.AddSummary(summary);
+
                         break;
                     }
 

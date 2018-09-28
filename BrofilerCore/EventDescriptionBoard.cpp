@@ -1,52 +1,21 @@
 #include "EventDescriptionBoard.h"
 #include "Event.h"
 
+#include <mutex>
+
 namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-static MT::Mutex& GetBoardLock()
+static std::mutex& GetBoardLock()
 {
 	// Initialize as static local variable to prevent problems with static initialization order
-	static MT::Mutex lock;
+	static std::mutex lock;
 	return lock;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventDescriptionBoard& EventDescriptionBoard::Get()
 { 
 	return instance;
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void EventDescriptionBoard::SetSamplingFlag( int index, bool flag )
-{ 
-	MT::ScopedGuard guard(GetBoardLock());
-	BRO_VERIFY(index < (int)board.size(), "Invalid EventDescription index", return);
-
-	if (index < 0)
-	{
-		for(auto it = board.begin(); it != board.end(); ++it)
-		{
-			EventDescription* desc = *it;
-			desc->isSampling = flag;
-		}
-	} else
-	{
-		board[index]->isSampling = flag;
-	}
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool EventDescriptionBoard::HasSamplingEvents() const
-{
-	MT::ScopedGuard guard(GetBoardLock());
-	for(auto it = board.begin(); it != board.end(); ++it)
-	{
-		EventDescription* desc = *it;
-		if (desc->isSampling)
-		{
-			return true;
-		}
-	}
-
-	return false;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const std::vector<EventDescription*>& EventDescriptionBoard::GetEvents() const
@@ -65,7 +34,8 @@ EventDescriptionBoard::~EventDescriptionBoard()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventDescription* EventDescriptionBoard::CreateDescription()
 {
-	MT::ScopedGuard guard(GetBoardLock());
+	std::lock_guard<std::mutex> lock(GetBoardLock());
+
 	EventDescription* desc = new EventDescription();
 	desc->index = (unsigned long)board.size();
 	board.push_back(desc);
@@ -74,7 +44,8 @@ EventDescription* EventDescriptionBoard::CreateDescription()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator << ( OutputDataStream& stream, const EventDescriptionBoard& ob)
 {
-	MT::ScopedGuard guard(GetBoardLock());
+	std::lock_guard<std::mutex> lock(GetBoardLock());
+
 	const std::vector<EventDescription*>& events = ob.GetEvents();
 
 	stream << (uint32)events.size();

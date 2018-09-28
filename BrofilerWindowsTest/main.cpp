@@ -12,7 +12,6 @@
 #pragma warning( disable : 4127 )
 #endif
 
-
 using namespace std;
 
 #if MT_PLATFORM_WINDOWS

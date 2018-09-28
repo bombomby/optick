@@ -1,0 +1,62 @@
+﻿<UserControl x:Class="Profiler.Controls.CaptureStats"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:Profiler="clr-namespace:Profiler"
+             mc:Ignorable="d" 
+             d:DesignHeight="200" d:DesignWidth="900">
+    <UserControl.Resources>
+        <Profiler:PercentageConverter x:Key="MultiplyConverter"/>
+        <sys:Double x:Key="ScreenshotAspectRatio">1.777777777</sys:Double>
+    </UserControl.Resources>
+    <Grid x:Name="RootGrid">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="1*" />
+        </Grid.ColumnDefinitions>
+        <Border>
+            <Image 
+                x:Name="ScreenshotThumbnail" 
+                Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type UserControl}, Mode=FindAncestor}}" 
+                Width="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type UserControl}, Mode=FindAncestor}, Converter={StaticResource MultiplyConverter}, ConverterParameter={StaticResource ScreenshotAspectRatio}}" 
+                Stretch="Uniform" />
+        </Border>
+        <lvc:CartesianChart Grid.Column="2" x:Name="FrameTimeChart" DisableAnimations="True" Hoverable="False" DataTooltip="{x:Null}">
+            <lvc:CartesianChart.AxisX>
+                <lvc:Axis>
+                    <lvc:Axis.Separator>
+                        <lvc:Separator StrokeThickness="0.33"  />
+                    </lvc:Axis.Separator>
+                </lvc:Axis>
+            </lvc:CartesianChart.AxisX>
+            <lvc:CartesianChart.AxisY>
+                <lvc:Axis Title="Frame Time (ms)" MinValue="0" x:Name="FrameTimeAxis">
+                    <lvc:Axis.Separator>
+                        <lvc:Separator Step="16.66666" StrokeThickness="0.33"/>
+                    </lvc:Axis.Separator>
+                </lvc:Axis>
+            </lvc:CartesianChart.AxisY>
+        </lvc:CartesianChart>
+        <lvc:CartesianChart Grid.Column="3" x:Name="FrameHistogramChart" DisableAnimations="True" Hoverable="False" DataTooltip="{x:Null}">
+            <lvc:CartesianChart.AxisX>
+                <lvc:Axis x:Name="FrameHistogramAxis">
+                    <lvc:Axis.Separator>
+                        <lvc:Separator Step="5" StrokeThickness="0.16666" />
+                    </lvc:Axis.Separator>
+                </lvc:Axis>
+            </lvc:CartesianChart.AxisX>
+            <lvc:CartesianChart.AxisY>
+                <lvc:Axis Title="Frame Histogram">
+                    <lvc:Axis.Separator>
+                        <lvc:Separator StrokeThickness="0.33"  />
+                    </lvc:Axis.Separator>
+                </lvc:Axis>
+            </lvc:CartesianChart.AxisY>
+        </lvc:CartesianChart>
+    </Grid>
+</UserControl>
