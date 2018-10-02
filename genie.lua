@@ -200,7 +200,7 @@ project "BrofilerTest"
  	kind "StaticLib"
 	uuid "9A313DD9-8694-CC7D-2F1A-05341B5C9800"
  	files {
-		"BrofilerTest/**.*", 
+		"Samples/BrofilerTest/**.*", 
  	}
 
 	includedirs
@@ -222,7 +222,7 @@ project "BrofilerDurangoTest"
  	kind "WindowedApp"
 	uuid "5CA6AF66-C2CB-412E-B335-B34357F2FBB6"
 	files {
-		"BrofilerDurangoTest/**.*", 
+		"Samples/BrofilerDurangoTest/**.*", 
  	}
 else
 project "BrofilerWindowsTest"
@@ -230,17 +230,17 @@ project "BrofilerWindowsTest"
  	kind "ConsoleApp"
 	uuid "C50A1240-316C-EF4D-BAD9-3500263A260D"
  	files {
-		"BrofilerWindowsTest/**.*", 
+		"Samples/BrofilerWindowsTest/**.*", 
 		"ThirdParty/TaskScheduler/Scheduler/Source/MTDefaultAppInterop.cpp",
  	}
 	
 	vpaths { 
-		["*"] = "BrofilerWindowsTest" 
+		["*"] = "Samples/BrofilerWindowsTest" 
 	}
 
 	includedirs {
 		"BrofilerCore",
-		"BrofilerTest",
+		"Samples/BrofilerTest",
 		"ThirdParty/TaskScheduler/Scheduler/Include"
 	}
 	
