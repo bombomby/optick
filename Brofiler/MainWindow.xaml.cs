@@ -36,9 +36,14 @@ namespace Profiler
             frameTabs.SelectionChanged += new SelectionChangedEventHandler(frameTabs_SelectionChanged);
             warningBlock.Visibility = Visibility.Collapsed;
 
-            ParseCommandLine();
+            this.Loaded += MainWindow_Loaded;
 
             AddHandler(OpenCaptureEvent, new OpenCaptureEventHandler(MainWindow_OpenCapture));
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            ParseCommandLine();
         }
 
         private void MainWindow_OpenCapture(object sender, OpenCaptureEventArgs e)
@@ -46,7 +51,11 @@ namespace Profiler
             timeLine.Clear();
             HamburgerMenuControl.SelectedItem = CaptureMenuItem;
             HamburgerMenuControl.Content = CaptureMenuItem;
-            timeLine.LoadFile(e.Path);
+
+            if (timeLine.LoadFile(e.Path))
+            {
+                FileHistory.Add(e.Path);
+            }
         }
 
         public delegate void OpenCaptureEventHandler(object sender, OpenCaptureEventArgs e);
@@ -161,7 +170,7 @@ namespace Profiler
             {
                 String fileName = args[i];
                 if (File.Exists(fileName))
-                    LoadFile(fileName);
+                    RaiseEvent(new OpenCaptureEventArgs(fileName));
             }
         }
 
@@ -170,15 +179,7 @@ namespace Profiler
             string[] files = (string[])e.Data.GetData(System.Windows.DataFormats.FileDrop);
             foreach (string file in files)
             {
-                LoadFile(file);
-            }
-        }
-
-        private void LoadFile(string file)
-        {
-            if (timeLine.LoadFile(file))
-            {
-                FileHistory.Add(file);
+                RaiseEvent(new OpenCaptureEventArgs(file));
             }
         }
 
@@ -314,11 +315,11 @@ namespace Profiler
         private void OpenButton_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             System.Windows.Forms.OpenFileDialog dlg = new System.Windows.Forms.OpenFileDialog();
-            dlg.Filter = "Brofiler files (*.prof)|*.prof";
+            dlg.Filter = "Brofiler files (*.bro)|*.bro";
             dlg.Title = "Load profiler results?";
             if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
-                LoadFile(dlg.FileName);
+                RaiseEvent(new OpenCaptureEventArgs(dlg.FileName));
             }
         }
 

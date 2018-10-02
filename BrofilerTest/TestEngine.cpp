@@ -186,13 +186,14 @@ void Engine::UpdateLogic()
 {
 	BROFILER_CATEGORY("UpdateLogic", Brofiler::Color::Orchid);
 
-	static const char* name[3] = { "Alive", "Bob", "Craig" };
+	static const char* name[3] = { "Alice", "Bob", "Craig" };
 
 	int index = rand() % 3;
 
 	BROFILER_TAG("PlayerName", name[index]);
 	BROFILER_TAG("Position", 123.0f, 456.0f, 789.0f);
 	BROFILER_TAG("Health", 100);
+	BROFILER_TAG("Score", 0x80000000u);
 	BROFILER_TAG("Height(cm)", 176.3f);
 	BROFILER_TAG("Address", (uint64)&name[index]);
 

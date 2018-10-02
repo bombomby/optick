@@ -14,13 +14,20 @@ namespace Profiler.Data
         public float Z { get; set; }
     }
 
-    public class Tag : ITick
+    public class Tag : ITick, IComparable<Tag>
     {
         public EventDescription Description { get; set; }
         public Timestamp Time { get; set; }
+        public String Name => Description.FullName;
+        public virtual String FormattedValue { get; }
 
         public long Start => Time.Time;
 
+        public int CompareTo(Tag other)
+        {
+            int result = Start.CompareTo(other.Start);
+            return result == 0 ? Name.CompareTo(other.Name) : result;
+        }
 
         public virtual void Read(BinaryReader reader, EventDescriptionBoard board)
         {
@@ -38,6 +45,8 @@ namespace Profiler.Data
             base.Read(reader, board);
             Value = reader.ReadSingle();
         }
+
+        public override String FormattedValue => Value.ToString("0.0##");
     }
 
     public class TagInt32 : Tag
@@ -48,6 +57,20 @@ namespace Profiler.Data
             base.Read(reader, board);
             Value = reader.ReadInt32();
         }
+
+        public override String FormattedValue => Value.ToString("N0").Replace(',', ' ');
+    }
+
+    public class TagUInt32 : Tag
+    {
+        public UInt32 Value { get; set; }
+        public override void Read(BinaryReader reader, EventDescriptionBoard board)
+        {
+            base.Read(reader, board);
+            Value = reader.ReadUInt32();
+        }
+
+        public override String FormattedValue => Value.ToString("N0").Replace(',', ' ');
     }
 
     public class TagUInt64 : Tag
@@ -58,6 +81,8 @@ namespace Profiler.Data
             base.Read(reader, board);
             Value = reader.ReadUInt64();
         }
+
+        public override String FormattedValue => Value.ToString("N0").Replace(',', ' ');
     }
 
     public class TagVec3 : Tag
@@ -68,6 +93,8 @@ namespace Profiler.Data
             base.Read(reader, board);
             Value = new Vec3 { X = reader.ReadSingle(), Y = reader.ReadSingle(), Z = reader.ReadSingle() };
         }
+
+        public override String FormattedValue => String.Format("({0:0.0#}, {1:0.0#}, {2:0.0#})", Value.X, Value.Y, Value.Z);
     }
 
     public class TagString : Tag
@@ -78,6 +105,8 @@ namespace Profiler.Data
             base.Read(reader, board);
             Value = Utils.ReadBinaryString(reader);
         }
+
+        public override String FormattedValue => Value;
     }
 
 
@@ -89,7 +118,7 @@ namespace Profiler.Data
         public int ThreadIndex { get; private set; }
 
         List<Tag> tags;
-        List<Tag> Tags { get { Load(); return tags; } }
+        public List<Tag> Tags { get { return tags; } }
 
         bool IsLoaded { get; set; }
 
@@ -112,13 +141,15 @@ namespace Profiler.Data
 
                     reader.ReadInt32(); // Skip 
                     LoadTags<TagFloat>();
-                    reader.ReadInt32(); // Skip 
+                    LoadTags<TagUInt32>();
                     LoadTags<TagInt32>();
                     LoadTags<TagUInt64>();
                     LoadTags<TagVec3>();
                     reader.ReadInt32(); // Skip
                     reader.ReadInt32(); // Skip
                     LoadTags<TagString>();
+
+                    tags.Sort();
 
                     IsLoaded = true;
                 }

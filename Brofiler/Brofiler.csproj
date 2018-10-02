@@ -207,6 +207,9 @@
     </Compile>
     <Compile Include="Controls\RoutedEvents.cs" />
     <Compile Include="Controls\SharedSettings.cs" />
+    <Compile Include="Controls\TagsControl.xaml.cs">
+      <DependentUpon>TagsControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Data\Callstack.cs" />
     <Compile Include="Data\Durationable.cs" />
     <Compile Include="Data\EventBoard.cs" />
@@ -280,6 +283,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\PlatformSelector.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\TagsControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

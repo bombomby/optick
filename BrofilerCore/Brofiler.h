@@ -364,6 +364,7 @@ struct BROFILER_API Tag
 {
 	static void Attach(const EventDescription& description, float val);
 	static void Attach(const EventDescription& description, int32_t val);
+	static void Attach(const EventDescription& description, uint32_t val);
 	static void Attach(const EventDescription& description, uint64_t val);
 	static void Attach(const EventDescription& description, float val[3]);
 	static void Attach(const EventDescription& description, const char* val);

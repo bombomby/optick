@@ -75,21 +75,47 @@ namespace Profiler.Data
 
 		private EventTree categoriesTree;
 
+        private List<Tag> tags = null;
+        public List<Tag> Tags
+        {
+            get
+            {
+                if (tags == null)
+                    LazyLoad();
+
+                return tags;
+            }
+        }
+
         private EventTree root = null;
         public Profiler.Data.EventTree Root
         {
             get
             {
                 if (root == null)
-				{
-					lock ( loading )
-					{
-						if ( root == null )
-							root = new EventTree( this, Entries );
-					}
-				}
+                    LazyLoad();
 
                 return root;
+            }
+        }
+
+        private void LazyLoad()
+        {
+            lock (loading)
+            {
+                if (tags == null)
+                {
+                    tags = new List<Tag>();
+                    if (Group.Threads[Header.ThreadIndex].TagsPack != null)
+                        Utils.ForEachInsideIntervalStrict(Group.Threads[Header.ThreadIndex].TagsPack.Tags, Header, tag => { tags.Add(tag); });
+                }
+
+                if (root == null)
+                {
+                    root = new EventTree(this, Entries);
+                    root.ApplyTags(tags);
+                }
+                    
             }
         }
 
@@ -174,7 +200,13 @@ namespace Profiler.Data
             get
             {
                 if (shortBoard == null)
-                    shortBoard = new ShortBoard(Entries);
+                {
+                    lock (loading)
+                    {
+                        if (shortBoard == null)
+                            shortBoard = new ShortBoard(Entries);
+                    }
+                }
 
                 return shortBoard;
             }
@@ -227,6 +259,7 @@ namespace Profiler.Data
 		    // invoke lazy init;
 		    IsLoaded = CategoriesTree != null &&
 		               Root != null &&
+                       Tags != null &&
 		               Board != null;
 	    }
 
@@ -289,13 +322,6 @@ namespace Profiler.Data
 
             Entries.AddRange(frame.Entries);
             Entries.Sort();
-
-			if ( root != null )
-				root = new EventTree( this, Entries );
-			if ( board != null )
-				board = new Board<EventBoardItem, EventDescription, EventNode>( root );
-			if ( categoriesTree != null )
-				categoriesTree = new EventTree( this, Categories );
         }
 
         protected void ReadInternal(DataResponse response)
@@ -340,15 +366,8 @@ namespace Profiler.Data
                 }
             }
 
-            categoriesTree = new EventTree(this, Categories);
-
-            root = new EventTree(this, Entries);
-            board = new Board<EventBoardItem, EventDescription, EventNode>(root);
-
             Synchronization = new List<SyncInterval>();
             FiberSync = new List<FiberSyncInterval>();
-
-            IsLoaded = true;
         }
 
         public EventFrame(FrameHeader header, List<Entry> entries, FrameGroup group) : base(null)

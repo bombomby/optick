@@ -265,7 +265,7 @@ namespace Profiler
         public String Save()
         {
             SaveFileDialog dlg = new SaveFileDialog();
-            dlg.Filter = "Brofiler files (*.prof)|*.prof";
+            dlg.Filter = "Brofiler files (*.bro)|*.bro";
             dlg.Title = "Where should I save profiler results?";
 
             if (dlg.ShowDialog() == true)

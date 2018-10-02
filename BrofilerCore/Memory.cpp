@@ -3,13 +3,13 @@
 
 namespace Brofiler
 {
-	void* Memory::Alloc(size_t size, size_t /*align*/)
+	void* Memory::Alloc(size_t size, size_t align)
 	{
-		return operator new (size);
+		return _aligned_malloc(size, align);
 	}
 
 	void Memory::Free(void* p)
 	{
-		delete p;
+		_aligned_free(p);
 	}
 }

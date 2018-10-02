@@ -89,6 +89,14 @@ void Tag::Attach(const EventDescription& description, int32_t val)
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Tag::Attach(const EventDescription& description, uint32_t val)
+{
+	if (EventStorage* storage = Core::storage)
+	{
+		storage->tagU32Buffer.Push(TagU32(description, val));
+	}
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Tag::Attach(const EventDescription& description, uint64_t val)
 {
 	if (EventStorage* storage = Core::storage)

@@ -111,7 +111,15 @@ namespace Profiler.Data
             return (Start > Finish) ? new Durable(Finish, Start) : new Durable(Start, Finish);
         }
 
-		public Durable(long s, long f)
+        public bool IsValid
+        {
+            get
+            {
+                return Finish > Start;
+            }
+        }
+
+        public Durable(long s, long f)
 		{
 			this.Start = s;
 			this.Finish = f;

@@ -63,7 +63,10 @@ namespace Profiler.Controls
         private void HistoryViewControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             HistoryItem item = HistoryViewControl.SelectedItem as HistoryItem;
-            RaiseEvent(new OpenCaptureEventArgs(item.Path));
+            if (item != null)
+            {
+                RaiseEvent(new OpenCaptureEventArgs(item.Path));
+            }
         }
     }
 }

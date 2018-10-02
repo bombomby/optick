@@ -16,7 +16,7 @@ namespace Profiler.Data
 		public List<Callstack> Callstacks { get; set; }
         public Synchronization Sync { get; set; }
 		public FiberSynchronization FiberSync { get; set; }
-        public TagsPack Tags { get; set; }
+        public TagsPack TagsPack { get; set; }
         public bool IsDirty { get; set; }
 
         public ThreadData()
@@ -273,8 +273,8 @@ namespace Profiler.Data
 
         internal void Add(TagsPack pack)
         {
-            Threads[pack.ThreadIndex].Tags = pack;
-            
+            Responses.Add(pack.Response);
+            Threads[pack.ThreadIndex].TagsPack = pack;
         }
     }
 

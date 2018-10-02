@@ -91,6 +91,7 @@ void Core::DumpTags(EventStorage& entry, ScopeData& scope)
 {
 	if (!entry.tagFloatBuffer.IsEmpty() ||
 		!entry.tagS32Buffer.IsEmpty() ||
+		!entry.tagU32Buffer.IsEmpty() ||
 		!entry.tagU64Buffer.IsEmpty() ||
 		!entry.tagPointBuffer.IsEmpty() ||
 		!entry.tagStringBuffer.IsEmpty())
@@ -100,7 +101,7 @@ void Core::DumpTags(EventStorage& entry, ScopeData& scope)
 		tagStream  
 			<< (uint32)0
 			<< entry.tagFloatBuffer
-			<< (uint32)0
+			<< entry.tagU32Buffer
 			<< entry.tagS32Buffer
 			<< entry.tagU64Buffer
 			<< entry.tagPointBuffer

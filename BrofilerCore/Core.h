@@ -92,12 +92,14 @@ typedef BroString<32> ShortString;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef TagData<float> TagFloat;
 typedef TagData<int32> TagS32;
+typedef TagData<uint32> TagU32;
 typedef TagData<uint64> TagU64;
 typedef TagData<BroPoint> TagPoint;
 typedef TagData<ShortString> TagString;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef MemoryPool<TagFloat, 128> TagFloatBuffer;
 typedef MemoryPool<TagS32, 128> TagS32Buffer;
+typedef MemoryPool<TagU32, 128> TagU32Buffer;
 typedef MemoryPool<TagU64, 128> TagU64Buffer;
 typedef MemoryPool<TagPoint, 64> TagPointBuffer;
 typedef MemoryPool<TagString, 64> TagStringBuffer;
@@ -110,6 +112,7 @@ struct EventStorage
 
 	TagFloatBuffer tagFloatBuffer;
 	TagS32Buffer tagS32Buffer;
+	TagU32Buffer tagU32Buffer;
 	TagU64Buffer tagU64Buffer;
 	TagPointBuffer tagPointBuffer;
 	TagStringBuffer tagStringBuffer;
@@ -141,6 +144,7 @@ struct EventStorage
 	{
 		tagFloatBuffer.Clear(preserveContent);
 		tagS32Buffer.Clear(preserveContent);
+		tagU32Buffer.Clear(preserveContent);
 		tagU64Buffer.Clear(preserveContent);
 		tagPointBuffer.Clear(preserveContent);
 		tagStringBuffer.Clear(preserveContent);

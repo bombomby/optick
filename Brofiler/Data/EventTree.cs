@@ -25,7 +25,9 @@ namespace Profiler.Data
 
 		public abstract String Name { get; }
 
-		public event PropertyChangedEventHandler PropertyChanged;
+        public virtual List<Tag> Tags { get { return null; } set { } }
+
+        public event PropertyChangedEventHandler PropertyChanged;
 		private void Raise(string propertyName)
 		{
 			var tmp = PropertyChanged;
@@ -247,12 +249,43 @@ namespace Profiler.Data
 		public Entry Entry { get; private set; }
 		public Brush Brush { get { return Entry.Description.Brush;  } }
 
-		public EventNode(EventNode root, Entry entry)
+        private List<Tag> tags = null;
+        public override List<Tag> Tags { get { return tags; } set { tags = value; } }
+
+
+        public EventNode(EventNode root, Entry entry)
 		  : base(root, entry.Description, entry.Duration)
 		{
 			Entry = entry;
 		}
-	}
+
+        public void ApplyTags(List<Tag> toAdd, ref int index)
+        {
+            if (index < toAdd.Count && toAdd[index].Start < Entry.Start)
+                ++index;
+
+            if (index < toAdd.Count && Entry.IsValid && Entry.Finish < toAdd[index].Start)
+                return;
+
+            for (int i = 0; i < Children.Count; ++i)
+            {
+                EventNode child = Children[i] as EventNode;
+                while (index < toAdd.Count && toAdd[index].Start < child.Entry.Start)
+                {
+                    if (tags == null) tags = new List<Tag>();
+                    tags.Add(toAdd[index++]);
+                }
+
+                child.ApplyTags(toAdd, ref index);
+            }
+
+            while (index < toAdd.Count && Entry.IsValid && toAdd[index].Start <= Entry.Finish)
+            {
+                if (tags == null) tags = new List<Tag>();
+                tags.Add(toAdd[index++]);
+            }
+        }
+    }
 
 	public class EventTree : EventNode
 	{
@@ -306,5 +339,14 @@ namespace Profiler.Data
 		{
 			Children.ForEach(node => node.ForEach(action));
 		}
-	}
+
+        public void ApplyTags(List<Tag> tags)
+        {
+            if (tags == null || tags.Count == 0)
+                return;
+
+            int index = 0;
+            ApplyTags(tags, ref index);
+        }
+    }
 }
