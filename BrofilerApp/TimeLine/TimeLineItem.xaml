@@ -1,0 +1,17 @@
+﻿<UserControl
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	mc:Ignorable="d"
+	x:Class="Profiler.TimeLineItem"
+	x:Name="UserControl"
+	d:DesignWidth="640" d:DesignHeight="480"
+	xmlns:Profiler_Data="clr-namespace:Profiler.Data"
+  d:DataContext="{Binding Source={x:Static Profiler_Data:TestEventFrame.Frame}}"
+  Width="Auto" BorderBrush="Black">
+
+
+    <Grid x:Name="LayoutRoot" Background="Red" VerticalAlignment="Stretch" />
+
+</UserControl>

@@ -1,0 +1,56 @@
+﻿<ResourceDictionary
+   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+   xmlns:System="clr-namespace:System;assembly=mscorlib">
+
+    <FontFamily x:Key="HeaderFontFamily">Segoe UI, Lucida Sans Unicode, Verdana</FontFamily>
+    <System:Double x:Key="WindowTitleFontSize">12</System:Double>
+    <System:Double x:Key="TabItemFontSize">14</System:Double>
+
+    <System:Double x:Key="DefaultButtonSize">22</System:Double>
+
+    <Style TargetType="ToggleButton" BasedOn="{StaticResource SquareButtonStyle}">
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="{StaticResource BroBorder}" />
+        <Setter Property="MinHeight" Value="16" />
+        <Style.Triggers>
+            <Trigger Property="IsChecked" Value="True">
+                <Setter Property="BorderBrush" Value="{StaticResource AccentBaseColorBrush}" />
+                <Setter Property="Background" Value="{StaticResource BroAlternative}" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+    <Style TargetType="Button" BasedOn="{StaticResource SquareButtonStyle}">
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="{StaticResource BroBorder}" />
+        <Setter Property="MinHeight" Value="16" />
+    </Style>
+    <Style TargetType="{x:Type GridSplitter}">
+        <Setter Property="Background" Value="{StaticResource BroBackground}" />
+    </Style>
+    <Style TargetType="ListBox" BasedOn="{StaticResource MetroListBox}">
+        <Setter Property="Background" Value="{StaticResource BroContentBackground}" />
+    </Style>
+    <Style TargetType="ListView" BasedOn="{StaticResource MetroListView}">
+        <Setter Property="Background" Value="{StaticResource BroContentBackground}" />
+    </Style>
+    <Style TargetType="TreeView" BasedOn="{StaticResource MetroTreeView}">
+        <Setter Property="Background" Value="{StaticResource BroContentBackground}" />
+    </Style>
+    <Style TargetType="DataGrid" BasedOn="{StaticResource MetroDataGrid}">
+        <Setter Property="Background" Value="{StaticResource BroContentBackground}" />
+        <Setter Property="RowBackground" Value="{StaticResource BroBackground}" />
+        <Setter Property="AlternatingRowBackground" Value="{StaticResource BroContentBackground}" />
+        <Setter Property="MinRowHeight" Value="18" />
+    </Style>
+    <Style TargetType="TextBox" BasedOn="{StaticResource MetroTextBox}">
+        <Setter Property="MinHeight" Value="16" />
+        <Setter Property="Background" Value="{StaticResource BroContentBackground}" />
+    </Style>
+    <Style TargetType="Expander" BasedOn="{StaticResource MetroExpander}">
+        <Setter Property="Background" Value="{StaticResource BroContentBackground}" />
+        <Setter Property="MinHeight" Value="{StaticResource DefaultButtonSize}" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
+</ResourceDictionary>
