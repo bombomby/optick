@@ -1,5 +1,7 @@
 Bin/
 Brofiler/obj/
+BrofilerApp/obj/
+BrofilerApp/.vs/
 Build/
 *.suo
 *.user
