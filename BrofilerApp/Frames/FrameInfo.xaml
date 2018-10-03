@@ -2,7 +2,6 @@
 	xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
 	xmlns:Custom="http://schemas.microsoft.com/wpf/2008/toolkit"
     xmlns:Controls="clr-namespace:Profiler.Controls"
-    xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
     x:Class="Profiler.FrameInfo"
 	x:Name="UserControl" mc:Ignorable="d" Height="538"
 	TextOptions.TextFormattingMode="Display"
@@ -92,9 +91,35 @@
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="2*"/>
             <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
-        <TreeView Grid.Row="1" BorderThickness="0" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling" x:Name="EventTreeView" DataContext="{Binding Root}" ItemsSource="{Binding Children}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="0" >
+        <Controls:FunctionHistory x:Name="FunctionHistoryControl" Grid.RowSpan="2" />
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Label Content="{Binding DeatiledDescription}" Grid.Column="0" FontWeight="Bold" />
+            <StackPanel x:Name="TreeToolPanel" VerticalAlignment="Center" Orientation="Horizontal" HorizontalAlignment="Right" Opacity="0.5" Grid.Column="1">
+                <ToggleButton x:Name="FilterByTime" VerticalAlignment="Top" IsChecked="True" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" ToolTip="Hides all nodes with small time" FontWeight="Bold" Click="RefreshFilter" Margin="1,1,0,1">
+                    <ContentControl Style="{StaticResource appbar_timer}" Margin="-13"/>
+                </ToggleButton>
+                <TextBox x:Name="TimeLimit" Width="45" Height="{StaticResource DefaultButtonSize}" Padding="0" Text="0.001" FontWeight="Bold" Margin="1,1,0,0" VerticalAlignment="Top" HorizontalAlignment="Center" />
+                <ToggleButton x:Name="FocusCallStack" VerticalAlignment="Top" Height="{StaticResource DefaultButtonSize}" ToolTip="Focus on callstacks" FontWeight="Bold" Width="{StaticResource DefaultButtonSize}" Click="RefreshFilter" Margin="1,1,0,1">
+                    <ContentControl Style="{StaticResource appbar_crosshair}" Margin="-13"/>
+                </ToggleButton>
+                <ToggleButton x:Name="ShowPercentButton" Content="%" VerticalAlignment="Top" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" FontSize="18.667" Padding="1,-4,1,-1" ToolTip="Show events in percent" FontWeight="Bold"  Margin="1,1,0,1" />
+                <ToggleButton x:Name="ShowPathButton" VerticalAlignment="Top" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" ToolTip="Show source path" FontWeight="Bold" Margin="1">
+                    <ContentControl Style="{StaticResource appbar_folder}" Margin="-13"/>
+                </ToggleButton>
+            </StackPanel>
+        </Grid>
+        <TreeView Grid.Column="1" Grid.Row="1" BorderThickness="0" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling" x:Name="EventTreeView" DataContext="{Binding Root}" ItemsSource="{Binding Children}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="0" >
             <TreeView.Resources>
                 <HierarchicalDataTemplate DataType="{x:Type Profiler_Data:BaseTreeNode}" ItemsSource="{Binding Children}">
                     <Grid Width="Auto" Margin="1">
@@ -142,9 +167,9 @@
                             </Label.Background>
                         </Label>
                         <Label x:Name="SelfText" Grid.Column="0" Content="{Binding SelfDuration, Mode=OneTime}" ContentStringFormat="{}{0:0.###}" Padding="0,0,4,0" HorizontalAlignment="Right" Foreground="White" FontSize="8pt" />
-                        <Label Grid.Column="1" Content="{Binding Name, Mode=OneTime}" Padding="4,0,0,0" Style="{StaticResource LabelUnderscoreStyle}"/>
+                        <Label Grid.Column="1" Content="{Binding Name, Mode=OneTime}" Margin="4,0,0,0" Style="{StaticResource LabelUnderscoreStyle}"/>
                         <Controls:TagsControl Grid.Column="2" x:Name="Tags" DataContext="{Binding Tags, Mode=OneTime}" Margin="4,0,0,0" />
-                        <Label Grid.Column="3" Content="{Binding Path, Mode=OneTime}" Padding="4,0,0,0" Style="{StaticResource LabelUnderscoreStyle}" Foreground="Gray" ContentStringFormat="{}[{0}]" Visibility="{Binding IsChecked, ElementName=ShowPathButton, Converter={StaticResource BooleanToVisibilityConverter}}" />
+                        <Label Grid.Column="3" Content="{Binding Path, Mode=OneTime}" Margin="4,0,0,0" Style="{StaticResource LabelUnderscoreStyle}" Foreground="Gray" ContentStringFormat="{}[{0}]" Visibility="{Binding IsChecked, ElementName=ShowPathButton, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     </Grid>
                     <HierarchicalDataTemplate.Triggers>
                         <DataTrigger Binding="{Binding IsChecked, ElementName=ShowPercentButton}" Value="True">
@@ -170,47 +195,7 @@
                 </Style>
             </TreeView.ItemContainerStyle>
         </TreeView>
-        <local:FrameDataTable Grid.Row="0" Grid.RowSpan="2" Width="Auto" RenderTransformOrigin="0.461,0.52" Grid.Column="9" DataContext="{Binding Board}" x:Name="SummaryTable" Margin="4,0,0,0" />
+        <local:FrameDataTable Grid.Row="0" Grid.RowSpan="2" Width="Auto" RenderTransformOrigin="0.461,0.52" Grid.Column="2" DataContext="{Binding Board}" x:Name="SummaryTable" Margin="4,0,0,0" />
         <GridSplitter ResizeDirection="Columns" Width="6" Grid.Column="1" HorizontalAlignment="Left" Grid.RowSpan="2"/>
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <Label Content="{Binding DeatiledDescription}" Grid.Column="0" FontWeight="Bold" />
-            <StackPanel x:Name="TreeToolPanel" VerticalAlignment="Center" Orientation="Horizontal" HorizontalAlignment="Right" Opacity="0.5" Grid.Column="1">
-                <ToggleButton x:Name="FilterByTime" VerticalAlignment="Top" IsChecked="True" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" ToolTip="Hides all nodes with small time" FontWeight="Bold" Click="RefreshFilter" Margin="1,1,0,1">
-                    <ContentControl Style="{StaticResource appbar_timer}" Margin="-13"/>
-                </ToggleButton>
-                <TextBox x:Name="TimeLimit" Width="45" Height="{StaticResource DefaultButtonSize}" Padding="0" Text="0.001" FontWeight="Bold" Margin="1,1,0,0" VerticalAlignment="Top" HorizontalAlignment="Center" />
-                <ToggleButton x:Name="FocusCallStack" VerticalAlignment="Top" Height="{StaticResource DefaultButtonSize}" ToolTip="Focus on callstacks" FontWeight="Bold" Width="{StaticResource DefaultButtonSize}" Click="RefreshFilter" Margin="1,1,0,1">
-                    <ContentControl Style="{StaticResource appbar_crosshair}" Margin="-13"/>
-                </ToggleButton>
-                <ToggleButton x:Name="ShowPercentButton" Content="%" VerticalAlignment="Top" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" FontSize="18.667" Padding="1,-4,1,-1" ToolTip="Show events in percent" FontWeight="Bold"  Margin="1,1,0,1" />
-                <ToggleButton x:Name="ShowPathButton" VerticalAlignment="Top" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" ToolTip="Show source path" FontWeight="Bold" Margin="1">
-                    <ContentControl Style="{StaticResource appbar_folder}" Margin="-13"/>
-                </ToggleButton>
-            </StackPanel>
-            <lvc:CartesianChart Grid.Row="1" Grid.ColumnSpan="2" x:Name="FunctionChart" DisableAnimations="True" Hoverable="False" DataTooltip="{x:Null}">
-                <lvc:CartesianChart.AxisX>
-                    <lvc:Axis>
-                        <lvc:Axis.Separator>
-                            <lvc:Separator StrokeThickness="0.33"  />
-                        </lvc:Axis.Separator>
-                    </lvc:Axis>
-                </lvc:CartesianChart.AxisX>
-                <lvc:CartesianChart.AxisY>
-                    <lvc:Axis Title="Function Time (ms)" MinValue="0" x:Name="FrameTimeAxis">
-                        <lvc:Axis.Separator>
-                            <lvc:Separator Step="16.66666" StrokeThickness="0.33"/>
-                        </lvc:Axis.Separator>
-                    </lvc:Axis>
-                </lvc:CartesianChart.AxisY>
-            </lvc:CartesianChart>
-        </Grid>
     </Grid>
 </UserControl>
