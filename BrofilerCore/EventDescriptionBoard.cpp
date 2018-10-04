@@ -18,44 +18,47 @@ EventDescriptionBoard& EventDescriptionBoard::Get()
 	return instance;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-const std::vector<EventDescription*>& EventDescriptionBoard::GetEvents() const
+const EventDescriptionList& EventDescriptionBoard::GetEvents() const
 {
-	return board;
+	return boardDescriptions;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-EventDescriptionBoard::~EventDescriptionBoard()
-{
-	for(auto it = board.begin(); it != board.end(); ++it)
-	{
-		EventDescription* desc = *it;
-		delete desc;
-	}
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-EventDescription* EventDescriptionBoard::CreateDescription()
+EventDescription* EventDescriptionBoard::CreateDescription(const char* name, const char* file /*= nullptr*/, uint32_t line /*= 0*/, uint32_t color /*= Color::Null*/, uint32_t filter /*= 0*/)
 {
 	std::lock_guard<std::mutex> lock(GetBoardLock());
 
-	EventDescription* desc = new EventDescription();
-	desc->index = (unsigned long)board.size();
-	board.push_back(desc);
-	return desc;
+	size_t index = boardDescriptions.Size();
+
+	EventDescription& desc = boardDescriptions.Add();
+	desc.index = (uint32)index;
+	desc.name = name;
+	desc.file = file;
+	desc.line = line;
+	desc.color = color;
+	desc.filter = filter;
+
+	return &desc;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+EventDescription* EventDescriptionBoard::CreateSharedDescription(const char* name, const char* file /*= nullptr*/, uint32_t line /*= 0*/, uint32_t color /*= Color::Null*/, uint32_t filter /*= 0*/)
+{
+	StringHash nameHash(name);
+
+	std::pair<DescriptionMap::iterator, bool> cached = sharedDescriptions.insert({ nameHash, nullptr });
+
+	if (cached.second)
+	{
+		const char* nameCopy = sharedNames.Add(name, strlen(name) + 1, false);
+		cached.first->second = CreateDescription(nameCopy, file, line, color, filter);
+	}
+
+	return cached.first->second;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator << ( OutputDataStream& stream, const EventDescriptionBoard& ob)
 {
 	std::lock_guard<std::mutex> lock(GetBoardLock());
-
-	const std::vector<EventDescription*>& events = ob.GetEvents();
-
-	stream << (uint32)events.size();
-
-	for(auto it = events.begin(); it != events.end(); ++it)
-	{
-		const EventDescription* desc = *it;
-		stream << *desc;
-	}
-
+	stream << ob.GetEvents();
 	return stream;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

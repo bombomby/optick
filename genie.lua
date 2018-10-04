@@ -162,6 +162,8 @@ end
 			"BrofilerCore/Memory.h",
 			"BrofilerCore/Memory.cpp",
 			"BrofilerCore/MemoryPool.h",
+			"BrofilerCore/StringTable.h",
+			"BrofilerCore/StringTable.cpp",
 			"BrofilerCore/Platform.h",
 			"BrofilerCore/Timer.h",
 			"BrofilerCore/ThreadID.h",

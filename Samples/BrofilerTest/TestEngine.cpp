@@ -236,10 +236,17 @@ void Engine::UpdatePhysics()
 template<int N>
 void RecursiveUpdate(int sleep)
 {
-	PROFILE;
+	const char* scenes[4] = { "Earth", "Mars", "Moon", "Pluto" };
+	char label[64] = { 0 };
+	sprintf_s(label,  "UpdateScene - %s", scenes[rand() % 4]);
+
+	BROFILER_PUSH_DYNAMIC(label);
+	
 	MT::SpinSleepMicroSeconds(sleep);
 	RecursiveUpdate<N - 1>(sleep);
 	RecursiveUpdate<N - 1>(sleep);
+
+	BROFILER_POP();
 }
 
 template<>

@@ -61,10 +61,37 @@ public:
 		return chunk->data[index++];
 	}
 
-	BRO_INLINE void Push(const T& item)
+	BRO_INLINE T& Add(const T& item)
 	{
-		Add() = item;
+		return Add() = item;
 	}
+
+	BRO_INLINE T* AddRange(const T* items, size_t count, bool allowOverlap = true)
+	{
+		BRO_ASSERT(count <= SIZE || allowOverlap, "Can't add value to the MemoryPool without overlap");
+
+		int spacesLeft = SIZE - index;
+
+		if (count <= spacesLeft)
+		{
+			std::memcpy(&chunk->data[index], items, sizeof(T) * count);
+			return &chunk->data[index += (uint32)count];
+		}
+		else if (allowOverlap)
+		{
+			T* result = &chunk->data[index];
+			std::memcpy(result, items, sizeof(T) * spacesLeft);
+			AddChunk();
+			AddRange(items + spacesLeft, count - spacesLeft, allowOverlap);
+			return result;
+		}
+		else
+		{
+			AddChunk();
+			return AddRange(items, count);
+		}
+	}
+
 
 	BRO_INLINE T* TryAdd(int count)
 	{
@@ -218,6 +245,23 @@ public:
 		{
 			memcpy(&destination[curIndex], chunk->data, sizeof(T) * index);
 		}
+	}
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<uint32 CHUNK_SIZE>
+class MemoryBuffer : private MemoryPool<uint8, CHUNK_SIZE>
+{
+public:
+	template<class U>
+	U* Add(U* data, size_t size, bool allowOverlap = true)
+	{
+		return (U*)(MemoryPool<uint8, CHUNK_SIZE>::AddRange((uint8*)data, size, allowOverlap));
+	}
+
+	template<class T>
+	T* Add(const T& val, bool allowOverlap = true)
+	{
+		return static_cast<T*>(Add(&val, sizeof(T), allowOverlap));
 	}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

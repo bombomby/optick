@@ -12,6 +12,7 @@
 #include "SysCallCollector.h"
 #include "SwitchContextCollector.h"
 
+#include <array>
 #include <map>
 #include <list>
 
@@ -116,6 +117,9 @@ struct EventStorage
 	TagU64Buffer tagU64Buffer;
 	TagPointBuffer tagPointBuffer;
 	TagStringBuffer tagStringBuffer;
+
+	uint32					   pushPopEventStackIndex;
+	std::array<EventData*, 32> pushPopEventStack;
 
 	bool isFiberStorage;
 

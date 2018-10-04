@@ -645,7 +645,7 @@ BROFILER_API bool RegisterFiber(uint64 fiberId, EventStorage** slot)
 	return Core::Get().RegisterFiber(FiberDescription(fiberId), slot);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-EventStorage::EventStorage(): isFiberStorage(false)
+EventStorage::EventStorage(): isFiberStorage(false), pushPopEventStackIndex(0)
 {
 	 
 }

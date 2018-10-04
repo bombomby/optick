@@ -16,6 +16,7 @@
 #define BRO_CACHE_LINE_SIZE 64
 #define BRO_ALIGN(N) __declspec( align( N ) )
 #define BRO_ALIGN_CACHE BRO_ALIGN(BRO_CACHE_LINE_SIZE)
+#define BRO_ARRAY_SIZE(ARR) (sizeof(ARR)/sizeof((arr)[0]))
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define BRO_UNUSED(x) (void)(x)

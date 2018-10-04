@@ -9,19 +9,14 @@
 namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-EventDescription* EventDescription::Create(const char* eventName, const char* fileName, const unsigned long fileLine, const unsigned long eventColor /*= Color::Null*/, const unsigned long filter /*= 0*/, float budget /*= 0.0f*/)
+EventDescription* EventDescription::Create(const char* eventName, const char* fileName, const unsigned long fileLine, const unsigned long eventColor /*= Color::Null*/, const unsigned long filter /*= 0*/)
 {
-	static std::mutex creationLock;
-	std::lock_guard<std::mutex> lock(creationLock);
-
-	EventDescription* result = EventDescriptionBoard::Get().CreateDescription();
-	result->name = eventName;
-	result->file = fileName;
-	result->line = fileLine;
-	result->color = eventColor;
-	result->budget = budget;
-	result->filter = filter;
-	return result;
+	return EventDescriptionBoard::Get().CreateDescription(eventName, fileName, fileLine, eventColor, filter);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+EventDescription* EventDescription::CreateShared(const char* eventName, const char* fileName, const unsigned long fileLine, const unsigned long eventColor /*= Color::Null*/, const unsigned long filter /*= 0*/)
+{
+	return EventDescriptionBoard::Get().CreateSharedDescription(eventName, fileName, fileLine, eventColor, filter);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventDescription::EventDescription() : name(""), file(""), line(0), color(0)
@@ -51,6 +46,33 @@ void Event::Stop(EventData& data)
 	data.Stop();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Event::Push(const char* name)
+{
+	if (EventStorage* storage = Core::storage)
+	{
+		EventDescription* desc = EventDescription::CreateShared(name);
+		Push(*desc);
+	}
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Event::Push(const EventDescription& description)
+{
+	if (EventStorage* storage = Core::storage)
+	{
+		EventData& result = storage->NextEvent();
+		result.description = &description;
+		result.Start();
+		storage->pushPopEventStack[storage->pushPopEventStackIndex++] = &result;
+	}
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Event::Pop()
+{
+	if (EventStorage* storage = Core::storage)
+		if (storage->pushPopEventStackIndex > 0)
+			storage->pushPopEventStack[--storage->pushPopEventStackIndex]->Stop();
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FiberSyncData::AttachToThread(EventStorage* storage, uint64_t threadId)
 {
 	if (storage)
@@ -77,7 +99,7 @@ void Tag::Attach(const EventDescription& description, float val)
 {
 	if (EventStorage* storage = Core::storage)
 	{
-		storage->tagFloatBuffer.Push(TagFloat(description, val));
+		storage->tagFloatBuffer.Add(TagFloat(description, val));
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -85,7 +107,7 @@ void Tag::Attach(const EventDescription& description, int32_t val)
 {
 	if (EventStorage* storage = Core::storage)
 	{
-		storage->tagS32Buffer.Push(TagS32(description, val));
+		storage->tagS32Buffer.Add(TagS32(description, val));
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -93,7 +115,7 @@ void Tag::Attach(const EventDescription& description, uint32_t val)
 {
 	if (EventStorage* storage = Core::storage)
 	{
-		storage->tagU32Buffer.Push(TagU32(description, val));
+		storage->tagU32Buffer.Add(TagU32(description, val));
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -101,7 +123,7 @@ void Tag::Attach(const EventDescription& description, uint64_t val)
 {
 	if (EventStorage* storage = Core::storage)
 	{
-		storage->tagU64Buffer.Push(TagU64(description, val));
+		storage->tagU64Buffer.Add(TagU64(description, val));
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -109,7 +131,7 @@ void Tag::Attach(const EventDescription& description, float val[3])
 {
 	if (EventStorage* storage = Core::storage)
 	{
-		storage->tagPointBuffer.Push(TagPoint(description, val));
+		storage->tagPointBuffer.Add(TagPoint(description, val));
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -117,14 +139,14 @@ void Tag::Attach(const EventDescription& description, const char* val)
 {
 	if (EventStorage* storage = Core::storage)
 	{
-		storage->tagStringBuffer.Push(TagString(description, val));
+		storage->tagStringBuffer.Add(TagString(description, val));
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream & operator<<(OutputDataStream &stream, const EventDescription &ob)
 {
 	byte flags = 0;
-	return stream << ob.name << ob.file << ob.line << ob.filter << ob.color << ob.budget << flags;
+	return stream << ob.name << ob.file << ob.line << ob.filter << ob.color << (float)0.0f << flags;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const EventTime& ob)
