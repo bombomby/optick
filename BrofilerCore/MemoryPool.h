@@ -30,28 +30,34 @@ template<class T, uint32 SIZE = 16>
 class MemoryPool
 {
 	typedef MemoryChunk<T, SIZE> Chunk;
-	Chunk root;
-
+	Chunk* root;
 	Chunk* chunk;
 	uint32 index;
-
-	uint32 chunkCount;
 
 	BRO_INLINE void AddChunk()
 	{
 		index = 0;
-		if (!chunk->next)
+		if (!chunk || !chunk->next)
 		{
-			void* ptr = Memory::Alloc(sizeof(Chunk));
-			chunk->next = new (ptr) Chunk();
-			chunk->next->prev = chunk;
+			Chunk* newChunk = Memory::New<Chunk>();
+			if (chunk)
+			{
+				chunk->next = newChunk;
+				newChunk->prev = chunk;
+				chunk = newChunk;
+			}
+			else
+			{
+				root = chunk = newChunk;
+			}
 		}
-		chunk = chunk->next;
-
-		++chunkCount;
+		else
+		{
+			chunk = chunk->next;
+		}
 	}
 public:
-	MemoryPool() : chunk(&root), index(0), chunkCount(1)	{}
+	MemoryPool() : root(nullptr), chunk(nullptr), index(SIZE) {}
 
 	BRO_INLINE T& Add()
 	{
@@ -81,7 +87,7 @@ public:
 			std::memcpy(&chunk->data[index], items, sizeof(T) * count);
 			index += (uint32)count;
 		}
-		else if (allowOverlap)
+		else if (spacesLeft > 0 && allowOverlap)
 		{
 			result = &chunk->data[index];
 			std::memcpy(result, items, sizeof(T) * spacesLeft);
@@ -92,7 +98,7 @@ public:
 		else
 		{
 			AddChunk();
-			return AddRange(items, count);
+			return AddRange(items, count, allowOverlap);
 		}
 
 		return result;
@@ -113,10 +119,10 @@ public:
 
 	BRO_INLINE T* Back()
 	{
-		if (index > 0)
+		if (chunk && index > 0)
 			return &chunk->data[index - 1];
 
-		if (chunk->prev != nullptr)
+		if (chunk && chunk->prev != nullptr)
 			return &chunk->prev->data[SIZE - 1];
 
 		return nullptr;
@@ -124,9 +130,12 @@ public:
 
 	BRO_INLINE size_t Size() const
 	{
+		if (root == nullptr)
+			return 0;
+
 		size_t count = 0;
 
-		for (const Chunk* it = &root; it != chunk; it = it->next)
+		for (const Chunk* it = root; it != chunk; it = it->next)
 			count += SIZE;
 
 		return count + index;
@@ -134,23 +143,27 @@ public:
 
 	BRO_INLINE bool IsEmpty() const
 	{
-		return chunk == &root && index == 0;
+		return (chunk == nullptr) || (chunk == root && index == 0);
 	}
 
 	BRO_INLINE void Clear(bool preserveMemory = true)
 	{
 		if (!preserveMemory)
 		{
-			if (root.next)
+			if (root)
 			{
-				root.next->~MemoryChunk();
-				Memory::Free(root.next);
-				root.next = 0;
+				root->~MemoryChunk();
+				Memory::Free(root);
+				root = 0;
+				index = SIZE;
 			}
 		}
 
-		index = 0;
-		chunk = &root;
+		if (root)
+		{
+			index = 0;
+			chunk = root;
+		}
 	}
 
 	class const_iterator
@@ -196,7 +209,7 @@ public:
 
 	const_iterator begin() const
 	{
-		return const_iterator(&root, 0);
+		return const_iterator(root, 0);
 	}
 
 	const_iterator end() const
@@ -207,47 +220,50 @@ public:
 	template<class Func>
 	void ForEach(Func func) const
 	{
-		for (const Chunk* it = &root; it != chunk; it = it->next)
+		for (const Chunk* it = root; it != chunk; it = it->next)
 			for (uint32 i = 0; i < SIZE; ++i)
 				func(it->data[i]);
 
-		for (uint32 i = 0; i < index; ++i)
-			func(chunk->data[i]);
+		if (chunk)
+			for (uint32 i = 0; i < index; ++i)
+				func(chunk->data[i]);
 	}
 
 	template<class Func>
 	void ForEach(Func func)
 	{
-		for (Chunk* it = &root; it != chunk; it = it->next)
+		for (Chunk* it = root; it != chunk; it = it->next)
 			for (uint32 i = 0; i < SIZE; ++i)
 				func(it->data[i]);
 
-		for (uint32 i = 0; i < index; ++i)
-			func(chunk->data[i]);
+		if (chunk)
+			for (uint32 i = 0; i < index; ++i)
+				func(chunk->data[i]);
 	}
 
 	template<class Func>
 	void ForEachChunk(Func func) const
 	{
-		for (const Chunk* it = &root; it != chunk; it = it->next)
+		for (const Chunk* it = root; it != chunk; it = it->next)
 			for (uint32 i = 0; i < SIZE; ++i)
 				func(it->data, SIZE);
 
-		for (uint32 i = 0; i < index; ++i)
-			func(chunk->data, index);
+		if (chunk)
+			for (uint32 i = 0; i < index; ++i)
+				func(chunk->data, index);
 	}
 
 	void ToArray(T* destination) const
 	{
 		uint32 curIndex = 0;
 
-		for (const Chunk* it = &root; it != chunk; it = it->next)
+		for (const Chunk* it = root; it != chunk; it = it->next)
 		{
 			memcpy(&destination[curIndex], it->data, sizeof(T) * SIZE);
 			curIndex += SIZE;
 		}
 
-		if (index > 0)
+		if (chunk && index > 0)
 		{
 			memcpy(&destination[curIndex], chunk->data, sizeof(T) * index);
 		}

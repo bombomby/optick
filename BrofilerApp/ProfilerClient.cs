@@ -20,9 +20,15 @@ namespace Profiler
 
         ProfilerClient()
         {
-            //client.LingerState = new LingerOption(true, 0);
-            //client.SendTimeout = 100;
-            //client.ReceiveTimeout = 100;
+
+        }
+
+        private void Reconnect()
+        {
+            if (client.Client.Connected)
+                client.Client.Disconnect(true);
+
+            client = new TcpClient();
         }
 
         public IPAddress IpAddress
@@ -33,8 +39,7 @@ namespace Profiler
                 if (ipAddress != value)
                 {
                     ipAddress = value;
-                    if (client.Client.Connected)
-                        client.Client.Disconnect(true);
+                    Reconnect();
                 }
             }
         }
@@ -47,8 +52,7 @@ namespace Profiler
                 if (port != value)
                 {
                     port = value;
-                    if (client.Client.Connected)
-                        client.Client.Disconnect(true);
+                    Reconnect();
                 }
             }
         }
@@ -83,8 +87,7 @@ namespace Profiler
                         ConnectionChanged?.Invoke(IpAddress, Port, State.Disconnected, ex.Message);
                     }));
 
-                    client.Client.Disconnect(true);
-                    client = new TcpClient();
+                    Reconnect();
                 }
             }
 
@@ -173,8 +176,7 @@ namespace Profiler
                         ConnectionChanged?.Invoke(IpAddress, Port, State.Disconnected, ex.Message);
                     }));
 
-                    client.Client.Disconnect(true);
-                    client = new TcpClient();
+                    Reconnect();
                 }
             }
 
