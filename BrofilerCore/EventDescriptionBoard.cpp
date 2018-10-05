@@ -44,6 +44,8 @@ EventDescription* EventDescriptionBoard::CreateSharedDescription(const char* nam
 {
 	StringHash nameHash(name);
 
+	std::lock_guard<std::mutex> lock(sharedLock);
+
 	std::pair<DescriptionMap::iterator, bool> cached = sharedDescriptions.insert({ nameHash, nullptr });
 
 	if (cached.second)

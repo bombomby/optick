@@ -76,7 +76,7 @@ namespace Profiler.Data
 
         public static String ReadBinaryString(BinaryReader reader)
         {
-            return System.Text.Encoding.UTF8.GetString(reader.ReadBytes(reader.ReadInt32()));
+            return System.Text.Encoding.ASCII.GetString(reader.ReadBytes(reader.ReadInt32()));
         }
     }
 }

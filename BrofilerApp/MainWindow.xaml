@@ -23,7 +23,7 @@
     <MahApps:MetroWindow.RightWindowCommands>
         <MahApps:WindowCommands>
             <StackPanel Orientation="Horizontal">
-                <local:PlatformSelector x:Name="PlatformSelectorControl" Opacity="0.66" VerticalAlignment="Center" />
+                <!--<local:PlatformSelector x:Name="PlatformCombo" Opacity="0.66" VerticalAlignment="Center" />-->
                 <Button Margin="-2" ToolTip="Navigate to the Wiki">
                     <ContentControl Style="{StaticResource appbar_book_perspective_help}" />
                 </Button>
@@ -130,8 +130,8 @@
 					                </Button>
 					                <local:PlatformSelector x:Name="PlatformCombo" Margin="4,0,0,0" VerticalAlignment="Top" Height="{StaticResource DefaultButtonSize}"/>
 					                <StackPanel x:Name="warningBlock"  Orientation="Horizontal">
-					                    <Image x:Name="warningIcon" Source="Icons/Warning-icon.png" Margin="5,0,0,0" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" />
-					                    <TextBlock VerticalAlignment="Center" TextTrimming="WordEllipsis" Width="Auto"><Hyperlink x:Name="warningUrl" RequestNavigate="Hyperlink_RequestNavigate"><Run x:Name="warningText" Text="ClickMe"/></Hyperlink></TextBlock>
+                                        <Image x:Name="warningIcon" Source="/Brofiler;component/TimeLine/Icons/Warning-icon.png" Margin="5,0,0,0" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" />
+                                        <TextBlock VerticalAlignment="Center" TextTrimming="WordEllipsis" Width="Auto"><Hyperlink x:Name="warningUrl" RequestNavigate="Hyperlink_RequestNavigate"><Run x:Name="warningText" Text="ClickMe"/></Hyperlink></TextBlock>
 					                </StackPanel>
 					            </StackPanel>
 					        </Grid>

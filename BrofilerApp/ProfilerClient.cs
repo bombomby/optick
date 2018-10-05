@@ -9,32 +9,40 @@ using System.Net;
 using System.IO;
 using System.Windows;
 using System.Runtime.CompilerServices;
+using System.Diagnostics;
 
 namespace Profiler
 {
-  public class ProfilerClient
-  {
-		private Object criticalSection = new Object();
-    private static ProfilerClient profilerClient = new ProfilerClient();
-
-    public IPAddress IpAddress
+    public class ProfilerClient
     {
-      get { return ipAddress; }
-      set
+        private Object criticalSection = new Object();
+        private static ProfilerClient profilerClient = new ProfilerClient();
+
+        ProfilerClient()
         {
-            if (ipAddress != value)
+            //client.LingerState = new LingerOption(true, 0);
+            //client.SendTimeout = 100;
+            //client.ReceiveTimeout = 100;
+        }
+
+        public IPAddress IpAddress
+        {
+            get { return ipAddress; }
+            set
             {
-               ipAddress = value;
-                if (client.Client.Connected)
-                    client.Client.Disconnect(true);
+                if (ipAddress != value)
+                {
+                    ipAddress = value;
+                    if (client.Client.Connected)
+                        client.Client.Disconnect(true);
+                }
             }
         }
-    }
 
-    public int Port
-    {
-      get { return port; }
-      set
+        public int Port
+        {
+            get { return port; }
+            set
             {
                 if (port != value)
                 {
@@ -43,124 +51,148 @@ namespace Profiler
                         client.Client.Disconnect(true);
                 }
             }
-    }
+        }
 
-    public static ProfilerClient Get() { return profilerClient; }
+        public static ProfilerClient Get() { return profilerClient; }
 
-    TcpClient client = new TcpClient();
+        TcpClient client = new TcpClient();
 
-    #region SocketWork
+        #region SocketWork
 
-    public DataResponse RecieveMessage()
-    {
-			try
-			{
-				NetworkStream stream = null;
+        public DataResponse RecieveMessage()
+        {
+            try
+            {
+                NetworkStream stream = null;
 
-				lock(criticalSection)
-				{
-					if (!client.Connected)
-						return null;
+                lock (criticalSection)
+                {
+                    if (!client.Connected)
+                        return null;
 
-					stream = client.GetStream();
-				}
+                    stream = client.GetStream();
+                }
 
-        return DataResponse.Create(stream);
-			}
-			catch (System.IO.IOException ex)
-			{
-				if (MessageBox.Show(ex.Message) == MessageBoxResult.OK)
-				{
-					lock (criticalSection)
-					{
-						client = new TcpClient();
-					}
-				}
-			}
+                return DataResponse.Create(stream);
+            }
+            catch (System.IO.IOException ex)
+            {
+                lock (criticalSection)
+                {
+                    Application.Current.Dispatcher.BeginInvoke(new Action(() => {
+                        ConnectionChanged?.Invoke(IpAddress, Port, State.Disconnected, ex.Message);
+                    }));
 
-			return null;
-    }
+                    client.Client.Disconnect(true);
+                    client = new TcpClient();
+                }
+            }
 
-    private IPAddress ipAddress;
-    private int port = -1;
+            return null;
+        }
 
-		const int PORT_RANGE = 4;
+        private IPAddress ipAddress;
+        private int port = -1;
 
-		private bool CheckConnection()
-		{
-			lock (criticalSection)
-			{
-				if (!client.Connected)
-				{
-					for (int currentPort = port + PORT_RANGE - 1; currentPort >= port; --currentPort)
-					{
-						try
-						{
-							client.Connect(new IPEndPoint(ipAddress, currentPort));
+        const int PORT_RANGE = 3;
+
+        private bool CheckConnection()
+        {
+            lock (criticalSection)
+            {
+                if (!client.Connected)
+                {
+                    for (int currentPort = port; currentPort < port + PORT_RANGE; ++currentPort)
+                    {
+                        try
+                        {
+                            Application.Current.Dispatcher.BeginInvoke(new Action(() => {
+                                ConnectionChanged?.Invoke(IpAddress, currentPort, State.Connecting, String.Empty);
+                            }));
+
+                            client.Connect(new IPEndPoint(ipAddress, currentPort));
                             NetworkStream stream = client.GetStream();
- 
+
+                            ConnectionChanged?.Invoke(ipAddress, currentPort, State.Connected, String.Empty);
+
                             return true;
-						}
-						catch (SocketException) { }
-					}
-				}
-			}
-			return false;
-		}
+                        }
+                        catch (SocketException ex)
+                        {
+                            Debug.Print(ex.Message);
+                        }
+                    }
+                }
+            }
+            return false;
+        }
 
-    public bool SendMessage(Message message)
-    {
-			try
-			{
-				CheckConnection();
+        public enum State
+        {
+            Connecting,
+            Connected,
+            Disconnected,
+        }
+        public delegate void ConnectionStateEventHandler(IPAddress address, int port, State state, String message);
+        public event ConnectionStateEventHandler ConnectionChanged;
 
-				lock (criticalSection)
-				{
-					MemoryStream buffer = new MemoryStream();
-					message.Write(new BinaryWriter(buffer));
-					buffer.Flush();
+        public bool SendMessage(Message message, bool autoconnect = false)
+        {
+            try
+            {
+                if (!client.Connected && !autoconnect)
+                    return false;
+    
+                CheckConnection();
 
-					UInt32 length = (UInt32)buffer.Length;
+                lock (criticalSection)
+                {
+                    MemoryStream buffer = new MemoryStream();
+                    message.Write(new BinaryWriter(buffer));
+                    buffer.Flush();
 
-					NetworkStream stream = client.GetStream();
+                    UInt32 length = (UInt32)buffer.Length;
 
-					BinaryWriter writer = new BinaryWriter(stream);
-					writer.Write(Message.MESSAGE_MARK);
-					writer.Write(length);
+                    NetworkStream stream = client.GetStream();
 
-					buffer.WriteTo(stream);
-					stream.Flush();
-				}
+                    BinaryWriter writer = new BinaryWriter(stream);
+                    writer.Write(Message.MESSAGE_MARK);
+                    writer.Write(length);
 
-				return true;
-			}
-			catch (Exception ex)
-			{
-				if (MessageBox.Show(ex.Message) == MessageBoxResult.OK)
-				{
-					lock (criticalSection)
-					{
-						//client.Client.Shutdown(SocketShutdown.Both);
-						client = new TcpClient();
-					}
-				}
-			}
+                    buffer.WriteTo(stream);
+                    stream.Flush();
+                }
 
-			return false;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                lock (criticalSection)
+                {
+                    Application.Current.Dispatcher.BeginInvoke(new Action(() => {
+                        ConnectionChanged?.Invoke(IpAddress, Port, State.Disconnected, ex.Message);
+                    }));
+
+                    client.Client.Disconnect(true);
+                    client = new TcpClient();
+                }
+            }
+
+            return false;
+        }
+
+        public void Close()
+        {
+            lock (criticalSection)
+            {
+                if (client != null)
+                {
+                    client.Close();
+                    client = null;
+                }
+            }
+        }
+
+        #endregion
     }
-
-    public void Close()
-    {
-			lock (criticalSection)
-			{
-				if (client != null)
-				{
-					client.Close();
-					client = null;
-				}
-			}
-    }
-
-    #endregion
-  }
 }

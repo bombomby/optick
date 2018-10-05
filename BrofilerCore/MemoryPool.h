@@ -68,18 +68,22 @@ public:
 
 	BRO_INLINE T* AddRange(const T* items, size_t count, bool allowOverlap = true)
 	{
-		BRO_ASSERT(count <= SIZE || allowOverlap, "Can't add value to the MemoryPool without overlap");
+		if (count == 0)
+			return nullptr;
 
 		int spacesLeft = SIZE - index;
 
+		T* result = nullptr;
+
 		if (count <= spacesLeft)
 		{
+			result = &chunk->data[index];
 			std::memcpy(&chunk->data[index], items, sizeof(T) * count);
-			return &chunk->data[index += (uint32)count];
+			index += (uint32)count;
 		}
 		else if (allowOverlap)
 		{
-			T* result = &chunk->data[index];
+			result = &chunk->data[index];
 			std::memcpy(result, items, sizeof(T) * spacesLeft);
 			AddChunk();
 			AddRange(items + spacesLeft, count - spacesLeft, allowOverlap);
@@ -90,6 +94,8 @@ public:
 			AddChunk();
 			return AddRange(items, count);
 		}
+
+		return result;
 	}
 
 

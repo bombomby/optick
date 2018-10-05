@@ -26,6 +26,7 @@ using System.Diagnostics;
 using System.Web;
 using System.Net.NetworkInformation;
 using System.ComponentModel;
+using System.Threading.Tasks;
 
 namespace Profiler
 {
@@ -57,6 +58,30 @@ namespace Profiler
             statusToError.Add(ETWStatus.ETW_ERROR_ACCESS_DENIED, new KeyValuePair<string, string>("ETW can't start: launch your game as administrator to collect context switches", "https://github.com/bombomby/brofiler/wiki/Event-Tracing-for-Windows"));
             statusToError.Add(ETWStatus.ETW_ERROR_ALREADY_EXISTS, new KeyValuePair<string, string>("ETW session already started (Reboot should help)", "https://github.com/bombomby/brofiler/wiki/Event-Tracing-for-Windows"));
             statusToError.Add(ETWStatus.ETW_FAILED, new KeyValuePair<string, string>("ETW session failed", "https://github.com/bombomby/brofiler/wiki/Event-Tracing-for-Windows"));
+
+            ProfilerClient.Get().ConnectionChanged += TimeLine_ConnectionChanged;
+
+            socketThread = new Thread(RecieveMessage);
+            socketThread.Start();
+        }
+
+        private void TimeLine_ConnectionChanged(IPAddress address, int port, ProfilerClient.State state, String message)
+        {
+            switch (state)
+            {
+                case ProfilerClient.State.Connecting:
+                    StatusText.Text = String.Format("Connecting {0}:{1} ...", address.ToString(), port);
+                    StatusText.Visibility = System.Windows.Visibility.Visible;
+                    break;
+
+                case ProfilerClient.State.Disconnected:
+                    RaiseEvent(new ShowWarningEventArgs("Connection Failed! " + message, String.Empty));
+                    StatusText.Visibility = System.Windows.Visibility.Collapsed;
+                    break;
+
+                case ProfilerClient.State.Connected:
+                    break;
+            }
         }
 
         public bool LoadFile(string file)
@@ -171,7 +196,7 @@ namespace Profiler
             }
             else
             {
-                MessageBox.Show("Invalid NETWORK_PROTOCOL_VERSION");
+                RaiseEvent(new ShowWarningEventArgs("Invalid NETWORK_PROTOCOL_VERSION", String.Empty));
                 return false;
             }
             return true;
@@ -345,21 +370,13 @@ namespace Profiler
 
         public void StartCapture()
         {
-            StartMessage message = new StartMessage();
-            if (ProfilerClient.Get().SendMessage(message))
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
-                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    StatusText.Text = "Capturing...";
-                    StatusText.Visibility = System.Windows.Visibility.Visible;
-                }));
+                StatusText.Text = "Connecting...";
+                StatusText.Visibility = System.Windows.Visibility.Visible;
+            }));
 
-                if (socketThread == null)
-                {
-                    socketThread = new Thread(RecieveMessage);
-                    socketThread.Start();
-                }
-            }
+            Task.Run(() => { ProfilerClient.Get().SendMessage(new StartMessage(), true); });
         }
     }
 

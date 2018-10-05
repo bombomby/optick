@@ -16,6 +16,8 @@ using System.Text;
 using System.Web;
 using System.Net.Cache;
 using Profiler.Controls;
+using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace Profiler
 {
@@ -39,6 +41,21 @@ namespace Profiler
             this.Loaded += MainWindow_Loaded;
 
             AddHandler(OpenCaptureEvent, new OpenCaptureEventHandler(MainWindow_OpenCapture));
+
+            ProfilerClient.Get().ConnectionChanged += MainWindow_ConnectionChanged;
+
+            WarningTimer = new DispatcherTimer(TimeSpan.FromSeconds(12.0), DispatcherPriority.Background, OnWarningTimeout, Application.Current.Dispatcher);
+
+            HamburgerMenuControl.SelectedItem = CaptureMenuItem;
+            HamburgerMenuControl.Content = CaptureMenuItem;
+        }
+
+        private void MainWindow_ConnectionChanged(IPAddress address, int port, ProfilerClient.State state, String message)
+        {
+            if (state == ProfilerClient.State.Disconnected)
+            {
+                StartButton.IsChecked = false;
+            }
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -289,12 +306,19 @@ namespace Profiler
             e.Handled = true;
         }
 
+        DispatcherTimer WarningTimer { get; set; }
+
+        void OnWarningTimeout(object sender, EventArgs e)
+        {
+            warningBlock.Visibility = Visibility.Collapsed;
+        }
+
         void ShowWarning(String message, String url)
         {
             if (!String.IsNullOrEmpty(message))
             {
                 warningText.Text = message;
-                warningUrl.NavigateUri = new Uri(url);
+                warningUrl.NavigateUri = !String.IsNullOrWhiteSpace(url) ? new Uri(url) : null;
                 warningBlock.Visibility = Visibility.Visible;
             }
             else
@@ -344,7 +368,7 @@ namespace Profiler
 
         private void StartButton_Unchecked(object sender, System.Windows.RoutedEventArgs e)
         {
-            ProfilerClient.Get().SendMessage(new StopMessage());
+            Task.Run(() => ProfilerClient.Get().SendMessage(new StopMessage()));
         }
 
         private void StartButton_Checked(object sender, System.Windows.RoutedEventArgs e)

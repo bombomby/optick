@@ -103,7 +103,7 @@
                         <Setter.Value>
                             <ControlTemplate TargetType="ListView">
                                 <Grid Name="Border">
-                                    <ScrollViewer>
+                                    <ScrollViewer HorizontalScrollBarVisibility="Visible">
                                         <Grid>
                                             <StackPanel Orientation="Vertical" VerticalAlignment="Bottom">
                                                 <StackPanel.Resources>
