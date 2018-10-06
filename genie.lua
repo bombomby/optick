@@ -3,6 +3,11 @@ newoption {
 	description = "Generates Universal Windows Platform application type",
 }
 
+newoption {
+	trigger = "DX12",
+	description = "Generates a sample for DirectX12",
+}
+
 if not _ACTION then
 	_ACTION="vs2017"
 end
@@ -231,6 +236,7 @@ else
 		}
 end
 
+if _OPTIONS["DX12"] then
 	project "WindowsD3D12"
 		flags {"NoPCH", "WinMain"}
 		kind "WindowedApp"
@@ -262,3 +268,4 @@ end
 		vpaths { 
 			["*"] = "Samples/WindowsD3D12" 
 		}
+end
