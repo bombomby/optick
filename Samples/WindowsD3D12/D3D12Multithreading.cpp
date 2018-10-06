@@ -772,7 +772,10 @@ void D3D12Multithreading::OnRender()
 
 	// Present and update the frame index for the next frame.
 	//PIXBeginEvent(m_commandQueue.Get(), 0, L"Presenting to screen");
-	ThrowIfFailed(m_swapChain->Present(1, 0));
+	{
+		BROFILER_CATEGORY("Present", Brofiler::Color::Tomato);
+		ThrowIfFailed(m_swapChain->Present(1, 0));
+	}
 	//PIXEndEvent(m_commandQueue.Get());
 	m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
 
