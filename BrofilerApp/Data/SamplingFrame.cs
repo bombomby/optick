@@ -54,11 +54,9 @@ namespace Profiler.Data
         {
             SamplingDescription description = new SamplingDescription();
             description.Address = reader.ReadUInt64();
-            description.Module = Utils.ReadBinaryString(reader);
-            description.FullName = Utils.ReadBinaryString(reader);
-
-            String file = Utils.ReadBinaryString(reader);
-            description.Path = new FileLine(file, reader.ReadInt32());
+            description.Module = Utils.ReadBinaryWideString(reader);
+            description.FullName = Utils.ReadBinaryWideString(reader);
+            description.Path = new FileLine(Utils.ReadBinaryWideString(reader), reader.ReadInt32());
 
             return description;
         }

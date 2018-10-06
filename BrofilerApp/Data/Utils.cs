@@ -78,5 +78,10 @@ namespace Profiler.Data
         {
             return System.Text.Encoding.ASCII.GetString(reader.ReadBytes(reader.ReadInt32()));
         }
+
+        public static String ReadBinaryWideString(BinaryReader reader)
+        {
+            return System.Text.Encoding.Unicode.GetString(reader.ReadBytes(reader.ReadInt32()));
+        }
     }
 }

@@ -34,7 +34,7 @@ end
 solution "Brofiler"
 	language "C++"
 if _ACTION == "vs2017" then
-	windowstargetplatformversion "10.0.15063.0"
+	windowstargetplatformversion "10.0.17134.0"
 end
 	startproject "BrofilerWindowsTest"
 
@@ -172,85 +172,94 @@ end
 		},
 	}
 	
-project "TaskScheduler"
+group "Samples"
+	project "TaskScheduler"
+		excludes { "ThirdParty/TaskScheduler/Scheduler/Source/MTDefaultAppInterop.cpp", }
+		kind "StaticLib"
+		flags {"NoPCH"}
+		defines {"USE_BROFILER=1"}
+		files {
+			"ThirdParty/TaskScheduler/Scheduler/**.*", 
+		}
 
-	excludes { "ThirdParty/TaskScheduler/Scheduler/Source/MTDefaultAppInterop.cpp", }
-	kind "StaticLib"
- 	flags {"NoPCH"}
-	defines {"USE_BROFILER=1"}
- 	files {
- 		"ThirdParty/TaskScheduler/Scheduler/**.*", 
- 	}
+		includedirs
+		{
+			"ThirdParty/TaskScheduler/Scheduler/Include",
+			"BrofilerCore"
+		}
 
-	includedirs
-	{
-		"ThirdParty/TaskScheduler/Scheduler/Include",
-		"BrofilerCore"
-	}
-
-	excludes { "Src/Platform/Posix/**.*" }
-	
-	vpaths { 
-		["*"] = "TaskScheduler" 
-	}
-	
-	links {
-		"BrofilerCore",
-	}
-
-project "BrofilerTest"
- 	flags {"NoPCH"}
- 	kind "StaticLib"
-	uuid "9A313DD9-8694-CC7D-2F1A-05341B5C9800"
- 	files {
-		"Samples/BrofilerTest/**.*", 
- 	}
-
-	includedirs
-	{
-		"BrofilerCore",
-		"ThirdParty/TaskScheduler/Scheduler/Include"
-	}
-
-	links {
-		"BrofilerCore",
-		"TaskScheduler"
-	}
-	
+		excludes { "Src/Platform/Posix/**.*" }
+		
+		links {
+			"BrofilerCore",
+		}
+			
 if isUWP then
--- Genie can't generate proper UWP application
--- It's a dummy project to match existing project file
-project "BrofilerDurangoTest"
-	location( "BrofilerDurangoTest" )
- 	kind "WindowedApp"
-	uuid "5CA6AF66-C2CB-412E-B335-B34357F2FBB6"
-	files {
-		"Samples/BrofilerDurangoTest/**.*", 
- 	}
+	-- Genie can't generate proper UWP application
+	-- It's a dummy project to match existing project file
+	project "DurangoUWP"
+		location( "Samples/DurangoUWP" )
+		kind "WindowedApp"
+		uuid "5CA6AF66-C2CB-412E-B335-B34357F2FBB6"
+		files {
+			"Samples/DurangoUWP/**.*", 
+		}
 else
-project "BrofilerWindowsTest"
- 	flags {"NoPCH"}
- 	kind "ConsoleApp"
-	uuid "C50A1240-316C-EF4D-BAD9-3500263A260D"
- 	files {
-		"Samples/BrofilerWindowsTest/**.*", 
-		"ThirdParty/TaskScheduler/Scheduler/Source/MTDefaultAppInterop.cpp",
- 	}
-	
-	vpaths { 
-		["*"] = "Samples/BrofilerWindowsTest" 
-	}
-
-	includedirs {
-		"BrofilerCore",
-		"Samples/BrofilerTest",
-		"ThirdParty/TaskScheduler/Scheduler/Include"
-	}
-	
-	links {
-		"BrofilerCore",
-		"BrofilerTest",
-		"TaskScheduler"
-	}
+	project "ConsoleApp"
+		flags {"NoPCH"}
+		kind "ConsoleApp"
+		uuid "C50A1240-316C-EF4D-BAD9-3500263A260D"
+		files {
+			"Samples/ConsoleApp/**.*", 
+			"Samples/Common/TestEngine/**.*", 
+			"ThirdParty/TaskScheduler/Scheduler/Source/MTDefaultAppInterop.cpp",
+		}
+		
+		includedirs {
+			"BrofilerCore",
+			"Samples/Common/TestEngine",
+			"ThirdParty/TaskScheduler/Scheduler/Include"
+		}
+		
+		links {
+			"BrofilerCore",
+			"TaskScheduler"
+		}
+		
+		vpaths { 
+			["*"] = "Samples/ConsoleApp"
+		}
 end
+
+	project "WindowsD3D12"
+		flags {"NoPCH", "WinMain"}
+		kind "WindowedApp"
+		uuid "D055326C-F1F3-4695-B7E2-A683077BE4DF"
+
+		buildoptions { 
+		"/wd4324", -- structure was padded due to alignment specifier
+		"/wd4238"  -- nonstandard extension used: class rvalue used as lvalue
+		}
+		
+		links { 
+			"d3d12", 
+			"dxgi",
+			"d3dcompiler"
+		}
+		
+		files {
+			"Samples/WindowsD3D12/**.*", 
+		}
+		
+		includedirs {
+			"BrofilerCore",
+		}
+		
+		links {
+			"BrofilerCore",
+		}
+		
+		vpaths { 
+			["*"] = "Samples/WindowsD3D12" 
+		}
 

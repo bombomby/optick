@@ -74,31 +74,28 @@ public:
 
 	BRO_INLINE T* AddRange(const T* items, size_t count, bool allowOverlap = true)
 	{
-		if (count == 0)
+		if (count == 0 || (count > SIZE && !allowOverlap))
 			return nullptr;
 
-		int spacesLeft = SIZE - index;
-
-		T* result = nullptr;
-
-		if (count <= spacesLeft)
-		{
-			result = &chunk->data[index];
-			std::memcpy(&chunk->data[index], items, sizeof(T) * count);
-			index += (uint32)count;
-		}
-		else if (spacesLeft > 0 && allowOverlap)
-		{
-			result = &chunk->data[index];
-			std::memcpy(result, items, sizeof(T) * spacesLeft);
-			AddChunk();
-			AddRange(items + spacesLeft, count - spacesLeft, allowOverlap);
-			return result;
-		}
-		else
+		if (count >= (SIZE - index) && !allowOverlap)
 		{
 			AddChunk();
-			return AddRange(items, count, allowOverlap);
+		}
+
+		T* result = &chunk->data[index];
+
+		while (count)
+		{
+			size_t numLeft = SIZE - index;
+			size_t numCopy = numLeft < count ? numLeft : count;
+			std::memcpy(&chunk->data[index], items, sizeof(T) * numCopy);
+
+			count -= numCopy;
+			items += numCopy;
+			index += (uint32_t)numCopy;
+
+			if (count)
+				AddChunk();
 		}
 
 		return result;
@@ -154,12 +151,12 @@ public:
 			{
 				root->~MemoryChunk();
 				Memory::Free(root);
-				root = 0;
+				root = nullptr;
+				chunk = nullptr;
 				index = SIZE;
 			}
-		}
-
-		if (root)
+		} 
+		else if (root)
 		{
 			index = 0;
 			chunk = root;
