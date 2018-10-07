@@ -10,8 +10,8 @@ namespace Profiler
 {
     public class EventsThreadRow : ThreadRow
     {
-        ThreadDescription Description { get; set; }
-        ThreadData EventData { get; set; }
+        public ThreadDescription Description { get; set; }
+        public ThreadData EventData { get; set; }
         int MaxDepth { get; set; }
 
         public bool IsExpanded { get; set; }
@@ -251,7 +251,7 @@ namespace Profiler
         }
 
         public override double Height { get { return RenderParams.BaseHeight * MaxDepth; } }
-        public override string Name { get { return string.Format("{0} ({1})", Description.Name, Description.ThreadID); } }
+        public override string Name { get { return Description.ThreadID != UInt64.MaxValue ? string.Format("{0} (0x{1:x})", Description.Name, Description.ThreadID) : Description.Name; } }
 
         double TextDrawThreshold = 8.0 * RenderSettings.dpiScaleX;
         double TextDrawOffset = 1.5 * RenderSettings.dpiScaleY;

@@ -91,11 +91,9 @@
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="2*"/>
             <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
-        <Controls:FunctionHistory x:Name="FunctionHistoryControl" Grid.RowSpan="2" />
-        <Grid Grid.Column="1">
+        <Grid Grid.Column="0">
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition />
@@ -119,7 +117,7 @@
                 </ToggleButton>
             </StackPanel>
         </Grid>
-        <TreeView Grid.Column="1" Grid.Row="1" BorderThickness="0" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling" x:Name="EventTreeView" DataContext="{Binding Root}" ItemsSource="{Binding Children}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="0" >
+        <TreeView Grid.Column="0" Grid.Row="1" BorderThickness="0" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling" x:Name="EventTreeView" DataContext="{Binding Root}" ItemsSource="{Binding Children}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="0" >
             <TreeView.Resources>
                 <HierarchicalDataTemplate DataType="{x:Type Profiler_Data:BaseTreeNode}" ItemsSource="{Binding Children}">
                     <Grid Width="Auto" Margin="1">
@@ -195,7 +193,7 @@
                 </Style>
             </TreeView.ItemContainerStyle>
         </TreeView>
-        <local:FrameDataTable Grid.Row="0" Grid.RowSpan="2" Width="Auto" RenderTransformOrigin="0.461,0.52" Grid.Column="2" DataContext="{Binding Board}" x:Name="SummaryTable" Margin="4,0,0,0" />
+        <local:FrameDataTable Grid.Row="0" Grid.RowSpan="2" Width="Auto" RenderTransformOrigin="0.461,0.52" Grid.Column="1" DataContext="{Binding Board}" x:Name="SummaryTable" Margin="4,0,0,0" />
         <GridSplitter ResizeDirection="Columns" Width="6" Grid.Column="1" HorizontalAlignment="Left" Grid.RowSpan="2"/>
     </Grid>
 </UserControl>

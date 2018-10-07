@@ -149,6 +149,8 @@ namespace Profiler.Data
         public Int32 Priority { get; set; }
         public Int32 Mask { get; set; }
 
+        public const UInt64 InvalidThreadID = UInt64.MaxValue;
+
         public static ThreadDescription Read(DataResponse response)
         {
             BinaryReader reader = response.Reader;

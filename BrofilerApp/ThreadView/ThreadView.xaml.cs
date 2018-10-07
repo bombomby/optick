@@ -83,6 +83,18 @@ namespace Profiler
 
         Mesh BackgroundMesh { get; set; }
 
+        int ThreadNameSorter(EventsThreadRow a, EventsThreadRow b)
+        {
+            if (a.Description.ThreadID == ThreadDescription.InvalidThreadID && b.Description.ThreadID != ThreadDescription.InvalidThreadID)
+                return -1;
+
+            if (a.Description.ThreadID != ThreadDescription.InvalidThreadID && b.Description.ThreadID == ThreadDescription.InvalidThreadID)
+                return 1;
+
+            int nameCompare = a.Name.CompareTo(b.Name);
+            return nameCompare != 0 ? nameCompare : a.Description.ThreadID.CompareTo(b.Description.ThreadID);
+        }
+
         void InitThreadList(FrameGroup group)
         {
             rows.Clear();
@@ -102,6 +114,8 @@ namespace Profiler
                 TextColor = Colors.Gray
             });
 
+            List<EventsThreadRow> eventThreads = new List<EventsThreadRow>();
+
             for (int i = 0; i < Math.Min(group.Board.Threads.Count, group.Threads.Count); ++i)
             {
                 ThreadDescription thread = group.Board.Threads[i];
@@ -109,7 +123,6 @@ namespace Profiler
 
 				bool threadHasData = false;
 				if ((data.Callstacks != null && data.Callstacks.Count > 3) ||
-					/*(data.Sync != null && data.Sync.Intervals.Count > 0) || */
 					(data.Events != null && data.Events.Count > 0))
 					
 				{
@@ -119,13 +132,16 @@ namespace Profiler
                 if (threadHasData)
                 {
                     EventsThreadRow row = new EventsThreadRow(group, thread, data);
-                    rows.Add(row);
+                    eventThreads.Add(row);
                     id2row.Add(i, row);
 
                     row.EventNodeHover += Row_EventNodeHover;
                     row.EventNodeSelected += Row_EventNodeSelected;
                 }
             }
+
+            eventThreads.Sort(ThreadNameSorter);
+            rows.AddRange(eventThreads);
 
             scroll.TimeSlice = group.Board.TimeSlice;
             scroll.Height = 0.0;

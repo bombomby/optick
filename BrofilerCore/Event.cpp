@@ -73,6 +73,14 @@ void Event::Pop()
 			storage->pushPopEventStack[--storage->pushPopEventStackIndex]->Stop();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Event::Add(EventStorage* storage, const EventDescription* description, int64_t timestampStart, int64_t timestampFinish)
+{
+	EventData& data = storage->eventBuffer.Add();
+	data.description = description;
+	data.start = timestampStart;
+	data.finish = timestampFinish;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FiberSyncData::AttachToThread(EventStorage* storage, uint64_t threadId)
 {
 	if (storage)

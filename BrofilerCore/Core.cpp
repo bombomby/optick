@@ -34,9 +34,14 @@ ThreadDescription::ThreadDescription(const char* threadName, ThreadID id, bool _
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int64_t GetHighPrecisionTime()
 {
-	return GetHighFrequencyTime();
+	return GetTime();
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+int64_t GetHighPrecisionFrequency()
+{
+	return GetFrequency();
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpProgress(const char* message)
@@ -446,17 +451,17 @@ bool Core::IsRegistredThread(ThreadID id)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Core::RegisterThread(const ThreadDescription& description, EventStorage** slot)
+ThreadEntry* Core::RegisterThread(const ThreadDescription& description, EventStorage** slot)
 {
 	std::lock_guard<std::recursive_mutex> lock(coreLock);
 
-	ThreadEntry* entry = new (Memory::Alloc(sizeof(ThreadEntry))) ThreadEntry(description, slot);
+	ThreadEntry* entry = Memory::New<ThreadEntry>(description, slot);
 	threads.push_back(entry);
 
 	if (isActive && slot != nullptr)
 		*slot = &entry->storage;
 
-	return true;
+	return entry;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::UnRegisterThread(ThreadID threadID)
@@ -470,8 +475,7 @@ bool Core::UnRegisterThread(ThreadID threadID)
 		{
 			if (!isActive)
 			{
-				entry->~ThreadEntry();
-				Memory::Free(entry);
+				Memory::Delete(entry);
 				threads.erase(it);
 				return true;
 			}
@@ -489,7 +493,7 @@ bool Core::UnRegisterThread(ThreadID threadID)
 bool Core::RegisterFiber(const FiberDescription& description, EventStorage** slot)
 {
 	std::lock_guard<std::recursive_mutex> lock(coreLock);
-	FiberEntry* entry = new (Memory::Alloc(sizeof(FiberEntry))) FiberEntry(description);
+	FiberEntry* entry = Memory::New<FiberEntry>(description);
 	fibers.push_back(entry);
 	entry->storage.isFiberStorage = true;
 	*slot = &entry->storage;
@@ -522,15 +526,13 @@ Core::~Core()
 
 	for (ThreadList::iterator it = threads.begin(); it != threads.end(); ++it)
 	{
-		(*it)->~ThreadEntry();
-		Memory::Free((*it));
+		Memory::Delete(*it);
 	}
 	threads.clear();
 
 	for (FiberList::iterator it = fibers.begin(); it != fibers.end(); ++it)
 	{
-		(*it)->~FiberEntry();
-		Memory::Free((*it));
+		Memory::Delete(*it);
 	}
 	fibers.clear();
 }
@@ -563,9 +565,7 @@ OutputDataStream& operator<<(OutputDataStream& stream, const ScopeData& ob)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const ThreadDescription& description)
 {
-	// VS TODO: Fix thread id!
-	uint64 threadID = *(uint32*)(&description.threadID);
-	return stream << threadID << description.name << description.maxDepth << description.priority << description.mask;
+	return stream << description.threadID << description.name << description.maxDepth << description.priority << description.mask;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const ThreadEntry* entry)
@@ -625,14 +625,14 @@ BROFILER_API bool IsFiberStorage(EventStorage* fiberStorage)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 BROFILER_API bool RegisterThread(const char* name)
 {
-	return Core::Get().RegisterThread(ThreadDescription(name, GetThreadID(), false), &Core::storage);
+	return Core::Get().RegisterThread(ThreadDescription(name, GetThreadID(), false), &Core::storage) != nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 BROFILER_API bool RegisterThread(const wchar_t* name)
 {
 	char mbName[ThreadDescription::THREAD_NAME_LENGTH];
 	wcstombs(mbName, name, ThreadDescription::THREAD_NAME_LENGTH);
-	return Core::Get().RegisterThread(ThreadDescription(mbName, GetThreadID(), false), &Core::storage);
+	return Core::Get().RegisterThread(ThreadDescription(mbName, GetThreadID(), false), &Core::storage) != nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 BROFILER_API bool UnRegisterThread()
@@ -643,6 +643,12 @@ BROFILER_API bool UnRegisterThread()
 BROFILER_API bool RegisterFiber(uint64 fiberId, EventStorage** slot)
 {
 	return Core::Get().RegisterFiber(FiberDescription(fiberId), slot);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+BROFILER_API EventStorage* RegisterStorage(const char* name)
+{
+	ThreadEntry* entry = Core::Get().RegisterThread(ThreadDescription(name, INVALID_THREAD_ID, false), nullptr);
+	return entry ? &entry->storage : nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventStorage::EventStorage(): isFiberStorage(false), pushPopEventStackIndex(0)

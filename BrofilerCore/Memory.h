@@ -13,5 +13,27 @@ namespace Brofiler
 		{
 			return new (Memory::Alloc(sizeof(T))) T();
 		}
+
+		template<class T, class P1>
+		static T* New(P1 p1)
+		{
+			return new (Memory::Alloc(sizeof(T))) T(p1);
+		}
+
+		template<class T, class P1, class P2>
+		static T* New(P1 p1, P2 p2)
+		{
+			return new (Memory::Alloc(sizeof(T))) T(p1, p2);
+		}
+
+		template<class T>
+		static void Delete(T* p)
+		{
+			if (p)
+			{
+				p->~T();
+				Free(p);
+			}
+		}
 	};
 }

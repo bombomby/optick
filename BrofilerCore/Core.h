@@ -312,7 +312,7 @@ public:
 	void DumpSummary();
 
 	// Registers thread and create EventStorage
-	bool RegisterThread(const ThreadDescription& description, EventStorage** slot);
+	ThreadEntry* RegisterThread(const ThreadDescription& description, EventStorage** slot);
 
 	// UnRegisters thread
 	bool UnRegisterThread(ThreadID threadId);

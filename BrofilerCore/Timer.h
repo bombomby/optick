@@ -56,12 +56,12 @@ namespace Brofiler
 		LARGE_INTEGER largeInteger;
 		QueryPerformanceCounter(&largeInteger);
 		return (largeInteger.QuadPart * int64(1000000)) / GetFrequency();
-#endif
-
-#if BRO_PLATFORM_POSIX
+#elif BRO_PLATFORM_POSIX
 		struct timeval te;
 		gettimeofday(&te, nullptr);
 		return te.tv_sec * 1000000LL + te.tv_usec;
+#elif
+		#error Platform is not supported!
 #endif
 	}
 
@@ -72,7 +72,7 @@ namespace Brofiler
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	__inline int64 GetHighFrequencyTime()
+	__inline int64 GetTime()
 	{
 #if BRO_PLATFORM_WINDOWS
 		LARGE_INTEGER largeInteger;
