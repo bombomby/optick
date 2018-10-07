@@ -41,7 +41,7 @@ solution "Brofiler"
 if _ACTION == "vs2017" then
 	windowstargetplatformversion "10.0.17134.0"
 end
-	startproject "BrofilerWindowsTest"
+	startproject "ConsoleApp"
 
 	location ( outputFolder )
 	flags { "NoManifest", "ExtraWarnings", "Unicode" }
