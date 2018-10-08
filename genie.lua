@@ -90,7 +90,7 @@ configuration "Release"
 
 configuration "Debug"
 	targetdir(outFolderRoot .. "/Native/Debug")
-	defines { "_DEBUG", "_CRTDBG_MAP_ALLOC", "MT_INSTRUMENTED_BUILD", "_ITERATOR_DEBUG_LEVEL=1"}
+	defines { "_DEBUG", "_CRTDBG_MAP_ALLOC", "MT_INSTRUMENTED_BUILD" }
 	flags { "Symbols" }
 
 --  give each configuration/platform a unique output directory
