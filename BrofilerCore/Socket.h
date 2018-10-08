@@ -22,7 +22,7 @@
 #define SOCKET_PROTOCOL_TCP (6)
 
 
-#if USE_BERKELEY_SOCKETS
+#if defined(USE_BERKELEY_SOCKETS)
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -33,9 +33,9 @@
 typedef int TcpSocket;
 
 
-#elif USE_WINDOWS_SOCKETS
+#elif defined(USE_WINDOWS_SOCKETS)
 
-#if BRO_UWP
+#if defined(BRO_UWP)
 #include <WinSock2.h>
 #else
 #include <winsock.h>
@@ -246,9 +246,9 @@ namespace Brofiler
 
 			static timeval lim = {0};
 
-#if USE_BERKELEY_SOCKETS
+#if defined(USE_BERKELEY_SOCKETS)
 			if (::select(acceptSocket + 1, &recieveSet, nullptr, nullptr, &lim) == 1)
-#elif USE_WINDOWS_SOCKETS
+#elif defined(USE_WINDOWS_SOCKETS)
 			if (::select(0, &recieveSet, nullptr, nullptr, &lim) == 1)
 #else
 #error Platform not supported

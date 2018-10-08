@@ -22,6 +22,26 @@ extern "C" Brofiler::EventData* NextEvent()
 
 namespace Brofiler
 {
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// VS TODO: Replace with random access iterator for MemoryPool
+template<class T, uint32 SIZE>
+void SortMemoryPool(MemoryPool<T, SIZE>& memoryPool)
+{
+	size_t count = memoryPool.Size();
+	if (count == 0)
+		return;
+
+	std::vector<T> memoryArray;
+	memoryArray.resize(count);
+	memoryPool.ToArray(&memoryArray[0]);
+
+	std::sort(memoryArray.begin(), memoryArray.end());
+
+	memoryPool.Clear(true);
+
+	for (const T& item : memoryArray)
+		memoryPool.Add(item);
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ThreadDescription::ThreadDescription(const char* threadName, ThreadID id, bool _fromOtherProcess, int32 _maxDepth /*= 1*/, int32 _priority /*= 0*/, uint32 _mask /*= 0*/)
@@ -29,7 +49,6 @@ ThreadDescription::ThreadDescription(const char* threadName, ThreadID id, bool _
 {
 	strcpy_s(name, threadName);
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int64_t GetHighPrecisionTime()
@@ -122,6 +141,10 @@ void Core::DumpTags(EventStorage& entry, ScopeData& scope)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpThread(ThreadEntry& entry, const EventTime& timeSlice, ScopeData& scope)
 {
+	// We need to sort events for all the custom thread storages
+	if (entry.description.threadID == INVALID_THREAD_ID)
+		entry.Sort();
+
 	// Events
 	DumpEvents(entry.storage, timeSlice, scope);
 	DumpTags(entry.storage, scope);
@@ -264,8 +287,7 @@ void Core::CleanupThreadsAndFibers()
 	{
 		if (!(*it)->isAlive)
 		{
-			(*it)->~ThreadEntry();
-			Memory::Free(*it);
+			Memory::Delete(*it);
 			it = threads.erase(it);
 		}
 		else
@@ -631,7 +653,8 @@ BROFILER_API bool RegisterThread(const char* name)
 BROFILER_API bool RegisterThread(const wchar_t* name)
 {
 	char mbName[ThreadDescription::THREAD_NAME_LENGTH];
-	wcstombs(mbName, name, ThreadDescription::THREAD_NAME_LENGTH);
+	size_t numConverter = 0;
+	wcstombs_s(&numConverter, mbName, name, ThreadDescription::THREAD_NAME_LENGTH);
 	return Core::Get().RegisterThread(ThreadDescription(mbName, GetThreadID(), false), &Core::storage) != nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -668,6 +691,11 @@ void ThreadEntry::Activate(bool isActive)
 	{
 		*threadTLS = isActive ? &storage : nullptr;
 	}
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void ThreadEntry::Sort()
+{
+	SortMemoryPool(storage.eventBuffer);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool IsSleepOnlyScope(const ScopeData& scope)

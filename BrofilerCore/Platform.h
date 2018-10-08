@@ -36,10 +36,10 @@
 ////////////////////////////////////////////////////////////////////////
 // Compiler family
 ////////////////////////////////////////////////////////////////////////
-#ifdef __clang__
+#if defined(__clang__)
 #define BRO_CLANG_COMPILER_FAMILY (1)
 #define BRO_GCC_COMPILER_FAMILY (1)
-#elif __GNUC__
+#elif defined(__GNUC__)
 #define BRO_GCC_COMPILER_FAMILY (1)
 #elif defined(_MSC_VER)
 #define BRO_MSVC_COMPILER_FAMILY (1)
@@ -48,16 +48,16 @@
 ////////////////////////////////////////////////////////////////////////
 // Compiler support for C++11
 ////////////////////////////////////////////////////////////////////////
-#if __STDC_VERSION__ >= 201112L
+#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
 #define BRO_CPP11_SUPPORTED (1)
 #endif
 
 ////////////////////////////////////////////////////////////////////////
 // bro_forceinline
 ////////////////////////////////////////////////////////////////////////
-#if BRO_MSVC_COMPILER_FAMILY
+#if defined(BRO_MSVC_COMPILER_FAMILY)
 #define bro_forceinline __forceinline
-#elif BRO_GCC_COMPILER_FAMILY
+#elif defined(BRO_GCC_COMPILER_FAMILY)
 #define bro_forceinline __attribute__((always_inline)) inline
 #else
 #error Can not define bro_forceinline. Unknown platform.
@@ -66,11 +66,11 @@
 ////////////////////////////////////////////////////////////////////////
 // mt_thread_local
 ////////////////////////////////////////////////////////////////////////
-#if BRO_CPP11_SUPPORTED
+#if defined(BRO_CPP11_SUPPORTED)
 #define bro_thread_local _Thread_local
-#elif BRO_GCC_COMPILER_FAMILY
+#elif defined(BRO_GCC_COMPILER_FAMILY)
 #define bro_thread_local __thread
-#elif BRO_MSVC_COMPILER_FAMILY
+#elif defined(BRO_MSVC_COMPILER_FAMILY)
 #define bro_thread_local __declspec(thread)
 #else
 #error Can not define bro_thread_local. Unknown platform.

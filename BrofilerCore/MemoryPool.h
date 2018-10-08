@@ -18,8 +18,7 @@ struct MemoryChunk
 	{
 		if (next)
 		{
-			next->~MemoryChunk();
-			Memory::Free(next);
+			Memory::Delete(next);
 			next = 0;
 			prev = 0;
 		}
@@ -149,8 +148,7 @@ public:
 		{
 			if (root)
 			{
-				root->~MemoryChunk();
-				Memory::Free(root);
+				Memory::Delete(root);
 				root = nullptr;
 				chunk = nullptr;
 				index = SIZE;

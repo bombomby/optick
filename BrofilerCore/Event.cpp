@@ -46,6 +46,24 @@ void Event::Stop(EventData& data)
 	data.Stop();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void BRO_INLINE PushEvent(EventStorage* pStorage, const EventDescription* description, int64_t timestampStart)
+{
+	if (EventStorage* storage = pStorage)
+	{
+		EventData& result = storage->NextEvent();
+		result.description = description;
+		result.start = timestampStart;
+		storage->pushPopEventStack[storage->pushPopEventStackIndex++] = &result;
+	}
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void BRO_INLINE PopEvent(EventStorage* pStorage, int64_t timestampFinish)
+{
+	if (EventStorage* storage = pStorage)
+		if (storage->pushPopEventStackIndex > 0)
+			storage->pushPopEventStack[--storage->pushPopEventStackIndex]->finish = timestampFinish;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Event::Push(const char* name)
 {
 	if (EventStorage* storage = Core::storage)
@@ -57,20 +75,12 @@ void Event::Push(const char* name)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Event::Push(const EventDescription& description)
 {
-	if (EventStorage* storage = Core::storage)
-	{
-		EventData& result = storage->NextEvent();
-		result.description = &description;
-		result.Start();
-		storage->pushPopEventStack[storage->pushPopEventStackIndex++] = &result;
-	}
+	PushEvent(Core::storage, &description, Brofiler::GetHighPrecisionTime());
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Event::Pop()
 {
-	if (EventStorage* storage = Core::storage)
-		if (storage->pushPopEventStackIndex > 0)
-			storage->pushPopEventStack[--storage->pushPopEventStackIndex]->Stop();
+	PopEvent(Core::storage, Brofiler::GetHighPrecisionTime());
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Event::Add(EventStorage* storage, const EventDescription* description, int64_t timestampStart, int64_t timestampFinish)
@@ -79,6 +89,16 @@ void Event::Add(EventStorage* storage, const EventDescription* description, int6
 	data.description = description;
 	data.start = timestampStart;
 	data.finish = timestampFinish;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Event::Push(EventStorage* storage, const EventDescription* description, int64_t timestampStart)
+{
+	PushEvent(storage, description, timestampStart);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Event::Pop(EventStorage* storage, int64_t timestampFinish)
+{
+	PopEvent(storage, timestampFinish);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FiberSyncData::AttachToThread(EventStorage* storage, uint64_t threadId)

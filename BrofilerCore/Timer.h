@@ -25,11 +25,7 @@
 #include "Platform.h"
 #include "Common.h"
 
-#if BRO_PLATFORM_WINDOWS
-#include <windows.h>
-#endif
-
-#if BRO_PLATFORM_POSIX
+#if defined(BRO_PLATFORM_POSIX)
 #include <sys/time.h>
 #endif
 
@@ -38,11 +34,11 @@ namespace Brofiler
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	bro_forceinline int64 GetFrequency()
 	{
-#if BRO_PLATFORM_WINDOWS
+#if defined(BRO_PLATFORM_WINDOWS)
 		LARGE_INTEGER frequency;
 		QueryPerformanceFrequency(&frequency);
 		return frequency.QuadPart;
-#elif BRO_PLATFORM_POSIX
+#elif defined(BRO_PLATFORM_POSIX)
 		return 1000000;
 #elif
 		#error Platform is not supported!
@@ -52,11 +48,11 @@ namespace Brofiler
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	bro_forceinline int64 GetTimeMicroSeconds()
 	{
-#if BRO_PLATFORM_WINDOWS
+#if defined(BRO_PLATFORM_WINDOWS)
 		LARGE_INTEGER largeInteger;
 		QueryPerformanceCounter(&largeInteger);
 		return (largeInteger.QuadPart * int64(1000000)) / GetFrequency();
-#elif BRO_PLATFORM_POSIX
+#elif defined(BRO_PLATFORM_POSIX)
 		struct timeval te;
 		gettimeofday(&te, nullptr);
 		return te.tv_sec * 1000000LL + te.tv_usec;
@@ -74,11 +70,11 @@ namespace Brofiler
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	__inline int64 GetTime()
 	{
-#if BRO_PLATFORM_WINDOWS
+#if defined(BRO_PLATFORM_WINDOWS)
 		LARGE_INTEGER largeInteger;
 		QueryPerformanceCounter(&largeInteger);
 		return largeInteger.QuadPart;
-#elif BRO_PLATFORM_POSIX
+#elif defined(BRO_PLATFORM_POSIX)
 		return GetTimeMicroSeconds();
 #else
 		#error Platform is not supported!

@@ -2,12 +2,9 @@
 
 #include "Platform.h"
 #include "Types.h"
+#include "Common.h"
 
-#if BRO_PLATFORM_WINDOWS
-#include <windows.h>
-#endif
-
-#if BRO_PLATFORM_POSIX
+#if defined(BRO_PLATFORM_POSIX)
 #include <pthread.h>
 #endif
 
@@ -19,9 +16,9 @@ namespace Brofiler
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	bro_forceinline ThreadID GetThreadID()
 	{
-#if BRO_PLATFORM_WINDOWS
+#if defined(BRO_PLATFORM_WINDOWS)
 		return GetCurrentThreadId();
-#elif BRO_PLATFORM_POSIX
+#elif defined(BRO_PLATFORM_POSIX)
 		return (uint64)pthread_self();
 #elif
 		#error Platform is not supported!

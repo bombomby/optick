@@ -193,6 +193,7 @@ struct ThreadEntry
 
 	ThreadEntry(const ThreadDescription& desc, EventStorage** tls) : description(desc), threadTLS(tls), isAlive(true) {}
 	void Activate(bool isActive);
+	void Sort();
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

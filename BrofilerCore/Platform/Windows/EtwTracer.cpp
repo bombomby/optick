@@ -1,6 +1,5 @@
 #ifdef _WIN32
 
-#include <windows.h>
 #include <vector>
 #include "EtwTracer.h"
 #include "../../Core.h"

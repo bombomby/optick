@@ -2,7 +2,7 @@
 
 #ifdef _WIN32
 
-#include "..\SchedulerTrace.h"
+#include "../SchedulerTrace.h"
 #include "ETW.h"
 
 namespace Brofiler

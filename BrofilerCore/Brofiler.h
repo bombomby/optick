@@ -304,6 +304,15 @@ struct EventTime
 struct EventData : public EventTime
 {
 	const EventDescription* description;
+
+	bool operator<(const EventData& other) const
+	{
+		if (start != other.start)
+			return start < other.start;
+
+		// Reversed order for finish intervals (parent first)
+		return  finish > other.finish;
+	}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct BROFILER_API SyncData : public EventTime
@@ -357,6 +366,9 @@ struct BROFILER_API Event
 	static void Pop();
 
 	static void Add(EventStorage* storage, const EventDescription* description, int64_t timestampStart, int64_t timestampFinish);
+	static void Push(EventStorage* storage, const EventDescription* description, int64_t timestampStart);
+	static void Pop(EventStorage* storage, int64_t timestampStart);
+
 
 	Event( const EventDescription& description )
 	{
@@ -580,6 +592,8 @@ struct ThreadScope
 //		It's not thread-safe to add events to the same storage from multiple threads.
 //		Please guarantee thread-safety on the higher level if access from multiple threads to the same storage is required.
 #define BROFILER_STORAGE_EVENT(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START, CPU_TIMESTAMP_FINISH)		if (::Brofiler::IsActive()) { ::Brofiler::Event::Add(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START, CPU_TIMESTAMP_FINISH); }
+#define BROFILER_STORAGE_PUSH(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START)							if (::Brofiler::IsActive()) { ::Brofiler::Event::Push(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START); }
+#define BROFILER_STORAGE_POP(STORAGE, CPU_TIMESTAMP_FINISH)											if (::Brofiler::IsActive()) { ::Brofiler::Event::Pop(STORAGE, CPU_TIMESTAMP_FINISH); }
 
 #else
 #define BROFILER_EVENT(NAME)
@@ -598,5 +612,6 @@ struct ThreadScope
 #define BROFILER_CUSTOM_EVENT(DESCRIPTION)
 #define BROFILER_STORAGE_REGISTER(STORAGE_NAME)
 #define BROFILER_STORAGE_EVENT(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START, CPU_TIMESTAMP_FINISH)
-
+#define BROFILER_STORAGE_PUSH(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START)
+#define BROFILER_STORAGE_POP(STORAGE, CPU_TIMESTAMP_FINISH)				
 #endif
