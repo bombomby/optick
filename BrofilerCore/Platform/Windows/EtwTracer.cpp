@@ -409,16 +409,14 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads, bool autoAdd
 		}
 
 		bool highFrequencySampling = false;
-		if (highFrequencySampling)
+
+		TRACE_PROFILE_INTERVAL itnerval = { 0 };
+		memset(&itnerval, 0, sizeof(TRACE_PROFILE_INTERVAL));
+		itnerval.Interval = highFrequencySampling ? 1221 : 10000;
+		status = TraceSetInformation(traceSessionHandle, TraceSampledProfileIntervalInfo, &itnerval, sizeof(TRACE_PROFILE_INTERVAL));
+		if (status != ERROR_SUCCESS)
 		{
-			TRACE_PROFILE_INTERVAL itnerval = { 0 };
-			memset(&itnerval, 0, sizeof(TRACE_PROFILE_INTERVAL));
-			itnerval.Interval = 1221;
-			status = TraceSetInformation(traceSessionHandle, TraceSampledProfileIntervalInfo, &itnerval, sizeof(TRACE_PROFILE_INTERVAL));
-			if (status != ERROR_SUCCESS)
-			{
-				OutputDebugStringA("TraceSetInformation - failed\n");
-			}
+			OutputDebugStringA("TraceSetInformation - failed\n");
 		}
 
 		ZeroMemory(&logFile, sizeof(EVENT_TRACE_LOGFILE));
