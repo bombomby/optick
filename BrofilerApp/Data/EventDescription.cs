@@ -69,8 +69,10 @@ namespace Profiler.Data
                     else
                     {
                         Random rnd = new Random(FullName.GetHashCode());
-                        Color color = Color.FromRgb((byte)rnd.Next(), (byte)rnd.Next(), (byte)rnd.Next());
-                        forceColor = DirectX.Utils.GetLuminance(color) < 0.33 ? Color.FromRgb((byte)(255 - color.R), (byte)(255 - color.G), (byte)(255 - color.B)) : color;
+
+                        do {
+                            forceColor = Color.FromRgb((byte)rnd.Next(), (byte)rnd.Next(), (byte)rnd.Next());
+                        } while (DirectX.Utils.GetLuminance(forceColor) < DirectX.Utils.LuminanceThreshold);
                     }
                 }
                 return forceColor;

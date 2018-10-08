@@ -18,6 +18,8 @@ namespace Profiler.DirectX
             return 0.2126 * color.ScR + 0.7152 * color.ScG + 0.0722 * color.ScB;
         }
 
+        public const double LuminanceThreshold = 0.2;
+
         public static SharpDX.Matrix Convert(System.Windows.Media.Matrix m)
         {
             return new SharpDX.Matrix((float)m.M11, (float)m.M12, 0.0f, 0.0f,

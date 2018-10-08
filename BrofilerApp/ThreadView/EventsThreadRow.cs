@@ -313,7 +313,7 @@ namespace Profiler
                         }
 						
                         double lum = DirectX.Utils.GetLuminance(entry.Description.ForceColor);
-                        Color color = lum < 0.33 ? Colors.White : Colors.Black;
+                        Color color = lum < DirectX.Utils.LuminanceThreshold ? Colors.White : Colors.Black;
 
                         canvas.Text.Draw(new Point(intervalPx.Left + TextDrawOffset, Offset + level * RenderParams.BaseHeight),
                                          entry.Description.Name,
