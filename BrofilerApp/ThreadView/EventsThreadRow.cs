@@ -23,7 +23,7 @@ namespace Profiler
         DynamicMesh CallstackMeshLines { get; set; }
 
 
-        double SyncLineHeight = 3.0 * RenderSettings.dpiScaleY;
+        double SyncLineHeight = 4.0 * RenderSettings.dpiScaleY;
         static Color SynchronizationColor = Colors.Magenta;
         static Color SynchronizationColorUser = Colors.OrangeRed;
         static Color[] WorkColors = new Color[8]

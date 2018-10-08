@@ -494,8 +494,8 @@ struct ThreadScope
 //		}
 #define BROFILER_FRAME(FRAME_NAME)  static ::Brofiler::ThreadScope mainThreadScope(FRAME_NAME);	\
 									BRO_UNUSED(mainThreadScope);								\
-									Brofiler::NextFrame();										\
-									BROFILER_EVENT("Frame")										\
+									::Brofiler::NextFrame();									\
+									BROFILER_CATEGORY("Frame", ::Brofiler::Color::LimeGreen);	\
 
 
 // Thread registration macro.
