@@ -115,12 +115,12 @@ project "BrofilerCore"
 	uuid "830934D9-6F6C-C37D-18F2-FB3304348F00"
 	defines { "_CRT_SECURE_NO_WARNINGS", "BROFILER_LIB=1" }
 
-if _OPTIONS['platform'] ~= "orbis" then
-	kind "SharedLib"
-	defines { "BROFILER_EXPORTS" }
-else
+-- if _OPTIONS['platform'] ~= "orbis" then
+-- 	kind "SharedLib"
+-- 	defines { "BROFILER_EXPORTS" }
+-- else
 	kind "StaticLib"
-end
+-- end
 
 	includedirs
 	{
