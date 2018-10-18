@@ -26,9 +26,7 @@ namespace Profiler
     /// </summary>
     public partial class FrameInfo : UserControl
 	{
-		FrameCollection frames;
-
-		public FrameInfo(FrameCollection _frames)
+		public FrameInfo()
 		{
 			this.InitializeComponent();
 			SummaryTable.FilterApplied += new ApplyFilterEventHandler(ApplyFilterToEventTree);
@@ -36,8 +34,6 @@ namespace Profiler
 			SummaryTable.DescriptionFilterApplied += new ApplyDescriptionFilterEventHandler(ApplyDescriptionFilterToFramesTimeLine);
 
 			EventTreeView.SelectedItemChanged += new RoutedPropertyChangedEventHandler<object>(EventTreeView_SelectedItemChanged);
-
-			frames = _frames;
 		}
 
 		private Data.Frame frame;
@@ -103,23 +99,21 @@ namespace Profiler
 		{
 			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
 			{
+                Data.Frame frame = DataContext as Data.Frame;
 
-				foreach (Data.Frame frame in frames)
+                EventFrame eventFrame = frame as EventFrame;
+				if (eventFrame != null)
 				{
-					EventFrame eventFrame = frame as EventFrame;
-					if (eventFrame != null)
+					if (filter == null)
 					{
-						if (filter == null)
-						{
+						eventFrame.FilteredDescription = "";
+					} else
+					{
+						double timeInMs = eventFrame.CalculateFilteredTime(filter);
+						if (timeInMs > 0)
+							eventFrame.FilteredDescription = String.Format("{0:0.000}", timeInMs);
+						else
 							eventFrame.FilteredDescription = "";
-						} else
-						{
-							double timeInMs = eventFrame.CalculateFilteredTime(filter);
-							if (timeInMs > 0)
-								eventFrame.FilteredDescription = String.Format("{0:0.000}", timeInMs);
-							else
-								eventFrame.FilteredDescription = "";
-						}
 					}
 				}
 			}));
@@ -298,29 +292,13 @@ namespace Profiler
             {
                 EventDescription desc = node.Entry.Description;
 
-                foreach (ThreadData thread in group.Threads)
-                {
-                    HashSet<Callstack> accumulator = new HashSet<Callstack>();
-                    foreach (EventFrame currentFrame in thread.Events)
-                    {
-                        List<Entry> entries = null;
-                        if (currentFrame.ShortBoard.TryGetValue(desc, out entries))
-                        {
-                            foreach (Entry entry in entries)
-                            {
-                                Utils.ForEachInsideIntervalStrict(thread.Callstacks, entry, c => accumulator.Add(c));
-                            }
-                        }
-                    }
-
-                    callstacks.AddRange(accumulator);
-                }
+                callstacks = group.GetCallstacks(desc);
             }
 
 
             if (callstacks.Count > 0)
             {
-                SamplingFrame frame = new SamplingFrame(callstacks);
+                SamplingFrame frame = new SamplingFrame(callstacks, group);
 				Profiler.TimeLine.FocusFrameEventArgs args = new Profiler.TimeLine.FocusFrameEventArgs(Profiler.TimeLine.FocusFrameEvent, frame);
                 RaiseEvent(args);
             }

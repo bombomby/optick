@@ -553,10 +553,10 @@ namespace Profiler
 					double pixelPos = scroll.TimeToPixel(EventData.Callstacks[i]);
 					if (Math.Abs(pixelPos - point.X) < CallstackMarkerRadius * 1.2)
 					{
-						if (EventData.Callstacks[i].Reason < CallStackReason.MaxReasonsCount)
-						{
-							dataContext.Add("\nSyscall : " + EventData.Callstacks[i].Reason.ToString());
-						}
+						//if (EventData.Callstacks[i].Reason < CallStackReason.MaxReasonsCount)
+						//{
+						//	dataContext.Add("\nSyscall : " + EventData.Callstacks[i].Reason.ToString());
+						//}
 
 						dataContext.Add(EventData.Callstacks[i]);
 						break;

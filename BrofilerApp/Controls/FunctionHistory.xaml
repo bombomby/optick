@@ -5,23 +5,28 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
              xmlns:MahApps="http://metro.mahapps.com/winfx/xaml/controls"
-             xmlns:local="clr-namespace:Profiler.Controls"
+             xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300">
+             d:DesignHeight="900" d:DesignWidth="300">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
-            <RowDefinition />
-            <RowDefinition />
+            <RowDefinition Height="200" />
+            <RowDefinition Height="200" />
+            <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
-        <ComboBox         MahApps:TextBoxHelper.UseFloatingWatermark="True"
-                          MahApps:TextBoxHelper.Watermark="Autocompletion"
-                          DisplayMemberPath="Title"
-                          IsEditable="True"
-                          ItemsSource="{Binding Albums}"
-                          MaxDropDownHeight="125"
-                          Style="{DynamicResource VirtualisedMetroComboBox}"
-                          Text="{Binding Path=Title}" />
+        <ComboBox x:Name="FunctionComboBox"
+                  ItemsSource="{Binding Board.Board}"
+                  MahApps:TextBoxHelper.UseFloatingWatermark="False"
+                  MahApps:TextBoxHelper.Watermark="Type Function Name ... (Ctrl+F)"
+                  MahApps:TextBoxHelper.ClearTextButton="True"
+                  Style="{DynamicResource VirtualisedMetroComboBox}"
+                  Background="{StaticResource BroContentBackground}"
+                  IsEditable="True"
+                  MaxDropDownHeight="125"
+                  SelectionChanged="FunctionComboBox_SelectionChanged"
+                  />
         <lvc:CartesianChart Grid.Row="1" x:Name="FrameChart" DisableAnimations="True" Hoverable="False" DataTooltip="{x:Null}">
             <lvc:CartesianChart.AxisX>
                 <lvc:Axis>
@@ -54,5 +59,21 @@
                 </lvc:Axis>
             </lvc:CartesianChart.AxisY>
         </lvc:CartesianChart>
+        <TabControl Grid.Row="3" TabStripPlacement="Top" MahApps:TabControlHelper.Underlined="TabPanel">
+            <TabItem Header="" HeaderStringFormat="{}Sampled Callstacks ({0})" x:Name="SamplingDataTab">
+                <DataGrid x:Name="SamplingDataGrid" CanUserAddRows="False" GridLinesVisibility="None" IsReadOnly="True" BorderThickness="0" AutoGenerateColumns="False" ItemsSource="{Binding}" HeadersVisibility="None">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Function Name" Binding="{Binding Function}" Width="1*" />
+                        <DataGridTextColumn Header="%" Binding="{Binding SelfPercent, StringFormat={}{0:0.#}%}" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+            <TabItem Header="System Calls">
+                <TextBlock FontSize="30" Text="System Calls" />
+            </TabItem>
+            <TabItem Header="Synchronization">
+                <TextBlock FontSize="30" Text="Synchronization" />
+            </TabItem>
+        </TabControl>
     </Grid>
 </UserControl>

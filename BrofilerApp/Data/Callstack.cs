@@ -78,14 +78,7 @@ namespace Profiler.Data
 
 					if (sysCallDesc.Item1)
 					{
-						if (sysCallDesc.Item2 < (int)CallStackReason.MaxReasonsCount)
-						{
-							callstack.Reason = (CallStackReason)sysCallDesc.Item2;
-						}
-						else
-						{
-							callstack.Reason = CallStackReason.SysCall;
-						}
+						callstack.Reason = CallStackReason.SysCall;
 					}
 				}
 

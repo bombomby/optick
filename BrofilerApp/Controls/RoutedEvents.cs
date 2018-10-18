@@ -19,4 +19,17 @@ namespace Profiler.Controls
             Summary = summary;
         }
     }
+
+    public class SaveCaptureEventArgs : RoutedEventArgs
+    {
+        public String Path { get; set; }
+        public Data.SummaryPack Summary { get; set; }
+
+        public SaveCaptureEventArgs(String path)
+            : base(MainWindow.OpenCaptureEvent)
+        {
+            Path = path;
+        }
+    }
+
 }

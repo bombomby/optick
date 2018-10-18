@@ -274,6 +274,7 @@ namespace Profiler.Data
     public class Entry : EventData, IComparable<Entry>
     {
         public EventDescription Description { get; private set; }
+        public EventFrame Frame { get; set; }
 
         Entry() { }
 
@@ -296,6 +297,11 @@ namespace Profiler.Data
             res.Description = board[descriptionID];
 
             return res;
+        }
+
+        public double CalculateWork()
+        {
+            return Frame == null ? Duration : Frame.CalculateWork(this);
         }
 
         public int CompareTo(Entry other)

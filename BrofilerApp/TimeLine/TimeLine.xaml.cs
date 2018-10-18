@@ -261,8 +261,6 @@ namespace Profiler
         public delegate void FocusFrameEventHandler(object sender, FocusFrameEventArgs e);
         public delegate void ShowWarningEventHandler(object sender, ShowWarningEventArgs e);
 
-        public ClearAllFramesHandler OnClearAllFrames;
-
         public static readonly RoutedEvent FocusFrameEvent = EventManager.RegisterRoutedEvent("FocusFrame", RoutingStrategy.Bubble, typeof(FocusFrameEventHandler), typeof(TimeLine));
         public static readonly RoutedEvent ShowWarningEvent = EventManager.RegisterRoutedEvent("ShowWarning", RoutingStrategy.Bubble, typeof(ShowWarningEventArgs), typeof(TimeLine));
 
@@ -358,8 +356,6 @@ namespace Profiler
             {
                 frames.Clear();
             }
-
-            OnClearAllFrames();
         }
 
         private void FrameFilterSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)

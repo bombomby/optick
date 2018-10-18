@@ -299,13 +299,13 @@ namespace Profiler.Data
             }
 		}
 
-		public SamplingFrame(DataResponse response) : base(response)
+		public SamplingFrame(DataResponse response, FrameGroup group) : base(response, group)
 		{
 			Reader = response.Reader;
 			SampleCount = Reader.ReadInt32();
 		}
 
-        public SamplingFrame(List<Callstack> callstacks) : base(null)
+        public SamplingFrame(List<Callstack> callstacks, FrameGroup group) : base(null, group)
         {
             SampleCount = callstacks.Count;
             Root = SamplingNode.Create(callstacks);

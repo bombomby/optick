@@ -14,6 +14,7 @@ namespace Profiler.Data
     public interface IDurable : ITick
     {
         long Finish { get; }
+        double Duration { get; }
     }
 
     public struct Tick : ITick
@@ -89,6 +90,12 @@ namespace Profiler.Data
             return Start >= other.Start && Finish <= other.Finish;
         }
 
+        internal double Overlap(Durable entry)
+        {
+            long from = Math.Max(entry.Start, Start);
+            long to = Math.Min(entry.Finish, Finish);
+            return from < to ? TicksToMs(to - from) : 0.0;
+        }
 
         public static long MsToTick(double ms)
 		{

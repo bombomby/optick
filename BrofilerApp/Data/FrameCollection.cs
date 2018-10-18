@@ -276,6 +276,31 @@ namespace Profiler.Data
             Responses.Add(pack.Response);
             Threads[pack.ThreadIndex].TagsPack = pack;
         }
+
+        public List<Callstack> GetCallstacks(EventDescription desc, CallStackReason type = CallStackReason.AutoSample)
+        {
+            List<Callstack> callstacks = new List<Callstack>();
+
+            foreach (ThreadData thread in Threads)
+            {
+                HashSet<Callstack> accumulator = new HashSet<Callstack>();
+                foreach (EventFrame currentFrame in thread.Events)
+                {
+                    List<Entry> entries = null;
+                    if (currentFrame.ShortBoard.TryGetValue(desc, out entries))
+                    {
+                        foreach (Entry entry in entries)
+                        {
+                            Utils.ForEachInsideIntervalStrict(thread.Callstacks, entry, c => accumulator.Add(c));
+                        }
+                    }
+                }
+
+                callstacks.AddRange(accumulator);
+            }
+
+            return callstacks;
+        }
     }
 
     public class FrameCollection : ObservableCollection<Frame>
@@ -329,12 +354,6 @@ namespace Profiler.Data
 							Add(frame);
 						}
 
-                        break;
-                    }
-
-                case DataResponse.Type.SamplingFrame:
-                    {
-						Add(new SamplingFrame(response));
                         break;
                     }
 

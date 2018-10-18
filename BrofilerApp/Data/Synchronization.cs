@@ -52,13 +52,12 @@ namespace Profiler.Data
     }
 
 
-	public enum CallStackReason
+	public enum CallStackReason : uint
 	{
+		SysCall = 1 << 0,
+		AutoSample = 1 << 1,
 
-		MaxReasonsCount,
-
-		SysCall = (Int32.MaxValue - 1),
-		AutoSample = Int32.MaxValue
+        All = 0xFFFFFFFF,
 	}
 
     public struct SyncEvent : IComparable<SyncEvent>

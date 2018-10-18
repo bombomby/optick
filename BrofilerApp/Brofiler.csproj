@@ -201,6 +201,9 @@
     <Compile Include="Controls\FileHistory.xaml.cs">
       <DependentUpon>FileHistory.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\FrameCapture.xaml.cs">
+      <DependentUpon>FrameCapture.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\FunctionHistory.xaml.cs">
       <DependentUpon>FunctionHistory.xaml</DependentUpon>
     </Compile>
@@ -219,6 +222,7 @@
     <Compile Include="Data\EventData.cs" />
     <Compile Include="Data\EventFrame.cs" />
     <Compile Include="Data\Frame.cs" />
+    <Compile Include="Data\FunctionStats.cs" />
     <Compile Include="Data\SamplingFrame.cs" />
     <Compile Include="Data\SourceView.cs" />
     <Compile Include="Data\Summary.cs" />
@@ -282,6 +286,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\FileHistory.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\FrameCapture.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -104,5 +104,10 @@ namespace Profiler.Data
 
 			return name;
 		}
-	}
+
+        public override string ToString()
+        {
+            return Name;
+        }
+    }
 }

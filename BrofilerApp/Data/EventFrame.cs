@@ -174,7 +174,6 @@ namespace Profiler.Data
         }
 
         public EventDescriptionBoard DescriptionBoard { get { return Group.Board; } }
-        public FrameGroup Group { get; private set; }
 
         private Board<EventBoardItem, EventDescription, EventNode> board;
         public Board<EventBoardItem, EventDescription, EventNode> Board
@@ -274,13 +273,17 @@ namespace Profiler.Data
             return result;
         }
 
-        static List<Entry> ReadEventList(BinaryReader reader, EventDescriptionBoard board)
+        List<Entry> ReadEventList(BinaryReader reader, EventDescriptionBoard board)
         {
             int count = reader.ReadInt32();
             List<Entry> result = new List<Entry>(count);
 
             for (int i = 0; i < count; ++i)
-                result.Add(Entry.Read(reader, board));
+            {
+                Entry entry = Entry.Read(reader, board);
+                entry.Frame = this;
+                result.Add(entry);
+            }
 
             return result;
         }
@@ -344,17 +347,15 @@ namespace Profiler.Data
             return Start.CompareTo(other.Start);
         }
 
-        public EventFrame(DataResponse response, FrameGroup group) : base(response)
+        public EventFrame(DataResponse response, FrameGroup group) : base(response, group)
         {
             BinaryReader reader = response.Reader;
-            Group = group;
             ReadInternal(response);
         }
 
-        private void Init(FrameHeader header, List<Entry> entries, FrameGroup group)
+        private void Init(FrameHeader header, List<Entry> entries)
         {
             Header = header;
-            Group = group;
             Categories = new List<Entry>();
 
             Entries = entries;
@@ -370,16 +371,30 @@ namespace Profiler.Data
             FiberSync = new List<FiberSyncInterval>();
         }
 
-        public EventFrame(FrameHeader header, List<Entry> entries, FrameGroup group) : base(null)
+        internal double CalculateWork(Durable entry)
         {
-            Init(header, entries, group);
+            if (Synchronization == null || Synchronization.Count == 0)
+                return entry.Duration;
+
+            double result = 0.0;
+            for (int i = Utils.BinarySearchClosestIndex(Synchronization, entry.Start); i <= Data.Utils.BinarySearchClosestIndex(Synchronization, entry.Finish) && i != -1; ++i)
+            {
+                result += Synchronization[i].Overlap(entry);
+            }
+
+            return result;
         }
 
-        public EventFrame(EventFrame frame, EventNode node) : base(null)
+        public EventFrame(FrameHeader header, List<Entry> entries, FrameGroup group) : base(null, group)
+        {
+            Init(header, entries);
+        }
+
+        public EventFrame(EventFrame frame, EventNode node) : base(null, frame.Group)
         {
             List<Entry> entries = new List<Entry>();
             node.ForEach((n, level) => { entries.Add((n as EventNode).Entry); return true; });
-            Init(new FrameHeader(frame.Header.ThreadIndex, frame.Header.FiberIndex, new Durable(node.Entry.Start, node.Entry.Finish)), entries, frame.Group);
+            Init(new FrameHeader(frame.Header.ThreadIndex, frame.Header.FiberIndex, new Durable(node.Entry.Start, node.Entry.Finish)), entries);
         }
     }
 }

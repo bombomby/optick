@@ -3,9 +3,9 @@
 	xmlns:Custom="http://schemas.microsoft.com/wpf/2008/toolkit"
     xmlns:Controls="clr-namespace:Profiler.Controls"
     x:Class="Profiler.FrameInfo"
-	x:Name="UserControl" mc:Ignorable="d" Height="538"
+	x:Name="UserControl" mc:Ignorable="d"
 	TextOptions.TextFormattingMode="Display"
-  d:DataContext="{Binding Source={x:Static Profiler_Data:TestEventFrame.Frame}}" d:DesignWidth="778" Width="778">
+  d:DataContext="{Binding Source={x:Static Profiler_Data:TestEventFrame.Frame}}" d:DesignWidth="778">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
         <local:ColorToBrushConverter x:Key="ColorToBrushConverter"/>

@@ -53,8 +53,13 @@ namespace Profiler.Data
 
         public static void ForEachInsideInterval<T>(List<T> frames, Durable interval, Action<T> action) where T : ITick
         {
-            int left = BinarySearchClosestIndex(frames, interval.Start);
-            int right = BinarySearchClosestIndex(frames, interval.Finish);
+            ForEachInsideInterval(frames, interval.Start, interval.Finish, action);
+        }
+
+        public static void ForEachInsideInterval<T>(List<T> frames, long start, long finish, Action<T> action) where T : ITick
+        {
+            int left = BinarySearchClosestIndex(frames, start);
+            int right = BinarySearchClosestIndex(frames, finish);
 
             for (int i = left; i <= right && i != -1; ++i)
             {
@@ -64,12 +69,17 @@ namespace Profiler.Data
 
         public static void ForEachInsideIntervalStrict<T>(List<T> frames, Durable interval, Action<T> action) where T : ITick
         {
-            int left = BinarySearchClosestIndex(frames, interval.Start);
-            int right = BinarySearchClosestIndex(frames, interval.Finish);
+            ForEachInsideIntervalStrict(frames, interval.Start, interval.Finish, action);
+        }
+
+        public static void ForEachInsideIntervalStrict<T>(List<T> frames, long start, long finish, Action<T> action) where T : ITick
+        {
+            int left = BinarySearchClosestIndex(frames, start);
+            int right = BinarySearchClosestIndex(frames, finish);
 
             for (int i = left; i <= right && i != -1; ++i)
             {
-                if (interval.Intersect(frames[i].Start))
+                if (start <= frames[i].Start && frames[i].Start < finish)
                     action(frames[i]);
             }
         }
