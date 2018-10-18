@@ -15,14 +15,14 @@ using System.Windows.Shapes;
 
 namespace Profiler.Controls
 {
-    /// <summary>
-    /// Interaction logic for TagsControl.xaml
-    /// </summary>
-    public partial class TagsControl : UserControl
-    {
-        public TagsControl()
-        {
-            InitializeComponent();
-        }
-    }
+	/// <summary>
+	/// Interaction logic for TagsControl.xaml
+	/// </summary>
+	public partial class TagsControl : UserControl
+	{
+		public TagsControl()
+		{
+			InitializeComponent();
+		}
+	}
 }

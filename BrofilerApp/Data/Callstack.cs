@@ -46,11 +46,11 @@ namespace Profiler.Data
 	}
 
 
-    public class Callstack : List<SamplingDescription>, ITick
-    {
-        public long Start { get; set; }
+	public class Callstack : List<SamplingDescription>, ITick
+	{
+		public long Start { get; set; }
 		public CallStackReason Reason { get; set; }
-    }
+	}
 
 	public class CallstackPack : IResponseHolder
 	{
@@ -58,15 +58,15 @@ namespace Profiler.Data
 		public override DataResponse Response { get; set; }
 
 		public static CallstackPack Create(DataResponse response, ISamplingBoard board, SysCallBoard sysCallBoard)
-        {
+		{
 			CallstackPack result = new CallstackPack() { Response = response, CallstackMap = new Dictionary<ulong, List<Callstack>>() };
 
-            ulong totalCount = response.Reader.ReadUInt32();
+			ulong totalCount = response.Reader.ReadUInt32();
 
-			for (ulong i = 0; i < totalCount; )
-            {
-                UInt64 threadID = response.Reader.ReadUInt64();
-                UInt64 timestamp = response.Reader.ReadUInt64();
+			for (ulong i = 0; i < totalCount;)
+			{
+				UInt64 threadID = response.Reader.ReadUInt64();
+				UInt64 timestamp = response.Reader.ReadUInt64();
 
 				UInt64 count = response.Reader.ReadUInt64();
 
@@ -82,12 +82,12 @@ namespace Profiler.Data
 					}
 				}
 
-                for (ulong addressIndex = 0; addressIndex < count; ++addressIndex)
-                {
+				for (ulong addressIndex = 0; addressIndex < count; ++addressIndex)
+				{
 					UInt64 address = response.Reader.ReadUInt64();
 					SamplingDescription desc = board.GetDescription(address);
 					callstack.Add(desc);
-                }
+				}
 
 				List<Callstack> callstacks;
 				if (!result.CallstackMap.TryGetValue(threadID, out callstacks))
@@ -96,13 +96,13 @@ namespace Profiler.Data
 					result.CallstackMap.Add(threadID, callstacks);
 				}
 
-                //callstack.Reverse();
-                callstacks.Add(callstack);
+				//callstack.Reverse();
+				callstacks.Add(callstack);
 
 				i += (3 + count);
-            }
+			}
 
 			return result;
-        }
-    }
+		}
+	}
 }

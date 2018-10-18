@@ -6,19 +6,19 @@ using System.IO;
 
 namespace Profiler.Data
 {
-  public class EventData : Durable, IComparable<EventData>
+	public class EventData : Durable, IComparable<EventData>
 	{
 		public void ReadEventData(BinaryReader reader)
 		{
 			ReadDurable(reader);
 		}
 
-    public static EventData Create(BinaryReader reader)
-    {
-      EventData result = new EventData();
-      result.ReadEventData(reader);
-      return result;
-    }
+		public static EventData Create(BinaryReader reader)
+		{
+			EventData result = new EventData();
+			result.ReadEventData(reader);
+			return result;
+		}
 
 		public EventData(long s, long f) : base(s, f)
 		{
@@ -26,14 +26,14 @@ namespace Profiler.Data
 
 		public EventData() { }
 
-    public int CompareTo(EventData other)
-    {
-      if (other.Start != Start)
-        return Start < other.Start ? -1 : 1;
-      else
-        return Finish == other.Finish ? 0 : Finish > other.Finish ? -1 : 1; 
-    }
-  }
+		public int CompareTo(EventData other)
+		{
+			if (other.Start != Start)
+				return Start < other.Start ? -1 : 1;
+			else
+				return Finish == other.Finish ? 0 : Finish > other.Finish ? -1 : 1;
+		}
+	}
 
 	public abstract class Description
 	{
@@ -55,9 +55,10 @@ namespace Profiler.Data
 		}
 
 		private FileLine path = FileLine.Empty;
-		public FileLine Path { 
-			get { return path; } 
-			set { path = value != null ? value : FileLine.Empty; } 
+		public FileLine Path
+		{
+			get { return path; }
+			set { path = value != null ? value : FileLine.Empty; }
 		}
 
 		static char startBracket = '(';
@@ -66,7 +67,7 @@ namespace Profiler.Data
 		static String StripFunctionArguments(String name)
 		{
 			int counter = 0;
-			
+
 			int index = name.Length - 1;
 
 			while (index > 0)
@@ -105,9 +106,9 @@ namespace Profiler.Data
 			return name;
 		}
 
-        public override string ToString()
-        {
-            return Name;
-        }
-    }
+		public override string ToString()
+		{
+			return Name;
+		}
+	}
 }

@@ -21,10 +21,10 @@ namespace Profiler
 {
 	public delegate void SelectedTreeNodeChangedHandler(Data.Frame frame, BaseTreeNode node);
 
-    /// <summary>
-    /// Interaction logic for FrameInfo.xaml
-    /// </summary>
-    public partial class FrameInfo : UserControl
+	/// <summary>
+	/// Interaction logic for FrameInfo.xaml
+	/// </summary>
+	public partial class FrameInfo : UserControl
 	{
 		public FrameInfo()
 		{
@@ -99,15 +99,16 @@ namespace Profiler
 		{
 			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
 			{
-                Data.Frame frame = DataContext as Data.Frame;
+				Data.Frame frame = DataContext as Data.Frame;
 
-                EventFrame eventFrame = frame as EventFrame;
+				EventFrame eventFrame = frame as EventFrame;
 				if (eventFrame != null)
 				{
 					if (filter == null)
 					{
 						eventFrame.FilteredDescription = "";
-					} else
+					}
+					else
 					{
 						double timeInMs = eventFrame.CalculateFilteredTime(filter);
 						if (timeInMs > 0)
@@ -177,33 +178,33 @@ namespace Profiler
 					continue;
 				}
 
-				baseTreeNode.ForEach( (curNode, level) =>
-				{
-					EventNode treeEventNode = curNode as EventNode;
-					if (treeEventNode == null)
-					{
-						return true;
-					}
+				baseTreeNode.ForEach((curNode, level) =>
+			   {
+				   EventNode treeEventNode = curNode as EventNode;
+				   if (treeEventNode == null)
+				   {
+					   return true;
+				   }
 
-					if (treeEventNode.Entry.Start > focusRange.Finish)
-					{
-						return false;
-					}
+				   if (treeEventNode.Entry.Start > focusRange.Finish)
+				   {
+					   return false;
+				   }
 
-					if (treeEventNode.Entry.Contains(focusRange))
-					{
-						treePath.Add(curNode);
+				   if (treeEventNode.Entry.Contains(focusRange))
+				   {
+					   treePath.Add(curNode);
 
 						//find desired node in tree
 						if (treeEventNode.Entry.Start >= focusRange.Start && treeEventNode.Entry.Finish <= focusRange.Finish)
-						{
-							return false;
-						}
-					}
+					   {
+						   return false;
+					   }
+				   }
 
 
-					return true;
-				});
+				   return true;
+			   });
 
 				ItemsControl root = EventTreeView;
 
@@ -244,88 +245,88 @@ namespace Profiler
 
 					return true;
 				}
-			
+
 			}
 
 			return false;
 		}
 
-        private void MenuShowSourceCode(object sender, RoutedEventArgs e)
-        {
-            if (e.Source is FrameworkElement)
-            {
-                FrameworkElement item = e.Source as FrameworkElement;
+		private void MenuShowSourceCode(object sender, RoutedEventArgs e)
+		{
+			if (e.Source is FrameworkElement)
+			{
+				FrameworkElement item = e.Source as FrameworkElement;
 
-                Application.Current.Dispatcher.Invoke(new Action(() =>
-                {
-                    Object windowDataContext = null;
-                    if (item.DataContext is SamplingNode)
-                    {
-                        windowDataContext = SourceView<SamplingBoardItem, SamplingDescription, SamplingNode>.Create(SummaryTable.DataContext as Board<SamplingBoardItem, SamplingDescription, SamplingNode>, (item.DataContext as SamplingNode).Description.Path);
-                    }
-                    else
-                    {
-                        if (item.DataContext is EventNode)
-                        {
-                            windowDataContext = SourceView<EventBoardItem, EventDescription, EventNode>.Create(SummaryTable.DataContext as Board<EventBoardItem, EventDescription, EventNode>, (item.DataContext as EventNode).Description.Path);
-                        }
-                    }
+				Application.Current.Dispatcher.Invoke(new Action(() =>
+				{
+					Object windowDataContext = null;
+					if (item.DataContext is SamplingNode)
+					{
+						windowDataContext = SourceView<SamplingBoardItem, SamplingDescription, SamplingNode>.Create(SummaryTable.DataContext as Board<SamplingBoardItem, SamplingDescription, SamplingNode>, (item.DataContext as SamplingNode).Description.Path);
+					}
+					else
+					{
+						if (item.DataContext is EventNode)
+						{
+							windowDataContext = SourceView<EventBoardItem, EventDescription, EventNode>.Create(SummaryTable.DataContext as Board<EventBoardItem, EventDescription, EventNode>, (item.DataContext as EventNode).Description.Path);
+						}
+					}
 
-                    if (windowDataContext != null)
-                    {
-                        new SourceWindow() { DataContext = windowDataContext, Owner = Application.Current.MainWindow }.Show();
-                    }
-                }));
-            }
-        }
+					if (windowDataContext != null)
+					{
+						new SourceWindow() { DataContext = windowDataContext, Owner = Application.Current.MainWindow }.Show();
+					}
+				}));
+			}
+		}
 
-        private void SampleFunction(EventFrame eventFrame, EventNode node, bool single)
-        {
-            List<Callstack> callstacks = new List<Callstack>();
-            FrameGroup group = eventFrame.Group;
+		private void SampleFunction(EventFrame eventFrame, EventNode node, bool single)
+		{
+			List<Callstack> callstacks = new List<Callstack>();
+			FrameGroup group = eventFrame.Group;
 
-            if (single)
-            {
-                Utils.ForEachInsideIntervalStrict(group.Threads[eventFrame.Header.ThreadIndex].Callstacks, node.Entry, callstack => callstacks.Add(callstack));
-            }
-            else
-            {
-                EventDescription desc = node.Entry.Description;
+			if (single)
+			{
+				Utils.ForEachInsideIntervalStrict(group.Threads[eventFrame.Header.ThreadIndex].Callstacks, node.Entry, callstack => callstacks.Add(callstack));
+			}
+			else
+			{
+				EventDescription desc = node.Entry.Description;
 
-                callstacks = group.GetCallstacks(desc);
-            }
+				callstacks = group.GetCallstacks(desc);
+			}
 
 
-            if (callstacks.Count > 0)
-            {
-                SamplingFrame frame = new SamplingFrame(callstacks, group);
+			if (callstacks.Count > 0)
+			{
+				SamplingFrame frame = new SamplingFrame(callstacks, group);
 				Profiler.TimeLine.FocusFrameEventArgs args = new Profiler.TimeLine.FocusFrameEventArgs(Profiler.TimeLine.FocusFrameEvent, frame);
-                RaiseEvent(args);
-            }
-        }
+				RaiseEvent(args);
+			}
+		}
 
-        private void MenuSampleFunction(object sender, RoutedEventArgs e)
-        {
-            if (frame is EventFrame && e.Source is FrameworkElement)
-            {
-                FrameworkElement item = e.Source as FrameworkElement;
-                Application.Current.Dispatcher.Invoke(new Action(() =>
-                {
-                    SampleFunction(frame as EventFrame, item.DataContext as EventNode, true);
-                }));
-            }
-        }
+		private void MenuSampleFunction(object sender, RoutedEventArgs e)
+		{
+			if (frame is EventFrame && e.Source is FrameworkElement)
+			{
+				FrameworkElement item = e.Source as FrameworkElement;
+				Application.Current.Dispatcher.Invoke(new Action(() =>
+				{
+					SampleFunction(frame as EventFrame, item.DataContext as EventNode, true);
+				}));
+			}
+		}
 
-        private void MenuSampleFunctions(object sender, RoutedEventArgs e)
-        {
-            if (frame is EventFrame && e.Source is FrameworkElement)
-            {
-                FrameworkElement item = e.Source as FrameworkElement;
-                Application.Current.Dispatcher.Invoke(new Action(() =>
-                {
-                    SampleFunction(frame as EventFrame, item.DataContext as EventNode, false);
-                }));
-            }
-        }
-    }
+		private void MenuSampleFunctions(object sender, RoutedEventArgs e)
+		{
+			if (frame is EventFrame && e.Source is FrameworkElement)
+			{
+				FrameworkElement item = e.Source as FrameworkElement;
+				Application.Current.Dispatcher.Invoke(new Action(() =>
+				{
+					SampleFunction(frame as EventFrame, item.DataContext as EventNode, false);
+				}));
+			}
+		}
+	}
 }

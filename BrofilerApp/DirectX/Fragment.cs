@@ -7,17 +7,17 @@ using SharpDX.Direct3D11;
 
 namespace Profiler.DirectX
 {
-    public class Fragment : IDisposable
-    {
-        public PixelShader PS { get; set; }
-        public VertexShader VS { get; set; }
-        public InputLayout Layout { get; set; }
+	public class Fragment : IDisposable
+	{
+		public PixelShader PS { get; set; }
+		public VertexShader VS { get; set; }
+		public InputLayout Layout { get; set; }
 
-        public void Dispose()
-        {
-            PS.Dispose();
-            VS.Dispose();
-            Layout.Dispose();
-        }
-    }
+		public void Dispose()
+		{
+			PS.Dispose();
+			VS.Dispose();
+			Layout.Dispose();
+		}
+	}
 }

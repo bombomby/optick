@@ -7,29 +7,29 @@ using System.Windows;
 
 namespace Profiler.Controls
 {
-    public class OpenCaptureEventArgs : RoutedEventArgs
-    {
-        public String Path { get; set; }
-        public Data.SummaryPack Summary { get; set; }
+	public class OpenCaptureEventArgs : RoutedEventArgs
+	{
+		public String Path { get; set; }
+		public Data.SummaryPack Summary { get; set; }
 
-        public OpenCaptureEventArgs(String path, Data.SummaryPack summary = null)
-            : base(MainWindow.OpenCaptureEvent)
-        {
-            Path = path;
-            Summary = summary;
-        }
-    }
+		public OpenCaptureEventArgs(String path, Data.SummaryPack summary = null)
+			: base(MainWindow.OpenCaptureEvent)
+		{
+			Path = path;
+			Summary = summary;
+		}
+	}
 
-    public class SaveCaptureEventArgs : RoutedEventArgs
-    {
-        public String Path { get; set; }
-        public Data.SummaryPack Summary { get; set; }
+	public class SaveCaptureEventArgs : RoutedEventArgs
+	{
+		public String Path { get; set; }
+		public Data.SummaryPack Summary { get; set; }
 
-        public SaveCaptureEventArgs(String path)
-            : base(MainWindow.OpenCaptureEvent)
-        {
-            Path = path;
-        }
-    }
+		public SaveCaptureEventArgs(String path)
+			: base(MainWindow.OpenCaptureEvent)
+		{
+			Path = path;
+		}
+	}
 
 }

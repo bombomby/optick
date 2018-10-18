@@ -15,20 +15,20 @@ using System.Windows.Shapes;
 
 namespace Profiler
 {
-    /// <summary>
-    /// Interaction logic for Settings.xaml
-    /// </summary>
-    public partial class SettingsWindow : MetroWindow
-    {
-        public SettingsWindow()
-        {
-            InitializeComponent();
-        }
+	/// <summary>
+	/// Interaction logic for Settings.xaml
+	/// </summary>
+	public partial class SettingsWindow : MetroWindow
+	{
+		public SettingsWindow()
+		{
+			InitializeComponent();
+		}
 
-        private void Save_Click(object sender, RoutedEventArgs e)
-        {
-            Properties.Settings.Default.Save();
-            Close();
-        }
-    }
+		private void Save_Click(object sender, RoutedEventArgs e)
+		{
+			Properties.Settings.Default.Save();
+			Close();
+		}
+	}
 }

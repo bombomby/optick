@@ -11,124 +11,124 @@ using System.Windows.Media.Imaging;
 
 namespace Profiler.Controls
 {
-    /// <summary>
-    /// Interaction logic for CaptureStats.xaml
-    /// </summary>
-    public partial class CaptureStats : UserControl
-    {
-        const int HistogramStep = 5;
-        const int MinHistogramValue = 15;
-        const int MaxHistogramValue = 100;
+	/// <summary>
+	/// Interaction logic for CaptureStats.xaml
+	/// </summary>
+	public partial class CaptureStats : UserControl
+	{
+		const int HistogramStep = 5;
+		const int MinHistogramValue = 15;
+		const int MaxHistogramValue = 100;
 
-        public CaptureStats()
-        {
-            InitializeComponent();
-            DataContextChanged += OnDataContextChanged;
+		public CaptureStats()
+		{
+			InitializeComponent();
+			DataContextChanged += OnDataContextChanged;
 
-            FrameTimeAxis.LabelFormatter = Formatter;
-        }
+			FrameTimeAxis.LabelFormatter = Formatter;
+		}
 
-        private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            if (DataContext is String)
-            {
-                Load(DataContext as String);
-            }
-        }
+		private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+		{
+			if (DataContext is String)
+			{
+				Load(DataContext as String);
+			}
+		}
 
-        public SummaryPack Summary { get; set; }
+		public SummaryPack Summary { get; set; }
 
-        public void Load(String path)
-        {
-            if (File.Exists(path))
-            {
-                using (FileStream stream = new FileStream(path, FileMode.Open))
-                {
-                    DataResponse response = DataResponse.Create(stream);
-                    if (response != null)
-                    {
-                        if (response.ResponseType == DataResponse.Type.SummaryPack)
-                        {
-                            Load(new SummaryPack(response));
-                        }
-                    }
-                }
-            }
-        }
+		public void Load(String path)
+		{
+			if (File.Exists(path))
+			{
+				using (FileStream stream = new FileStream(path, FileMode.Open))
+				{
+					DataResponse response = DataResponse.Create(stream);
+					if (response != null)
+					{
+						if (response.ResponseType == DataResponse.Type.SummaryPack)
+						{
+							Load(new SummaryPack(response));
+						}
+					}
+				}
+			}
+		}
 
-        public SeriesCollection FrameTimeSeriesCollection { get; set; }
-        public Func<double, string> Formatter = l => l.ToString("N1");
+		public SeriesCollection FrameTimeSeriesCollection { get; set; }
+		public Func<double, string> Formatter = l => l.ToString("N1");
 
-        private void Load(SummaryPack summary)
-        {
-            Summary = summary;
+		private void Load(SummaryPack summary)
+		{
+			Summary = summary;
 
-            // Image
-            foreach (SummaryPack.Attachment attachment in summary.Attachments)
-            {
-                if (attachment.FileType == SummaryPack.Attachment.Type.BRO_IMAGE)
-                {
-                    attachment.Data.Position = 0;
+			// Image
+			foreach (SummaryPack.Attachment attachment in summary.Attachments)
+			{
+				if (attachment.FileType == SummaryPack.Attachment.Type.BRO_IMAGE)
+				{
+					attachment.Data.Position = 0;
 
-                    var imageSource = new BitmapImage();
-                    imageSource.BeginInit();
-                    imageSource.StreamSource = attachment.Data;
-                    imageSource.EndInit();
+					var imageSource = new BitmapImage();
+					imageSource.BeginInit();
+					imageSource.StreamSource = attachment.Data;
+					imageSource.EndInit();
 
-                    ScreenshotThumbnail.Source = imageSource;
-               
-                    break;
-                }
-            }
+					ScreenshotThumbnail.Source = imageSource;
 
-            // Frame Chart
-            FrameTimeChart.Series = new SeriesCollection
-            {
-                new LineSeries
-                {
-                    Values = new ChartValues<double>(summary.Frames),
-                    LabelPoint = p => p.Y.ToString("N1"),
-                    PointGeometrySize = 0,
-                    LineSmoothness = 0,
-                },
-            };
-            
-            // Histogram
-            Dictionary<int, int> histogramDict = new Dictionary<int, int>();
+					break;
+				}
+			}
 
-            for (int i = 0; i < summary.Frames.Count; ++i)
-            {
-                double duration = summary.Frames[i];
+			// Frame Chart
+			FrameTimeChart.Series = new SeriesCollection
+			{
+				new LineSeries
+				{
+					Values = new ChartValues<double>(summary.Frames),
+					LabelPoint = p => p.Y.ToString("N1"),
+					PointGeometrySize = 0,
+					LineSmoothness = 0,
+				},
+			};
 
-                int bucket = Math.Min(MaxHistogramValue, Math.Max(MinHistogramValue, (int)Math.Round(duration)));
-                if (!histogramDict.ContainsKey(bucket))
-                    histogramDict.Add(bucket, 0);
+			// Histogram
+			Dictionary<int, int> histogramDict = new Dictionary<int, int>();
 
-                histogramDict[bucket] += 1;
-            }
+			for (int i = 0; i < summary.Frames.Count; ++i)
+			{
+				double duration = summary.Frames[i];
 
-            List<int> values = new List<int>();
-            List<String> labels = new List<String>();
+				int bucket = Math.Min(MaxHistogramValue, Math.Max(MinHistogramValue, (int)Math.Round(duration)));
+				if (!histogramDict.ContainsKey(bucket))
+					histogramDict.Add(bucket, 0);
 
-            for (int i = MinHistogramValue; i <= MaxHistogramValue; ++i)
-            {
-                int val = 0;
-                histogramDict.TryGetValue(i, out val);
+				histogramDict[bucket] += 1;
+			}
 
-                values.Add(val);
-                labels.Add(i.ToString());
-            }
+			List<int> values = new List<int>();
+			List<String> labels = new List<String>();
 
-            FrameHistogramChart.Series = new SeriesCollection
-            {
-                new ColumnSeries
-                {
-                    Values = new ChartValues<int>(values),
-                    ColumnPadding = 0.5
-                },
-            };
+			for (int i = MinHistogramValue; i <= MaxHistogramValue; ++i)
+			{
+				int val = 0;
+				histogramDict.TryGetValue(i, out val);
 
-            FrameHistogramAxis.Labels = labels;
-        }
-    }
+				values.Add(val);
+				labels.Add(i.ToString());
+			}
+
+			FrameHistogramChart.Series = new SeriesCollection
+			{
+				new ColumnSeries
+				{
+					Values = new ChartValues<int>(values),
+					ColumnPadding = 0.5
+				},
+			};
+
+			FrameHistogramAxis.Labels = labels;
+		}
+	}
 }

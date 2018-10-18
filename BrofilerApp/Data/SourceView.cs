@@ -10,55 +10,55 @@ using Microsoft.Win32;
 namespace Profiler.Data
 {
 
-  //class SourceLine
-  //{
-    
-  //}
+	//class SourceLine
+	//{
 
-  //class SamplingSourceLine : SourceLine
-  //{
-  //  public SamplingBoardItem Item
-  //  {
-  //    set
-  //    {
-  //      if (value != null)
-  //      {
-  //        SelfPercent = String.Format("{0}%", value.SelfPercent);
-  //        Sampled = value.Sampled.ToString();
-  //        Passed = value.Passed.ToString();
-  //      }
-  //    }
-  //  }
+	//}
 
-  //  [DisplayName("%")]
-  //  [ColumnWidth(50)]
-  //  public String SelfPercent { get; private set; }
+	//class SamplingSourceLine : SourceLine
+	//{
+	//  public SamplingBoardItem Item
+	//  {
+	//    set
+	//    {
+	//      if (value != null)
+	//      {
+	//        SelfPercent = String.Format("{0}%", value.SelfPercent);
+	//        Sampled = value.Sampled.ToString();
+	//        Passed = value.Passed.ToString();
+	//      }
+	//    }
+	//  }
 
-  //  [ColumnWidth(50)]
-  //  public String Sampled { get; private set; }
+	//  [DisplayName("%")]
+	//  [ColumnWidth(50)]
+	//  public String SelfPercent { get; private set; }
 
-  //  [ColumnWidth(50)]
-  //  public String Passed { get; private set; }
+	//  [ColumnWidth(50)]
+	//  public String Sampled { get; private set; }
 
-  //  public int Line { get; private set; }
-  //  public String Text { get; private set; }
-    
-  //  public SamplingSourceLine(String text, int line)
-  //  {
-  //    Text = text;
-  //    Line = line;
-  //  }
-  //}
+	//  [ColumnWidth(50)]
+	//  public String Passed { get; private set; }
 
-  public static class SourceColumns
-  {
-    public static CustomColumnDescription TotalPercent = new CustomColumnDescription("Total%", 7);
+	//  public int Line { get; private set; }
+	//  public String Text { get; private set; }
+
+	//  public SamplingSourceLine(String text, int line)
+	//  {
+	//    Text = text;
+	//    Line = line;
+	//  }
+	//}
+
+	public static class SourceColumns
+	{
+		public static CustomColumnDescription TotalPercent = new CustomColumnDescription("Total%", 7);
 		public static CustomColumnDescription Total = new CustomColumnDescription("Total", 7) { HasSeparator = true };
 		public static CustomColumnDescription SelfPercent = new CustomColumnDescription("Self%", 7);
 		public static CustomColumnDescription Self = new CustomColumnDescription("Self", 7) { HasSeparator = true };
 
 		public static List<CustomColumnDescription> Default = new List<CustomColumnDescription>() { TotalPercent, Total, SelfPercent, Self };
-  }
+	}
 
 	public class SourceLine
 	{
@@ -85,22 +85,22 @@ namespace Profiler.Data
 	}
 
 	class SourceView<TItem, TDescription, TNode> : SourceViewBase
-    where TItem : BoardItem<TDescription, TNode>, new()
+	where TItem : BoardItem<TDescription, TNode>, new()
 		where TNode : TreeNode<TDescription>
 		where TDescription : Description
-  {
+	{
 		public String Description { get { return SourceFile != null ? SourceFile.File : "Unknown File"; } }
 
 		private SourceView(Board<TItem, TDescription, TNode> board, FileLine path, String text)
-    {
+		{
 			Lines = new Dictionary<int, SourceLine>();
 
-			IEnumerable<TItem> boardItems = board.Where(boardItem => 
-      {
-        return (boardItem.Description != null && 
-                boardItem.Description.Path != null &&
-								boardItem.Description.Path.File == path.File);
-      });
+			IEnumerable<TItem> boardItems = board.Where(boardItem =>
+	  {
+		  return (boardItem.Description != null &&
+				  boardItem.Description.Path != null &&
+								  boardItem.Description.Path.File == path.File);
+	  });
 
 			foreach (TItem item in boardItems)
 			{
@@ -118,13 +118,13 @@ namespace Profiler.Data
 			}
 
 			SourceFile = path;
-      Text = text;
-    }
+			Text = text;
+		}
 
 		public static SourceView<TItem, TDescription, TNode> Create(Board<TItem, TDescription, TNode> board, FileLine path)
-    {
+		{
 			if (path == null || String.IsNullOrEmpty(path.File))
-        return null;
+				return null;
 
 			String file = path.File;
 
@@ -143,13 +143,13 @@ namespace Profiler.Data
 				{
 					file = openFileDialog.FileName;
 				}
-				else 
+				else
 				{
 					return null;
 				}
 			}
 
 			return new SourceView<TItem, TDescription, TNode>(board, path, File.ReadAllText(file));
-    }
-  }
+		}
+	}
 }

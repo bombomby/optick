@@ -25,9 +25,9 @@ namespace Profiler.Data
 
 		public abstract String Name { get; }
 
-        public virtual List<Tag> Tags { get { return null; } set { } }
+		public virtual List<Tag> Tags { get { return null; } set { } }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+		public event PropertyChangedEventHandler PropertyChanged;
 		private void Raise(string propertyName)
 		{
 			var tmp = PropertyChanged;
@@ -36,12 +36,12 @@ namespace Profiler.Data
 		}
 
 		public double Ratio
-        {
-            get
-            {
-                return Parent != null ? Duration / Parent.Duration : 1.0;
-            }
-        }
+		{
+			get
+			{
+				return Parent != null ? Duration / Parent.Duration : 1.0;
+			}
+		}
 
 		public double TotalPercent { get { return RootParent != null ? (100.0 * Duration / RootParent.Duration) : 100.0; } }
 		public double SelfPercent { get { return RootParent != null ? (100.0 * SelfDuration / RootParent.Duration) : (SelfDuration / Duration); } }
@@ -50,11 +50,11 @@ namespace Profiler.Data
 
 		public bool IsExpanded
 		{
-			get 
+			get
 			{
 				return isExpanded;
 			}
-			set 
+			set
 			{
 				if (isExpanded != value)
 				{
@@ -96,7 +96,7 @@ namespace Profiler.Data
 				}
 			}
 		}
-		
+
 
 		public void ApplyFilterTerminal(FilterMode mode)
 		{
@@ -247,45 +247,45 @@ namespace Profiler.Data
 	public class EventNode : TreeNode<EventDescription>
 	{
 		public Entry Entry { get; private set; }
-		public Brush Brush { get { return Entry.Description.Brush;  } }
+		public Brush Brush { get { return Entry.Description.Brush; } }
 
-        private List<Tag> tags = null;
-        public override List<Tag> Tags { get { return tags; } set { tags = value; } }
+		private List<Tag> tags = null;
+		public override List<Tag> Tags { get { return tags; } set { tags = value; } }
 
 
-        public EventNode(EventNode root, Entry entry)
+		public EventNode(EventNode root, Entry entry)
 		  : base(root, entry.Description, entry.Duration)
 		{
 			Entry = entry;
 		}
 
-        public void ApplyTags(List<Tag> toAdd, ref int index)
-        {
-            if (index < toAdd.Count && toAdd[index].Start < Entry.Start)
-                ++index;
+		public void ApplyTags(List<Tag> toAdd, ref int index)
+		{
+			if (index < toAdd.Count && toAdd[index].Start < Entry.Start)
+				++index;
 
-            if (index < toAdd.Count && Entry.IsValid && Entry.Finish < toAdd[index].Start)
-                return;
+			if (index < toAdd.Count && Entry.IsValid && Entry.Finish < toAdd[index].Start)
+				return;
 
-            for (int i = 0; i < Children.Count; ++i)
-            {
-                EventNode child = Children[i] as EventNode;
-                while (index < toAdd.Count && toAdd[index].Start < child.Entry.Start)
-                {
-                    if (tags == null) tags = new List<Tag>();
-                    tags.Add(toAdd[index++]);
-                }
+			for (int i = 0; i < Children.Count; ++i)
+			{
+				EventNode child = Children[i] as EventNode;
+				while (index < toAdd.Count && toAdd[index].Start < child.Entry.Start)
+				{
+					if (tags == null) tags = new List<Tag>();
+					tags.Add(toAdd[index++]);
+				}
 
-                child.ApplyTags(toAdd, ref index);
-            }
+				child.ApplyTags(toAdd, ref index);
+			}
 
-            while (index < toAdd.Count && Entry.IsValid && toAdd[index].Start <= Entry.Finish)
-            {
-                if (tags == null) tags = new List<Tag>();
-                tags.Add(toAdd[index++]);
-            }
-        }
-    }
+			while (index < toAdd.Count && Entry.IsValid && toAdd[index].Start <= Entry.Finish)
+			{
+				if (tags == null) tags = new List<Tag>();
+				tags.Add(toAdd[index++]);
+			}
+		}
+	}
 
 	public class EventTree : EventNode
 	{
@@ -340,13 +340,13 @@ namespace Profiler.Data
 			Children.ForEach(node => node.ForEach(action));
 		}
 
-        public void ApplyTags(List<Tag> tags)
-        {
-            if (tags == null || tags.Count == 0)
-                return;
+		public void ApplyTags(List<Tag> tags)
+		{
+			if (tags == null || tags.Count == 0)
+				return;
 
-            int index = 0;
-            ApplyTags(tags, ref index);
-        }
-    }
+			int index = 0;
+			ApplyTags(tags, ref index);
+		}
+	}
 }

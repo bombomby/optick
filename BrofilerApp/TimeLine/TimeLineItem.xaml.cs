@@ -54,13 +54,13 @@ namespace Profiler
 			{
 				InitNode(child, frameStartMS, level + 1);
 			}
-        }
+		}
 
-        void Init()
+		void Init()
 		{
 			if (DataContext is Data.EventFrame)
 			{
-                Data.EventFrame frame = (Data.EventFrame)DataContext;
+				Data.EventFrame frame = (Data.EventFrame)DataContext;
 				LayoutRoot.Children.Clear();
 
 				double frameStartMS = frame.Header.StartMS;

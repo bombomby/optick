@@ -30,17 +30,17 @@ using System.Threading.Tasks;
 
 namespace Profiler
 {
-    public delegate void ClearAllFramesHandler();
+	public delegate void ClearAllFramesHandler();
 
-    /// <summary>
-    /// Interaction logic for TimeLine.xaml
-    /// </summary>
-    public partial class TimeLine : UserControl
-    {
-        FrameCollection frames = new FrameCollection();
-        Thread socketThread = null;
+	/// <summary>
+	/// Interaction logic for TimeLine.xaml
+	/// </summary>
+	public partial class TimeLine : UserControl
+	{
+		FrameCollection frames = new FrameCollection();
+		Thread socketThread = null;
 
-        Object criticalSection = new Object();
+		Object criticalSection = new Object();
 
 		public FrameCollection Frames
 		{
@@ -50,349 +50,349 @@ namespace Profiler
 			}
 		}
 
-        public TimeLine()
-        {
-            this.InitializeComponent();
-            this.DataContext = frames;
+		public TimeLine()
+		{
+			this.InitializeComponent();
+			this.DataContext = frames;
 
-            statusToError.Add(ETWStatus.ETW_ERROR_ACCESS_DENIED, new KeyValuePair<string, string>("ETW can't start: launch your game (or Visual Studio) as administrator to collect context switches", "https://github.com/bombomby/brofiler/wiki/Event-Tracing-for-Windows"));
-            statusToError.Add(ETWStatus.ETW_ERROR_ALREADY_EXISTS, new KeyValuePair<string, string>("ETW session already started (Reboot should help)", "https://github.com/bombomby/brofiler/wiki/Event-Tracing-for-Windows"));
-            statusToError.Add(ETWStatus.ETW_FAILED, new KeyValuePair<string, string>("ETW session failed", "https://github.com/bombomby/brofiler/wiki/Event-Tracing-for-Windows"));
+			statusToError.Add(ETWStatus.ETW_ERROR_ACCESS_DENIED, new KeyValuePair<string, string>("ETW can't start: launch your game (or Visual Studio) as administrator to collect context switches", "https://github.com/bombomby/brofiler/wiki/Event-Tracing-for-Windows"));
+			statusToError.Add(ETWStatus.ETW_ERROR_ALREADY_EXISTS, new KeyValuePair<string, string>("ETW session already started (Reboot should help)", "https://github.com/bombomby/brofiler/wiki/Event-Tracing-for-Windows"));
+			statusToError.Add(ETWStatus.ETW_FAILED, new KeyValuePair<string, string>("ETW session failed", "https://github.com/bombomby/brofiler/wiki/Event-Tracing-for-Windows"));
 
-            ProfilerClient.Get().ConnectionChanged += TimeLine_ConnectionChanged;
+			ProfilerClient.Get().ConnectionChanged += TimeLine_ConnectionChanged;
 
-            socketThread = new Thread(RecieveMessage);
-            socketThread.Start();
-        }
+			socketThread = new Thread(RecieveMessage);
+			socketThread.Start();
+		}
 
-        private void TimeLine_ConnectionChanged(IPAddress address, int port, ProfilerClient.State state, String message)
-        {
-            switch (state)
-            {
-                case ProfilerClient.State.Connecting:
-                    StatusText.Text = String.Format("Connecting {0}:{1} ...", address.ToString(), port);
-                    StatusText.Visibility = System.Windows.Visibility.Visible;
-                    break;
+		private void TimeLine_ConnectionChanged(IPAddress address, int port, ProfilerClient.State state, String message)
+		{
+			switch (state)
+			{
+				case ProfilerClient.State.Connecting:
+					StatusText.Text = String.Format("Connecting {0}:{1} ...", address.ToString(), port);
+					StatusText.Visibility = System.Windows.Visibility.Visible;
+					break;
 
-                case ProfilerClient.State.Disconnected:
-                    RaiseEvent(new ShowWarningEventArgs("Connection Failed! " + message, String.Empty));
-                    StatusText.Visibility = System.Windows.Visibility.Collapsed;
-                    break;
+				case ProfilerClient.State.Disconnected:
+					RaiseEvent(new ShowWarningEventArgs("Connection Failed! " + message, String.Empty));
+					StatusText.Visibility = System.Windows.Visibility.Collapsed;
+					break;
 
-                case ProfilerClient.State.Connected:
-                    break;
-            }
-        }
+				case ProfilerClient.State.Connected:
+					break;
+			}
+		}
 
-        public bool LoadFile(string file)
-        {
-            if (File.Exists(file))
-            {
-                using (new WaitCursor())
-                {
-                    using (FileStream stream = new FileStream(file, FileMode.Open))
-                    {
-                        Open(stream);
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-        
-        private bool Open(Stream stream)
-        {
-            DataResponse response = DataResponse.Create(stream);
-            while (response != null)
-            {
-                if (!ApplyResponse(response))
-                    return false;
+		public bool LoadFile(string file)
+		{
+			if (File.Exists(file))
+			{
+				using (new WaitCursor())
+				{
+					using (FileStream stream = new FileStream(file, FileMode.Open))
+					{
+						Open(stream);
+						return true;
+					}
+				}
+			}
+			return false;
+		}
 
-                response = DataResponse.Create(stream);
-            }
+		private bool Open(Stream stream)
+		{
+			DataResponse response = DataResponse.Create(stream);
+			while (response != null)
+			{
+				if (!ApplyResponse(response))
+					return false;
 
-            frames.Flush();
-            ScrollToEnd();
+				response = DataResponse.Create(stream);
+			}
 
-            return true;
-        }
+			frames.Flush();
+			ScrollToEnd();
 
-        Dictionary<DataResponse.Type, int> testResponses = new Dictionary<DataResponse.Type, int>();
+			return true;
+		}
 
-        private void SaveTestResponse(DataResponse response)
-        {
-            if (!testResponses.ContainsKey(response.ResponseType))
-                testResponses.Add(response.ResponseType, 0);
+		Dictionary<DataResponse.Type, int> testResponses = new Dictionary<DataResponse.Type, int>();
 
-            int count = testResponses[response.ResponseType]++;
+		private void SaveTestResponse(DataResponse response)
+		{
+			if (!testResponses.ContainsKey(response.ResponseType))
+				testResponses.Add(response.ResponseType, 0);
 
-            String data = response.SerializeToBase64();
-            String path = response.ResponseType.ToString() + "_" + String.Format("{0:000}", count) + ".bin";
-            File.WriteAllText(path, data);
+			int count = testResponses[response.ResponseType]++;
 
-        }
+			String data = response.SerializeToBase64();
+			String path = response.ResponseType.ToString() + "_" + String.Format("{0:000}", count) + ".bin";
+			File.WriteAllText(path, data);
 
-        public class ThreadDescription
-        {
-            public UInt32 ThreadID { get; set; }
-            public String Name { get; set; }
+		}
 
-            public override string ToString()
-            {
-                return String.Format("[{0}] {1}", ThreadID, Name);
-            }
-        }
+		public class ThreadDescription
+		{
+			public UInt32 ThreadID { get; set; }
+			public String Name { get; set; }
 
-        enum ETWStatus
-        {
-            ETW_OK = 0,
-            ETW_ERROR_ALREADY_EXISTS = 1,
-            ETW_ERROR_ACCESS_DENIED = 2,
-            ETW_FAILED = 3,
-        }
+			public override string ToString()
+			{
+				return String.Format("[{0}] {1}", ThreadID, Name);
+			}
+		}
 
-        Dictionary<ETWStatus, KeyValuePair<String, String>> statusToError = new Dictionary<ETWStatus, KeyValuePair<String, String>>();
+		enum ETWStatus
+		{
+			ETW_OK = 0,
+			ETW_ERROR_ALREADY_EXISTS = 1,
+			ETW_ERROR_ACCESS_DENIED = 2,
+			ETW_FAILED = 3,
+		}
 
-        private bool ApplyResponse(DataResponse response)
-        {
-            if (response.Version >= NetworkProtocol.NETWORK_PROTOCOL_MIN_VERSION)
-            {
-                //SaveTestResponse(response);
+		Dictionary<ETWStatus, KeyValuePair<String, String>> statusToError = new Dictionary<ETWStatus, KeyValuePair<String, String>>();
 
-                switch (response.ResponseType)
-                {
-                    case DataResponse.Type.ReportProgress:
-                        Int32 length = response.Reader.ReadInt32();
-                        StatusText.Text = new String(response.Reader.ReadChars(length));
-                        break;
+		private bool ApplyResponse(DataResponse response)
+		{
+			if (response.Version >= NetworkProtocol.NETWORK_PROTOCOL_MIN_VERSION)
+			{
+				//SaveTestResponse(response);
 
-                    case DataResponse.Type.NullFrame:
+				switch (response.ResponseType)
+				{
+					case DataResponse.Type.ReportProgress:
+						Int32 length = response.Reader.ReadInt32();
+						StatusText.Text = new String(response.Reader.ReadChars(length));
+						break;
+
+					case DataResponse.Type.NullFrame:
 						StatusText.Visibility = System.Windows.Visibility.Collapsed;
-                        lock (frames)
-                        {
-                            frames.Flush();
-                            ScrollToEnd();
-                        }
-                        break;
+						lock (frames)
+						{
+							frames.Flush();
+							ScrollToEnd();
+						}
+						break;
 
-                    case DataResponse.Type.Handshake:
-                        ETWStatus status = (ETWStatus)response.Reader.ReadUInt32();
+					case DataResponse.Type.Handshake:
+						ETWStatus status = (ETWStatus)response.Reader.ReadUInt32();
 
-                        KeyValuePair<string, string> warning;
-                        if (statusToError.TryGetValue(status, out warning))
-                        {
-                            RaiseEvent(new ShowWarningEventArgs(warning.Key, warning.Value));
-                        }
-                        break;
+						KeyValuePair<string, string> warning;
+						if (statusToError.TryGetValue(status, out warning))
+						{
+							RaiseEvent(new ShowWarningEventArgs(warning.Key, warning.Value));
+						}
+						break;
 
-                    default:
-                        lock (frames)
-                        {
-                            frames.Add(response);
-                            //ScrollToEnd();
-                        }
-                        break;
-                }
-            }
-            else
-            {
-                RaiseEvent(new ShowWarningEventArgs("Invalid NETWORK_PROTOCOL_VERSION", String.Empty));
-                return false;
-            }
-            return true;
-        }
+					default:
+						lock (frames)
+						{
+							frames.Add(response);
+							//ScrollToEnd();
+						}
+						break;
+				}
+			}
+			else
+			{
+				RaiseEvent(new ShowWarningEventArgs("Invalid NETWORK_PROTOCOL_VERSION", String.Empty));
+				return false;
+			}
+			return true;
+		}
 
-        private void ScrollToEnd()
-        {
-            if (frames.Count > 0)
-            {
-                frameList.SelectedItem = frames[frames.Count - 1];
-                frameList.ScrollIntoView(frames[frames.Count - 1]);
-            }
-        }
+		private void ScrollToEnd()
+		{
+			if (frames.Count > 0)
+			{
+				frameList.SelectedItem = frames[frames.Count - 1];
+				frameList.ScrollIntoView(frames[frames.Count - 1]);
+			}
+		}
 
-        public void RecieveMessage()
-        {
-            while (true)
-            {
-                DataResponse response = ProfilerClient.Get().RecieveMessage();
+		public void RecieveMessage()
+		{
+			while (true)
+			{
+				DataResponse response = ProfilerClient.Get().RecieveMessage();
 
-                if (response != null)
-                    Application.Current.Dispatcher.BeginInvoke(new Action(() => ApplyResponse(response)));
-                else
-                    Thread.Sleep(1000);
-            }
-        }
+				if (response != null)
+					Application.Current.Dispatcher.BeginInvoke(new Action(() => ApplyResponse(response)));
+				else
+					Thread.Sleep(1000);
+			}
+		}
 
-        #region FocusFrame
-        private void FocusOnFrame(Data.Frame frame)
-        {
-            FocusFrameEventArgs args = new FocusFrameEventArgs(FocusFrameEvent, frame);
-            RaiseEvent(args);
-        }
+		#region FocusFrame
+		private void FocusOnFrame(Data.Frame frame)
+		{
+			FocusFrameEventArgs args = new FocusFrameEventArgs(FocusFrameEvent, frame);
+			RaiseEvent(args);
+		}
 
-        public class FocusFrameEventArgs : RoutedEventArgs
-        {
-            public Data.Frame Frame { get; set; }
-            public Data.EventNode Node { get; set; }
+		public class FocusFrameEventArgs : RoutedEventArgs
+		{
+			public Data.Frame Frame { get; set; }
+			public Data.EventNode Node { get; set; }
 
-            public FocusFrameEventArgs(RoutedEvent routedEvent, Data.Frame frame, Data.EventNode node = null)
-                : base(routedEvent)
-            {
-                Frame = frame;
-                Node = node;
-            }
-        }
+			public FocusFrameEventArgs(RoutedEvent routedEvent, Data.Frame frame, Data.EventNode node = null)
+				: base(routedEvent)
+			{
+				Frame = frame;
+				Node = node;
+			}
+		}
 
-        public class ShowWarningEventArgs : RoutedEventArgs
-        {
-            public String Message { get; set; }
-            public String URL { get; set; }
+		public class ShowWarningEventArgs : RoutedEventArgs
+		{
+			public String Message { get; set; }
+			public String URL { get; set; }
 
-            public ShowWarningEventArgs(String message, String url)
-                : base(ShowWarningEvent)
-            {
-                Message = message;
-                URL = url;
-            }
-        }
+			public ShowWarningEventArgs(String message, String url)
+				: base(ShowWarningEvent)
+			{
+				Message = message;
+				URL = url;
+			}
+		}
 
 
-        public delegate void FocusFrameEventHandler(object sender, FocusFrameEventArgs e);
-        public delegate void ShowWarningEventHandler(object sender, ShowWarningEventArgs e);
+		public delegate void FocusFrameEventHandler(object sender, FocusFrameEventArgs e);
+		public delegate void ShowWarningEventHandler(object sender, ShowWarningEventArgs e);
 
-        public static readonly RoutedEvent FocusFrameEvent = EventManager.RegisterRoutedEvent("FocusFrame", RoutingStrategy.Bubble, typeof(FocusFrameEventHandler), typeof(TimeLine));
-        public static readonly RoutedEvent ShowWarningEvent = EventManager.RegisterRoutedEvent("ShowWarning", RoutingStrategy.Bubble, typeof(ShowWarningEventArgs), typeof(TimeLine));
+		public static readonly RoutedEvent FocusFrameEvent = EventManager.RegisterRoutedEvent("FocusFrame", RoutingStrategy.Bubble, typeof(FocusFrameEventHandler), typeof(TimeLine));
+		public static readonly RoutedEvent ShowWarningEvent = EventManager.RegisterRoutedEvent("ShowWarning", RoutingStrategy.Bubble, typeof(ShowWarningEventArgs), typeof(TimeLine));
 
-        public event RoutedEventHandler FocusFrame
-        {
-            add { AddHandler(FocusFrameEvent, value); }
-            remove { RemoveHandler(FocusFrameEvent, value); }
-        }
+		public event RoutedEventHandler FocusFrame
+		{
+			add { AddHandler(FocusFrameEvent, value); }
+			remove { RemoveHandler(FocusFrameEvent, value); }
+		}
 
-        public event RoutedEventHandler ShowWarning
-        {
-            add { AddHandler(ShowWarningEvent, value); }
-            remove { RemoveHandler(ShowWarningEvent, value); }
-        }
-        #endregion
+		public event RoutedEventHandler ShowWarning
+		{
+			add { AddHandler(ShowWarningEvent, value); }
+			remove { RemoveHandler(ShowWarningEvent, value); }
+		}
+		#endregion
 
-        private void frameList_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (frameList.SelectedItem is Data.Frame)
-            {
-                FocusOnFrame((Data.Frame)frameList.SelectedItem);
-            }
-        }
+		private void frameList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (frameList.SelectedItem is Data.Frame)
+			{
+				FocusOnFrame((Data.Frame)frameList.SelectedItem);
+			}
+		}
 
-        public String Save()
-        {
-            SaveFileDialog dlg = new SaveFileDialog();
-            dlg.Filter = "Brofiler files (*.bro)|*.bro";
-            dlg.Title = "Where should I save profiler results?";
+		public String Save()
+		{
+			SaveFileDialog dlg = new SaveFileDialog();
+			dlg.Filter = "Brofiler files (*.bro)|*.bro";
+			dlg.Title = "Where should I save profiler results?";
 
-            if (dlg.ShowDialog() == true)
-            {
-                lock (frames)
-                {
-                    FileStream stream = new FileStream(dlg.FileName, FileMode.Create);
+			if (dlg.ShowDialog() == true)
+			{
+				lock (frames)
+				{
+					FileStream stream = new FileStream(dlg.FileName, FileMode.Create);
 
-                    HashSet<EventDescriptionBoard> boards = new HashSet<EventDescriptionBoard>();
-                    HashSet<FrameGroup> groups = new HashSet<FrameGroup>();
+					HashSet<EventDescriptionBoard> boards = new HashSet<EventDescriptionBoard>();
+					HashSet<FrameGroup> groups = new HashSet<FrameGroup>();
 
-                    FrameGroup currentGroup = null;
+					FrameGroup currentGroup = null;
 
-                    foreach (Frame frame in frames)
-                    {
-                        if (frame is EventFrame)
-                        {
-                            EventFrame eventFrame = frame as EventFrame;
-                            if (eventFrame.Group != currentGroup && currentGroup != null)
-                            {
-                                currentGroup.Responses.ForEach(response => response.Serialize(stream));
-                            }
-                            currentGroup = eventFrame.Group;
-                        }
-                        else if (frame is SamplingFrame)
-                        {
-                            if (currentGroup != null)
-                            {
-                                currentGroup.Responses.ForEach(response => response.Serialize(stream));
-                                currentGroup = null;
-                            }
+					foreach (Frame frame in frames)
+					{
+						if (frame is EventFrame)
+						{
+							EventFrame eventFrame = frame as EventFrame;
+							if (eventFrame.Group != currentGroup && currentGroup != null)
+							{
+								currentGroup.Responses.ForEach(response => response.Serialize(stream));
+							}
+							currentGroup = eventFrame.Group;
+						}
+						else if (frame is SamplingFrame)
+						{
+							if (currentGroup != null)
+							{
+								currentGroup.Responses.ForEach(response => response.Serialize(stream));
+								currentGroup = null;
+							}
 
-                            (frame as SamplingFrame).Response.Serialize(stream);
-                        }
-                    }
+							(frame as SamplingFrame).Response.Serialize(stream);
+						}
+					}
 
-                    if (currentGroup != null)
-                    {
-                        currentGroup.Responses.ForEach(response =>
-                        {
-                            response.Serialize(stream);
-                        });
-                    }
+					if (currentGroup != null)
+					{
+						currentGroup.Responses.ForEach(response =>
+						{
+							response.Serialize(stream);
+						});
+					}
 
-                    stream.Close();
-                }
-                return dlg.FileName;
-            }
+					stream.Close();
+				}
+				return dlg.FileName;
+			}
 
-            return null;
-        }
+			return null;
+		}
 
-        public void Close()
-        {
-            if (socketThread != null)
-            {
-                socketThread.Abort();
-                socketThread = null;
-            }
-        }
+		public void Close()
+		{
+			if (socketThread != null)
+			{
+				socketThread.Abort();
+				socketThread = null;
+			}
+		}
 
-        public void Clear()
-        {
-            lock (frames)
-            {
-                frames.Clear();
-            }
-        }
+		public void Clear()
+		{
+			lock (frames)
+			{
+				frames.Clear();
+			}
+		}
 
-        private void FrameFilterSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            ICollectionView view = CollectionViewSource.GetDefaultView(frameList.ItemsSource);
-            view.Filter = new Predicate<object>((item) => { return (item is Frame) ? (item as Frame).Duration >= FrameFilterSlider.Value : true; });
-        }
+		private void FrameFilterSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+		{
+			ICollectionView view = CollectionViewSource.GetDefaultView(frameList.ItemsSource);
+			view.Filter = new Predicate<object>((item) => { return (item is Frame) ? (item as Frame).Duration >= FrameFilterSlider.Value : true; });
+		}
 
-        public void StartCapture()
-        {
-            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-            {
-                StatusText.Text = "Connecting...";
-                StatusText.Visibility = System.Windows.Visibility.Visible;
-            }));
+		public void StartCapture()
+		{
+			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+			{
+				StatusText.Text = "Connecting...";
+				StatusText.Visibility = System.Windows.Visibility.Visible;
+			}));
 
-            Task.Run(() => { ProfilerClient.Get().SendMessage(new StartMessage(), true); });
-        }
-    }
+			Task.Run(() => { ProfilerClient.Get().SendMessage(new StartMessage(), true); });
+		}
+	}
 
-    public class FrameHeightConverter : IValueConverter
-    {
-        public static double Convert(double value)
-        {
-            return 1.85 * value;
-        }
+	public class FrameHeightConverter : IValueConverter
+	{
+		public static double Convert(double value)
+		{
+			return 1.85 * value;
+		}
 
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            return Convert((double)value);
-        }
+		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		{
+			return Convert((double)value);
+		}
 
-        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-        {
-            return null;
-        }
-    }
+		public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+		{
+			return null;
+		}
+	}
 
 
 	public class WaitCursor : IDisposable

@@ -17,7 +17,7 @@ namespace Profiler
 	/// Interaction logic for SourceWindow.xaml
 	/// </summary>
 	public partial class SourceWindow : MetroWindow
-    {
+	{
 		public SourceWindow()
 		{
 			this.InitializeComponent();
