@@ -113,8 +113,84 @@ void SymEngine::Init()
 		}
 		else
 		{
+			InitSystemModules();
+
 			isInitialized = true;
 		}
+	}
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+typedef DWORD(__stdcall *pZwQuerySystemInformation)(DWORD, LPVOID, DWORD, DWORD*);
+#define SystemModuleInformation 11 // SYSTEMINFOCLASS
+#define MAXIMUM_FILENAME_LENGTH 256
+
+struct SYSTEM_MODULE_INFORMATION
+{
+	DWORD reserved1;
+	DWORD reserved2;
+	PVOID mappedBase;
+	PVOID imageBase;
+	DWORD imageSize;
+	DWORD flags;
+	WORD loadOrderIndex;
+	WORD initOrderIndex;
+	WORD loadCount;
+	WORD moduleNameOffset;
+	CHAR imageName[MAXIMUM_FILENAME_LENGTH];
+};
+
+#pragma warning (push)
+#pragma warning(disable : 4200)
+struct MODULE_LIST
+{
+	DWORD dwModules;
+	SYSTEM_MODULE_INFORMATION pModulesInfo[];
+};
+#pragma warning (pop)
+
+void SymEngine::InitSystemModules()
+{
+	ULONG returnLength = 0;
+	ULONG systemInformationLength = 0;
+	MODULE_LIST* pModuleList = nullptr;
+
+	pZwQuerySystemInformation ZwQuerySystemInformation = (pZwQuerySystemInformation)GetProcAddress(GetModuleHandle(TEXT("ntdll.dll")), "ZwQuerySystemInformation");
+	ZwQuerySystemInformation(SystemModuleInformation, pModuleList, systemInformationLength, &returnLength);
+	systemInformationLength = returnLength;
+	pModuleList = (MODULE_LIST*)Memory::Alloc(systemInformationLength);
+	DWORD status = ZwQuerySystemInformation(SystemModuleInformation, pModuleList, systemInformationLength, &returnLength);
+	if (status == ERROR_SUCCESS)
+	{
+		char systemRootPath[MAXIMUM_FILENAME_LENGTH] = { 0 };
+		ExpandEnvironmentStringsA("%SystemRoot%", systemRootPath, MAXIMUM_FILENAME_LENGTH);
+
+		const char* systemRootPattern = "\\SystemRoot";
+
+		for (uint32_t i = 0; i < pModuleList->dwModules; ++i)
+		{
+			SYSTEM_MODULE_INFORMATION& module = pModuleList->pModulesInfo[i];
+
+			if (strstr(module.imageName, systemRootPattern) == module.imageName)
+			{
+				char expandedPath[MAXIMUM_FILENAME_LENGTH] = { 0 };
+				strcpy_s(expandedPath, systemRootPath);
+				strcat_s(expandedPath, module.imageName + strlen(systemRootPattern));
+				SymLoadModule64(hProcess, NULL, expandedPath, NULL, (DWORD64)module.imageBase, module.imageSize);
+			}
+			else
+			{
+				SymLoadModule64(hProcess, NULL, module.imageName, NULL, (DWORD64)module.imageBase, module.imageSize);
+			}
+		}
+	}
+	else
+	{
+		BRO_FAILED("Can't query System Module Information!");
+	}
+
+	if (pModuleList)
+	{
+		Memory::Free(pModuleList);
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

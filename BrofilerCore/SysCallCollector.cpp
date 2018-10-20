@@ -6,14 +6,14 @@
 namespace Brofiler
 {
 //////////////////////////////////////////////////////////////////////////
-OutputDataStream & operator<<(OutputDataStream &stream, const SysCallDesc &ob)
+OutputDataStream & operator<<(OutputDataStream &stream, const SysCallData &ob)
 {
-	return stream << ob.timestamp << ob.id;
+	return stream << (const EventData&)ob << ob.threadID << ob.id;
 }
 //////////////////////////////////////////////////////////////////////////
-void SysCallCollector::Add(const SysCallDesc& desc)
+SysCallData& SysCallCollector::Add()
 {
-	syscallPool.Add() = desc;
+	return syscallPool.Add();
 }
 //////////////////////////////////////////////////////////////////////////
 void SysCallCollector::Clear()

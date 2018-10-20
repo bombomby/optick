@@ -277,7 +277,7 @@ namespace Profiler.Data
 		public EventDescription Description { get; private set; }
 		public EventFrame Frame { get; set; }
 
-		Entry() { }
+		protected Entry() { }
 
 		public Entry(EventDescription desc, long start, long finish) : base(start, finish)
 		{
@@ -289,14 +289,16 @@ namespace Profiler.Data
 			Description.SetOverrideColor(color);
 		}
 
+		protected void ReadEntry(BinaryReader reader, EventDescriptionBoard board)
+		{
+			ReadEventData(reader);
+			Description = board[reader.ReadInt32()];
+		}
+
 		public static Entry Read(BinaryReader reader, EventDescriptionBoard board)
 		{
 			Entry res = new Entry();
-			res.ReadEventData(reader);
-
-			int descriptionID = reader.ReadInt32();
-			res.Description = board[descriptionID];
-
+			res.ReadEntry(reader, board);
 			return res;
 		}
 

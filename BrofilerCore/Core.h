@@ -142,6 +142,11 @@ struct EventStorage
 		categoryBuffer.Clear(preserveContent);
 		fiberSyncBuffer.Clear(preserveContent);
 		ClearTags(preserveContent);
+
+		while (pushPopEventStackIndex)
+		{
+			pushPopEventStack[--pushPopEventStackIndex] = nullptr;
+		}
 	}
 
 	void ClearTags(bool preserveContent)
@@ -236,7 +241,6 @@ class Core
 	uint32 boardNumber;
 
 	CallstackCollector callstackCollector;
-	SysCallCollector syscallCollector;
 	SwitchContextCollector switchContextCollector;
 
 	std::vector<std::pair<std::string, std::string>> summary;
@@ -288,6 +292,9 @@ public:
 	// System scheduler trace
 	SchedulerTrace* schedulerTrace;
 
+	// SysCall Collector
+	SysCallCollector syscallCollector;
+
 	// Returns thread collection
 	const std::vector<ThreadEntry*>& GetThreads() const;
 
@@ -296,9 +303,6 @@ public:
 
 	// Report switch context event
 	bool ReportStackWalk(const CallstackDesc& desc);
-
-	// Report syscall event
-	void ReportSysCall(const SysCallDesc& desc);
 
 	// Serialize and send current profiling progress
 	void DumpProgress(const char* message = "");

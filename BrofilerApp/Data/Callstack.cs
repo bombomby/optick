@@ -6,46 +6,6 @@ using System.Threading.Tasks;
 
 namespace Profiler.Data
 {
-	public class SysCallBoard : IResponseHolder
-	{
-		public override DataResponse Response { get; set; }
-
-		Dictionary<UInt64, UInt64> systemCalls;
-
-		public Tuple<bool, UInt64> GetSystemCallParams(UInt64 timeStamp)
-		{
-			UInt64 sysCallId = 0;
-			bool isSystemCall = false;
-			if (systemCalls.TryGetValue(timeStamp, out sysCallId))
-			{
-				isSystemCall = true;
-			}
-
-			return new Tuple<bool, UInt64>(isSystemCall, sysCallId);
-		}
-
-		public static SysCallBoard Create(DataResponse response, FrameGroup group)
-		{
-			SysCallBoard result = new SysCallBoard() { Response = response, systemCalls = new Dictionary<UInt64, UInt64>() };
-
-			ulong totalCount = response.Reader.ReadUInt32();
-			for (ulong i = 0; i < totalCount; i += 2)
-			{
-				UInt64 timestamp = response.Reader.ReadUInt64();
-				UInt64 callId = response.Reader.ReadUInt64();
-
-				UInt64 res = 0;
-				if (!result.systemCalls.TryGetValue(timestamp, out res))
-				{
-					result.systemCalls.Add(timestamp, callId);
-				}
-			}
-
-			return result;
-		}
-	}
-
-
 	public class Callstack : List<SamplingDescription>, ITick
 	{
 		public long Start { get; set; }
@@ -67,16 +27,13 @@ namespace Profiler.Data
 			{
 				UInt64 threadID = response.Reader.ReadUInt64();
 				UInt64 timestamp = response.Reader.ReadUInt64();
-
 				UInt64 count = response.Reader.ReadUInt64();
 
 				Callstack callstack = new Callstack() { Start = (long)timestamp, Reason = CallStackReason.AutoSample };
 
 				if (sysCallBoard != null)
 				{
-					Tuple<bool, UInt64> sysCallDesc = sysCallBoard.GetSystemCallParams(timestamp);
-
-					if (sysCallDesc.Item1)
+					if (sysCallBoard.HasSysCall(threadID, callstack.Start))
 					{
 						callstack.Reason = CallStackReason.SysCall;
 					}

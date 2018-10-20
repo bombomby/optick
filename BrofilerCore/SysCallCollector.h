@@ -8,21 +8,21 @@
 namespace Brofiler
 {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	struct SysCallDesc
+	struct SysCallData : EventData
 	{
-		int64_t timestamp;
 		uint64 id;
+		uint64 threadID;
 	};
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	OutputDataStream &operator << (OutputDataStream &stream, const SysCallDesc &ob);
+	OutputDataStream &operator << (OutputDataStream &stream, const SysCallData &ob);
 	//////////////////////////////////////////////////////////////////////////
 	class SysCallCollector
 	{
-		// Packed syscall events: {timestamp, id}
-		typedef MemoryPool<SysCallDesc, 1024 * 32> SysCallPool;
-		SysCallPool syscallPool;
+		typedef MemoryPool<SysCallData, 1024 * 32> SysCallPool;
 	public:
-		void Add(const SysCallDesc& desc);
+		SysCallPool syscallPool;
+
+		SysCallData& Add();
 		void Clear();
 
 		bool Serialize(OutputDataStream& stream);

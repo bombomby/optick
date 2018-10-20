@@ -1,8 +1,12 @@
 #ifdef _WIN32
 
+#include <array>
 #include <vector>
 #include "EtwTracer.h"
 #include "../../Core.h"
+#include "../SymbolEngine.h"
+
+#include <psapi.h>
 
 /*
 Event Tracing Functions - API
@@ -151,9 +155,28 @@ DEFINE_GUID(SampledProfileGuid, 0xce1dbfb4, 0x137e, 0x4da6, 0x87, 0xb0, 0x3f, 0x
 // 3d6fa8d1-fe05-11d0-9dda-00c04fd7ba7c
 DEFINE_GUID(CSwitchProfileGuid, 0x3d6fa8d1, 0xfe05, 0x11d0, 0x9d, 0xda, 0x00, 0xc0, 0x4f, 0xd7, 0xba, 0x7c);
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+const int MAX_CPU_CORES = 256;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct ETWRuntime
+{
+	std::array<ThreadID, MAX_CPU_CORES> activeCores;
+	std::vector<std::pair<uint8_t, SysCallData*>> activeSyscalls;
 
-static DWORD currentProcessId = 0;
+	ETWRuntime()
+	{
+		Reset();
+	}
 
+	void Reset()
+	{
+		activeCores.assign(INVALID_THREAD_ID);
+		activeSyscalls.resize(0);;
+	}
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ETWRuntime g_ETWRuntime;
+ETW g_ETW;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 {
@@ -174,6 +197,16 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 			desc.newThreadId = (uint64)pSwitchEvent->NewThreadId;
 			desc.timestamp = eventRecord->EventHeader.TimeStamp.QuadPart;
 			Core::Get().ReportSwitchContext(desc);
+
+			// Assign ThreadID to the cores
+			if (g_ETW.activeThreadsIDs.find(desc.newThreadId) != g_ETW.activeThreadsIDs.end())
+			{
+				g_ETWRuntime.activeCores[desc.cpuId] = desc.newThreadId;
+			}
+			else if (g_ETW.activeThreadsIDs.find(desc.oldThreadId) != g_ETW.activeThreadsIDs.end())
+			{
+				g_ETWRuntime.activeCores[desc.cpuId] = INVALID_THREAD_ID;
+			}
 		}
 	}
 	else if (opcode == StackWalk_Event::OPCODE)
@@ -188,7 +221,7 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 
 			if (count && pStackWalkEvent->StackThread != 0)
 			{
-				if (pStackWalkEvent->StackProcess == currentProcessId)
+				if ((pStackWalkEvent->StackProcess == g_ETW.GetProcessID()) && (g_ETWRuntime.activeCores[eventRecord->BufferContext.ProcessorNumber] != INVALID_THREAD_ID))
 				{
 					CallstackDesc desc;
 					desc.threadID = pStackWalkEvent->StackThread;
@@ -212,27 +245,43 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 	{
 		if (eventRecord->UserDataLength >= sizeof(SysCallEnter))
 		{
-			//uint8 cpuId = eventRecord->BufferContext.ProcessorNumber;
+			uint8_t cpuId = eventRecord->BufferContext.ProcessorNumber;
+			uint64_t threadId = g_ETWRuntime.activeCores[cpuId];
 
-			// report event, but only if our process working on this physical core
-			// if (cpuCoreIsExecutingThreadFromOurProcess[cpuId])
+			if (threadId != INVALID_THREAD_ID)
 			{
 				SysCallEnter* pEventEnter = (SysCallEnter*)eventRecord->UserData;
 
-				SysCallDesc desc;
-				desc.timestamp = eventRecord->EventHeader.TimeStamp.QuadPart;
-				desc.id = pEventEnter->SysCallAddress;
-				Core::Get().ReportSysCall(desc);
+				SysCallData& sysCall = Core::Get().syscallCollector.Add();
+				sysCall.start = eventRecord->EventHeader.TimeStamp.QuadPart;
+				sysCall.finish = -1;
+				sysCall.threadID = threadId;
+				sysCall.id = pEventEnter->SysCallAddress;
+				sysCall.description = nullptr;
+
+				g_ETWRuntime.activeSyscalls.push_back(std::make_pair(cpuId, &sysCall));
 			}
 		}
 	} 
 	else if (opcode == SysCallExit::OPCODE)
 	{
-		SysCallExit* pEventExit = (SysCallExit*)eventRecord->UserData;
-		BRO_UNUSED(pEventExit);
+		if (eventRecord->UserDataLength >= sizeof(SysCallExit))
+		{
+			uint8_t cpuId = eventRecord->BufferContext.ProcessorNumber;
+			if (g_ETWRuntime.activeCores[cpuId] != INVALID_THREAD_ID)
+			{
+				for (auto rit = g_ETWRuntime.activeSyscalls.rbegin(); rit != g_ETWRuntime.activeSyscalls.rend(); ++rit)
+				{
+					if (rit->first == cpuId)
+					{
+						rit->second->finish = eventRecord->EventHeader.TimeStamp.QuadPart;
+						g_ETWRuntime.activeSyscalls.erase(std::next(rit).base());
+						break;
+					}
+				}
+			}
+		}
 	}
-	
-
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static ULONG WINAPI OnBufferRecord(_In_ PEVENT_TRACE_LOGFILE Buffer)
@@ -270,8 +319,32 @@ void ETW::AdjustPrivileges()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void ETW::ResolveSysCalls()
+{
+	Core::Get().syscallCollector.syscallPool.ForEach([this](SysCallData& data)
+	{
+		auto it = syscallDescriptions.find(data.id);
+		if (it == syscallDescriptions.end())
+		{
+			const Symbol* symbol = SymbolEngine::Get()->GetSymbol(data.id);
+			if (symbol != nullptr)
+			{
+				std::string name(symbol->function.begin(), symbol->function.end());
+				std::string module(symbol->module.begin(), symbol->module.end());
 
-ETW::ETW() 
+				data.description = EventDescription::CreateShared(name.c_str());
+				syscallDescriptions.insert(std::pair<const uint64_t, const Brofiler::EventDescription *>(data.id, data.description));
+			}
+		}
+		else
+		{
+			data.description = it->second;
+		}
+	});
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+ETW::ETW()
 	: isActive(false)
 	, traceSessionHandle(INVALID_TRACEHANDLE)
 	, openedHandle(INVALID_TRACEHANDLE)
@@ -279,7 +352,6 @@ ETW::ETW()
 {
 	ULONG bufferSize = sizeof(EVENT_TRACE_PROPERTIES) + sizeof(KERNEL_LOGGER_NAME);
 	traceProperties = (EVENT_TRACE_PROPERTIES*)malloc(bufferSize);
-
 	currentProcessId = GetCurrentProcessId();
 }
 
@@ -288,6 +360,8 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads, bool autoAdd
 	if (!isActive) 
 	{
 		AdjustPrivileges();
+
+		g_ETWRuntime.Reset();
 
 		CaptureStatus::Type res = SchedulerTrace::Start(mode, threads, autoAddUnknownThreads);
 		if (res != CaptureStatus::OK)
@@ -463,6 +537,8 @@ bool ETW::Stop()
 
 	isActive = false;
 
+	ResolveSysCalls();
+	
 	if (!SchedulerTrace::Stop())
 	{
 		return false;
@@ -480,8 +556,7 @@ ETW::~ETW()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 SchedulerTrace* SchedulerTrace::Get()
 {
-	static ETW etwTracer;
-	return &etwTracer;
+	return &g_ETW;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

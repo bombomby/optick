@@ -40,8 +40,6 @@ namespace Brofiler
 	protected:
 
 		SymbolCache cache;
-
-
 	};
 
 }

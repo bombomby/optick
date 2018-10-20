@@ -24,6 +24,8 @@ class SymEngine : public SymbolEngine
 	uint32 previousOptions;
 	static const size_t MAX_SEARCH_PATH_LENGTH = 2048;
 	char previousSearchPath[MAX_SEARCH_PATH_LENGTH];
+
+	void InitSystemModules();
 public:
 	SymEngine();
 	~SymEngine();

@@ -189,7 +189,6 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="AutoEmbedLibs\EmbeddedAssembly.cs" />
-    <Compile Include="CloseableTabItem.cs" />
     <Compile Include="ColorToBrushConverter.cs" />
     <Compile Include="Controls\CaptureStats.xaml.cs">
       <DependentUpon>CaptureStats.xaml</DependentUpon>
@@ -227,6 +226,7 @@
     <Compile Include="Data\SourceView.cs" />
     <Compile Include="Data\Summary.cs" />
     <Compile Include="Data\Synchronization.cs" />
+    <Compile Include="Data\SysCall.cs" />
     <Compile Include="Data\Tag.cs" />
     <Compile Include="Data\Utils.cs" />
     <Compile Include="DirectX\ComplexDynamicMesh.cs" />

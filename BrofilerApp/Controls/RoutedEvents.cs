@@ -26,7 +26,7 @@ namespace Profiler.Controls
 		public Data.SummaryPack Summary { get; set; }
 
 		public SaveCaptureEventArgs(String path)
-			: base(MainWindow.OpenCaptureEvent)
+			: base(MainWindow.SaveCaptureEvent)
 		{
 			Path = path;
 		}
