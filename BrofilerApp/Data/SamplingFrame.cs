@@ -48,6 +48,22 @@ namespace Profiler.Data
 			}
 		}
 
+		static HashSet<String> IgnoreList = new HashSet<string>(new String[] {
+			"setjmpex",
+
+		});
+		private bool? isIgnore = null;
+		public bool IsIgnore
+		{
+			get
+			{
+				if (isIgnore == null)
+					isIgnore = IgnoreList.Contains(Name);
+
+				return (bool)isIgnore;
+			}
+		}
+
 		public static SamplingDescription UnresolvedDescription = new SamplingDescription() { Module = "Unresolved", FullName = "Unresolved", Address = 0, Path = FileLine.Empty };
 
 		public static SamplingDescription Create(BinaryReader reader)

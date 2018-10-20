@@ -14,6 +14,7 @@ namespace Profiler.Data
 	{
 		public List<EventFrame> Events { get; set; }
 		public List<Callstack> Callstacks { get; set; }
+		public List<SysCallEntry> SysCalls { get; set; }
 		public Synchronization Sync { get; set; }
 		public FiberSynchronization FiberSync { get; set; }
 		public TagsPack TagsPack { get; set; }
@@ -181,6 +182,13 @@ namespace Profiler.Data
 
 			Responses.Add(sysCallsBoard.Response);
 			SysCallsBoard = sysCallsBoard;
+
+			foreach (var pair in sysCallsBoard.SysCallMap)
+			{
+				ThreadData thread = GetThread(pair.Key);
+				if (thread != null)
+					thread.SysCalls = pair.Value;
+			}
 		}
 
 		public void AddCallStackPack(CallstackPack pack)
@@ -278,6 +286,16 @@ namespace Profiler.Data
 			Threads[pack.ThreadIndex].TagsPack = pack;
 		}
 
+		public ThreadData GetThread(UInt64 threadID)
+		{
+			int threadIndex = -1;
+			if (Board.ThreadID2ThreadIndex.TryGetValue(threadID, out threadIndex))
+			{
+				return Threads[threadIndex];
+			}
+			return null;
+		}
+
 		public List<Callstack> GetCallstacks(EventDescription desc, CallStackReason type = CallStackReason.AutoSample)
 		{
 			List<Callstack> callstacks = new List<Callstack>();
@@ -292,7 +310,10 @@ namespace Profiler.Data
 					{
 						foreach (Entry entry in entries)
 						{
-							Utils.ForEachInsideIntervalStrict(thread.Callstacks, entry, c => accumulator.Add(c));
+							Utils.ForEachInsideIntervalStrict(thread.Callstacks, entry, c => {
+								if ((c.Reason & type) != 0)
+									accumulator.Add(c);
+							});
 						}
 					}
 				}

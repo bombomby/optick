@@ -288,36 +288,6 @@ namespace Profiler.Data
 			return result;
 		}
 
-		List<EventData> LinearizeEventList(List<EventData> events)
-		{
-			List<EventData> result = new List<EventData>(events.Count);
-			EventData currentRoot = null;
-
-			foreach (EventData entry in events)
-			{
-				if (currentRoot == null)
-				{
-					currentRoot = entry;
-					result.Add(entry);
-				}
-				else if (entry.Finish <= currentRoot.Finish)
-				{
-					continue;
-				}
-				else if (Durable.TicksToMs(Math.Abs(entry.Start - currentRoot.Finish)) < 0.005)
-				{
-					currentRoot.Finish = entry.Finish;
-				}
-				else
-				{
-					currentRoot = entry;
-					result.Add(entry);
-				}
-			}
-
-			return result;
-		}
-
 		public void MergeWith(EventFrame frame)
 		{
 			Categories.AddRange(frame.Categories);

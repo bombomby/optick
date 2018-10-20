@@ -116,13 +116,24 @@ namespace Profiler.Controls
 				Application.Current.Dispatcher.BeginInvoke(new Action(() => FunctionChart.Series = BuildAreaChart(functionStats)));
 
 				// Sampling Data
-				List<Callstack> callstacks = Group.GetCallstacks(desc, CallStackReason.AutoSample);
-				SamplingFrame frame = new SamplingFrame(callstacks, Group);
-				IEnumerable<SamplingBoardItem> items = frame.Board.FindAll(item => item.Self > 0).OrderByDescending(item => item.SelfPercent);
+				List<Callstack> callstacks = Group.GetCallstacks(desc, CallStackReason.AutoSample | CallStackReason.SysCall);
+
+				List<Callstack> autoSamplingCallstacks = callstacks.FindAll(c => c.Reason == CallStackReason.AutoSample);
+				SamplingFrame autoSampleFrame = new SamplingFrame(autoSamplingCallstacks, Group);
+				IEnumerable<SamplingBoardItem> autoSamplingItems = autoSampleFrame.Board.FindAll(item => item.Self > 0).OrderByDescending(item => item.SelfPercent);
 				Application.Current.Dispatcher.BeginInvoke(new Action(() =>
 				{
-					SamplingDataTab.Header = callstacks.Count;
-					SamplingDataTab.DataContext = items;
+					SamplingDataTab.Header = autoSamplingCallstacks.Count;
+					SamplingDataTab.DataContext = autoSamplingItems;
+				}));
+
+				List<Callstack> sysCallCallstacks = callstacks.FindAll(c => c.Reason == CallStackReason.SysCall);
+				SamplingFrame sysCallFrame = new SamplingFrame(sysCallCallstacks, Group);
+				IEnumerable<SamplingBoardItem> sysCallItems = sysCallFrame.Board.FindAll(item => item.Self > 0).OrderByDescending(item => item.SelfPercent);
+				Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+				{
+					SysCallDataTab.Header = sysCallCallstacks.Count;
+					SysCallDataTab.DataContext = sysCallItems;
 				}));
 			}
 		}

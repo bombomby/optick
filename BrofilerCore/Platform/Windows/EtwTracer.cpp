@@ -270,12 +270,12 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 			uint8_t cpuId = eventRecord->BufferContext.ProcessorNumber;
 			if (g_ETWRuntime.activeCores[cpuId] != INVALID_THREAD_ID)
 			{
-				for (auto rit = g_ETWRuntime.activeSyscalls.rbegin(); rit != g_ETWRuntime.activeSyscalls.rend(); ++rit)
+				for (int i = (int)g_ETWRuntime.activeSyscalls.size() - 1; i >= 0; --i)
 				{
-					if (rit->first == cpuId)
+					if (g_ETWRuntime.activeSyscalls[i].first == cpuId)
 					{
-						rit->second->finish = eventRecord->EventHeader.TimeStamp.QuadPart;
-						g_ETWRuntime.activeSyscalls.erase(std::next(rit).base());
+						g_ETWRuntime.activeSyscalls[i].second->finish = eventRecord->EventHeader.TimeStamp.QuadPart;
+						g_ETWRuntime.activeSyscalls.erase(g_ETWRuntime.activeSyscalls.begin() + i);
 						break;
 					}
 				}

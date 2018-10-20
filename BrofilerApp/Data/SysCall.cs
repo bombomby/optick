@@ -24,12 +24,12 @@ namespace Profiler.Data
 	{
 		public override DataResponse Response { get; set; }
 
-		Dictionary<UInt64, List<SysCallEntry>> sysCallMap;
+		public Dictionary<UInt64, List<SysCallEntry>> SysCallMap { get; set; }
 
 		public bool HasSysCall(UInt64 threadID, long timeStamp)
 		{
 			List<SysCallEntry> entries = null;
-			if (sysCallMap.TryGetValue(threadID, out entries))
+			if (SysCallMap.TryGetValue(threadID, out entries))
 			{
 				int index = Utils.BinarySearchClosestIndex(entries, timeStamp);
 				if (index >= 0)
@@ -41,7 +41,7 @@ namespace Profiler.Data
 
 		public static SysCallBoard Create(DataResponse response, FrameGroup group)
 		{
-			SysCallBoard result = new SysCallBoard() { Response = response, sysCallMap = new Dictionary<UInt64, List<SysCallEntry>>() };
+			SysCallBoard result = new SysCallBoard() { Response = response, SysCallMap = new Dictionary<UInt64, List<SysCallEntry>>() };
 
 			ulong totalCount = response.Reader.ReadUInt32();
 			for (ulong i = 0; i < totalCount; ++i)
@@ -49,12 +49,14 @@ namespace Profiler.Data
 				SysCallEntry entry = new SysCallEntry(response.Reader, group.Board);
 
 				List<SysCallEntry> entries = null;
-				if (!result.sysCallMap.TryGetValue(entry.ThreadID, out entries))
+				if (!result.SysCallMap.TryGetValue(entry.ThreadID, out entries))
 				{
 					entries = new List<SysCallEntry>();
-					result.sysCallMap.Add(entry.ThreadID, entries);
+					result.SysCallMap.Add(entry.ThreadID, entries);
 				}
-				entries.Add(entry);
+
+				if (entry.IsValid)
+					entries.Add(entry);
 			}
 
 			return result;

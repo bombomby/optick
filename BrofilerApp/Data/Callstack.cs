@@ -43,7 +43,8 @@ namespace Profiler.Data
 				{
 					UInt64 address = response.Reader.ReadUInt64();
 					SamplingDescription desc = board.GetDescription(address);
-					callstack.Add(desc);
+					if (!desc.IsIgnore)
+						callstack.Add(desc);
 				}
 
 				List<Callstack> callstacks;

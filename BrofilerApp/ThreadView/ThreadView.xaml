@@ -34,14 +34,13 @@
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
-        <StackPanel Margin="0,-30,2,0" HorizontalAlignment="Right" x:Name="ThreadToolsPanel" Grid.Column="1" VerticalAlignment="Top" Orientation="Horizontal">
+        <StackPanel Margin="0,-28,2,0" HorizontalAlignment="Right" x:Name="ThreadToolsPanel" Grid.Column="1" VerticalAlignment="Top" Orientation="Horizontal">
             <ToggleButton x:Name="ShowSyncWorkButton" ToolTip="Show Work" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" Margin="0,0,1,0" Padding="-5" Click="ShowSyncWorkButton_Click">
                 <ContentControl Style="{StaticResource appbar_suitcase}" />
             </ToggleButton>
             <ToggleButton x:Name="ShowCallstacksButton" ToolTip="Show Callstacks" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" Margin="0,0,4,0" Padding="-8" Click="ShowCallstacksButton_Click">
                 <ContentControl Style="{StaticResource appbar_camera_flash}" />
             </ToggleButton>
-            <Profiler:SearchBox x:Name="search" Width="200" />
         </StackPanel>
         <ScrollViewer Grid.Row="0" Grid.Column="1" VerticalScrollBarVisibility="Auto">
             <Grid>

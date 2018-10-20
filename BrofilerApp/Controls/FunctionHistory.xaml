@@ -59,7 +59,7 @@
                 </lvc:Axis>
             </lvc:CartesianChart.AxisY>
         </lvc:CartesianChart>
-        <TabControl Grid.Row="3" TabStripPlacement="Top" MahApps:TabControlHelper.Underlined="TabPanel">
+        <TabControl Grid.Row="3" TabStripPlacement="Top" MahApps:TabControlHelper.Underlined="TabPanel" MahApps:TabControlHelper.Transition="Default">
             <TabItem Header="" HeaderStringFormat="{}Sampled Callstacks ({0})" x:Name="SamplingDataTab">
                 <DataGrid x:Name="SamplingDataGrid" CanUserAddRows="False" GridLinesVisibility="None" IsReadOnly="True" BorderThickness="0" AutoGenerateColumns="False" ItemsSource="{Binding}" HeadersVisibility="None">
                     <DataGrid.Columns>
@@ -68,11 +68,13 @@
                     </DataGrid.Columns>
                 </DataGrid>
             </TabItem>
-            <TabItem Header="System Calls">
-                <TextBlock FontSize="30" Text="System Calls" />
-            </TabItem>
-            <TabItem Header="Synchronization">
-                <TextBlock FontSize="30" Text="Synchronization" />
+            <TabItem Header="" HeaderStringFormat="{}System Calls ({0})" x:Name="SysCallDataTab">
+                <DataGrid x:Name="SysCallDataGrid" CanUserAddRows="False" GridLinesVisibility="None" IsReadOnly="True" BorderThickness="0" AutoGenerateColumns="False" ItemsSource="{Binding}" HeadersVisibility="None">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Function Name" Binding="{Binding Function}" Width="1*" />
+                        <DataGridTextColumn Header="%" Binding="{Binding SelfPercent, StringFormat={}{0:0.#}%}" />
+                    </DataGrid.Columns>
+                </DataGrid>
             </TabItem>
         </TabControl>
     </Grid>

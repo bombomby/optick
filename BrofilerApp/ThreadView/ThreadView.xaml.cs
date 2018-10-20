@@ -266,8 +266,6 @@ namespace Profiler
 			scrollBar.Visibility = Visibility.Collapsed;
 			ThreadToolsPanel.Visibility = Visibility.Collapsed;
 
-			search.DelayedTextChanged += new SearchBox.DelayedTextChangedEventHandler(Search_DelayedTextChanged);
-
 			surface.SizeChanged += new SizeChangedEventHandler(ThreadView_SizeChanged);
 			surface.OnDraw += OnDraw;
 
@@ -591,24 +589,6 @@ namespace Profiler
 		{
 			scroll.Width = surface.ActualWidth * RenderSettings.dpiScaleX;
 			InitBackgroundMesh();
-		}
-
-		void Search_DelayedTextChanged(string text)
-		{
-			HashSet<EventDescription> filter = null;
-
-			if (!String.IsNullOrWhiteSpace(text))
-			{
-				filter = new HashSet<EventDescription>();
-				Group.Board.Board.ForEach(desc =>
-				{
-					if (desc.Name.IndexOf(text, StringComparison.OrdinalIgnoreCase) != -1)
-						filter.Add(desc);
-				});
-			}
-
-			rows.ForEach(row => row.ApplyFilter(surface, scroll, filter));
-			UpdateSurface();
 		}
 
 		struct Selection
