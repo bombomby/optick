@@ -358,11 +358,11 @@ namespace Profiler
 			}
 		}
 
-		private void FrameFilterSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-		{
-			ICollectionView view = CollectionViewSource.GetDefaultView(frameList.ItemsSource);
-			view.Filter = new Predicate<object>((item) => { return (item is Frame) ? (item as Frame).Duration >= FrameFilterSlider.Value : true; });
-		}
+		//private void FrameFilterSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+		//{
+		//	ICollectionView view = CollectionViewSource.GetDefaultView(frameList.ItemsSource);
+		//	view.Filter = new Predicate<object>((item) => { return (item is Frame) ? (item as Frame).Duration >= FrameFilterSlider.Value : true; });
+		//}
 
 		public void StartCapture()
 		{

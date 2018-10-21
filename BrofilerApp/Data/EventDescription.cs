@@ -79,6 +79,19 @@ namespace Profiler.Data
 				return forceColor;
 			}
 		}
+		private Brush forceBrush;
+		public Brush ForceBrush
+		{
+			get
+			{
+				if (forceBrush == null)
+				{
+					forceBrush = new SolidColorBrush(ForceColor);
+					forceBrush.Freeze();
+				}
+				return forceBrush;
+			}
+		}
 		public Brush Brush { get; private set; }
 		public UInt32 Filter { get; private set; }
 		public float Budget { get; private set; }
@@ -292,7 +305,8 @@ namespace Profiler.Data
 		protected void ReadEntry(BinaryReader reader, EventDescriptionBoard board)
 		{
 			ReadEventData(reader);
-			Description = board[reader.ReadInt32()];
+			int index = reader.ReadInt32();
+			Description = index != -1 ? board[index] : null;
 		}
 
 		public static Entry Read(BinaryReader reader, EventDescriptionBoard board)

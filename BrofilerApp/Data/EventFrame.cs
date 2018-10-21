@@ -169,7 +169,8 @@ namespace Profiler.Data
 		{
 			get
 			{
-				return String.Format("Work: {0:0.###}ms   Wait: {1:0.###}ms", Duration - SynchronizationDuration, SynchronizationDuration).Replace(',', '.');
+				double work = CalculateWork(Header);
+				return String.Format("Work: {0:0.###}ms   Wait: {1:0.###}ms", work, Duration - work).Replace(',', '.');
 			}
 		}
 

@@ -22,7 +22,7 @@
             <ColumnDefinition Width="400" />
         </Grid.ColumnDefinitions>
         <Grid>
-            <StackPanel Orientation="Horizontal" Margin="0" Grid.ColumnSpan="2" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <StackPanel Orientation="Horizontal" Margin="2,2,0,-2" Grid.ColumnSpan="2" HorizontalAlignment="Left" VerticalAlignment="Top">
                 <ToggleButton x:Name="StartButton" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" Unchecked="StartButton_Unchecked" Checked="StartButton_Checked" ToolTip="Start Profiling Session" Padding="-6">
                     <ToggleButton.Resources>
                         <Style TargetType="ToggleButton" BasedOn="{StaticResource SquareButtonStyle}">
@@ -66,15 +66,18 @@
             </StackPanel>
         </Grid>
         <Border Grid.Row="1" Grid.ColumnSpan="2">
-            <local:TimeLine Margin="2" x:Name="timeLine" />
+            <local:TimeLine Margin="1" x:Name="timeLine" />
         </Border>
-        <Expander Header="Threads (block info = Ctrl + LMB)" Margin="1" Grid.Row="2" VerticalContentAlignment="Stretch" UseLayoutRounding="False" IsExpanded="True">
+        <Expander Header="Timeline (Block Info = Ctrl + LMB)" Margin="0" Grid.Row="2" VerticalContentAlignment="Stretch" UseLayoutRounding="False" IsExpanded="True" MahApps:ButtonHelper.PreserveTextCase="True">
             <Grid>
-                <local:ThreadView x:Name="ThreadView" Height="Auto" MinHeight="1" MaxHeight="500" HorizontalAlignment="Stretch" Margin="0" VerticalAlignment="Stretch" Width="Auto" />
+                <local:ThreadView x:Name="ThreadView" Height="Auto" MinHeight="1" MaxHeight="800" HorizontalAlignment="Stretch" Margin="-4,-2,-4,0" VerticalAlignment="Stretch" Width="Auto" />
             </Grid>
         </Expander>
         <!--<MahApps:MetroTabControl Margin="0" Grid.Row="3" Name="frameTabs" MahApps:TabControlHelper.IsUnderlined="True"/>-->
         <local:FrameInfo x:Name="FrameInfoControl" Grid.Row="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-        <Controls:FunctionHistory x:Name="FunctionHistoryControl" Grid.Column="1" Grid.Row="2" Grid.RowSpan="2" />
+        <Expander Header="Function Stats" Grid.Column="1" Grid.Row="2" Grid.RowSpan="2" Margin="2,0,0,0" IsExpanded="True" MahApps:ButtonHelper.PreserveTextCase="True">
+            <Controls:FunctionHistory x:Name="FunctionHistoryControl" Margin="-1,-2,-2,-2"/>
+        </Expander>
+        <GridSplitter ResizeDirection="Columns" Width="4" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left" Grid.RowSpan="2"/>
     </Grid>
 </UserControl>

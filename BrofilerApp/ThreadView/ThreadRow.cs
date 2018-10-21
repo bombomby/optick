@@ -164,7 +164,7 @@ namespace Profiler
 
 		public override void Render(DirectXCanvas canvas, ThreadScroll scroll, DirectXCanvas.Layer layer, Rect box)
 		{
-			if (layer == DirectXCanvas.Layer.Background)
+			if (layer == DirectXCanvas.Layer.Foreground)
 			{
 				Matrix world = new Matrix(scroll.Zoom, 0.0, 0.0, 1.0, -scroll.ViewUnit.Left * scroll.Zoom, 0.0);
 

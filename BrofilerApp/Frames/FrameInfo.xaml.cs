@@ -41,7 +41,7 @@ namespace Profiler
 		public void SetFrame(Data.Frame frame, IDurable node)
 		{
 			this.frame = frame;
-			Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => { frame.Load(); this.DataContext = frame; FocusOnNode(node); }));
+			Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => { frame?.Load(); this.DataContext = frame; FocusOnNode(node); }));
 		}
 
 		public void RefreshFilter(object sender, RoutedEventArgs e)

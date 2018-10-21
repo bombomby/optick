@@ -330,9 +330,8 @@ void ETW::ResolveSysCalls()
 			if (symbol != nullptr)
 			{
 				std::string name(symbol->function.begin(), symbol->function.end());
-				std::string module(symbol->module.begin(), symbol->module.end());
-
-				data.description = EventDescription::CreateShared(name.c_str());
+				
+				data.description = EventDescription::CreateShared(name.c_str(), "SysCall", (long)data.id);
 				syscallDescriptions.insert(std::pair<const uint64_t, const Brofiler::EventDescription *>(data.id, data.description));
 			}
 		}
@@ -537,7 +536,8 @@ bool ETW::Stop()
 
 	isActive = false;
 
-	ResolveSysCalls();
+	//VS TODO: Disabling resolving of the syscalls - we can't use then as EventDescriptions at the moment
+	//ResolveSysCalls();
 	
 	if (!SchedulerTrace::Stop())
 	{

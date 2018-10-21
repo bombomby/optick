@@ -184,7 +184,7 @@ OutputDataStream& operator<<(OutputDataStream& stream, const EventTime& ob)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const EventData& ob)
 {
-	return stream << (EventTime)(ob) << ob.description->index;
+	return stream << (EventTime)(ob) << (ob.description ? ob.description->index : (uint32)-1);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const SyncData& ob)

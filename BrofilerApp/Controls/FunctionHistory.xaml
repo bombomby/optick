@@ -9,7 +9,7 @@
              xmlns:system="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d" 
              d:DesignHeight="900" d:DesignWidth="300">
-    <Grid>
+    <Grid Background="{StaticResource BroContentBackground}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="200" />
@@ -25,9 +25,18 @@
                   Background="{StaticResource BroContentBackground}"
                   IsEditable="True"
                   MaxDropDownHeight="125"
-                  SelectionChanged="FunctionComboBox_SelectionChanged"
-                  />
-        <lvc:CartesianChart Grid.Row="1" x:Name="FrameChart" DisableAnimations="True" Hoverable="False" DataTooltip="{x:Null}">
+                  SelectionChanged="FunctionComboBox_SelectionChanged">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Rectangle Width="16" Height="16" VerticalAlignment="Center" StrokeThickness="2" Stroke="Black" Fill="{Binding ForceBrush}" Margin="2,0,6,0" />
+                        <TextBlock Text="{Binding Name}" />
+                        <TextBlock Text="{Binding Path}" Margin="6,0,0,0" Opacity="0.5" />
+                    </StackPanel>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+        <lvc:CartesianChart Grid.Row="1" x:Name="FrameChart" DisableAnimations="True" Hoverable="False" DataTooltip="{x:Null}" Background="{StaticResource BroContentBackground}" Margin="0,2">
             <lvc:CartesianChart.AxisX>
                 <lvc:Axis>
                     <lvc:Axis.Separator>
@@ -43,7 +52,7 @@
                 </lvc:Axis>
             </lvc:CartesianChart.AxisY>
         </lvc:CartesianChart>
-        <lvc:CartesianChart Grid.Row="2" x:Name="FunctionChart" DisableAnimations="True" Hoverable="False" DataTooltip="{x:Null}">
+        <lvc:CartesianChart Grid.Row="2" x:Name="FunctionChart" DisableAnimations="True" Hoverable="False" DataTooltip="{x:Null}" Background="{StaticResource BroContentBackground}" Margin="0">
             <lvc:CartesianChart.AxisX>
                 <lvc:Axis>
                     <lvc:Axis.Separator>
@@ -59,7 +68,7 @@
                 </lvc:Axis>
             </lvc:CartesianChart.AxisY>
         </lvc:CartesianChart>
-        <TabControl Grid.Row="3" TabStripPlacement="Top" MahApps:TabControlHelper.Underlined="TabPanel" MahApps:TabControlHelper.Transition="Default">
+        <TabControl Grid.Row="3" TabStripPlacement="Top" MahApps:TabControlHelper.Underlined="TabPanel" MahApps:TabControlHelper.Transition="Default" Background="{StaticResource BroContentBackground}">
             <TabItem Header="" HeaderStringFormat="{}Sampled Callstacks ({0})" x:Name="SamplingDataTab">
                 <DataGrid x:Name="SamplingDataGrid" CanUserAddRows="False" GridLinesVisibility="None" IsReadOnly="True" BorderThickness="0" AutoGenerateColumns="False" ItemsSource="{Binding}" HeadersVisibility="None">
                     <DataGrid.Columns>

@@ -49,7 +49,7 @@ namespace Profiler.Controls
 		static Color WorkColor = Colors.LimeGreen;
 		static Color WaitColor = Colors.Tomato;
 		const double AreaOpacity = 0.33;
-		const double AreaStrokeThickness = 1.5;
+		const double AreaStrokeThickness = 2;
 
 		private SeriesCollection BuildAreaChart(FunctionStats function)
 		{
@@ -96,6 +96,20 @@ namespace Profiler.Controls
 					Task.Run(() => Load(entry.Description));
 				}
 			}
+		}
+
+		public void Clear()
+		{
+			UpdateGroup(null);
+
+			FrameChart.Series = null;
+			FunctionChart.Series = null;
+
+			SamplingDataTab.DataContext = null;
+			SamplingDataTab.Header = 0;
+
+			SysCallDataTab.DataContext = null;
+			SysCallDataTab.Header = 0;
 		}
 
 		void Load(EventDescription desc)

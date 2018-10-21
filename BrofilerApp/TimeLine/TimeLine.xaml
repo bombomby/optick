@@ -112,12 +112,15 @@
                                                         <Setter Property="HorizontalAlignment" Value="Stretch" />
                                                         <Setter Property="Background">
                                                             <Setter.Value>
-                                                                <LinearGradientBrush EndPoint="0,0" StartPoint="0,1">
+                                                                <!--<LinearGradientBrush EndPoint="0,0" StartPoint="0,1">
                                                                     <GradientStop Color="{StaticResource WhiteColor}" Offset="0"/>
                                                                     <GradientStop Color="{StaticResource AlternativeColor}" Offset="1"/>
-                                                                </LinearGradientBrush>
+                                                                </LinearGradientBrush>-->
+                                                                <SolidColorBrush Color="{StaticResource ContentBackColor}" />
                                                             </Setter.Value>
                                                         </Setter>
+                                                        <Setter Property="BorderThickness" Value="0.5" />
+                                                        <!--<Setter Property="BorderBrush" Value="" />-->
                                                         <Setter Property="Height">
                                                             <Setter.Value>
                                                                 <Binding Converter="{StaticResource FrameHeightConverter}">
@@ -167,14 +170,14 @@
             </ListView.Resources>
         </ListView>
         <!--<Line Grid.Row="2" VerticalAlignment="Stretch" Stroke="Red" StrokeDashArray="2 2" StrokeThickness="2" X1="{Binding Value, ElementName=FrameFilterSlider, Converter={StaticResource FrameHeightConverter}}" X2="{Binding Value, ElementName=FrameFilterSlider, Converter={StaticResource FrameHeightConverter}}" Y1="5" Y2="{Binding ActualHeight, ElementName=frameList}" />-->
-        <Grid Grid.Column="1">
+        <!--<Grid Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="1*" />
             </Grid.RowDefinitions>
             <Label Content="{Binding Value, ElementName=FrameFilterSlider}" ContentStringFormat="{}{0:0.0}" FontWeight="Bold" />
             <Slider Grid.Row="1" x:Name="FrameFilterSlider" Maximum="100" Minimum="0" TickFrequency="1" VerticalAlignment="Stretch" HorizontalAlignment="Center" ValueChanged="FrameFilterSlider_ValueChanged" Orientation="Vertical" />
-        </Grid>
+        </Grid>-->
         <TextBlock x:Name="StatusText" TextWrapping="Wrap" Text="Capturing Frame 34" FontSize="20" TextAlignment="Center" Margin="0,2,0,0" Grid.Row="1" FontStyle="Italic" TextDecorations="{x:Null}" TextOptions.TextHintingMode="Animated" FontWeight="SemiBold" Foreground="Black" Visibility="Collapsed">
             <TextBlock.Background>
                 <LinearGradientBrush EndPoint="12,3" StartPoint="0,0" MappingMode="Absolute" SpreadMethod="Repeat" Opacity="0.405">
