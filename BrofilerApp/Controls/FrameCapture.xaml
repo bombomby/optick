@@ -10,6 +10,11 @@
              xmlns:xcad="http://schemas.xceed.com/wpf/xaml/avalondock"
              mc:Ignorable="d" 
              d:DesignHeight="900" d:DesignWidth="1400">
+    <UserControl.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.Find" Executed="OnSearchCommandExecuted" />
+        <CommandBinding Command="ApplicationCommands.Open" Executed="OnOpenCommandExecuted" />
+        <CommandBinding Command="ApplicationCommands.Save" Executed="OnSaveCommandExecuted" />
+    </UserControl.CommandBindings>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="227"/>
@@ -52,10 +57,10 @@
                         </ToggleButton.Resources>
                         <ContentControl Style="{DynamicResource appbar_control_play}" />
                     </ToggleButton>
-                    <Button x:Name="OpenButton" Click="OpenButton_Click" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Open Saved Session" Margin="1,0,0,0" Padding="-6">
+                    <Button x:Name="OpenButton" Command="ApplicationCommands.Open" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Open Saved Session" Margin="1,0,0,0" Padding="-6">
                         <ContentControl Style="{StaticResource appbar_folder_open}" />
                     </Button>
-                    <Button x:Name="SaveButton" Click="SaveButton_Click" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Save Active Session" Margin="1,0,0,0" Padding="-6">
+                    <Button x:Name="SaveButton" Command="ApplicationCommands.Save" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Save Active Session" Margin="1,0,0,0" Padding="-6">
                         <ContentControl Style="{StaticResource appbar_save}" />
                     </Button>
                     <Button x:Name="ClearButton" Click="ClearButton_Click" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Clear Active Session" Margin="1,0,0,0" Padding="-6">

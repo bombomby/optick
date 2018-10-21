@@ -34,7 +34,7 @@ namespace Profiler.Controls
 			if (group != Group)
 			{
 				Group = group;
-				FunctionComboBox.DataContext = group;
+				FunctionComboBox.DataContext = group.Board.Board.OrderBy(d => d.Name);
 			}
 		}
 
@@ -81,7 +81,14 @@ namespace Profiler.Controls
 		private void FunctionComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
 			EventDescription desc = FunctionComboBox.SelectedItem as EventDescription;
-			Task.Run(() => Load(desc));
+			if (desc != null)
+			{
+				Task.Run(() => Load(desc));
+			}				
+			else
+			{
+				ClearCharts();
+			}
 		}
 
 		public void LoadAsync(Data.Frame frame)
@@ -101,7 +108,11 @@ namespace Profiler.Controls
 		public void Clear()
 		{
 			UpdateGroup(null);
+			ClearCharts();
+		}
 
+		private void ClearCharts()
+		{
 			FrameChart.Series = null;
 			FunctionChart.Series = null;
 

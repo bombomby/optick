@@ -127,27 +127,6 @@ namespace Profiler.Controls
 			}
 		}
 
-
-		private void OpenButton_Click(object sender, System.Windows.RoutedEventArgs e)
-		{
-			System.Windows.Forms.OpenFileDialog dlg = new System.Windows.Forms.OpenFileDialog();
-			dlg.Filter = "Brofiler files (*.bro)|*.bro";
-			dlg.Title = "Load profiler results?";
-			if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-			{
-				RaiseEvent(new OpenCaptureEventArgs(dlg.FileName));
-			}
-		}
-
-		private void SaveButton_Click(object sender, System.Windows.RoutedEventArgs e)
-		{
-			String path = timeLine.Save();
-			if (path != null)
-			{
-				RaiseEvent(new SaveCaptureEventArgs(path));
-			}
-		}
-
 		private void ClearButton_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
 			timeLine.Clear();
@@ -188,6 +167,31 @@ namespace Profiler.Controls
 		{
 			SettingsWindow settingsWindow = new SettingsWindow();
 			settingsWindow.Show();
+		}
+
+		private void OnSearchCommandExecuted(object sender, ExecutedRoutedEventArgs args)
+		{
+			FunctionHistoryControl.FunctionComboBox.Focus();
+		}
+
+		private void OnOpenCommandExecuted(object sender, ExecutedRoutedEventArgs args)
+		{
+			System.Windows.Forms.OpenFileDialog dlg = new System.Windows.Forms.OpenFileDialog();
+			dlg.Filter = "Brofiler files (*.bro)|*.bro";
+			dlg.Title = "Load profiler results?";
+			if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+			{
+				RaiseEvent(new OpenCaptureEventArgs(dlg.FileName));
+			}
+		}
+
+		private void OnSaveCommandExecuted(object sender, ExecutedRoutedEventArgs args)
+		{
+			String path = timeLine.Save();
+			if (path != null)
+			{
+				RaiseEvent(new SaveCaptureEventArgs(path));
+			}
 		}
 	}
 }

@@ -26,16 +26,24 @@
             </Viewbox>
             <ComboBox x:Name="FunctionComboBox"
                   Grid.Column="1"
-                  ItemsSource="{Binding Board.Board}"
+                  ItemsSource="{Binding}"
                   MahApps:TextBoxHelper.UseFloatingWatermark="False"
                   MahApps:TextBoxHelper.Watermark="Type Function Name ... (Ctrl+F)"
                   MahApps:TextBoxHelper.ClearTextButton="True"
-                  Style="{DynamicResource VirtualisedMetroComboBox}"
                   Background="{StaticResource BroContentBackground}"
                   IsEditable="True"
                   MaxDropDownHeight="125"
                   SelectionChanged="FunctionComboBox_SelectionChanged"
                   MinHeight="{StaticResource DefaultButtonSize}">
+                <ComboBox.Style>
+                    <Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource VirtualisedMetroComboBox}">
+                        <Style.Triggers>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter Property="IsDropDownOpen" Value="true" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </ComboBox.Style>
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
