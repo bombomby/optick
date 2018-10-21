@@ -73,10 +73,16 @@ namespace Profiler.Controls
 			}
 
 			Data.Frame frame = args.Frame;
+
 			if (FrameInfoControl.DataContext == null || !FrameInfoControl.DataContext.Equals(frame))
 			{
 				FrameInfoControl.SetFrame(frame, focusRange);
 				FunctionHistoryControl.LoadAsync(frame);
+			}
+
+			if (frame != null && frame.Group != null)
+			{
+				SummaryViewerControl.DataContext = frame.Group.Summary;
 			}
 		}
 
@@ -148,6 +154,7 @@ namespace Profiler.Controls
 			FunctionHistoryControl.Clear();
 			ThreadView.Group = null;
 			FrameInfoControl.SetFrame(null, null);
+			SummaryViewerControl.DataContext = null;
 		}
 
 		private void ClearSamplingButton_Click(object sender, System.Windows.RoutedEventArgs e)

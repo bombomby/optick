@@ -12,72 +12,89 @@
              d:DesignHeight="900" d:DesignWidth="1400">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition/>
+            <RowDefinition Height="227"/>
+            <RowDefinition Height="1*"/>
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*" />
-            <ColumnDefinition Width="400" />
-        </Grid.ColumnDefinitions>
         <Grid>
-            <StackPanel Orientation="Horizontal" Margin="2,2,0,-2" Grid.ColumnSpan="2" HorizontalAlignment="Left" VerticalAlignment="Top">
-                <ToggleButton x:Name="StartButton" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" Unchecked="StartButton_Unchecked" Checked="StartButton_Checked" ToolTip="Start Profiling Session" Padding="-6">
-                    <ToggleButton.Resources>
-                        <Style TargetType="ToggleButton" BasedOn="{StaticResource SquareButtonStyle}">
-                            <Setter Property="BorderThickness" Value="1" />
-                            <Setter Property="BorderBrush" Value="{StaticResource BroBorder}" />
-                            <Setter Property="MinHeight" Value="16" />
-                            <Style.Triggers>
-                                <Trigger Property="IsChecked" Value="True">
-                                    <Setter Property="BorderBrush" Value="{StaticResource AccentBaseColorBrush}" />
-                                    <Setter Property="Background" Value="{StaticResource BroAlternative}" />
-                                    <Setter Property="ContentTemplate">
-                                        <Setter.Value>
-                                            <DataTemplate>
-                                                <DataTemplate.Resources>
-                                                    <SolidColorBrush x:Key="IconsColor">Red</SolidColorBrush>
-                                                </DataTemplate.Resources>
-                                                <ContentControl Style="{DynamicResource appbar_control_stop}" />
-                                            </DataTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </ToggleButton.Resources>
-                    <ContentControl Style="{DynamicResource appbar_control_play}" />
-                </ToggleButton>
-                <Button x:Name="OpenButton" Click="OpenButton_Click" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Open Saved Session" Margin="1,0,0,0" Padding="-6">
-                    <ContentControl Style="{StaticResource appbar_folder_open}" />
-                </Button>
-                <Button x:Name="SaveButton" Click="SaveButton_Click" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Save Active Session" Margin="1,0,0,0" Padding="-6">
-                    <ContentControl Style="{StaticResource appbar_save}" />
-                </Button>
-                <Button x:Name="ClearButton" Click="ClearButton_Click" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Clear Active Session" Margin="1,0,0,0" Padding="-6">
-                    <ContentControl Style="{StaticResource appbar_delete}" />
-                </Button>
-                <local:PlatformSelector x:Name="PlatformCombo" Margin="4,0,0,0" VerticalAlignment="Top" Height="{StaticResource DefaultButtonSize}"/>
-                <StackPanel x:Name="warningBlock"  Orientation="Horizontal">
-                    <Image x:Name="warningIcon" Source="/Brofiler;component/TimeLine/Icons/Warning-icon.png" Margin="5,0,0,0" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" />
-                    <TextBlock VerticalAlignment="Center" TextTrimming="WordEllipsis" Width="Auto"><Hyperlink x:Name="warningUrl" RequestNavigate="Hyperlink_RequestNavigate"><Run x:Name="warningText" Text="ClickMe"/></Hyperlink></TextBlock>
-                </StackPanel>
-            </StackPanel>
-        </Grid>
-        <Border Grid.Row="1" Grid.ColumnSpan="2">
-            <local:TimeLine Margin="1" x:Name="timeLine" />
-        </Border>
-        <Expander Header="Timeline (Block Info = Ctrl + LMB)" Margin="0" Grid.Row="2" VerticalContentAlignment="Stretch" UseLayoutRounding="False" IsExpanded="True" MahApps:ButtonHelper.PreserveTextCase="True">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
             <Grid>
-                <local:ThreadView x:Name="ThreadView" Height="Auto" MinHeight="1" MaxHeight="800" HorizontalAlignment="Stretch" Margin="-4,-2,-4,0" VerticalAlignment="Stretch" Width="Auto" />
+                <StackPanel Orientation="Horizontal" Margin="2,2,0,-2" Grid.ColumnSpan="2" HorizontalAlignment="Left" VerticalAlignment="Top">
+                    <ToggleButton x:Name="StartButton" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" Unchecked="StartButton_Unchecked" Checked="StartButton_Checked" ToolTip="Start Profiling Session" Padding="-6">
+                        <ToggleButton.Resources>
+                            <Style TargetType="ToggleButton" BasedOn="{StaticResource SquareButtonStyle}">
+                                <Setter Property="BorderThickness" Value="1" />
+                                <Setter Property="BorderBrush" Value="{StaticResource BroBorder}" />
+                                <Setter Property="MinHeight" Value="16" />
+                                <Style.Triggers>
+                                    <Trigger Property="IsChecked" Value="True">
+                                        <Setter Property="BorderBrush" Value="{StaticResource AccentBaseColorBrush}" />
+                                        <Setter Property="Background" Value="{StaticResource BroAlternative}" />
+                                        <Setter Property="ContentTemplate">
+                                            <Setter.Value>
+                                                <DataTemplate>
+                                                    <DataTemplate.Resources>
+                                                        <SolidColorBrush x:Key="IconsColor">Red</SolidColorBrush>
+                                                    </DataTemplate.Resources>
+                                                    <ContentControl Style="{DynamicResource appbar_control_stop}" />
+                                                </DataTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ToggleButton.Resources>
+                        <ContentControl Style="{DynamicResource appbar_control_play}" />
+                    </ToggleButton>
+                    <Button x:Name="OpenButton" Click="OpenButton_Click" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Open Saved Session" Margin="1,0,0,0" Padding="-6">
+                        <ContentControl Style="{StaticResource appbar_folder_open}" />
+                    </Button>
+                    <Button x:Name="SaveButton" Click="SaveButton_Click" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Save Active Session" Margin="1,0,0,0" Padding="-6">
+                        <ContentControl Style="{StaticResource appbar_save}" />
+                    </Button>
+                    <Button x:Name="ClearButton" Click="ClearButton_Click" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Clear Active Session" Margin="1,0,0,0" Padding="-6">
+                        <ContentControl Style="{StaticResource appbar_delete}" />
+                    </Button>
+                    <local:PlatformSelector x:Name="PlatformCombo" Margin="4,0,0,0" VerticalAlignment="Top" Height="{StaticResource DefaultButtonSize}"/>
+                    <StackPanel x:Name="warningBlock"  Orientation="Horizontal">
+                        <Image x:Name="warningIcon" Source="/Brofiler;component/TimeLine/Icons/Warning-icon.png" Margin="5,0,0,0" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" />
+                        <TextBlock VerticalAlignment="Center" TextTrimming="WordEllipsis" Width="Auto"><Hyperlink x:Name="warningUrl" RequestNavigate="Hyperlink_RequestNavigate"><Run x:Name="warningText" Text="ClickMe"/></Hyperlink></TextBlock>
+                    </StackPanel>
+                </StackPanel>
             </Grid>
-        </Expander>
-        <!--<MahApps:MetroTabControl Margin="0" Grid.Row="3" Name="frameTabs" MahApps:TabControlHelper.IsUnderlined="True"/>-->
-        <local:FrameInfo x:Name="FrameInfoControl" Grid.Row="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
-        <Expander Header="Function Stats" Grid.Column="1" Grid.Row="2" Grid.RowSpan="2" Margin="2,0,0,0" IsExpanded="True" MahApps:ButtonHelper.PreserveTextCase="True">
-            <Controls:FunctionHistory x:Name="FunctionHistoryControl" Margin="-1,-2,-2,-2"/>
-        </Expander>
-        <GridSplitter ResizeDirection="Columns" Width="4" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Left" Grid.RowSpan="2"/>
+            <Border Grid.Row="1">
+                <local:TimeLine Margin="1" x:Name="timeLine" />
+            </Border>
+            <Border Grid.RowSpan="2" Grid.Column="1">
+                <Controls:SummaryViewer x:Name="SummaryViewerControl" Margin="1" />
+            </Border>
+        </Grid>
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="400" />
+            </Grid.ColumnDefinitions>
+            <Expander Header="Timeline (Block Info = Ctrl + LMB)" Margin="0" VerticalContentAlignment="Stretch" UseLayoutRounding="False" IsExpanded="True" MahApps:ButtonHelper.PreserveTextCase="True">
+                <Grid>
+                    <local:ThreadView x:Name="ThreadView" Height="Auto" MinHeight="1" MaxHeight="800" HorizontalAlignment="Stretch" Margin="-4,-2,-4,0" VerticalAlignment="Stretch" Width="Auto" />
+                </Grid>
+            </Expander>
+            <!--<MahApps:MetroTabControl Margin="0" Grid.Row="3" Name="frameTabs" MahApps:TabControlHelper.IsUnderlined="True"/>-->
+            <local:FrameInfo x:Name="FrameInfoControl" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+            <Expander Grid.Column="1" Header="Function Statistics" x:Name="SidePanelExpander" Grid.RowSpan="2" Margin="2,0,0,0" IsExpanded="True" MahApps:ButtonHelper.PreserveTextCase="True" ExpandDirection="Down" HorizontalAlignment="Stretch">
+                <Controls:FunctionHistory x:Name="FunctionHistoryControl" Margin="-1,-2,-2,-2"/>
+            </Expander>
+            <GridSplitter ResizeDirection="Columns" Width="4" Grid.Column="1" HorizontalAlignment="Left" Grid.RowSpan="2"/>
+        </Grid>
     </Grid>
 </UserControl>

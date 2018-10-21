@@ -5,6 +5,7 @@
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 	xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
 	xmlns:local="clr-namespace:Profiler"
+    xmlns:Controls="clr-namespace:Profiler.Controls"
 	xmlns:Profiler_Data="clr-namespace:Profiler.Data"
 	xmlns:System="clr-namespace:System;assembly=mscorlib"
 	mc:Ignorable="d"
@@ -85,7 +86,7 @@
 		<Profiler_Data:FrameCollection/>
 	</UserControl.DataContext>-->
 
-    <Grid x:Name="LayoutRoot">
+    <Grid x:Name="LayoutRoot" VerticalAlignment="Top">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*"/>
             <ColumnDefinition Width="Auto"/>

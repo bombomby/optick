@@ -4,7 +4,7 @@ namespace Brofiler
 {
 	namespace TestImage
 	{
-		const char* Name = "Maio.png";
+		const char* Name = "Screenshot.png";
 		const size_t Size = 69037;
 
 		const unsigned char Data[Size] = {

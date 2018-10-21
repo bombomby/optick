@@ -20,12 +20,12 @@ void OnBrofilerStateChanged(Brofiler::BroState state)
 		Brofiler::AttachSummary("Version", "v2.0");
 		Brofiler::AttachSummary("Build", __DATE__ " " __TIME__);
 
-		// Attach text file
-		char* textFile = "Hello World!";
-		Brofiler::AttachFile(Brofiler::BroFile::BRO_OTHER, "Test.txt", (uint8_t*)textFile, strlen(textFile));
-
 		// Attach screenshot
 		Brofiler::AttachFile(Brofiler::BroFile::BRO_IMAGE, Brofiler::TestImage::Name, Brofiler::TestImage::Data, Brofiler::TestImage::Size);
+
+		// Attach text file
+		char* textFile = "You could attach custom text files!\nFor example you could add dxdiag.txt or current game settings.";
+		Brofiler::AttachFile(Brofiler::BroFile::BRO_TEXT, "Test.txt", (uint8_t*)textFile, strlen(textFile));
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

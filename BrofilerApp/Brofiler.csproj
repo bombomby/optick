@@ -212,6 +212,9 @@
     </Compile>
     <Compile Include="Controls\RoutedEvents.cs" />
     <Compile Include="Controls\SharedSettings.cs" />
+    <Compile Include="Controls\SummaryViewer.xaml.cs">
+      <DependentUpon>SummaryViewer.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\TagsControl.xaml.cs">
       <DependentUpon>TagsControl.xaml</DependentUpon>
     </Compile>
@@ -298,6 +301,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\PlatformSelector.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\SummaryViewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

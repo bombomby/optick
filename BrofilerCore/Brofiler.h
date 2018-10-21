@@ -283,6 +283,11 @@ struct BroFile
 	{
 		// Supported formats: PNG, JPEG, BMP, TIFF
 		BRO_IMAGE,
+		
+		// Text file
+		BRO_TEXT,
+
+		// Any other type
 		BRO_OTHER,
 	};
 };

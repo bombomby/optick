@@ -506,7 +506,7 @@ namespace Profiler
 					Durable intervalTime = selection.Node == null ? (Durable)selection.Frame.Header : (Durable)selection.Node.Entry;
 					Interval intervalPx = scroll.TimeToPixel(intervalTime);
 
-					Rect rect = new Rect(intervalPx.Left, row.Offset + 2.0 * RenderParams.BaseMargin, intervalPx.Width, row.Height - 4.0 * RenderParams.BaseMargin);
+					Rect rect = new Rect(intervalPx.Left, row.Offset /*+ 2.0 * RenderParams.BaseMargin*/, intervalPx.Width, row.Height /*- 4.0 * RenderParams.BaseMargin*/);
 
 					for (int i = 0; i < SelectionBorderCount; ++i)
 					{
