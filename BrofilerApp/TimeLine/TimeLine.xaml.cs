@@ -26,6 +26,7 @@ using System.Diagnostics;
 using System.Web;
 using System.Net.NetworkInformation;
 using System.ComponentModel;
+using System.IO.Compression;
 using System.Threading.Tasks;
 
 namespace Profiler
@@ -90,7 +91,8 @@ namespace Profiler
 			{
 				using (new WaitCursor())
 				{
-					using (FileStream stream = new FileStream(file, FileMode.Open))
+					using (FileStream fs = new FileStream(file, FileMode.Open))
+					using (GZipStream stream = new GZipStream(fs, CompressionMode.Decompress, false))
 					{
 						Open(stream);
 						return true;
@@ -295,7 +297,8 @@ namespace Profiler
 			{
 				lock (frames)
 				{
-					FileStream stream = new FileStream(dlg.FileName, FileMode.Create);
+					FileStream fs = new FileStream(dlg.FileName, FileMode.Create);
+					GZipStream stream = new GZipStream(fs, CompressionMode.Compress, false);
 
 					HashSet<EventDescriptionBoard> boards = new HashSet<EventDescriptionBoard>();
 					HashSet<FrameGroup> groups = new HashSet<FrameGroup>();
@@ -334,6 +337,7 @@ namespace Profiler
 					}
 
 					stream.Close();
+					fs.Close();
 				}
 				return dlg.FileName;
 			}
