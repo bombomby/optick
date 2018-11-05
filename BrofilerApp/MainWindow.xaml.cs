@@ -30,6 +30,8 @@ namespace Profiler
 		{
 			InitializeComponent();
 
+			UpdateTitle(String.Empty);
+
 			this.AddHandler(OpenCaptureEvent, new OpenCaptureEventHandler(MainWindow_OpenCapture));
 			this.AddHandler(SaveCaptureEvent, new SaveCaptureEventHandler(MainWindow_SaveCapture));
 
@@ -51,6 +53,12 @@ namespace Profiler
 		public delegate void SaveCaptureEventHandler(object sender, SaveCaptureEventArgs e);
 		public static readonly RoutedEvent SaveCaptureEvent = EventManager.RegisterRoutedEvent("SaveCaptureEvent", RoutingStrategy.Bubble, typeof(SaveCaptureEventHandler), typeof(MainWindow));
 
+		const String DefaultTitle = "What the hell is going on?";
+
+		private void UpdateTitle(String message)
+		{
+			Title = String.IsNullOrWhiteSpace(message) ? DefaultTitle : message;
+		}
 
 		private void MainWindow_OpenCapture(object sender, OpenCaptureEventArgs e)
 		{
@@ -60,14 +68,15 @@ namespace Profiler
 			if (FrameCaptureControl.LoadFile(e.Path))
 			{
 				FileHistory.Add(e.Path);
+				UpdateTitle(e.Path);
 			}
 		}
 
 		private void MainWindow_SaveCapture(object sender, SaveCaptureEventArgs e)
 		{
 			FileHistory.Add(e.Path);
+			UpdateTitle(e.Path);
 		}
-
 
 		private void MainWindow_Loaded(object sender, RoutedEventArgs e)
 		{

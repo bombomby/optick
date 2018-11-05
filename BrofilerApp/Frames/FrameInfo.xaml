@@ -118,6 +118,9 @@
             </StackPanel>
         </Grid>
         <TreeView Grid.Column="0" Grid.Row="1" BorderThickness="0" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling" x:Name="EventTreeView" DataContext="{Binding Root}" ItemsSource="{Binding Children}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="0" >
+            <TreeView.CommandBindings>
+                <CommandBinding Command="ApplicationCommands.Copy" Executed="TreeViewCopy_Executed" />
+            </TreeView.CommandBindings>
             <TreeView.Resources>
                 <HierarchicalDataTemplate DataType="{x:Type Profiler_Data:BaseTreeNode}" ItemsSource="{Binding Children}">
                     <Grid Width="Auto" Margin="1">

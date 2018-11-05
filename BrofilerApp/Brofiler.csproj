@@ -219,6 +219,7 @@
       <DependentUpon>TagsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Data\Callstack.cs" />
+    <Compile Include="Data\Capture.cs" />
     <Compile Include="Data\Durationable.cs" />
     <Compile Include="Data\EventBoard.cs" />
     <Compile Include="Data\EventData.cs" />

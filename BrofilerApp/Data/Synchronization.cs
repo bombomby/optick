@@ -56,8 +56,6 @@ namespace Profiler.Data
 	{
 		SysCall = 1 << 0,
 		AutoSample = 1 << 1,
-
-		All = 0xFFFFFFFF,
 	}
 
 	public struct SyncEvent : IComparable<SyncEvent>

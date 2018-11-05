@@ -260,6 +260,15 @@ namespace Profiler
 			UpdateSurface();
 		}
 
+		class CallstackFilterItem : INotifyPropertyChanged
+		{
+			public bool IsChecked { get; set; }
+			public CallStackReason Reason { get; set; }
+			public event PropertyChangedEventHandler PropertyChanged;
+		}
+		List<CallstackFilterItem> CallstackFilter = new List<CallstackFilterItem>();
+
+
 		public ThreadView()
 		{
 			InitializeComponent();
@@ -289,6 +298,10 @@ namespace Profiler
 			MeasureMesh = surface.CreateMesh();
 			MeasureMesh.Projection = Mesh.ProjectionType.Pixel;
 			MeasureMesh.UseAlpha = true;
+
+			foreach (CallStackReason reason in Enum.GetValues(typeof(CallStackReason)))
+				CallstackFilter.Add(new CallstackFilterItem() { IsChecked = true, Reason = reason });
+			CallstackFilterPopup.DataContext = CallstackFilter;
 		}
 
 		class InputState
@@ -599,15 +612,29 @@ namespace Profiler
 
 		List<Selection> SelectionList = new List<Selection>();
 
-		private void ShowCallstacksButton_Click(object sender, RoutedEventArgs e)
-		{
-			scroll.DrawCallstacks = ShowCallstacksButton.IsChecked ?? false;
-			UpdateSurface();
-		}
-
 		private void ShowSyncWorkButton_Click(object sender, RoutedEventArgs e)
 		{
 			scroll.SyncDraw = ShowSyncWorkButton.IsChecked.Value ? ThreadScroll.SyncDrawType.Work : ThreadScroll.SyncDrawType.Wait;
+			UpdateSurface();
+		}
+
+		private void CallstackFilterDrowpdown_Click(object sender, RoutedEventArgs e)
+		{
+			CallstackFilterPopup.IsOpen = true;
+		}
+
+		private void ShowCallstacksButton_Checked(object sender, RoutedEventArgs e)
+		{
+			CallStackReason reason = 0;
+			CallstackFilter.ForEach(filter => reason |= filter.IsChecked ? filter.Reason : 0);
+
+			scroll.DrawCallstacks = reason;
+			UpdateSurface();
+		}
+
+		private void ShowCallstacksButton_Unchecked(object sender, RoutedEventArgs e)
+		{
+			scroll.DrawCallstacks = 0;
 			UpdateSurface();
 		}
 	}

@@ -328,7 +328,7 @@ namespace Profiler
 
 			if (layer == DirectXCanvas.Layer.Foreground)
 			{
-				if (CallstackMeshPolys != null && CallstackMeshLines != null && scroll.DrawCallstacks)
+				if (CallstackMeshPolys != null && CallstackMeshLines != null && scroll.DrawCallstacks != 0)
 				{
 					double width = CallstackMarkerRadius;
 					double height = CallstackMarkerRadius;
@@ -336,15 +336,18 @@ namespace Profiler
 
 					Data.Utils.ForEachInsideInterval(EventData.Callstacks, scroll.ViewTime, callstack =>
 					{
-						double center = scroll.TimeToPixel(callstack);
+						if ((callstack.Reason & scroll.DrawCallstacks) != 0)
+						{
+							double center = scroll.TimeToPixel(callstack);
 
-						Point[] points = new Point[] { new Point(center - width, offset), new Point(center, offset - height), new Point(center + width, offset), new Point(center, offset + height) };
+							Point[] points = new Point[] { new Point(center - width, offset), new Point(center, offset - height), new Point(center + width, offset), new Point(center, offset + height) };
 
-						Color fillColor = (callstack.Reason == CallStackReason.AutoSample) ? CallstackColor : SystemCallstackColor;
-						Color strokeColor = Colors.Black;
+							Color fillColor = (callstack.Reason == CallStackReason.AutoSample) ? CallstackColor : SystemCallstackColor;
+							Color strokeColor = Colors.Black;
 
-						CallstackMeshPolys.AddRect(points, fillColor);
-						CallstackMeshLines.AddRect(points, strokeColor);
+							CallstackMeshPolys.AddRect(points, fillColor);
+							CallstackMeshLines.AddRect(points, strokeColor);
+						}
 					});
 
 					CallstackMeshPolys.Update(canvas.RenderDevice);
@@ -542,22 +545,15 @@ namespace Profiler
 				}
 			} // FindNode
 
-
-
-			if (scroll.DrawCallstacks && EventData.Callstacks != null)
+			if (EventData.Callstacks != null && scroll.DrawCallstacks != 0)
 			{
 				int startIndex = Data.Utils.BinarySearchClosestIndex(EventData.Callstacks, tick.Start);
 
 				for (int i = startIndex; (i <= startIndex + 1) && (i < EventData.Callstacks.Count) && (i != -1); ++i)
 				{
 					double pixelPos = scroll.TimeToPixel(EventData.Callstacks[i]);
-					if (Math.Abs(pixelPos - point.X) < CallstackMarkerRadius * 1.2)
+					if (Math.Abs(pixelPos - point.X) < CallstackMarkerRadius * 1.2 && (EventData.Callstacks[i].Reason & scroll.DrawCallstacks) !=0 )
 					{
-						//if (EventData.Callstacks[i].Reason < CallStackReason.MaxReasonsCount)
-						//{
-						//	dataContext.Add("\nSyscall : " + EventData.Callstacks[i].Reason.ToString());
-						//}
-
 						dataContext.Add(EventData.Callstacks[i]);
 						break;
 					}

@@ -45,7 +45,7 @@ namespace Profiler.Data
 		{
 			if (File.Exists(path))
 			{
-				using (FileStream stream = new FileStream(path, FileMode.Open))
+				using (Stream stream = Capture.Create(path))
 				{
 					DataResponse response = DataResponse.Create(stream);
 					if (response != null)

@@ -7,7 +7,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
         mc:Ignorable="d" x:Class="Profiler.MainWindow"
-        Title="What the hell is going on?" 
         Height="1000" Width="1600" 
         Drop="Window_Drop" DragEnter="Window_DragEnter" 
         AllowDrop="True"

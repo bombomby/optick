@@ -21,9 +21,9 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
-            <Viewbox Height="{StaticResource DefaultButtonSize}" Width="{StaticResource DefaultButtonSize}">
-                <ContentControl Style="{StaticResource appbar_magnify}" Margin="-13" />
-            </Viewbox>
+            <Border Height="{StaticResource DefaultButtonSize}" Width="{StaticResource DefaultButtonSize}">
+                <ContentControl Style="{StaticResource appbar_magnify}" Margin="-10" />
+            </Border>
             <ComboBox x:Name="FunctionComboBox"
                   Grid.Column="1"
                   ItemsSource="{Binding}"
@@ -89,7 +89,7 @@
         </lvc:CartesianChart>
         <TabControl Grid.Row="3" TabStripPlacement="Top" MahApps:TabControlHelper.Underlined="TabPanel" MahApps:TabControlHelper.Transition="Default" Background="{StaticResource BroContentBackground}">
             <TabItem Header="" HeaderStringFormat="{}Sampled Callstacks ({0})" x:Name="SamplingDataTab">
-                <DataGrid x:Name="SamplingDataGrid" CanUserAddRows="False" GridLinesVisibility="None" IsReadOnly="True" BorderThickness="0" AutoGenerateColumns="False" ItemsSource="{Binding}" HeadersVisibility="None">
+                <DataGrid x:Name="SamplingDataGrid" CanUserAddRows="False" GridLinesVisibility="None" IsReadOnly="True" BorderThickness="0" AutoGenerateColumns="False" ItemsSource="{Binding}" HeadersVisibility="None" ClipboardCopyMode="ExcludeHeader">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Function Name" Binding="{Binding Function}" Width="1*" />
                         <DataGridTextColumn Header="%" Binding="{Binding SelfPercent, StringFormat={}{0:0.#}%}" />
@@ -97,7 +97,7 @@
                 </DataGrid>
             </TabItem>
             <TabItem Header="" HeaderStringFormat="{}System Calls ({0})" x:Name="SysCallDataTab">
-                <DataGrid x:Name="SysCallDataGrid" CanUserAddRows="False" GridLinesVisibility="None" IsReadOnly="True" BorderThickness="0" AutoGenerateColumns="False" ItemsSource="{Binding}" HeadersVisibility="None">
+                <DataGrid x:Name="SysCallDataGrid" CanUserAddRows="False" GridLinesVisibility="None" IsReadOnly="True" BorderThickness="0" AutoGenerateColumns="False" ItemsSource="{Binding}" HeadersVisibility="None" ClipboardCopyMode="ExcludeHeader">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Function Name" Binding="{Binding Function}" Width="1*" />
                         <DataGridTextColumn Header="%" Binding="{Binding SelfPercent, StringFormat={}{0:0.#}%}" />

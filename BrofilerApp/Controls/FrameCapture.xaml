@@ -89,7 +89,7 @@
                 <ColumnDefinition Width="1*" />
                 <ColumnDefinition Width="400" />
             </Grid.ColumnDefinitions>
-            <Expander Header="Timeline (Block Info = Ctrl + LMB)" Margin="0" VerticalContentAlignment="Stretch" UseLayoutRounding="False" IsExpanded="True" MahApps:ButtonHelper.PreserveTextCase="True">
+            <Expander Header="Thread Timeline (Block Info = Ctrl + LMB)" Margin="0" VerticalContentAlignment="Stretch" UseLayoutRounding="False" IsExpanded="True" MahApps:ButtonHelper.PreserveTextCase="True">
                 <Grid>
                     <local:ThreadView x:Name="ThreadView" Height="Auto" MinHeight="1" MaxHeight="800" HorizontalAlignment="Stretch" Margin="-4,-2,-4,0" VerticalAlignment="Stretch" Width="Auto" />
                 </Grid>

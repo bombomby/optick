@@ -42,7 +42,7 @@ namespace Profiler.Controls
 		{
 			if (File.Exists(path))
 			{
-				using (FileStream stream = new FileStream(path, FileMode.Open))
+				using (Stream stream = Capture.Open(path))
 				{
 					DataResponse response = DataResponse.Create(stream);
 					if (response != null)

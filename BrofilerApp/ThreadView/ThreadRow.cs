@@ -101,7 +101,7 @@ namespace Profiler
 			return new Durable(TimeSlice.Start + (long)(ViewUnit.Left * duration), TimeSlice.Start + (long)(ViewUnit.Right * duration));
 		}
 
-		public bool DrawCallstacks { get; set; }
+		public CallStackReason DrawCallstacks { get; set; }
 
 		public enum SyncDrawType
 		{

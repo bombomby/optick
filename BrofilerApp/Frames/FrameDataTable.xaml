@@ -62,7 +62,8 @@
 				KeyDown="SummaryTable_KeyDown" 
 				Sorting="SummaryTable_Sorting"
 				TextOptions.TextFormattingMode="Display"
-                HeadersVisibility="Column">
+                HeadersVisibility="Column"
+                ClipboardCopyMode="ExcludeHeader">
       <DataGrid.Resources>
         <Style TargetType="DataGridRow">
           <EventSetter Event="MouseDoubleClick" Handler="Row_DoubleClick"/>
@@ -70,7 +71,7 @@
       </DataGrid.Resources>
     </DataGrid>
     <Grid Name="FilterSummaryControl" Style="{StaticResource VisibleAnimation}" Width="Auto" MinWidth="300"  Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="1" Margin="0,0,0,30" >
-      <Rectangle Fill="#FFBDBDBD" RadiusX="8" RadiusY="8" Stroke="Black" StrokeThickness="1" />
+      <Rectangle Fill="{StaticResource BroContentBackground}" RadiusX="8" RadiusY="8" Stroke="Black" StrokeThickness="1" />
       <Label Name="FilterSummaryText" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="16" FontStyle="Normal" FontStretch="Normal" />
     </Grid>
   </Grid>
