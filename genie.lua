@@ -16,6 +16,8 @@ outFolderRoot = "Bin/" .. _ACTION .. "/";
 
 isVisualStudio = false
 isUWP = false
+isDX12 = false
+isVulkan = false
 
 if _ACTION == "vs2010" or _ACTION == "vs2012" or _ACTION == "vs2015" or _ACTION == "vs2017" then
 	isVisualStudio = true
@@ -23,6 +25,14 @@ end
 
 if _OPTIONS["UWP"] then
 	isUWP = true
+end
+
+if _OPTIONS["DX12"] then
+	isDX12 = true
+end
+
+if _OPTIONS["Vulkan"] then
+	isVulkan = true
 end
 
 if isUWP then
@@ -126,7 +136,29 @@ project "BrofilerCore"
 	{
 		"BrofilerCore"
 	}
-
+	
+	if isDX12 then
+	--	includedirs
+	--	{
+	--		"$(DXSDK_DIR)Include",
+	--	}
+	--	links { 
+	--		"d3d12", 
+	--		"dxgi",
+	--	}
+	else
+		defines { "BRO_ENABLE_GPU_D3D12=0" }
+	end
+	
+	if isVulkan then
+		includedirs
+		{
+			"$(VULKAN_SDK)Include",
+		}
+	else
+		defines { "BRO_ENABLE_GPU_VULKAN=0" }
+	end
+	
 	files {
 		"BrofilerCore/**.cpp",
         "BrofilerCore/**.h", 
@@ -236,7 +268,7 @@ else
 		}
 end
 
-if _OPTIONS["DX12"] then
+if isDX12 then
 	project "WindowsD3D12"
 		flags {"NoPCH", "WinMain"}
 		kind "WindowedApp"
