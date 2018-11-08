@@ -283,7 +283,8 @@ namespace Profiler.Data
 		internal void Add(TagsPack pack)
 		{
 			Responses.Add(pack.Response);
-			Threads[pack.ThreadIndex].TagsPack = pack;
+			if (pack.ThreadIndex < Threads.Count)
+				Threads[pack.ThreadIndex].TagsPack = pack;
 		}
 
 		public ThreadData GetThread(UInt64 threadID)

@@ -254,7 +254,7 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 
 				SysCallData& sysCall = Core::Get().syscallCollector.Add();
 				sysCall.start = eventRecord->EventHeader.TimeStamp.QuadPart;
-				sysCall.finish = -1;
+				sysCall.finish = EventTime::INVALID_TIMESTAMP;
 				sysCall.threadID = threadId;
 				sysCall.id = pEventEnter->SysCallAddress;
 				sysCall.description = nullptr;

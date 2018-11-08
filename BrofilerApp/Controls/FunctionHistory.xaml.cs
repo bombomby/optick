@@ -34,7 +34,7 @@ namespace Profiler.Controls
 			if (group != Group)
 			{
 				Group = group;
-				FunctionComboBox.DataContext = group.Board.Board.OrderBy(d => d.Name);
+				FunctionComboBox.DataContext = group != null ? group.Board.Board.OrderBy(d => d.Name) : null;
 			}
 		}
 

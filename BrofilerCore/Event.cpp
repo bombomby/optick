@@ -101,6 +101,32 @@ void Event::Pop(EventStorage* storage, int64_t timestampFinish)
 	PopEvent(storage, timestampFinish);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+EventData* GPUEvent::Start(void* context, const EventDescription& description)
+{
+	EventData* result = nullptr;
+
+	if (EventStorage* storage = Core::storage)
+	{
+		if (GPUProfiler* gpuProfiler = Core::Get().gpuProfiler)
+		{
+			result = &storage->gpuStorage.gpuBuffer.Add();
+			result->description = &description;
+			result->start = EventTime::INVALID_TIMESTAMP;
+			result->finish = EventTime::INVALID_TIMESTAMP;
+			gpuProfiler->QueryTimestamp(context, &result->start);
+		}
+	}
+	return result;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void GPUEvent::Stop(void* context, EventData& data)
+{
+	if (GPUProfiler* gpuProfiler = Core::Get().gpuProfiler)
+	{
+		gpuProfiler->QueryTimestamp(context, &data.finish);
+	}
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void FiberSyncData::AttachToThread(EventStorage* storage, uint64_t threadId)
 {
 	if (storage)

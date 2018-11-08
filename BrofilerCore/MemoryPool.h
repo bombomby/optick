@@ -240,12 +240,10 @@ public:
 	void ForEachChunk(Func func) const
 	{
 		for (const Chunk* it = root; it != chunk; it = it->next)
-			for (uint32 i = 0; i < SIZE; ++i)
-				func(it->data, SIZE);
+			func(it->data, SIZE);
 
 		if (chunk)
-			for (uint32 i = 0; i < index; ++i)
-				func(chunk->data, index);
+			func(chunk->data, index);
 	}
 
 	void ToArray(T* destination) const

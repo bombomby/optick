@@ -49,6 +49,14 @@ protected:
 	// Adapter info.
 	bool m_useWarpDevice;
 
+	enum PrefferedAdapter
+	{
+		DefaultAdapter,
+		NVidiaAdapter,
+		IntelAdapter,
+	};
+	PrefferedAdapter m_prefferedAdapter;
+
 private:
 	// Root assets path.
 	std::wstring m_assetsPath;

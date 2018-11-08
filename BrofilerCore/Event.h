@@ -10,7 +10,7 @@ template<class T>
 struct TagData
 {
 	const EventDescription* description;
-	int64_t timestamp;
+	uint64_t timestamp;
 	T data;
 	TagData() {}
 	TagData(const EventDescription& desc, T d) : description(&desc), timestamp(Brofiler::GetHighPrecisionTime()), data(d) {}

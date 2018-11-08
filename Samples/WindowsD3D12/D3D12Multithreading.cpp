@@ -45,6 +45,10 @@ void D3D12Multithreading::OnInit()
 	LoadPipeline();
 	LoadAssets();
 	LoadContexts();
+	
+	ID3D12Device* pDevice = m_device.Get();
+	ID3D12CommandQueue* pCommandQueue = m_commandQueue.Get();
+	BROFILER_GPU_INIT_D3D12((void*)pDevice, (void**)&pCommandQueue, 1);
 }
 
 // Load the rendering pipeline dependencies.
@@ -774,6 +778,7 @@ void D3D12Multithreading::OnRender()
 	//PIXBeginEvent(m_commandQueue.Get(), 0, L"Presenting to screen");
 	{
 		BROFILER_CATEGORY("Present", Brofiler::Color::Tomato);
+		BROFILER_GPU_FLIP(m_swapChain.Get());
 		ThrowIfFailed(m_swapChain->Present(1, 0));
 	}
 	//PIXEndEvent(m_commandQueue.Get());
@@ -937,11 +942,14 @@ void D3D12Multithreading::WorkerThread(int threadIndex)
 		// NumContexts == threadIndex).
 		//PIXBeginEvent(pShadowCommandList, 0, L"Worker drawing shadow pass...");
 
-		for (int j = threadIndex; j < _countof(SampleAssets::Draws); j += NumContexts)
 		{
-			SampleAssets::DrawParameters drawArgs = SampleAssets::Draws[j];
+			BROFILER_GPU_EVENT(pShadowCommandList, "DrawShadows");
+			for (int j = threadIndex; j < _countof(SampleAssets::Draws); j += NumContexts)
+			{
+				SampleAssets::DrawParameters drawArgs = SampleAssets::Draws[j];
 
-			pShadowCommandList->DrawIndexedInstanced(drawArgs.IndexCount, 1, drawArgs.IndexStart, drawArgs.VertexBase, 0);
+				pShadowCommandList->DrawIndexedInstanced(drawArgs.IndexCount, 1, drawArgs.IndexStart, drawArgs.VertexBase, 0);
+			}
 		}
 
 		//PIXEndEvent(pShadowCommandList);
@@ -966,18 +974,22 @@ void D3D12Multithreading::WorkerThread(int threadIndex)
 
 		//PIXBeginEvent(pSceneCommandList, 0, L"Worker drawing scene pass...");
 
-		D3D12_GPU_DESCRIPTOR_HANDLE cbvSrvHeapStart = m_cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();
-		const UINT cbvSrvDescriptorSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-		const UINT nullSrvCount = 2;
-		for (int j = threadIndex; j < _countof(SampleAssets::Draws); j += NumContexts)
 		{
-			SampleAssets::DrawParameters drawArgs = SampleAssets::Draws[j];
+			BROFILER_GPU_EVENT(pSceneCommandList, "DrawScene");
+			D3D12_GPU_DESCRIPTOR_HANDLE cbvSrvHeapStart = m_cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();
+			const UINT cbvSrvDescriptorSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			const UINT nullSrvCount = 2;
+			for (int j = threadIndex; j < _countof(SampleAssets::Draws); j += NumContexts)
+			{
+				SampleAssets::DrawParameters drawArgs = SampleAssets::Draws[j];
 
-			// Set the diffuse and normal textures for the current object.
-			CD3DX12_GPU_DESCRIPTOR_HANDLE cbvSrvHandle(cbvSrvHeapStart, nullSrvCount + drawArgs.DiffuseTextureIndex, cbvSrvDescriptorSize);
-			pSceneCommandList->SetGraphicsRootDescriptorTable(0, cbvSrvHandle);
+				// Set the diffuse and normal textures for the current object.
+				CD3DX12_GPU_DESCRIPTOR_HANDLE cbvSrvHandle(cbvSrvHeapStart, nullSrvCount + drawArgs.DiffuseTextureIndex, cbvSrvDescriptorSize);
+				pSceneCommandList->SetGraphicsRootDescriptorTable(0, cbvSrvHandle);
 
-			pSceneCommandList->DrawIndexedInstanced(drawArgs.IndexCount, 1, drawArgs.IndexStart, drawArgs.VertexBase, 0);
+				//for (int repeat = 0; repeat < 10; ++repeat)
+					pSceneCommandList->DrawIndexedInstanced(drawArgs.IndexCount, 1, drawArgs.IndexStart, drawArgs.VertexBase, 0);
+			}
 		}
 
 		//PIXEndEvent(pSceneCommandList);

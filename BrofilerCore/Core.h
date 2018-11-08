@@ -12,7 +12,10 @@
 #include "SysCallCollector.h"
 #include "SwitchContextCollector.h"
 
+#include "Platform/GPUProfiler.h"
+
 #include <array>
+#include <atomic>
 #include <map>
 #include <list>
 
@@ -118,6 +121,12 @@ struct EventStorage
 	TagPointBuffer tagPointBuffer;
 	TagStringBuffer tagStringBuffer;
 
+	struct GPUStorage
+	{
+		EventBuffer gpuBuffer;
+	};
+	GPUStorage gpuStorage;
+
 	uint32					   pushPopEventStackIndex;
 	std::array<EventData*, 32> pushPopEventStack;
 
@@ -141,6 +150,7 @@ struct EventStorage
 		eventBuffer.Clear(preserveContent);
 		categoryBuffer.Clear(preserveContent);
 		fiberSyncBuffer.Clear(preserveContent);
+		gpuStorage.gpuBuffer.Clear(preserveContent);
 		ClearTags(preserveContent);
 
 		while (pushPopEventStackIndex)
@@ -245,6 +255,8 @@ class Core
 
 	std::vector<std::pair<std::string, std::string>> summary;
 
+	std::atomic<uint32_t> frameNumber;
+
 	struct Attachment
 	{
 		std::string name;
@@ -257,7 +269,7 @@ class Core
 	BroStateCallback stateCallback;
 
 	void UpdateEvents();
-	void Update();
+	uint32_t Update();
 
 	Core();
 	~Core();
@@ -294,6 +306,9 @@ public:
 
 	// SysCall Collector
 	SysCallCollector syscallCollector;
+
+	// GPU Profiler
+	GPUProfiler* gpuProfiler;
 
 	// Returns thread collection
 	const std::vector<ThreadEntry*>& GetThreads() const;
@@ -337,11 +352,18 @@ public:
 	// Attaches a screenshot to the current capture
 	bool AttachFile(BroFile::Type type, const char* name, const uint8_t* data, size_t size);
 
+	// Initalizes GPU profiler
+	void InitGPUProfiler(GPUProfiler* profiler);
+
+	// Current Frame Number (since the game started)
+	uint32_t GetCurrentFrame() const { return frameNumber; }
+
+
 	// NOT Thread Safe singleton (performance)
 	static BRO_INLINE Core& Get() { return notThreadSafeInstance; }
 
 	// Main Update Function
-	static void NextFrame() { Get().Update(); }
+	static uint32_t NextFrame() { return Get().Update(); }
 
 	// Get Active ThreadID
 	//static BRO_INLINE uint32 GetThreadID() { return Get().mainThreadID; }

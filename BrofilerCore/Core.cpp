@@ -197,6 +197,9 @@ void Core::DumpFrames(uint32 mode)
 	threadScope.header.boardNumber = boardNumber;
 	threadScope.header.fiberNumber = -1;
 
+	if (gpuProfiler)
+		gpuProfiler->Dump(mode);
+
 	for (size_t i = 0; i < threads.size(); ++i)
 	{
 		threadScope.header.threadNumber = (uint32)i;
@@ -325,14 +328,14 @@ void Core::DumpBoard(uint32 mode, EventTime timeSlice)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Core::Core() : progressReportedLastTimestampMS(0), isActive(false), stateCallback(nullptr), boardNumber(0)
+Core::Core() : progressReportedLastTimestampMS(0), isActive(false), stateCallback(nullptr), boardNumber(0), gpuProfiler(nullptr), frameNumber(0)
 {
 	mainThreadID = GetThreadID();
 	schedulerTrace = SchedulerTrace::Get();
 	symbolEngine = SymbolEngine::Get();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Core::Update()
+uint32_t Core::Update()
 {
 	std::lock_guard<std::recursive_mutex> lock(coreLock);
 	
@@ -352,6 +355,8 @@ void Core::Update()
 		frames.push_back(EventTime());
 		frames.back().Start();
 	}
+
+	return ++frameNumber;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::UpdateEvents()
@@ -410,16 +415,21 @@ void Core::Activate( bool active )
 		if (active)
 		{
 			CaptureStatus::Type status = schedulerTrace->Start(SchedulerTrace::ALL, threads, true);
-
 			// Let's retry with more narrow setup
 			if (status != CaptureStatus::OK)
 				status = schedulerTrace->Start(SchedulerTrace::SWITCH_CONTEXTS, threads, true);
+
+			if (gpuProfiler)
+				gpuProfiler->Start(0);
 
 			SendHandshakeResponse(status);
 		}
 		else
 		{
 			schedulerTrace->Stop();
+
+			if (gpuProfiler)
+				gpuProfiler->Stop(0);
 		}
 
 		if (stateCallback != nullptr)
@@ -537,6 +547,13 @@ bool Core::AttachFile(BroFile::Type type, const char* name, const uint8_t* data,
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Core::InitGPUProfiler(GPUProfiler* profiler)
+{
+	BRO_ASSERT(gpuProfiler == nullptr, "Can't reinitialize GPU profiler! Not supported yet!");
+	Memory::Delete<GPUProfiler>(gpuProfiler);
+	gpuProfiler = profiler;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core::~Core()
 {
 	std::lock_guard<std::recursive_mutex> lock(coreLock);
@@ -620,7 +637,7 @@ OutputDataStream& operator<<(OutputDataStream& stream, const BroPoint& ob)
 	return stream << ob.x << ob.y << ob.z;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API void NextFrame()
+BROFILER_API uint32_t NextFrame()
 {
 	return Core::NextFrame();
 }
@@ -667,6 +684,12 @@ BROFILER_API EventStorage* RegisterStorage(const char* name)
 {
 	ThreadEntry* entry = Core::Get().RegisterThread(ThreadDescription(name, INVALID_THREAD_ID, false), nullptr);
 	return entry ? &entry->storage : nullptr;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+BROFILER_API void GpuFlip(void* swapChain)
+{
+	if (GPUProfiler* gpuProfiler = Core::Get().gpuProfiler)
+		gpuProfiler->Flip(swapChain);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventStorage::EventStorage(): isFiberStorage(false), pushPopEventStackIndex(0)
