@@ -1,7 +1,7 @@
-Tools\genie.exe --DX12 vs2010 --file=genie.lua
-Tools\genie.exe --DX12 vs2012 --file=genie.lua
-Tools\genie.exe --DX12 vs2015 --file=genie.lua
-Tools\genie.exe --DX12 vs2017 --file=genie.lua
+Tools\genie.exe --DX12 --Vulkan vs2010 --file=genie.lua
+Tools\genie.exe --DX12 --Vulkan vs2012 --file=genie.lua
+Tools\genie.exe --DX12 --Vulkan vs2015 --file=genie.lua
+Tools\genie.exe --DX12 --Vulkan vs2017 --file=genie.lua
 
 rem COPY /Y BrofilerDurangoTest\BrofilerDurangoTest.vcxproj BrofilerDurangoTest\BrofilerDurangoTest_backup.vcxproj
 rem COPY /Y BrofilerDurangoTest\BrofilerDurangoTest.vcxproj.filters BrofilerDurangoTest\BrofilerDurangoTest_backup.vcxproj.filters

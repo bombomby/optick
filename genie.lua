@@ -8,6 +8,11 @@ newoption {
 	description = "Generates a sample for DirectX12",
 }
 
+newoption {
+	trigger = "Vulkan",
+	description = "Generates a sample for Vulkan",
+}
+
 if not _ACTION then
 	_ACTION="vs2017"
 end
@@ -108,9 +113,8 @@ configuration "Debug"
 for _, config in ipairs(config_list) do
 	for _, plat in ipairs(platform_list) do
 		configuration { config, plat }
-		objdir    ( outputFolder .. "/Temp/" )
-                tgtDir = outFolderRoot .. plat .. "/" .. config
-		targetdir (tgtDir)
+			objdir    ( outputFolder .. "/Temp/" )
+			targetdir ( outFolderRoot .. plat .. "/" .. config )
 	end
 end
 
@@ -300,4 +304,66 @@ if isDX12 then
 		vpaths { 
 			["*"] = "Samples/WindowsD3D12" 
 		}
+end
+
+if isVulkan then
+	project "WindowsVulkan"
+		flags {"NoPCH", "WinMain"}
+		kind "WindowedApp"
+		uuid "07A250C4-4432-45FE-9E63-BB7F71B7C14C"
+
+		defines {
+			"VK_USE_PLATFORM_WIN32_KHR", 
+			"NOMINMAX", 
+			"_USE_MATH_DEFINES",
+			"VK_EXAMPLE_DATA_DIR=\"" .. os.getcwd() .. "/Samples/WindowsVulkan/data/\"",
+		}
+		
+		buildoptions { 
+			"/wd4201", -- nonstandard extension used: class rvalue used as lvalue
+			"/wd4458", -- declaration of '***' hides class member
+			"/wd4018", -- '<': signed/unsigned mismatch
+			"/wd4267", -- 'argument': conversion from 'size_t' to 'uint32_t'
+			"/wd4244", -- 'initializing': conversion from 'double' to 'float', possible loss of data
+			"/wd4189", -- local variable is initialized but not referenced
+			"/wd4100", -- unreferenced formal parameter
+			"/wd4189", -- local variable is initialized but not referenced
+			"/wd4456", -- declaration of '***' hides previous local declaration
+			"/wd4700", -- uninitialized local variable '***' used
+			"/wd4702", -- unreachable code
+		}
+	
+		files {
+			"Samples/WindowsVulkan/**.*", 
+		}
+		
+		includedirs {
+			"$(VULKAN_SDK)/Include",
+			"Samples/WindowsVulkan",
+			"Samples/WindowsVulkan/base",
+			"BrofilerCore",
+		}
+		
+		libdirs {
+			"$(VULKAN_SDK)/Lib",
+			"Samples/WindowsVulkan/libs/assimp",
+		}
+
+		links { 
+			"vulkan-1",
+			"assimp",
+		}
+		
+		links {
+			"BrofilerCore",
+		}
+		
+		vpaths { 
+			["*"] = "Samples/WindowsVulkan" 
+		}
+		
+		if isVisualStudio then
+			fullPath = os.getcwd() .. "\\Samples\\WindowsVulkan\\"
+			postbuildcommands { "copy \"" .. fullPath .. "dll\\assimp-vc140-mt.dll\" \"" .. fullPath .. "$(OutputPath)\\assimp-vc140-mt.dll\" /Y" }
+		end
 end
