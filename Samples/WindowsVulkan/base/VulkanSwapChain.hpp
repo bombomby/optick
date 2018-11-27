@@ -23,6 +23,8 @@
 #include "VulkanAndroid.h"
 #endif
 
+#include <Brofiler.h>
+
 // Macro to get a procedure address based on a vulkan instance
 #define GET_INSTANCE_PROC_ADDR(inst, entrypoint)                        \
 {                                                                       \
@@ -489,6 +491,9 @@ public:
 			presentInfo.pWaitSemaphores = &waitSemaphore;
 			presentInfo.waitSemaphoreCount = 1;
 		}
+		
+		BROFILER_GPU_FLIP(&swapChain);
+		
 		return fpQueuePresentKHR(queue, &presentInfo);
 	}
 

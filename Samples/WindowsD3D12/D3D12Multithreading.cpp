@@ -943,7 +943,8 @@ void D3D12Multithreading::WorkerThread(int threadIndex)
 		//PIXBeginEvent(pShadowCommandList, 0, L"Worker drawing shadow pass...");
 
 		{
-			BROFILER_GPU_EVENT(pShadowCommandList, "DrawShadows");
+			BROFILER_GPU_CONTEXT(pShadowCommandList);
+			BROFILER_GPU_EVENT("DrawShadows");
 			for (int j = threadIndex; j < _countof(SampleAssets::Draws); j += NumContexts)
 			{
 				SampleAssets::DrawParameters drawArgs = SampleAssets::Draws[j];
@@ -975,7 +976,8 @@ void D3D12Multithreading::WorkerThread(int threadIndex)
 		//PIXBeginEvent(pSceneCommandList, 0, L"Worker drawing scene pass...");
 
 		{
-			BROFILER_GPU_EVENT(pSceneCommandList, "DrawScene");
+			BROFILER_GPU_CONTEXT(pSceneCommandList);
+			BROFILER_GPU_EVENT("DrawScene");
 			D3D12_GPU_DESCRIPTOR_HANDLE cbvSrvHeapStart = m_cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();
 			const UINT cbvSrvDescriptorSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 			const UINT nullSrvCount = 2;

@@ -27,9 +27,24 @@ namespace Brofiler
 		Core::Get().InitGPUProfiler(gpuProfiler);
 	}
 
-	GPUProfilerD3D12::GPUProfilerD3D12() : currentNode(0), queryBuffer(nullptr), device(nullptr), frameNumber(0), currentState(STATE_OFF)
+	GPUProfilerD3D12::GPUProfilerD3D12() :  queryBuffer(nullptr), device(nullptr)
 	{
 		prevFrameStatistics = { 0 };
+	}
+
+	GPUProfilerD3D12::~GPUProfilerD3D12()
+	{
+		WaitForFrame(frameNumber - 1);
+
+		for (Frame& frame : frames)
+			frame.Shutdown();
+
+		for (Node* node : nodes)
+			Memory::Delete(node);
+
+		nodes.clear();
+
+		SafeRelease(&queryBuffer);
 	}
 
 	void GPUProfilerD3D12::InitDevice(ID3D12Device* pDevice, ID3D12CommandQueue** pCommandQueues, uint32_t numCommandQueues)
@@ -39,6 +54,7 @@ namespace Brofiler
 		uint32_t nodeCount = numCommandQueues; // device->GetNodeCount();
 
 		nodes.resize(nodeCount);
+		nodePayloads.resize(nodeCount);
 
 		D3D12_HEAP_PROPERTIES heapDesc;
 		heapDesc.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
@@ -99,16 +115,15 @@ namespace Brofiler
 
 		for (uint32_t nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
 			InitNode(deviceName, nodeIndex, pCommandQueues[nodeIndex]);
-
-		vsyncEventStorage = RegisterStorage("VSync");
 	}
 
 	void GPUProfilerD3D12::InitNode(const char* nodeName, uint32_t nodeIndex, ID3D12CommandQueue* pCmdQueue)
 	{
-		Node* node = Memory::New<Node>();
-		nodes[nodeIndex] = node;
+		GPUProfiler::InitNode(nodeName, nodeIndex);
+
+		NodePayload* node = Memory::New<NodePayload>();
+		nodePayloads[nodeIndex] = node;
 		node->commandQueue = pCmdQueue;
-		node->nodeIndex = nodeIndex;
 
 		D3D12_QUERY_HEAP_DESC queryHeapDesc;
 		queryHeapDesc.Count = MAX_QUERIES_COUNT;
@@ -117,18 +132,14 @@ namespace Brofiler
 		BRO_CHECK(device->CreateQueryHeap(&queryHeapDesc, IID_PPV_ARGS(&node->queryHeap)));
 
 		BRO_CHECK(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&node->syncFence)));
-
-		node->gpuEventStorage = RegisterStorage(nodeName);
 	}
 
 	void GPUProfilerD3D12::QueryTimestamp(ID3D12GraphicsCommandList* context, uint64_t* outCpuTimestamp)
 	{
 		if (currentState == STATE_RUNNING)
 		{
-			Node* node = nodes[currentNode];
-			uint32_t index = node->queryIndex.fetch_add(1) % MAX_QUERIES_COUNT;
-			context->EndQuery(node->queryHeap, D3D12_QUERY_TYPE_TIMESTAMP, index);
-			node->queryCpuTimestamps[index] = outCpuTimestamp;
+			uint32_t index = nodes[currentNode]->QueryTimestamp(outCpuTimestamp);
+			context->EndQuery(nodePayloads[currentNode]->queryHeap, D3D12_QUERY_TYPE_TIMESTAMP, index);
 		}
 	}
 
@@ -154,8 +165,8 @@ namespace Brofiler
 	{
 		BROFILE;
 
-		Node* node = nodes[currentNode];
-		while (frameNumberToWait > node->syncFence->GetCompletedValue())
+		NodePayload* payload = nodePayloads[currentNode];
+		while (frameNumberToWait > payload->syncFence->GetCompletedValue())
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		}
@@ -189,20 +200,12 @@ namespace Brofiler
 			uint32_t queryEnd = node->queryIndex;
 
 			// Generate GPU Frame event for the next frame
-			static const EventDescription* GPUFrameDescription = EventDescription::Create("GPU Frame", __FILE__, __LINE__);
-			EventData& event = node->gpuEventStorage->eventBuffer.Add();
-			event.description = GPUFrameDescription;
-			event.start = EventTime::INVALID_TIMESTAMP;
-			event.finish = EventTime::INVALID_TIMESTAMP;
+			EventData& event = AddFrameEvent();
 			QueryTimestamp(commandList, &event.start);
+			QueryTimestamp(commandList, &AddFrameTag().timestamp);
 			nextFrame.frameEvents[currentNode] = &event;
 
-			static const EventDescription* FrameTagDescription = EventDescription::CreateShared("Frame");
-			TagU32& tag = node->gpuEventStorage->tagU32Buffer.Add();
-			tag.description = FrameTagDescription;
-			tag.timestamp = EventTime::INVALID_TIMESTAMP;
-			tag.data = Core::Get().GetCurrentFrame();
-			QueryTimestamp(commandList, &tag.timestamp);
+			NodePayload* payload = nodePayloads[currentNode];
 
 			if (queryBegin != (uint32_t)-1)
 			{
@@ -214,19 +217,19 @@ namespace Brofiler
 
 				if (startIndex < finishIndex)
 				{
-					commandList->ResolveQueryData(node->queryHeap, D3D12_QUERY_TYPE_TIMESTAMP, startIndex, queryEnd - queryBegin, queryBuffer, startIndex * sizeof(int64_t));
+					commandList->ResolveQueryData(payload->queryHeap, D3D12_QUERY_TYPE_TIMESTAMP, startIndex, queryEnd - queryBegin, queryBuffer, startIndex * sizeof(int64_t));
 				}
 				else
 				{
-					commandList->ResolveQueryData(node->queryHeap, D3D12_QUERY_TYPE_TIMESTAMP, startIndex, MAX_QUERIES_COUNT - startIndex, queryBuffer, startIndex * sizeof(int64_t));
-					commandList->ResolveQueryData(node->queryHeap, D3D12_QUERY_TYPE_TIMESTAMP, 0, finishIndex, queryBuffer, 0);
+					commandList->ResolveQueryData(payload->queryHeap, D3D12_QUERY_TYPE_TIMESTAMP, startIndex, MAX_QUERIES_COUNT - startIndex, queryBuffer, startIndex * sizeof(int64_t));
+					commandList->ResolveQueryData(payload->queryHeap, D3D12_QUERY_TYPE_TIMESTAMP, 0, finishIndex, queryBuffer, 0);
 				}
 			}
 
 			commandList->Close();
 
-			node->commandQueue->ExecuteCommandLists(1, (ID3D12CommandList*const*)&commandList);
-			node->commandQueue->Signal(node->syncFence, frameNumber);
+			payload->commandQueue->ExecuteCommandLists(1, (ID3D12CommandList*const*)&commandList);
+			payload->commandQueue->Signal(payload->syncFence, frameNumber);
 
 			// Preparing Next Frame
 			// Try resolve timestamps for the current frame
@@ -249,9 +252,7 @@ namespace Brofiler
 			HRESULT result = swapChain->GetFrameStatistics(&currentFrameStatistics);
 			if ((result == S_OK) && (prevFrameStatistics.PresentCount + 1 == currentFrameStatistics.PresentCount))
 			{
-				static const EventDescription* VSyncDescription = EventDescription::Create("VSync", __FILE__, __LINE__);
-				EventData& data = vsyncEventStorage->eventBuffer.Add();
-				data.description = VSyncDescription;
+				EventData& data = AddVSyncEvent();
 				data.start = prevFrameStatistics.SyncQPCTime.QuadPart;
 				data.finish = currentFrameStatistics.SyncQPCTime.QuadPart;
 			}
@@ -261,69 +262,16 @@ namespace Brofiler
 		++frameNumber;
 	}
 
-	void GPUProfilerD3D12::Start(uint32 /*mode*/)
+	GPUProfiler::ClockSynchronization GPUProfilerD3D12::GetClockSynchronization(uint32_t nodeIndex)
 	{
-		std::lock_guard<std::recursive_mutex> lock(updateLock);
-		Reset();
-		currentState = STATE_STARTING;
-	}
-
-	void GPUProfilerD3D12::Stop(uint32 /*mode*/)
-	{
-		std::lock_guard<std::recursive_mutex> lock(updateLock);
-		currentState = STATE_OFF;
-	}
-
-	void GPUProfilerD3D12::Dump(uint32 /*mode*/)
-	{
-		//if (mode & Mode::GPU)
-		{
-			Node* node = nodes[currentNode];
-
-			EventBuffer& gpuBuffer = node->gpuEventStorage->eventBuffer;
-
-			const std::vector<ThreadEntry*>& threads = Core::Get().GetThreads();
-			for each (ThreadEntry* thread in threads)
-			{
-				thread->storage.gpuStorage.gpuBuffer.ForEachChunk([&gpuBuffer](const EventData* events, int count)
-				{
-					gpuBuffer.AddRange(events, count);
-				});
-			}
-		}
-	}
-
-	void GPUProfilerD3D12::Reset()
-	{
-		for (size_t i = 0; i < frames.size(); ++i)
-			frames[i].Reset();
-
-		for (size_t i = 0; i < nodes.size(); ++i)
-			nodes[i]->UpdateClock();
-	}
-
-	void GPUProfilerD3D12::Shutdown()
-	{
-		WaitForFrame(frameNumber - 1);
-
-		for (Node* node : nodes)
-			Memory::Delete(node);
-		nodes.clear();
-			
-		SafeRelease(&queryBuffer);
-
-		for (Frame& frame : frames)
-			frame.Shutdown();
-	}
-
-	void GPUProfilerD3D12::Node::UpdateClock()
-	{
+		ClockSynchronization clock;
 		clock.frequencyCPU = GetHighPrecisionFrequency();
-		commandQueue->GetTimestampFrequency(&clock.frequencyGPU);
-		commandQueue->GetClockCalibration(&clock.timestampGPU, &clock.timestampCPU);
+		nodePayloads[nodeIndex]->commandQueue->GetTimestampFrequency(&clock.frequencyGPU);
+		nodePayloads[nodeIndex]->commandQueue->GetClockCalibration(&clock.timestampGPU, &clock.timestampCPU);
+		return clock;
 	}
 
-	GPUProfilerD3D12::Node::~Node()
+	GPUProfilerD3D12::NodePayload::~NodePayload()
 	{
 		SafeRelease(&queryHeap);
 		SafeRelease(&syncFence);

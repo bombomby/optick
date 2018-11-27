@@ -12,6 +12,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <functional>
+#include <Brofiler.h>
 
 // make_unique is not available in C++11
 // Taken from Herb Sutter's blog (https://herbsutter.com/gotw/_102/)
@@ -35,6 +36,7 @@ namespace vks
 		// Loop through all remaining jobs
 		void queueLoop()
 		{
+			BROFILER_THREAD("WorkerThread");
 			while (true)
 			{
 				std::function<void()> job;

@@ -6,14 +6,34 @@
 
 #if BRO_ENABLE_GPU
 
+#include <array>
+#include <atomic>
+#include <mutex>
+#include <vector>
+
+#include "../BrofilerCore/Event.h"
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Brofiler
 {
+	const char* GetGPUQueueName(GPUQueueType queue);
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	const int MAX_GPU_NODES = 2;
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	class GPUProfiler
 	{
 	public:
-		static const int MAX_QUERIES_COUNT = 1024;
+		static const int MAX_FRAME_EVENTS = 1024;
 		static const int NUM_FRAMES_DELAY = 4;
-		static const int MAX_NODES = 2;
+		static const int MAX_QUERIES_COUNT = (2 * MAX_FRAME_EVENTS) * NUM_FRAMES_DELAY;
+	protected:
+
+		enum State
+		{
+			STATE_OFF,
+			STATE_STARTING,
+			STATE_RUNNING,
+			STATE_FINISHING,
+		};
 
 		struct ClockSynchronization
 		{
@@ -30,16 +50,80 @@ namespace Brofiler
 			ClockSynchronization() : frequencyCPU(0), frequencyGPU(0), timestampCPU(0), timestampGPU(0) {}
 		};
 
+		struct QueryFrame
+		{
+			EventData* frameEvent;
+			uint32_t queryIndexStart;
+			uint32_t queryIndexCount;
+
+			QueryFrame()
+			{
+				Reset();
+			}
+
+			void Reset()
+			{
+				frameEvent = nullptr;
+				queryIndexStart = (uint32_t)-1;
+				queryIndexCount = 0;
+			}
+		};
+
+		struct Node
+		{
+			std::array<QueryFrame, NUM_FRAMES_DELAY> queryGpuframes;
+			std::array<uint64_t, MAX_QUERIES_COUNT> queryGpuTimestamps;
+			std::array<uint64_t*, MAX_QUERIES_COUNT> queryCpuTimestamps;
+			std::atomic<uint32_t> queryIndex;
+
+			ClockSynchronization clock;
+
+			std::array<EventStorage*, GPU_QUEUE_COUNT> gpuEventStorage;
+
+			uint32_t QueryTimestamp(uint64_t* outCpuTimestamp)
+			{
+				uint32_t index = queryIndex.fetch_add(1) % MAX_QUERIES_COUNT;
+				queryCpuTimestamps[index] = outCpuTimestamp;
+				return index;
+			}
+
+			Node() : queryIndex(0) { gpuEventStorage.assign(nullptr); }
+		};
+
+		std::recursive_mutex updateLock;
+		volatile State currentState;
+
+		std::vector<Node*> nodes;
+		uint32_t currentNode;
+
+		uint32_t frameNumber;
+
+		void Reset();
+
+		EventData& AddFrameEvent();
+		EventData& AddVSyncEvent();
+		TagData<uint32>& AddFrameTag();
+
+	public:
+		GPUProfiler();
+
+		// Init
+		virtual void InitNode(const char* nodeName, uint32_t nodeIndex);
+
+		// Capture Controls 
+		virtual void Start(uint32 mode);
+		virtual void Stop(uint32 mode);
+		virtual void Dump(uint32 mode);
+
+		// Interface to implement
+		virtual ClockSynchronization GetClockSynchronization(uint32_t nodeIndex) = 0;
 		virtual void QueryTimestamp(void* context, uint64_t* cpuTimestampOut) = 0;
 		virtual void Flip(void* swapChain) = 0;
 		
-		// Capture Controls 
-		virtual void Start(uint32 mode) = 0;
-		virtual void Stop(uint32 mode) = 0;
-		virtual void Dump(uint32 mode) = 0;
-
-		virtual ~GPUProfiler() {}
+		
+		virtual ~GPUProfiler();
 	};
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 #endif //BRO_ENABLE_GPU

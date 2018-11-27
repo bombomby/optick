@@ -28,12 +28,12 @@ namespace Brofiler
 		struct Frame
 		{
 			ID3D12CommandAllocator* commandAllocator;
-			std::array<ID3D12GraphicsCommandList*, MAX_NODES> commandList;
+			std::array<ID3D12GraphicsCommandList*, MAX_GPU_NODES> commandList;
 			
-			std::array<EventData*, MAX_NODES> frameEvents;
+			std::array<EventData*, MAX_GPU_NODES> frameEvents;
 			
-			std::array<uint32_t, MAX_NODES> queryStartIndices;
-			std::array<uint32_t, MAX_NODES> queryCountIndices;
+			std::array<uint32_t, MAX_GPU_NODES> queryStartIndices;
+			std::array<uint32_t, MAX_GPU_NODES> queryCountIndices;
 
 			Frame() : commandAllocator(nullptr)
 			{
@@ -56,51 +56,23 @@ namespace Brofiler
 			}
 		};
 
-		struct Node
+		struct NodePayload
 		{
-			EventStorage* gpuEventStorage;
-
 			ID3D12CommandQueue* commandQueue;
 			ID3D12QueryHeap* queryHeap;
 			ID3D12Fence* syncFence;
 
-			std::array<uint64_t, MAX_QUERIES_COUNT> queryGpuTimestamps;
-			std::array<uint64_t*, MAX_QUERIES_COUNT> queryCpuTimestamps;
-			std::atomic<uint32_t> queryIndex;
-
-			ClockSynchronization clock;
-			
-			uint32_t nodeIndex;
-
-			void UpdateClock();
-
-			Node() : commandQueue(nullptr), queryHeap(nullptr), syncFence(nullptr), nodeIndex(0), queryIndex(0), gpuEventStorage(nullptr) {}
-			~Node();
+			NodePayload() : commandQueue(nullptr), queryHeap(nullptr), syncFence(nullptr) {}
+			~NodePayload();
 		};
-
-		std::vector<Node*> nodes;
-		uint32_t currentNode;
+		std::vector<NodePayload*> nodePayloads;
 
 		std::array<Frame, NUM_FRAMES_DELAY> frames;
 		
-		uint32_t frameNumber;
-
 		ID3D12Resource* queryBuffer;
 		ID3D12Device* device;
 
-		enum State
-		{
-			STATE_OFF,
-			STATE_STARTING,
-			STATE_RUNNING,
-			STATE_FINISHING,
-		};
-
-		std::recursive_mutex updateLock;
-		volatile State currentState;
-
 		// VSync Stats
-		EventStorage* vsyncEventStorage;
 		DXGI_FRAME_STATISTICS prevFrameStatistics;
 
 		//void UpdateRange(uint32_t start, uint32_t finish)
@@ -112,6 +84,7 @@ namespace Brofiler
 		
 	public:
 		GPUProfilerD3D12();
+		~GPUProfilerD3D12();
 
 		void InitDevice(ID3D12Device* pDevice, ID3D12CommandQueue** pCommandQueues, uint32_t numCommandQueues);
 
@@ -119,7 +92,10 @@ namespace Brofiler
 
 		void Flip(IDXGISwapChain* swapChain);
 
+
 		// Interface implementation
+		ClockSynchronization GetClockSynchronization(uint32_t nodeIndex) override;
+
 		void QueryTimestamp(void* context, uint64_t* outCpuTimestamp) override
 		{
 			QueryTimestamp((ID3D12GraphicsCommandList*)context, outCpuTimestamp);
@@ -129,14 +105,6 @@ namespace Brofiler
 		{
 			Flip(static_cast<IDXGISwapChain*>(swapChain));
 		}
-
-		virtual void Start(uint32 mode) override;
-		virtual void Stop(uint32 mode) override;
-		virtual void Dump(uint32 mode) override;
-
-		void Reset();
-
-		void Shutdown();
 	};
 }
 

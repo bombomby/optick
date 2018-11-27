@@ -15,7 +15,7 @@ namespace Brofiler
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static const short DEFAULT_PORT = 31313;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Server::Server(short port) : socket(new Socket()), isInitialized(false)
+Server::Server(short port) : socket(Memory::New<Socket>()), isInitialized(false)
 {
 	socket->Bind(port, 4);
 	socket->Listen();
@@ -37,7 +37,7 @@ void Server::Update()
 	while (IMessage *message = IMessage::Create(networkStream))
 	{
 		message->Apply();
-		delete message;
+		Memory::Delete(message);
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -61,7 +61,7 @@ Server::~Server()
 {
 	if (socket)
 	{
-		delete socket;
+		Memory::Delete(socket);
 		socket = nullptr;
 	}
 }

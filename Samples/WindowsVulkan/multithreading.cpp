@@ -233,6 +233,8 @@ public:
 	// Builds the secondary command buffer for each thread
 	void threadRenderCode(uint32_t threadIndex, uint32_t cmdBufferIndex, VkCommandBufferInheritanceInfo inheritanceInfo)
 	{
+		BROFILER_CATEGORY("Render", Brofiler::Color::BurlyWood);
+
 		ThreadData *thread = &threadData[threadIndex];
 		ObjectData *objectData = &thread->objectData[cmdBufferIndex];
 
@@ -251,49 +253,52 @@ public:
 		VkCommandBuffer cmdBuffer = thread->commandBuffer[cmdBufferIndex];
 
 		VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &commandBufferBeginInfo));
+		{
+			BROFILER_GPU_CONTEXT(cmdBuffer, Brofiler::GPU_QUEUE_COMPUTE);
+			BROFILER_GPU_EVENT("DrawUFO");
+			VkViewport viewport = vks::initializers::viewport((float)width, (float)height, 0.0f, 1.0f);
+			vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);
 
-		VkViewport viewport = vks::initializers::viewport((float)width, (float)height, 0.0f, 1.0f);
-		vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);
+			VkRect2D scissor = vks::initializers::rect2D(width, height, 0, 0);
+			vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
 
-		VkRect2D scissor = vks::initializers::rect2D(width, height, 0, 0);
-		vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
+			vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.phong);
 
-		vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.phong);
-
-		// Update
-		if (!paused) {
-			objectData->rotation.y += 2.5f * objectData->rotationSpeed * frameTimer;
-			if (objectData->rotation.y > 360.0f) {
-				objectData->rotation.y -= 360.0f;
+			// Update
+			if (!paused) {
+				objectData->rotation.y += 2.5f * objectData->rotationSpeed * frameTimer;
+				if (objectData->rotation.y > 360.0f) {
+					objectData->rotation.y -= 360.0f;
+				}
+				objectData->deltaT += 0.15f * frameTimer;
+				if (objectData->deltaT > 1.0f)
+					objectData->deltaT -= 1.0f;
+				objectData->pos.y = sin(glm::radians(objectData->deltaT * 360.0f)) * 2.5f;
 			}
-			objectData->deltaT += 0.15f * frameTimer;
-			if (objectData->deltaT > 1.0f)
-				objectData->deltaT -= 1.0f;
-			objectData->pos.y = sin(glm::radians(objectData->deltaT * 360.0f)) * 2.5f;
+
+			objectData->model = glm::translate(glm::mat4(1.0f), objectData->pos);
+			objectData->model = glm::rotate(objectData->model, -sinf(glm::radians(objectData->deltaT * 360.0f)) * 0.25f, glm::vec3(objectData->rotationDir, 0.0f, 0.0f));
+			objectData->model = glm::rotate(objectData->model, glm::radians(objectData->rotation.y), glm::vec3(0.0f, objectData->rotationDir, 0.0f));
+			objectData->model = glm::rotate(objectData->model, glm::radians(objectData->deltaT * 360.0f), glm::vec3(0.0f, objectData->rotationDir, 0.0f));
+			objectData->model = glm::scale(objectData->model, glm::vec3(objectData->scale));
+
+			thread->pushConstBlock[cmdBufferIndex].mvp = matrices.projection * matrices.view * objectData->model;
+
+			// Update shader push constant block
+			// Contains model view matrix
+			vkCmdPushConstants(
+				cmdBuffer,
+				pipelineLayout,
+				VK_SHADER_STAGE_VERTEX_BIT,
+				0,
+				sizeof(ThreadPushConstantBlock),
+				&thread->pushConstBlock[cmdBufferIndex]);
+
+			VkDeviceSize offsets[1] = { 0 };
+			vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &models.ufo.vertices.buffer, offsets);
+			vkCmdBindIndexBuffer(cmdBuffer, models.ufo.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
+			vkCmdDrawIndexed(cmdBuffer, models.ufo.indexCount, 1, 0, 0, 0);
 		}
-
-		objectData->model = glm::translate(glm::mat4(1.0f), objectData->pos);
-		objectData->model = glm::rotate(objectData->model, -sinf(glm::radians(objectData->deltaT * 360.0f)) * 0.25f, glm::vec3(objectData->rotationDir, 0.0f, 0.0f));
-		objectData->model = glm::rotate(objectData->model, glm::radians(objectData->rotation.y), glm::vec3(0.0f, objectData->rotationDir, 0.0f));
-		objectData->model = glm::rotate(objectData->model, glm::radians(objectData->deltaT * 360.0f), glm::vec3(0.0f, objectData->rotationDir, 0.0f));
-		objectData->model = glm::scale(objectData->model, glm::vec3(objectData->scale));
-
-		thread->pushConstBlock[cmdBufferIndex].mvp = matrices.projection * matrices.view * objectData->model;
-
-		// Update shader push constant block
-		// Contains model view matrix
-		vkCmdPushConstants(
-			cmdBuffer,
-			pipelineLayout,
-			VK_SHADER_STAGE_VERTEX_BIT,
-			0,
-			sizeof(ThreadPushConstantBlock),
-			&thread->pushConstBlock[cmdBufferIndex]);
-
-		VkDeviceSize offsets[1] = { 0 };
-		vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &models.ufo.vertices.buffer, offsets);
-		vkCmdBindIndexBuffer(cmdBuffer, models.ufo.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
-		vkCmdDrawIndexed(cmdBuffer, models.ufo.indexCount, 1, 0, 0, 0);
 
 		VK_CHECK_RESULT(vkEndCommandBuffer(cmdBuffer));
 	}

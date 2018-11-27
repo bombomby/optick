@@ -123,7 +123,13 @@ struct EventStorage
 
 	struct GPUStorage
 	{
-		EventBuffer gpuBuffer;
+		std::array<std::array<EventBuffer, GPU_QUEUE_COUNT>, MAX_GPU_NODES> gpuBuffer;
+		GPUContext context;
+
+		void Clear(bool preserveMemory);
+		
+		EventData* Start(const EventDescription& desc);
+		void Stop(EventData& data);
 	};
 	GPUStorage gpuStorage;
 
@@ -150,7 +156,7 @@ struct EventStorage
 		eventBuffer.Clear(preserveContent);
 		categoryBuffer.Clear(preserveContent);
 		fiberSyncBuffer.Clear(preserveContent);
-		gpuStorage.gpuBuffer.Clear(preserveContent);
+		gpuStorage.Clear(preserveContent);
 		ClearTags(preserveContent);
 
 		while (pushPopEventStackIndex)

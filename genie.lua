@@ -157,7 +157,7 @@ project "BrofilerCore"
 	if isVulkan then
 		includedirs
 		{
-			"$(VULKAN_SDK)Include",
+			"$(VULKAN_SDK)/Include",
 		}
 	else
 		defines { "BRO_ENABLE_GPU_VULKAN=0" }

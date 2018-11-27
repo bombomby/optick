@@ -692,6 +692,17 @@ BROFILER_API void GpuFlip(void* swapChain)
 		gpuProfiler->Flip(swapChain);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+BROFILER_API GPUContext SetGpuContext(GPUContext context)
+{
+	if (EventStorage* storage = Core::storage)
+	{
+		GPUContext prevContext = storage->gpuStorage.context;
+		storage->gpuStorage.context = context;
+		return prevContext;
+	}
+	return GPUContext();
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventStorage::EventStorage(): isFiberStorage(false), pushPopEventStackIndex(0)
 {
 	 
@@ -754,6 +765,35 @@ void ScopeData::Clear()
 {
 	events.clear();
 	categories.clear();
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void EventStorage::GPUStorage::Clear(bool preserveMemory)
+{
+	for (int i = 0; i < MAX_GPU_NODES; ++i)
+		for (int j = 0; j < GPU_QUEUE_COUNT; ++j)
+			gpuBuffer[i][j].Clear(preserveMemory);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+EventData* EventStorage::GPUStorage::Start(const EventDescription &desc)
+{
+	if (GPUProfiler* gpuProfiler = Core::Get().gpuProfiler)
+	{
+		EventData& result = gpuBuffer[context.node][context.queue].Add();
+		result.description = &desc;
+		result.start = EventTime::INVALID_TIMESTAMP;
+		result.finish = EventTime::INVALID_TIMESTAMP;
+		gpuProfiler->QueryTimestamp(context.cmdBuffer, &result.start);
+		return &result;
+	}
+	return nullptr;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void EventStorage::GPUStorage::Stop(EventData& data)
+{
+	if (GPUProfiler* gpuProfiler = Core::Get().gpuProfiler)
+	{
+		gpuProfiler->QueryTimestamp(context.cmdBuffer, &data.finish);
+	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
