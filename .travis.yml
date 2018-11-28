@@ -5,10 +5,13 @@ dist: trusty
 os:
   - linux
   - osx
+  - windows
 
 compiler:
   - gcc
+  - clang
 
 script:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then clang --version && g++ --version && ./Tools/Linux/premake5 gmake && pushd Build/gmake/ && make config=release_x64 && popd; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then clang --version && g++ --version && ./Tools/MacOS/premake5 gmake && pushd Build/gmake/ && make config=debug_x64 && popd; fi
+  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then MSBuild --version && && ./Tools/MacOS/premake5.exe vs2015 && pushd Build/vs2015/ && MsBuild Brofiler.sln /t:Rebuild /p:Configuration=Debug && popd; fi
