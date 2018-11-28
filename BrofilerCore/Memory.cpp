@@ -3,9 +3,7 @@
 #include "Memory.h"
 #include "Platform.h"
 
-#if defined(BRO_PLATFORM_OSX)
-#include <mm_malloc.h>
-#endif //BRO_PLATFORM_OSX
+#include <xmmintrin.h>
 
 namespace Brofiler
 {
