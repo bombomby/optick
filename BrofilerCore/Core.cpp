@@ -8,6 +8,7 @@
 #include "Platform/SchedulerTrace.h"
 #include "Platform/SymbolEngine.h"
 
+#include <algorithm>
 
 extern "C" Brofiler::EventData* NextEvent()
 {

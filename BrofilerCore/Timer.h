@@ -40,7 +40,7 @@ namespace Brofiler
 		return frequency.QuadPart;
 #elif defined(BRO_GCC_COMPILER_FAMILY)
 		return 1000000;
-#elif
+#else
 		#error Platform is not supported!
 #endif
 	}
@@ -56,7 +56,7 @@ namespace Brofiler
 		struct timeval te;
 		gettimeofday(&te, nullptr);
 		return te.tv_sec * 1000000LL + te.tv_usec;
-#elif
+#else
 		#error Platform is not supported!
 #endif
 	}
