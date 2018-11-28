@@ -8,3 +8,4 @@ Build/
 Publish/
 *.rej
 *.orig
+.DS_Store

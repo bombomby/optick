@@ -9,5 +9,11 @@ namespace Brofiler
 		return os << symbol->address << symbol->module << symbol->function << symbol->file << symbol->line;
 	}
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+    
+#if !BRO_ENABLE_SYMENGINE
+    SymbolEngine* SymbolEngine::Get()
+    {
+        return nullptr;
+    }
+#endif
 }

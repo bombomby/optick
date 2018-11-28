@@ -53,25 +53,48 @@
 #endif
 
 ////////////////////////////////////////////////////////////////////////
-// bro_forceinline
+// BRO_FORCEINLINE
 ////////////////////////////////////////////////////////////////////////
 #if defined(BRO_MSVC_COMPILER_FAMILY)
-#define bro_forceinline __forceinline
+#define BRO_FORCEINLINE __forceinline
 #elif defined(BRO_GCC_COMPILER_FAMILY)
-#define bro_forceinline __attribute__((always_inline)) inline
+#define BRO_FORCEINLINE __attribute__((always_inline)) inline
 #else
-#error Can not define bro_forceinline. Unknown platform.
+#error Can not define BRO_FORCEINLINE. Unknown platform.
 #endif
 
 ////////////////////////////////////////////////////////////////////////
-// mt_thread_local
+// BRO_THREAD_LOCAL
 ////////////////////////////////////////////////////////////////////////
 #if defined(BRO_CPP11_SUPPORTED)
-#define bro_thread_local _Thread_local
+#define BRO_THREAD_LOCAL _Thread_local
 #elif defined(BRO_GCC_COMPILER_FAMILY)
-#define bro_thread_local __thread
+#define BRO_THREAD_LOCAL __thread
 #elif defined(BRO_MSVC_COMPILER_FAMILY)
-#define bro_thread_local __declspec(thread)
+#define BRO_THREAD_LOCAL __declspec(thread)
 #else
-#error Can not define bro_thread_local. Unknown platform.
+#error Can not define BRO_THREAD_LOCAL. Unknown platform.
 #endif
+
+////////////////////////////////////////////////////////////////////////
+// BRO_ALIGN
+////////////////////////////////////////////////////////////////////////
+#if defined(BRO_MSVC_COMPILER_FAMILY)
+#define BRO_ALIGN(N) __declspec( align( N ) )
+#elif defined(BRO_GCC_COMPILER_FAMILY)
+#define BRO_ALIGN(N) __attribute__((aligned(N)))
+#else
+#error Can not define BRO_ALIGN. Unknown platform.
+#endif
+
+////////////////////////////////////////////////////////////////////////
+// BRO_DEBUG_BREAK
+////////////////////////////////////////////////////////////////////////
+#if defined(BRO_MSVC_COMPILER_FAMILY)
+#define BRO_DEBUG_BREAK __debugbreak()
+#elif defined(BRO_GCC_COMPILER_FAMILY)
+#define BRO_DEBUG_BREAK __builtin_trap()
+#else
+#error Can not define BRO_DEBUG_BREAK. Unknown platform.
+#endif
+

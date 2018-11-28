@@ -87,7 +87,7 @@ namespace Brofiler
 				return index;
 			}
 
-			Node() : queryIndex(0) { gpuEventStorage.assign(nullptr); }
+			Node() : queryIndex(0) { gpuEventStorage.fill(nullptr); }
 		};
 
 		std::recursive_mutex updateLock;

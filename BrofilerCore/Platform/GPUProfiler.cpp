@@ -51,8 +51,9 @@ namespace Brofiler
 				EventBuffer& gpuBuffer = node->gpuEventStorage[queueIndex]->eventBuffer;
 
 				const std::vector<ThreadEntry*>& threads = Core::Get().GetThreads();
-				for each (ThreadEntry* thread in threads)
+                for (size_t i = 0; i < threads.size(); ++i)
 				{
+                    ThreadEntry* thread = threads[i];
 					thread->storage.gpuStorage.gpuBuffer[i][queueIndex].ForEachChunk([&gpuBuffer](const EventData* events, int count)
 					{
 						gpuBuffer.AddRange(events, count);

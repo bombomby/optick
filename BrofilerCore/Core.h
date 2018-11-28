@@ -67,7 +67,7 @@ struct BroString
 {
 	char data[N];
 	BroString() {}
-	BroString<N>& operator=(const char* text) { strcpy_s(data, text); return *this; }
+	BroString<N>& operator=(const char* text) { strncpy(data, text, N - 1); return *this; }
 	BroString(const char* text) { *this = text; }
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -299,7 +299,7 @@ public:
 	bool isActive;
 
 	// Active Frame (is used as buffer)
-	static bro_thread_local EventStorage* storage;
+	static BRO_THREAD_LOCAL EventStorage* storage;
 
 	// Resolves symbols
 	SymbolEngine* symbolEngine;
@@ -356,7 +356,7 @@ public:
 	bool AttachSummary(const char* key, const char* value);
 
 	// Attaches a screenshot to the current capture
-	bool AttachFile(BroFile::Type type, const char* name, const uint8_t* data, size_t size);
+	bool AttachFile(BroFile::Type type, const char* name, const uint8_t* data, uint32_t size);
 
 	// Initalizes GPU profiler
 	void InitGPUProfiler(GPUProfiler* profiler);

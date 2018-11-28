@@ -1,7 +1,7 @@
 version: 1.0.{build}
 
 build_script:
-- Tools\genie.exe vs2015 genie.lua
+- Tools\Windows\premake5.exe vs2015
 - cd BrofilerApp
 - MsBuild BrofilerApp_vs2017.sln /t:Rebuild /p:Configuration=Release
 - cd ..

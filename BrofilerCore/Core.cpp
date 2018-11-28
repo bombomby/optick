@@ -47,7 +47,7 @@ void SortMemoryPool(MemoryPool<T, SIZE>& memoryPool)
 ThreadDescription::ThreadDescription(const char* threadName, ThreadID id, bool _fromOtherProcess, int32 _maxDepth /*= 1*/, int32 _priority /*= 0*/, uint32 _mask /*= 0*/)
 	: threadID(id), fromOtherProcess(_fromOtherProcess), maxDepth(_maxDepth), priority(_priority), mask(_mask)
 {
-	strcpy_s(name, threadName);
+	strncpy(name, threadName, BRO_ARRAY_SIZE(name) - 1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -539,7 +539,7 @@ bool Core::AttachSummary(const char* key, const char* value)
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Core::AttachFile(BroFile::Type type, const char* name, const uint8_t* data, size_t size)
+bool Core::AttachFile(BroFile::Type type, const char* name, const uint8_t* data, uint32_t size)
 {
 	attachments.push_back(Attachment(type, name));
 	Attachment& attachment = attachments.back();
@@ -576,7 +576,7 @@ const std::vector<ThreadEntry*>& Core::GetThreads() const
 	return threads;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bro_thread_local EventStorage* Core::storage = nullptr;
+BRO_THREAD_LOCAL EventStorage* Core::storage = nullptr;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core Core::notThreadSafeInstance;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -627,7 +627,7 @@ BROFILER_API bool AttachSummary(const char* key, const char* value)
 	return Core::Get().AttachSummary(key, value);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API bool AttachFile(BroFile::Type type, const char* name, const uint8_t* data, size_t size)
+BROFILER_API bool AttachFile(BroFile::Type type, const char* name, const uint8_t* data, uint32_t size)
 {
 	return Core::Get().AttachFile(type, name, data, size);
 }
@@ -665,8 +665,7 @@ BROFILER_API bool RegisterThread(const char* name)
 BROFILER_API bool RegisterThread(const wchar_t* name)
 {
 	char mbName[ThreadDescription::THREAD_NAME_LENGTH];
-	size_t numConverter = 0;
-	wcstombs_s(&numConverter, mbName, name, ThreadDescription::THREAD_NAME_LENGTH);
+	wcstombs(mbName, name, ThreadDescription::THREAD_NAME_LENGTH);
 	return Core::Get().RegisterThread(ThreadDescription(mbName, GetThreadID(), false), &Core::storage) != nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

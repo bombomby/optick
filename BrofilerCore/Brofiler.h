@@ -303,14 +303,14 @@ struct BroFile
 	};
 };
 // Attaches a file to the current capture
-BROFILER_API bool AttachFile(BroFile::Type type, const char* name, const uint8_t* data, size_t size);
+BROFILER_API bool AttachFile(BroFile::Type type, const char* name, const uint8_t* data, uint32_t size);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct EventDescription;
 struct Frame;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct EventTime
 {
-	static const uint64_t INVALID_TIMESTAMP = 0XFFFFFFFFFFFFFFFFui64;
+	static const uint64_t INVALID_TIMESTAMP = 0XFFFFFFFFFFFFFFFFull;
 
 	uint64_t start;
 	uint64_t finish;

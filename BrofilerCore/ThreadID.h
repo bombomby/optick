@@ -4,7 +4,7 @@
 #include "Types.h"
 #include "Common.h"
 
-#if defined(BRO_PLATFORM_POSIX)
+#if defined(BRO_PLATFORM_POSIX) || defined(BRO_PLATFORM_OSX)
 #include <pthread.h>
 #endif
 
@@ -14,14 +14,16 @@ namespace Brofiler
 	static const ThreadID INVALID_THREAD_ID = (ThreadID)-1;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	bro_forceinline ThreadID GetThreadID()
+	BRO_FORCEINLINE ThreadID GetThreadID()
 	{
 #if defined(BRO_PLATFORM_WINDOWS)
 		return GetCurrentThreadId();
-#elif defined(BRO_PLATFORM_POSIX)
+#elif defined(BRO_PLATFORM_POSIX) || defined(BRO_PLATFORM_OSX)
 		return (uint64)pthread_self();
-#elif
+#else
 		#error Platform is not supported!
 #endif
 	}
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 }

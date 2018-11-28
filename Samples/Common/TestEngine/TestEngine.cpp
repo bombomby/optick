@@ -1,10 +1,13 @@
 #include "Brofiler.h"
 #include "TestEngine.h"
 #include "TestImage.h"
+#include <chrono>
 #include <math.h>
 #include <vector>
-#include <MTProfilerEventListener.h>
 
+#if BRO_ENABLE_FIBERS
+#include <MTProfilerEventListener.h>
+#endif //BRO_ENABLE_FIBERS
 
 static const size_t SCHEDULER_WORKERS_COUNT = 0;
 
@@ -12,6 +15,13 @@ static const size_t SCHEDULER_WORKERS_COUNT = 0;
 
 namespace Test
 {
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+inline void SpinSleep(uint32_t milliseconds)
+{
+    auto start = std::chrono::system_clock::now();
+    auto finish = start + std::chrono::milliseconds(milliseconds);
+    while (std::chrono::system_clock::now() < finish) {}
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void OnBrofilerStateChanged(Brofiler::BroState state)
 {
@@ -24,7 +34,7 @@ void OnBrofilerStateChanged(Brofiler::BroState state)
 		Brofiler::AttachFile(Brofiler::BroFile::BRO_IMAGE, Brofiler::TestImage::Name, Brofiler::TestImage::Data, Brofiler::TestImage::Size);
 
 		// Attach text file
-		char* textFile = "You could attach custom text files!\nFor example you could add dxdiag.txt or current game settings.";
+		const char* textFile = "You could attach custom text files!\nFor example you could add dxdiag.txt or current game settings.";
 		Brofiler::AttachFile(Brofiler::BroFile::BRO_TEXT, "Test.txt", (uint8_t*)textFile, strlen(textFile));
 	}
 }
@@ -34,15 +44,14 @@ float randf()
 	return ((float)rand()) / (float)RAND_MAX;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void WorkerThread(void* _engine)
+void WorkerThread(Engine* engine)
 {
-	Engine* engine = (Engine*)_engine;
 	BROFILER_THREAD("Worker")
 	
 	while (engine->IsAlive())
 	{
 		// Emulate "wait for events" message
-		MT::Thread::Sleep(10); 
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		engine->UpdatePhysics();
 		engine->UpdateRecursive();
 	}
@@ -80,6 +89,7 @@ void SlowFunction2()
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#if BRO_ENABLE_FIBERS
 template<unsigned long N>
 struct SimpleTask
 {
@@ -121,12 +131,12 @@ struct RootTask
 
 	void Do(MT::FiberContext& context)
 	{
-		MT::SpinSleepMilliSeconds(1);
+		SpinSleep(1);
 
 		SimpleTask<REPEAT_COUNT> children[CHILDREN_COUNT];
 		context.RunSubtasksAndYield(MT::TaskGroup::Default(), children, CHILDREN_COUNT);
 
-		MT::SpinSleepMilliSeconds(1);
+		SpinSleep(1);
 	}
 };
 
@@ -147,7 +157,7 @@ struct PriorityTask
 		}
 	}
 };
-
+#endif // BRO_ENABLE_FIBERS
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Engine::Update()
 { 
@@ -195,7 +205,7 @@ void Engine::UpdateLogic()
 	BROFILER_TAG("Health", 100);
 	BROFILER_TAG("Score", 0x80000000u);
 	BROFILER_TAG("Height(cm)", 176.3f);
-	BROFILER_TAG("Address", (uint64)&name[index]);
+	BROFILER_TAG("Address", (uint64_t)&name[index]);
 
 	SlowFunction<REPEAT_COUNT>();
 }
@@ -203,15 +213,18 @@ void Engine::UpdateLogic()
 void Engine::UpdateTasks()
 {
 	BROFILER_CATEGORY("UpdateTasks", Brofiler::Color::SkyBlue);
+    
+#if BRO_ENABLE_FIBERS
 	RootTask<16> task;
 	scheduler.RunAsync(MT::TaskGroup::Default(), &task, 1);
 
-	MT::SpinSleepMilliSeconds(1);
+	SpinSleep(1);
 
 	PriorityTask priorityTasks[128];
 	scheduler.RunAsync(MT::TaskGroup::Default(), &priorityTasks[0], MT_ARRAY_SIZE(priorityTasks));
 
 	scheduler.WaitAll(100000);
+#endif //BRO_ENABLE_FIBERS
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdateScene()
@@ -242,7 +255,7 @@ void Engine::UpdatePhysics()
 { 
 	BROFILER_CATEGORY("UpdatePhysics", Brofiler::Color::Wheat);
 	BROFILER_TAG("Position", 123.0f, 456.0f, 789.0f);
-	MT::SpinSleepMilliSeconds(20);
+	SpinSleep(20);
 }
 
 template<int N>
@@ -250,11 +263,11 @@ void RecursiveUpdate(int sleep)
 {
 	const char* scenes[4] = { "Earth", "Mars", "Moon", "Pluto" };
 	char label[64] = { 0 };
-	sprintf_s(label,  "UpdateScene - %s", scenes[rand() % 4]);
+	sprintf(label,  "UpdateScene - %s", scenes[rand() % 4]);
 
 	BROFILER_PUSH_DYNAMIC(label);
 	
-	MT::SpinSleepMicroSeconds(sleep);
+	SpinSleep(sleep);
 	RecursiveUpdate<N - 1>(sleep);
 	RecursiveUpdate<N - 1>(sleep);
 
@@ -279,13 +292,14 @@ void Engine::UpdateRecursive()
 
 #endif
 
+#if BRO_ENABLE_FIBERS
 class Profiler : public MT::IProfilerEventListener
 {
 	Brofiler::EventStorage* fiberEventStorages[MT::MT_MAX_STANDART_FIBERS_COUNT + MT::MT_MAX_EXTENDED_FIBERS_COUNT];
 	uint32 totalFibersCount;
 
-	static mt_thread_local Brofiler::EventStorage* originalThreadStorage;
-	static mt_thread_local Brofiler::EventStorage* activeThreadStorage;
+	static BRO_THREAD_LOCAL Brofiler::EventStorage* originalThreadStorage;
+	static BRO_THREAD_LOCAL Brofiler::EventStorage* activeThreadStorage;
 
 public:
 
@@ -451,33 +465,33 @@ public:
 		MT_UNUSED(type);
 	}
 };
-
+    
+MT::IProfilerEventListener* GetProfiler()
+{
+    static Profiler profiler;
+    return &profiler;
+}
+    
+BRO_THREAD_LOCAL Brofiler::EventStorage* Profiler::originalThreadStorage = nullptr;
+BRO_THREAD_LOCAL Brofiler::EventStorage* Profiler::activeThreadStorage = 0;
+#endif //BRO_ENABLE_FIBERS
 
 #if MT_MSVC_COMPILER_FAMILY
 #pragma warning( pop )
 #endif
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-mt_thread_local Brofiler::EventStorage* Profiler::originalThreadStorage = nullptr;
-mt_thread_local Brofiler::EventStorage* Profiler::activeThreadStorage = 0;
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-MT::IProfilerEventListener* GetProfiler()
-{
-	static Profiler profiler;
-	return &profiler;
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Engine::Engine() : scheduler(SCHEDULER_WORKERS_COUNT, nullptr, GetProfiler()), isAlive(true)
+Engine::Engine() : isAlive(true)
+#if BRO_ENABLE_FIBERS
+    , scheduler(SCHEDULER_WORKERS_COUNT, nullptr, GetProfiler())
+#endif
 {
 	Brofiler::SetStateChangedCallback(OnBrofilerStateChanged);
 
 	for (size_t i = 0; i < WORKER_THREAD_COUNT; ++i)
 	{
-		workers[i].Start(1024*1024, WorkerThread, this);
+        workers[i] = std::thread(WorkerThread, this);
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -486,7 +500,7 @@ Engine::~Engine()
 	isAlive = false;
 
 	for (size_t i = 0; i < workers.size(); ++i)
-		workers[i].Join();
+		workers[i].join();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

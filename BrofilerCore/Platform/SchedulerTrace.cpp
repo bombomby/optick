@@ -54,4 +54,10 @@ bool SchedulerTrace::Stop()
 	return true;
 }
 //////////////////////////////////////////////////////////////////////////
+#if !BRO_ENABLE_TRACING
+SchedulerTrace* SchedulerTrace::Get()
+{
+    return nullptr;
+}
+#endif //!BRO_ENABLE_TRACING
 }

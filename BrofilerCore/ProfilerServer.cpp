@@ -4,10 +4,8 @@
 #include "Socket.h"
 #include "Message.h"
 
-#if BRO_PLATFORM_WINDOWS
+#if BRO_MSVC_COMPILER_FAMILY
 #pragma comment( lib, "ws2_32.lib" )
-#else
-#error Platform is not defined!
 #endif
 
 namespace Brofiler

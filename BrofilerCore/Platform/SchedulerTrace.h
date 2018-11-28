@@ -2,6 +2,11 @@
 #include "Core.h"
 #include <unordered_set>
 
+// Enable\Disable low-level platform-specific tracing (Switch-contexts, Autosampling, etc.)
+#if !defined(BRO_ENABLE_TRACING)
+#define BRO_ENABLE_TRACING (USE_BROFILER && BRO_PLATFORM_WINDOWS /*&& 0*/)
+#endif
+
 namespace Brofiler
 {
 	struct SchedulerTrace

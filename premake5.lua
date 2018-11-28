@@ -13,6 +13,11 @@ newoption {
 	description = "Generates a sample for Vulkan",
 }
 
+newoption {
+    trigger = "Fibers",
+    description = "Enables fibers support",
+}
+
 if not _ACTION then
 	_ACTION="vs2017"
 end
@@ -40,6 +45,10 @@ if _OPTIONS["Vulkan"] then
 	isVulkan = true
 end
 
+if _OPTIONS["Fibers"] then
+    isFibersEnabled = true
+end
+
 if isUWP then
 	premake.vstudio.toolset = "v140"
 	premake.vstudio.storeapp = "10.0"
@@ -57,10 +66,11 @@ if _ACTION == "vs2017" then
 	windowstargetplatformversion "10.0.17134.0"
 end
 	startproject "ConsoleApp"
-
+    cppdialect "C++11"
 	location ( outputFolder )
-	flags { "NoManifest", "ExtraWarnings", "Unicode" }
-	optimization_flags = { "OptimizeSpeed" }
+	flags { "NoManifest" }
+    symbols "On"
+	optimization_flags = {}
 
 if isVisualStudio then
 	debugdir (outFolderRoot)
@@ -101,12 +111,12 @@ end
 configuration "Release"
 	targetdir(outFolderRoot .. "/Native/Release")
 	defines { "NDEBUG", "MT_INSTRUMENTED_BUILD" }
-	flags { "Symbols", optimization_flags }
+	flags { optimization_flags }
+    optimize "Speed"
 
 configuration "Debug"
 	targetdir(outFolderRoot .. "/Native/Debug")
 	defines { "_DEBUG", "_CRTDBG_MAP_ALLOC", "MT_INSTRUMENTED_BUILD" }
-	flags { "Symbols" }
 
 --  give each configuration/platform a unique output directory
 
@@ -214,6 +224,7 @@ project "BrofilerCore"
 	}
 	
 group "Samples"
+if isFibersEnabled then
 	project "TaskScheduler"
 		excludes { "ThirdParty/TaskScheduler/Scheduler/Source/MTDefaultAppInterop.cpp", }
 		kind "StaticLib"
@@ -234,7 +245,8 @@ group "Samples"
 		links {
 			"BrofilerCore",
 		}
-			
+end
+
 if isUWP then
 	-- Genie can't generate proper UWP application
 	-- It's a dummy project to match existing project file
@@ -252,8 +264,7 @@ else
 		uuid "C50A1240-316C-EF4D-BAD9-3500263A260D"
 		files {
 			"Samples/ConsoleApp/**.*", 
-			"Samples/Common/TestEngine/**.*", 
-			"ThirdParty/TaskScheduler/Scheduler/Source/MTDefaultAppInterop.cpp",
+			"Samples/Common/TestEngine/**.*",
 		}
 		
 		includedirs {
@@ -263,9 +274,17 @@ else
 		}
 		
 		links {
-			"BrofilerCore",
-			"TaskScheduler"
+			"BrofilerCore"
 		}
+
+        if isFibersEnabled then
+        files {
+            "ThirdParty/TaskScheduler/Scheduler/Source/MTDefaultAppInterop.cpp",
+        }
+        links {
+            "TaskScheduler"
+        }
+        end
 		
 		vpaths { 
 			["*"] = "Samples/ConsoleApp"

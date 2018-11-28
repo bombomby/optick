@@ -25,20 +25,20 @@
 #include "Platform.h"
 #include "Common.h"
 
-#if defined(BRO_PLATFORM_POSIX)
+#if defined(BRO_GCC_COMPILER_FAMILY)
 #include <sys/time.h>
 #endif
 
 namespace Brofiler
 {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	bro_forceinline int64 GetFrequency()
+	BRO_FORCEINLINE int64 GetFrequency()
 	{
-#if defined(BRO_PLATFORM_WINDOWS)
+#if defined(BRO_MSVC_COMPILER_FAMILY)
 		LARGE_INTEGER frequency;
 		QueryPerformanceFrequency(&frequency);
 		return frequency.QuadPart;
-#elif defined(BRO_PLATFORM_POSIX)
+#elif defined(BRO_GCC_COMPILER_FAMILY)
 		return 1000000;
 #elif
 		#error Platform is not supported!
@@ -46,13 +46,13 @@ namespace Brofiler
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	bro_forceinline int64 GetTimeMicroSeconds()
+	BRO_FORCEINLINE int64 GetTimeMicroSeconds()
 	{
-#if defined(BRO_PLATFORM_WINDOWS)
+#if defined(BRO_MSVC_COMPILER_FAMILY)
 		LARGE_INTEGER largeInteger;
 		QueryPerformanceCounter(&largeInteger);
 		return (largeInteger.QuadPart * int64(1000000)) / GetFrequency();
-#elif defined(BRO_PLATFORM_POSIX)
+#elif defined(BRO_GCC_COMPILER_FAMILY)
 		struct timeval te;
 		gettimeofday(&te, nullptr);
 		return te.tv_sec * 1000000LL + te.tv_usec;
@@ -62,19 +62,19 @@ namespace Brofiler
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	bro_forceinline int64 GetTimeMilliSeconds()
+	BRO_FORCEINLINE int64 GetTimeMilliSeconds()
 	{
 		return GetTimeMicroSeconds() / 1000;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	__inline int64 GetTime()
+	BRO_FORCEINLINE int64 GetTime()
 	{
-#if defined(BRO_PLATFORM_WINDOWS)
+#if defined(BRO_MSVC_COMPILER_FAMILY)
 		LARGE_INTEGER largeInteger;
 		QueryPerformanceCounter(&largeInteger);
 		return largeInteger.QuadPart;
-#elif defined(BRO_PLATFORM_POSIX)
+#elif defined(BRO_GCC_COMPILER_FAMILY)
 		return GetTimeMicroSeconds();
 #else
 		#error Platform is not supported!

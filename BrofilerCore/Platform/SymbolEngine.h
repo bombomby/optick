@@ -2,6 +2,10 @@
 #include "Core.h"
 #include <unordered_map>
 
+#if !defined(BRO_ENABLE_SYMENGINE)
+#define BRO_ENABLE_SYMENGINE (USE_BROFILER && BRO_PLATFORM_WINDOWS /*&& 0*/)
+#endif
+
 namespace Brofiler
 {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
