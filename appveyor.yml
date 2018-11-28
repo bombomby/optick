@@ -1,12 +1,34 @@
-version: 1.0.{build}
+version: 2.0.{build}
 
-build_script:
-- Tools\Windows\premake5.exe vs2015
-- cd BrofilerApp
-- MsBuild BrofilerApp_vs2017.sln /t:Rebuild /p:Configuration=Release
-- cd ..
-- cd Build/vs2015
-- MsBuild Brofiler.sln /t:Rebuild /p:Configuration=Release
-
-test_script:
-- echo Brofiler test
+image:
+  - Visual Studio 2017
+  - Ubuntu
+configuration:
+  - Debug
+  - Release
+matrix:
+  - fast_finish: true
+for:
+  -
+    matrix:
+      only:
+        - image: Visual Studio 2017
+      build_script:
+        - cd BrofilerApp
+        - MsBuild BrofilerApp_vs2017.sln /t:Rebuild /p:Configuration=Release
+  -
+    matrix:
+      only:
+        - image: Visual Studio 2015
+      build_script:
+        - Tools\Windows\premake5.exe vs2015
+        - cd Build/vs2015
+        - MsBuild Brofiler.sln /t:Rebuild /p:Configuration=Release
+  -
+    matrix:
+      only:
+        - image: Ubuntu
+      build_script:
+        - sudo ./Tools/Linux/premake5 gmake
+        - cd Build/gmake
+        - make config=debug_x64
