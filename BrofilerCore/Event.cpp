@@ -126,7 +126,7 @@ void FiberSyncData::AttachToThread(EventStorage* storage, uint64_t threadId)
 	{
 		FiberSyncData& data = storage->fiberSyncBuffer.Add();
 		data.Start();
-		data.finish = LLONG_MAX;
+		data.finish = EventTime::INVALID_TIMESTAMP;
 		data.threadId = threadId;
 	}
 }
