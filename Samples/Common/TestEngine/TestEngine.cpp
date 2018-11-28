@@ -35,7 +35,7 @@ void OnBrofilerStateChanged(Brofiler::BroState state)
 
 		// Attach text file
 		const char* textFile = "You could attach custom text files!\nFor example you could add dxdiag.txt or current game settings.";
-		Brofiler::AttachFile(Brofiler::BroFile::BRO_TEXT, "Test.txt", (uint8_t*)textFile, strlen(textFile));
+		Brofiler::AttachFile(Brofiler::BroFile::BRO_TEXT, "Test.txt", (uint8_t*)textFile, (uint32_t)strlen(textFile));
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -78,9 +78,10 @@ void SlowFunction2()
 { 
 	BROFILE;
 	// Make it static to fool compiler and prevent it from skipping
-	static std::vector<float> values(1024 * 1024);
+	static const size_t NUM_VALUES = 1024 * 1024;
+	static float values[NUM_VALUES] = { 0 };
 
-	for (size_t i = 1; i < values.size(); ++i)
+	for (size_t i = 1; i < NUM_VALUES; ++i)
 	{
 		values[i] += i;
 		values[i] *= i;
@@ -258,6 +259,12 @@ void Engine::UpdatePhysics()
 	SpinSleep(20);
 }
 
+#if MT_MSVC_COMPILER_FAMILY
+#pragma warning( push )
+//warning C4996 : 'sprintf' : This function or variable may be unsafe.Consider using sprintf_s instead.
+#pragma warning( disable : 4996 )
+#endif
+
 template<int N>
 void RecursiveUpdate(int sleep)
 {
@@ -274,13 +281,17 @@ void RecursiveUpdate(int sleep)
 	BROFILER_POP();
 }
 
+#if MT_MSVC_COMPILER_FAMILY
+#pragma warning( pop )
+#endif
+
 template<>
 void RecursiveUpdate<0>(int) {}
 
 void Engine::UpdateRecursive()
 {
 	BROFILE;
-	RecursiveUpdate<4>(500);
+	RecursiveUpdate<4>(1);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -298,8 +309,8 @@ class Profiler : public MT::IProfilerEventListener
 	Brofiler::EventStorage* fiberEventStorages[MT::MT_MAX_STANDART_FIBERS_COUNT + MT::MT_MAX_EXTENDED_FIBERS_COUNT];
 	uint32 totalFibersCount;
 
-	static BRO_THREAD_LOCAL Brofiler::EventStorage* originalThreadStorage;
-	static BRO_THREAD_LOCAL Brofiler::EventStorage* activeThreadStorage;
+	static mt_thread_local Brofiler::EventStorage* originalThreadStorage;
+	static mt_thread_local Brofiler::EventStorage* activeThreadStorage;
 
 public:
 
@@ -472,8 +483,8 @@ MT::IProfilerEventListener* GetProfiler()
     return &profiler;
 }
     
-BRO_THREAD_LOCAL Brofiler::EventStorage* Profiler::originalThreadStorage = nullptr;
-BRO_THREAD_LOCAL Brofiler::EventStorage* Profiler::activeThreadStorage = 0;
+mt_thread_local Brofiler::EventStorage* Profiler::originalThreadStorage = nullptr;
+mt_thread_local Brofiler::EventStorage* Profiler::activeThreadStorage = 0;
 #endif //BRO_ENABLE_FIBERS
 
 #if MT_MSVC_COMPILER_FAMILY

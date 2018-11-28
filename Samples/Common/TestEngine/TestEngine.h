@@ -10,7 +10,7 @@
 #define BRO_ENABLE_FIBERS (0)
 #endif
 
-#if BRO_ENABLE_FILBERS
+#if BRO_ENABLE_FIBERS
 #include <MTScheduler.h>
 #endif //BRO_ENABLE_FILBERS
 
@@ -19,7 +19,7 @@ namespace Test
 	// Test engine: emulates some hard CPU work.
 	class Engine
 	{
-#if BRO_ENABLE_FILBERS
+#if BRO_ENABLE_FIBERS
 		MT::TaskScheduler scheduler;
 #endif //BRO_ENABLE_FILBERS
         

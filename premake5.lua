@@ -63,7 +63,8 @@ end
 solution "Brofiler"
 	language "C++"
 if _ACTION == "vs2017" then
-	windowstargetplatformversion "10.0.17134.0"
+	-- windowstargetplatformversion "10.0.17134.0"
+	systemversion "latest"
 end
 	startproject "ConsoleApp"
     cppdialect "C++11"
@@ -138,6 +139,7 @@ os.mkdir("./" .. outFolderRoot)
 project "BrofilerCore"
 	uuid "830934D9-6F6C-C37D-18F2-FB3304348F00"
 	defines { "_CRT_SECURE_NO_WARNINGS", "BROFILER_LIB=1" }
+	systemversion "10.0.15063.0"
 
 -- if _OPTIONS['platform'] ~= "orbis" then
 -- 	kind "SharedLib"
@@ -277,8 +279,15 @@ else
 			"BrofilerCore"
 		}
 
+		vpaths { 
+			["*"] = "Samples/ConsoleApp"
+		}
+
         if isFibersEnabled then
-        files {
+        defines {
+			"BRO_ENABLE_FIBERS=1"
+		}
+		files {
             "ThirdParty/TaskScheduler/Scheduler/Source/MTDefaultAppInterop.cpp",
         }
         links {
@@ -286,14 +295,12 @@ else
         }
         end
 		
-		vpaths { 
-			["*"] = "Samples/ConsoleApp"
-		}
 end
 
 if isDX12 then
 	project "WindowsD3D12"
-		flags {"NoPCH", "WinMain"}
+		entrypoint "WinMainCRTStartup"
+		flags {"NoPCH"}
 		kind "WindowedApp"
 		uuid "D055326C-F1F3-4695-B7E2-A683077BE4DF"
 
@@ -309,7 +316,8 @@ if isDX12 then
 		}
 		
 		files {
-			"Samples/WindowsD3D12/**.*", 
+			"Samples/WindowsD3D12/**.h", 
+			"Samples/WindowsD3D12/**.cpp", 
 		}
 		
 		includedirs {
@@ -327,7 +335,8 @@ end
 
 if isVulkan then
 	project "WindowsVulkan"
-		flags {"NoPCH", "WinMain"}
+		entrypoint "WinMainCRTStartup"
+		flags {"NoPCH"}
 		kind "WindowedApp"
 		uuid "07A250C4-4432-45FE-9E63-BB7F71B7C14C"
 

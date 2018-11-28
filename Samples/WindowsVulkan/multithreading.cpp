@@ -254,7 +254,7 @@ public:
 
 		VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &commandBufferBeginInfo));
 		{
-			BROFILER_GPU_CONTEXT(cmdBuffer, Brofiler::GPU_QUEUE_COMPUTE);
+			BROFILER_GPU_CONTEXT(cmdBuffer);
 			BROFILER_GPU_EVENT("DrawUFO");
 			VkViewport viewport = vks::initializers::viewport((float)width, (float)height, 0.0f, 1.0f);
 			vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);

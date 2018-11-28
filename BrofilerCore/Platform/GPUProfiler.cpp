@@ -42,19 +42,19 @@ namespace Brofiler
 
 	void GPUProfiler::Dump(uint32 /*mode*/)
 	{
-		for (size_t i = 0; i < nodes.size(); ++i)
+		for (size_t nodeIndex = 0; nodeIndex < nodes.size(); ++nodeIndex)
 		{
-			Node* node = nodes[i];
+			Node* node = nodes[nodeIndex];
 
 			for (int queueIndex = 0; queueIndex < GPU_QUEUE_COUNT; ++queueIndex)
 			{
 				EventBuffer& gpuBuffer = node->gpuEventStorage[queueIndex]->eventBuffer;
 
 				const std::vector<ThreadEntry*>& threads = Core::Get().GetThreads();
-                for (size_t i = 0; i < threads.size(); ++i)
+                for (size_t threadIndex = 0; threadIndex < threads.size(); ++threadIndex)
 				{
-                    ThreadEntry* thread = threads[i];
-					thread->storage.gpuStorage.gpuBuffer[i][queueIndex].ForEachChunk([&gpuBuffer](const EventData* events, int count)
+                    ThreadEntry* thread = threads[threadIndex];
+					thread->storage.gpuStorage.gpuBuffer[nodeIndex][queueIndex].ForEachChunk([&gpuBuffer](const EventData* events, int count)
 					{
 						gpuBuffer.AddRange(events, count);
 					});
