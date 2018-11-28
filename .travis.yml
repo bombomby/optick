@@ -14,4 +14,4 @@ compiler:
 script:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then clang --version && g++ --version && ./Tools/Linux/premake5 gmake && pushd Build/gmake/ && make config=release_x64 && popd; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then clang --version && g++ --version && ./Tools/MacOS/premake5 gmake && pushd Build/gmake/ && make config=debug_x64 && popd; fi
-  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then Tools\Windows\premake5.exe vs2017 && pushd Build\vs2017\ && MsBuild Brofiler.sln /t:Rebuild /p:Configuration=Debug && popd; fi
+  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then .\Tools\Windows\premake5.exe vs2017 && pushd Build\vs2017\ && MsBuild Brofiler.sln /t:Rebuild /p:Configuration=Debug && popd; fi
