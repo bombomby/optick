@@ -1,8 +1,15 @@
 version: 2.0.{build}
 
-﻿configuration:
+platform:
+  - x86
+  - x64
+
+configuration:
   - Debug
   - Release
+
+matrix:
+  fast_finish: true
 
 build_script:
   - Tools\Windows\premake5.exe vs2015
