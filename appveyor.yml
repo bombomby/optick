@@ -1,8 +1,12 @@
 version: 2.0.{build}
 
+﻿configuration:
+- Debug
+- Release
+
 build_script:
-- genie.exe vs2015 genie.lua
+- Tools\Windows\premake5.exe vs2015
 - cd Build/vs2015
-- MsBuild Brofiler_vs2015.sln /t:Rebuild /p:Configuration=Release
+- MsBuild Brofiler_vs2015.sln /t:Rebuild /p:Configuration=%CONFIGURATION%
 - cd ../../Brofiler
-- MsBuild Brofiler.sln /t:Rebuild /p:Configuration=Release
+- MsBuild Brofiler.sln /t:Rebuild /p:Configuration=%CONFIGURATION%
