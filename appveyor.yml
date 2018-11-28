@@ -1,12 +1,12 @@
 version: 2.0.{build}
 
 ﻿configuration:
-- Debug
-- Release
+  - Debug
+  - Release
 
 build_script:
-- Tools\Windows\premake5.exe vs2015
-- cd Build/vs2015
-- MsBuild Brofiler_vs2015.sln /t:Rebuild /p:Configuration=%CONFIGURATION%
-- cd ../../Brofiler
-- MsBuild Brofiler.sln /t:Rebuild /p:Configuration=%CONFIGURATION%
+  - Tools\Windows\premake5.exe vs2015
+  - cd Build/vs2015
+  - MsBuild Brofiler_vs2015.sln /t:Rebuild /p:Configuration=%CONFIGURATION%
+  - cd ../../Brofiler
+  - MsBuild Brofiler.sln /t:Rebuild /p:Configuration=%CONFIGURATION%
