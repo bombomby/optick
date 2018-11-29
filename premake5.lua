@@ -63,7 +63,6 @@ end
 solution "Brofiler"
 	language "C++"
 if _ACTION == "vs2017" then
-	-- windowstargetplatformversion "10.0.17134.0"
 	systemversion "latest"
 end
 	startproject "ConsoleApp"
@@ -139,7 +138,9 @@ os.mkdir("./" .. outFolderRoot)
 project "BrofilerCore"
 	uuid "830934D9-6F6C-C37D-18F2-FB3304348F00"
 	defines { "_CRT_SECURE_NO_WARNINGS", "BROFILER_LIB=1" }
+if _ACTION == "vs2017" then
 	systemversion "10.0.15063.0"
+end
 
 -- if _OPTIONS['platform'] ~= "orbis" then
 -- 	kind "SharedLib"
