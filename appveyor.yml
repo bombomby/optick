@@ -1,7 +1,6 @@
 version: 2.0.{build}
 
 platform:
-  - x86
   - x64
 
 configuration:
@@ -14,6 +13,6 @@ matrix:
 build_script:
   - Tools\Windows\premake5.exe vs2015
   - cd Build/vs2015
-  - MsBuild Brofiler_vs2015.sln /t:Rebuild /p:Configuration=%CONFIGURATION%
-  - cd ../../Brofiler
   - MsBuild Brofiler.sln /t:Rebuild /p:Configuration=%CONFIGURATION%
+  - cd ../../Brofiler
+  - MsBuild BrofilerApp_vs2015.sln /t:Rebuild /p:Configuration=%CONFIGURATION%
