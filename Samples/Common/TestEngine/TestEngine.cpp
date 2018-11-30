@@ -4,6 +4,7 @@
 #include <chrono>
 #include <math.h>
 #include <vector>
+#include <cstring>
 
 #if BRO_ENABLE_FIBERS
 #include <MTProfilerEventListener.h>
