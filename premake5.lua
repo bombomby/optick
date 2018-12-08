@@ -118,6 +118,9 @@ configuration "Debug"
 	targetdir(outFolderRoot .. "/Native/Debug")
 	defines { "_DEBUG", "_CRTDBG_MAP_ALLOC", "MT_INSTRUMENTED_BUILD" }
 
+configuration "linux"
+    links { "pthread" }
+
 --  give each configuration/platform a unique output directory
 
 for _, config in ipairs(config_list) do
