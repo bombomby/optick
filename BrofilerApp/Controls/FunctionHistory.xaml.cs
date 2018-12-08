@@ -34,7 +34,6 @@ namespace Profiler.Controls
 			if (group != Group)
 			{
 				Group = group;
-				FunctionComboBox.DataContext = group != null ? group.Board.Board.OrderBy(d => d.Name) : null;
 			}
 		}
 
@@ -78,19 +77,6 @@ namespace Profiler.Controls
 				};
 		}
 
-		private void FunctionComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-		{
-			EventDescription desc = FunctionComboBox.SelectedItem as EventDescription;
-			if (desc != null)
-			{
-				Task.Run(() => Load(desc));
-			}				
-			else
-			{
-				ClearCharts();
-			}
-		}
-
 		public void LoadAsync(Data.Frame frame)
 		{
 			if (frame is EventFrame)
@@ -114,52 +100,39 @@ namespace Profiler.Controls
 		private void ClearCharts()
 		{
 			FrameChart.Series = null;
-			FunctionChart.Series = null;
-
-			SamplingDataTab.DataContext = null;
-			SamplingDataTab.Header = 0;
-
-			SysCallDataTab.DataContext = null;
-			SysCallDataTab.Header = 0;
+			//FunctionChart.Series = null;
 		}
 
-		void Load(EventDescription desc)
+		class FunctionSummary
+		{
+			public EventDescription Description { get; set; }
+			public double Total { get; set; }
+			public double Wait { get; set; }
+			public double Work { get { return Total - Wait; } }
+		}
+
+		public void Load(EventDescription desc)
 		{
 			if (desc != null)
 			{
-				// Sampling Data
-				Application.Current.Dispatcher.BeginInvoke(new Action(() => FunctionComboBox.SelectedItem = desc));
-
 				// Frame Chart
 				FunctionStats frameStats = new FunctionStats(Group, desc);
 				frameStats.Load(FunctionStats.Origin.MainThread);
-				Application.Current.Dispatcher.BeginInvoke(new Action(() => FrameChart.Series = BuildAreaChart(frameStats)));
+
+				Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+				{
+					FunctionStatsSummary.DataContext = new FunctionSummary() {
+						Description = desc,
+						Total = frameStats.Samples.Sum(s => s.Duration) / frameStats.Samples.Count,
+						Wait = frameStats.Samples.Sum(s => s.Wait) / frameStats.Samples.Count
+					};
+					FrameChart.Series = BuildAreaChart(frameStats);
+				}));
 
 				// Function Chart
-				FunctionStats functionStats = new FunctionStats(Group, desc);
-				functionStats.Load(FunctionStats.Origin.IndividualCalls);
-				Application.Current.Dispatcher.BeginInvoke(new Action(() => FunctionChart.Series = BuildAreaChart(functionStats)));
-
-				// Sampling Data
-				List<Callstack> callstacks = Group.GetCallstacks(desc, CallStackReason.AutoSample | CallStackReason.SysCall);
-
-				List<Callstack> autoSamplingCallstacks = callstacks.FindAll(c => c.Reason == CallStackReason.AutoSample);
-				SamplingFrame autoSampleFrame = new SamplingFrame(autoSamplingCallstacks, Group);
-				IEnumerable<SamplingBoardItem> autoSamplingItems = autoSampleFrame.Board.FindAll(item => item.Self > 0).OrderByDescending(item => item.SelfPercent);
-				Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-				{
-					SamplingDataTab.Header = autoSamplingCallstacks.Count;
-					SamplingDataTab.DataContext = autoSamplingItems;
-				}));
-
-				List<Callstack> sysCallCallstacks = callstacks.FindAll(c => c.Reason == CallStackReason.SysCall);
-				SamplingFrame sysCallFrame = new SamplingFrame(sysCallCallstacks, Group);
-				IEnumerable<SamplingBoardItem> sysCallItems = sysCallFrame.Board.FindAll(item => item.Self > 0).OrderByDescending(item => item.SelfPercent);
-				Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-				{
-					SysCallDataTab.Header = sysCallCallstacks.Count;
-					SysCallDataTab.DataContext = sysCallItems;
-				}));
+				//FunctionStats functionStats = new FunctionStats(Group, desc);
+				//functionStats.Load(FunctionStats.Origin.IndividualCalls);
+				//Application.Current.Dispatcher.BeginInvoke(new Action(() => FunctionChart.Series = BuildAreaChart(functionStats)));
 			}
 		}
 	}

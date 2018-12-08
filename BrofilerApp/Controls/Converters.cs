@@ -18,7 +18,20 @@ namespace Profiler
 		}
 	}
 
-	public class PercentageConverter : IValueConverter
+	public class ThreadViewHeightConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			return System.Convert.ToDouble(value) - System.Convert.ToDouble(parameter);
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			throw new NotImplementedException();
+		}
+	}
+
+	public class MultiplyConverter : IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
@@ -31,7 +44,20 @@ namespace Profiler
 		}
 	}
 
-	public class ThreadViewHeightConverter : IValueConverter
+	public class SumConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			return System.Convert.ToDouble(value) + System.Convert.ToDouble(parameter);
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			throw new NotImplementedException();
+		}
+	}
+
+	public class SubtractConverter : IValueConverter
 	{
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{

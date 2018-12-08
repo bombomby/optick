@@ -10,5 +10,5 @@ compiler:
   - clang
 
 script:
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then clang --version && g++ --version && ./Tools/Linux/premake5 gmake && pushd Build/gmake/ && make config=release_x64 && popd; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then clang --version && g++ --version && ./Tools/MacOS/premake5 gmake && pushd Build/gmake/ && make config=debug_x64 && popd; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then ./Tools/Linux/premake5 gmake && pushd Build/gmake/ && make config=release_x64 && popd; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then ./Tools/MacOS/premake5 gmake && pushd Build/gmake/ && make config=debug_x64 && popd; fi

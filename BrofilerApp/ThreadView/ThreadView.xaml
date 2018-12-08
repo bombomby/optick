@@ -5,11 +5,11 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:Profiler="clr-namespace:Profiler"
              xmlns:Profiler_Data="clr-namespace:Profiler.Data"
+             xmlns:Controls="clr-namespace:Profiler.Controls"
              xmlns:DX="clr-namespace:Profiler.DirectX"
              xmlns:MahApps="http://metro.mahapps.com/winfx/xaml/controls"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300" Height="Auto">
-
     <UserControl.Resources>
         <Style x:Key="LabelUnderscoreStyle" BasedOn="{StaticResource {x:Type Label}}" TargetType="Label">
         <Setter Property="Template">
@@ -53,6 +53,7 @@
                     </StackPanel>
                 </ToggleButton.Content>
             </ToggleButton>
+            <Controls:FunctionSearch x:Name="FunctionSearchControl" Margin="1,0" Width="230" />
             <Popup x:Name="CallstackFilterPopup" Placement="Bottom" IsOpen="{Binding IsChecked, ElementName=CallstackFilterDrowpdown}" PlacementTarget="{Binding ElementName=ShowCallstacksButton}" StaysOpen="False" >
                 <Border Background="{StaticResource BroContentBackground}" BorderBrush="{StaticResource BroBorder}" BorderThickness="1" Width="{Binding ActualWidth, ElementName=ShowCallstacksButton}">
                     <ItemsControl ItemsSource="{Binding}">

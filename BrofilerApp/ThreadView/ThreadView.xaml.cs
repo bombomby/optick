@@ -71,6 +71,8 @@ namespace Profiler
 					ThreadToolsPanel.Visibility = visibility;
 
 					surface.Height = value == null ? 0.0 : ThreadList.Height;
+
+					FunctionSearchControl.DataContext = group;
 				}
 			}
 

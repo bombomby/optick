@@ -9,7 +9,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="200" d:DesignWidth="900">
     <UserControl.Resources>
-        <Profiler:PercentageConverter x:Key="MultiplyConverter"/>
+        <Profiler:MultiplyConverter x:Key="MultiplyConverter"/>
         <sys:Double x:Key="ScreenshotAspectRatio">1.777777777</sys:Double>
     </UserControl.Resources>
     <Grid x:Name="RootGrid">

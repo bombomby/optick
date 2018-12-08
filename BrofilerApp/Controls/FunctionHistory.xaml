@@ -8,56 +8,32 @@
              xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
              xmlns:system="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d" 
-             d:DesignHeight="900" d:DesignWidth="300">
-    <Grid Background="{StaticResource BroContentBackground}">
+             d:DesignHeight="400" d:DesignWidth="600">
+    <Grid Background="{StaticResource BroBackground}">
         <Grid.RowDefinitions>
+            <RowDefinition Height="23" />
+            <RowDefinition Height="200" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="200" />
-            <RowDefinition Height="200" />
             <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
-        <Grid>
+        <Grid x:Name="FunctionStatsSummary" VerticalAlignment="Center" TextBlock.FontWeight="Bold">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition />
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <Border Height="{StaticResource DefaultButtonSize}" Width="{StaticResource DefaultButtonSize}">
-                <ContentControl Style="{StaticResource appbar_magnify}" Margin="-10" />
-            </Border>
-            <ComboBox x:Name="FunctionComboBox"
-                  Grid.Column="1"
-                  ItemsSource="{Binding}"
-                  MahApps:TextBoxHelper.UseFloatingWatermark="False"
-                  MahApps:TextBoxHelper.Watermark="Type Function Name ... (Ctrl+F)"
-                  MahApps:TextBoxHelper.ClearTextButton="True"
-                  Background="{StaticResource BroContentBackground}"
-                  IsEditable="True"
-                  MaxDropDownHeight="125"
-                  SelectionChanged="FunctionComboBox_SelectionChanged"
-                  MinHeight="{StaticResource DefaultButtonSize}">
-                <ComboBox.Style>
-                    <Style TargetType="{x:Type ComboBox}" BasedOn="{StaticResource VirtualisedMetroComboBox}">
-                        <Style.Triggers>
-                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                                <Setter Property="IsDropDownOpen" Value="true" />
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </ComboBox.Style>
-                <ComboBox.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal">
-                            <Rectangle Width="16" Height="16" VerticalAlignment="Center" StrokeThickness="2" Stroke="Black" Fill="{Binding ForceBrush}" Margin="2,0,6,0" />
-                            <TextBlock Text="{Binding Name}" />
-                            <TextBlock Text="{Binding Path}" Margin="6,0,0,0" Opacity="0.5" />
-                        </StackPanel>
-                    </DataTemplate>
-                </ComboBox.ItemTemplate>
-            </ComboBox>
+            <Rectangle Grid.Column="0" Width="16" Height="16" VerticalAlignment="Center" StrokeThickness="2" Stroke="Black" Fill="{Binding Description.ForceBrush}" Margin="2,0,6,0" />
+            <TextBlock Grid.Column="1" Text="{Binding Description.Name}" />
+            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                <TextBlock Text="{Binding Total, StringFormat={}{0:0.###}}" Margin="6,0,0,0" />
+                <TextBlock Text="{Binding Work, StringFormat={}{0:0.###}}" Margin="6,0,0,0" Foreground="LimeGreen" />
+                <TextBlock Text="{Binding Wait, StringFormat={}{0:0.###}}" Margin="6,0,0,0" Foreground="Tomato" />
+            </StackPanel>
         </Grid>
-        <lvc:CartesianChart Grid.Row="1" x:Name="FrameChart" DisableAnimations="True" Hoverable="False" DataTooltip="{x:Null}" Background="{StaticResource BroContentBackground}" Margin="0,2">
+        <lvc:CartesianChart Grid.Row="1" x:Name="FrameChart" DisableAnimations="True" Hoverable="True" DataTooltip="{x:Null}" Background="{StaticResource BroContentBackground}" Margin="0,2" MinHeight="100">
             <lvc:CartesianChart.AxisX>
-                <lvc:Axis>
+                <lvc:Axis ShowLabels="False">
                     <lvc:Axis.Separator>
                         <lvc:Separator StrokeThickness="0.33"  />
                     </lvc:Axis.Separator>
@@ -71,7 +47,7 @@
                 </lvc:Axis>
             </lvc:CartesianChart.AxisY>
         </lvc:CartesianChart>
-        <lvc:CartesianChart Grid.Row="2" x:Name="FunctionChart" DisableAnimations="True" Hoverable="False" DataTooltip="{x:Null}" Background="{StaticResource BroContentBackground}" Margin="0">
+        <!--<lvc:CartesianChart Grid.Row="2" x:Name="FunctionChart" DisableAnimations="True" Hoverable="False" DataTooltip="{x:Null}" Background="{StaticResource BroContentBackground}" Margin="0" MinHeight="100">
             <lvc:CartesianChart.AxisX>
                 <lvc:Axis>
                     <lvc:Axis.Separator>
@@ -86,24 +62,6 @@
                     </lvc:Axis.Separator>
                 </lvc:Axis>
             </lvc:CartesianChart.AxisY>
-        </lvc:CartesianChart>
-        <TabControl Grid.Row="3" TabStripPlacement="Top" MahApps:TabControlHelper.Underlined="TabPanel" MahApps:TabControlHelper.Transition="Default" Background="{StaticResource BroContentBackground}">
-            <TabItem Header="" HeaderStringFormat="{}Sampled Callstacks ({0})" x:Name="SamplingDataTab">
-                <DataGrid x:Name="SamplingDataGrid" CanUserAddRows="False" GridLinesVisibility="None" IsReadOnly="True" BorderThickness="0" AutoGenerateColumns="False" ItemsSource="{Binding}" HeadersVisibility="None" ClipboardCopyMode="ExcludeHeader">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Function Name" Binding="{Binding Function}" Width="1*" />
-                        <DataGridTextColumn Header="%" Binding="{Binding SelfPercent, StringFormat={}{0:0.#}%}" />
-                    </DataGrid.Columns>
-                </DataGrid>
-            </TabItem>
-            <TabItem Header="" HeaderStringFormat="{}System Calls ({0})" x:Name="SysCallDataTab">
-                <DataGrid x:Name="SysCallDataGrid" CanUserAddRows="False" GridLinesVisibility="None" IsReadOnly="True" BorderThickness="0" AutoGenerateColumns="False" ItemsSource="{Binding}" HeadersVisibility="None" ClipboardCopyMode="ExcludeHeader">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="Function Name" Binding="{Binding Function}" Width="1*" />
-                        <DataGridTextColumn Header="%" Binding="{Binding SelfPercent, StringFormat={}{0:0.#}%}" />
-                    </DataGrid.Columns>
-                </DataGrid>
-            </TabItem>
-        </TabControl>
+        </lvc:CartesianChart>-->
     </Grid>
 </UserControl>

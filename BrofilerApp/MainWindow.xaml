@@ -36,30 +36,11 @@
         </MahApps:WindowCommands>
     </MahApps:MetroWindow.RightWindowCommands>
     <MahApps:MetroWindow.Resources>
-        <DataTemplate x:Key="HamburgerMenuItem" DataType="{x:Type Controls:HamburgerMenuContentItem}">
-            <DockPanel Height="48" LastChildFill="True">
-                <Grid x:Name="IconPart"
-                          Width="48"
-                          DockPanel.Dock="Left">
-                    <ContentControl Content="{Binding Icon}" 
-                                        HorizontalAlignment="Center" 
-                                        VerticalAlignment="Center" />
-                </Grid>
-                <TextBlock x:Name="TextPart"
-                               VerticalAlignment="Center"
-                               FontSize="16"
-                               Text="{Binding Label}" />
-            </DockPanel>
-            <DataTemplate.Triggers>
-                <DataTrigger Binding="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type MahApps:HamburgerMenu}}, Path=PanePlacement}" Value="Right">
-                    <Setter TargetName="IconPart" Property="DockPanel.Dock" Value="Right" />
-                    <Setter TargetName="TextPart" Property="Margin" Value="8 0 0 0" />
-                </DataTrigger>
-            </DataTemplate.Triggers>
-        </DataTemplate>
     </MahApps:MetroWindow.Resources>
 
-    <MahApps:HamburgerMenu x:Name="HamburgerMenuControl" Foreground="White" PaneBackground="#FF444444" IsPaneOpen="False" DisplayMode="CompactInline" OptionsItemTemplate="{StaticResource HamburgerMenuItem}" ItemTemplate="{StaticResource HamburgerMenuItem}" ItemClick="HamburgerMenuControl_ItemClick">
+    <Controls:FrameCapture x:Name="FrameCaptureControl" />
+    
+    <!--<MahApps:HamburgerMenu x:Name="HamburgerMenuControl" Foreground="White" PaneBackground="#FF444444" IsPaneOpen="False" DisplayMode="CompactInline" OptionsItemTemplate="{StaticResource HamburgerMenuItem}" ItemTemplate="{StaticResource HamburgerMenuItem}" ItemClick="HamburgerMenuControl_ItemClick">
         <MahApps:HamburgerMenu.ItemsSource>
             <MahApps:HamburgerMenuItemCollection>
                 <Controls:HamburgerMenuContentItem Label="Home" Tag="HomeMenu" x:Name="HomeMenuItem">
@@ -107,5 +88,5 @@
                 </Grid>
             </DataTemplate>
         </MahApps:HamburgerMenu.ContentTemplate>
-    </MahApps:HamburgerMenu>
+    </MahApps:HamburgerMenu>-->
 </MahApps:MetroWindow>

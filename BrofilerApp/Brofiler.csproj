@@ -206,6 +206,9 @@
     <Compile Include="Controls\FunctionHistory.xaml.cs">
       <DependentUpon>FunctionHistory.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\FunctionSearch.xaml.cs">
+      <DependentUpon>FunctionSearch.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\HamburgerMenuContentItem.cs" />
     <Compile Include="Controls\PlatformSelector.xaml.cs">
       <DependentUpon>PlatformSelector.xaml</DependentUpon>
@@ -298,6 +301,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\FunctionHistory.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\FunctionSearch.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -285,6 +285,18 @@ namespace Profiler.Data
 				tags.Add(toAdd[index++]);
 			}
 		}
+
+		public EventNode Find(Entry entry)
+		{
+			if (Entry == entry)
+				return this;
+
+			foreach (EventNode node in Children)
+				if (node.Entry.Contains(entry))
+					return node.Find(entry);
+
+			return null;
+		}
 	}
 
 	public class EventTree : EventNode
