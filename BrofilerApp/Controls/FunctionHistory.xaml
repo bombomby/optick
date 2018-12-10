@@ -31,7 +31,7 @@
                 <TextBlock Text="{Binding Wait, StringFormat={}{0:0.###}}" Margin="6,0,0,0" Foreground="Tomato" />
             </StackPanel>
         </Grid>
-        <lvc:CartesianChart Grid.Row="1" x:Name="FrameChart" DisableAnimations="True" Hoverable="True" DataTooltip="{x:Null}" Background="{StaticResource BroContentBackground}" Margin="0,2" MinHeight="100">
+        <lvc:CartesianChart Grid.Row="1" x:Name="FrameChart" DisableAnimations="True" Hoverable="True" Background="{StaticResource BroContentBackground}" Margin="2,2,0,0" MinHeight="100" DataClick="FrameChart_DataClick">
             <lvc:CartesianChart.AxisX>
                 <lvc:Axis ShowLabels="False">
                     <lvc:Axis.Separator>

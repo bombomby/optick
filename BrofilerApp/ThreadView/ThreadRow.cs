@@ -43,7 +43,13 @@ namespace Profiler
 			return Right >= other.Left && other.Right >= Left;
 		}
 
+		public bool Contains(Interval other)
+		{
+			return Left <= other.Left && other.Right <= Right;
+		}
+
 		public static Interval Unit = new Interval(0.0, 1.0);
+		public static Interval Zero = new Interval(0.0, 0.0);
 	}
 
 	public class ThreadScroll
@@ -52,7 +58,7 @@ namespace Profiler
 		public double Width { get; set; }
 		public double Height { get; set; }
 
-		public Interval ViewUnit = Interval.Unit;
+		public Interval ViewUnit = Interval.Zero;
 
 		public Durable ViewTime { get { return UnitToTime(ViewUnit); } }
 

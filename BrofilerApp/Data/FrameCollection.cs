@@ -258,6 +258,7 @@ namespace Profiler.Data
 					{
 						FrameHeader header = new FrameHeader(threadIndex, fiberIndex, border);
 						EventFrame block = new EventFrame(header, entries, this);
+						entries.ForEach(e => e.Frame = block);
 						Threads[threadIndex].AddWithMerge(block);
 					}
 

@@ -36,6 +36,7 @@
             <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
         <StackPanel Margin="0,-25,2,0" HorizontalAlignment="Right" x:Name="ThreadToolsPanel" Grid.Column="1" VerticalAlignment="Top" Orientation="Horizontal">
+            <Controls:FunctionSearch x:Name="FunctionSearchControl" Margin="1,0" Width="230" />
             <ToggleButton x:Name="ShowSyncWorkButton" ToolTip="Show Work" Height="{StaticResource DefaultButtonSize}" Margin="0,0,1,0" Click="ShowSyncWorkButton_Click">
                 <TextBlock Text="SHOW CPU CORES" Margin="0,-3,0,0" Padding="0" />
             </ToggleButton>
@@ -53,7 +54,6 @@
                     </StackPanel>
                 </ToggleButton.Content>
             </ToggleButton>
-            <Controls:FunctionSearch x:Name="FunctionSearchControl" Margin="1,0" Width="230" />
             <Popup x:Name="CallstackFilterPopup" Placement="Bottom" IsOpen="{Binding IsChecked, ElementName=CallstackFilterDrowpdown}" PlacementTarget="{Binding ElementName=ShowCallstacksButton}" StaysOpen="False" >
                 <Border Background="{StaticResource BroContentBackground}" BorderBrush="{StaticResource BroBorder}" BorderThickness="1" Width="{Binding ActualWidth, ElementName=ShowCallstacksButton}">
                     <ItemsControl ItemsSource="{Binding}">
@@ -73,7 +73,7 @@
                 </Border>
             </Popup>
         </StackPanel>
-        <ScrollViewer Grid.Row="0" Grid.Column="1" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Row="0" Grid.Column="1" VerticalScrollBarVisibility="Auto" x:Name="ScrollArea">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />

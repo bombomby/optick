@@ -242,7 +242,7 @@ namespace Profiler
 			}
 		}
 
-		const double DefaultFrameZoom = 1.05;
+		const double DefaultFrameZoom = 1.10;
 
 		public void FocusOn(EventFrame frame, EventNode node)
 		{
@@ -251,12 +251,22 @@ namespace Profiler
 			SelectionList.Add(new Selection() { Frame = frame, Node = node });
 
 			Interval interval = scroll.TimeToUnit(node != null ? (IDurable)node.Entry : (IDurable)frame);
-			if (!scroll.ViewUnit.Intersect(interval))
+			if (!scroll.ViewUnit.Contains(interval))
 			{
 				scroll.ViewUnit.Width = interval.Width * DefaultFrameZoom;
 				scroll.ViewUnit.Left = interval.Left - (scroll.ViewUnit.Width - interval.Width) * 0.5;
 				scroll.ViewUnit.Normalize();
 				UpdateBar();
+			}
+
+			if (frame != null)
+			{
+				ThreadRow row = id2row[frame.Header.ThreadIndex];
+				if (row != null )
+				{
+					if (row.Offset < ScrollArea.VerticalOffset || row.Offset > (ScrollArea.VerticalOffset + ScrollArea.ActualHeight))
+						ScrollArea.ScrollToVerticalOffset(row.Offset);
+				}
 			}
 
 			UpdateSurface();

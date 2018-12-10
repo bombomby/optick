@@ -47,6 +47,7 @@ namespace Profiler.Controls
 				itemsView.Filter = null;
 
 			FunctionSearchDataGrid.SelectedIndex = 0;
+			SearchPopup.IsOpen = true;
 		}
 
 		private void FunctionSearchDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -57,6 +58,7 @@ namespace Profiler.Controls
 		public void Open()
 		{
 			FunctionSearchBox.Focus();
+			FunctionSearchBox.SelectAll();
 			SearchPopup.Visibility = Visibility.Visible;
 			SearchPopup.IsOpen = true;
 		}
@@ -94,7 +96,7 @@ namespace Profiler.Controls
 
 					if (maxFrame != null && maxEntry != null)
 					{
-						EventNode maxNode = maxFrame.Root.Find(maxEntry);
+						EventNode maxNode = maxFrame.Root.FindNode(maxEntry);
 						RaiseEvent(new TimeLine.FocusFrameEventArgs(TimeLine.FocusFrameEvent, new EventFrame(maxFrame, maxNode), null));
 					}
 				}

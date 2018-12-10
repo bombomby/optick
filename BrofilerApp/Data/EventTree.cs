@@ -24,6 +24,7 @@ namespace Profiler.Data
 		public double SelfDuration { get { return Duration - ChildrenDuration; } }
 
 		public abstract String Name { get; }
+		public abstract String ToolTipName { get; }
 
 		public virtual List<Tag> Tags { get { return null; } set { } }
 
@@ -162,6 +163,7 @@ namespace Profiler.Data
 
 		public override String Path { get { return Description.Path.ToString(); } }
 		public override String Name { get { return Description.Name; } }
+		public override String ToolTipName { get { return String.Format("{0}\n{1}", Description.FullName, Description.Path); } }
 
 		public bool ExcludeFromTotal { get; private set; }
 
@@ -286,14 +288,14 @@ namespace Profiler.Data
 			}
 		}
 
-		public EventNode Find(Entry entry)
+		public EventNode FindNode(Entry entry)
 		{
 			if (Entry == entry)
 				return this;
 
 			foreach (EventNode node in Children)
 				if (node.Entry.Contains(entry))
-					return node.Find(entry);
+					return node.FindNode(entry);
 
 			return null;
 		}
@@ -303,7 +305,7 @@ namespace Profiler.Data
 	{
 		private int depth = 1;
 		private EventFrame frame;
-		public EventTree(EventFrame frame, List<Entry> entries) : base(null, new Entry(null, frame.Start, frame.Finish))
+		public EventTree(EventFrame frame, List<Entry> entries) : base(null, new Entry(null, frame.Start, frame.Finish) { Frame = frame })
 		{
 			this.frame = frame;
 			BuildTree(entries);
