@@ -100,7 +100,7 @@ namespace Profiler.Data
 			{
 				if (Reason < SyncReason.SyncReasonCount)
 				{
-					return Reason.ToString() + String.Format("\nNew thread \"{0}\", {1}", (newThreadDesc == null) ? "Unknown" : newThreadDesc.Name, newThreadId);
+					return Reason.ToString() + String.Format("\nNew thread \"{0}\", 0x{1:X}", (newThreadDesc == null) ? "Unknown" : newThreadDesc.FullName, newThreadId);
 				}
 
 				return "Active\nCPU core : " + core.ToString();

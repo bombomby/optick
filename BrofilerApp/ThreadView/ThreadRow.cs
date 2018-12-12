@@ -180,11 +180,11 @@ namespace Profiler
 				canvas.Draw(BackgroundMeshTris);
 				canvas.Draw(BackgroundMeshLines);
 
-				Data.Utils.ForEachInsideInterval(Group.MainThread.Events, scroll.ViewTime, frame =>
+				Data.Utils.ForEachInsideInterval(Group.MainThread.Events, scroll.ViewTime, (frame, index) =>
 				{
 					Interval interval = scroll.TimeToPixel(frame.Header);
 
-					String text = String.Format(System.Globalization.CultureInfo.InvariantCulture, "{0:0.0} ms", frame.Header.Duration);
+					String text = String.Format(System.Globalization.CultureInfo.InvariantCulture, "Frame {0} ({1:0.0}ms)", index, frame.Header.Duration);
 
 					// 2 times to emulate "bold"
 					for (int i = 0; i < 2; ++i)

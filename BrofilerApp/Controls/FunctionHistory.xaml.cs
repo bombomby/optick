@@ -32,7 +32,7 @@ namespace Profiler.Controls
 
 			DataContextChanged += FunctionHistory_DataContextChanged;
 
-			FrameChart.TooltipTimeout = new TimeSpan();
+			FrameChart.TooltipTimeout = new TimeSpan(0, 0, 0, 0, 100);
 			FrameChart.DataTooltip.Background = FindResource("BroBackground") as SolidColorBrush;
 			FrameChart.DataTooltip.BorderBrush = FindResource("AccentColorBrush") as SolidColorBrush;
 			FrameChart.DataTooltip.BorderThickness = new Thickness(0.5);
@@ -132,13 +132,14 @@ namespace Profiler.Controls
 				FunctionSummary summary = new FunctionSummary()
 				{
 					Description = desc,
-					Total = frameStats.Samples.Sum(s => s.Duration) / frameStats.Samples.Count,
+					Total = frameStats.Samples.Sum(s => s.Total) / frameStats.Samples.Count,
 					Wait = frameStats.Samples.Sum(s => s.Wait) / frameStats.Samples.Count
 				};
 
 				Application.Current.Dispatcher.BeginInvoke(new Action(() =>
 				{
 					Stats = frameStats;
+					FunctionInstanceDataGrid.DataContext = Stats;
 					FunctionStatsSummary.DataContext = summary;
 					FrameChart.Series = BuildAreaChart(frameStats); ;
 				}));

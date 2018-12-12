@@ -468,11 +468,7 @@ namespace Profiler
 							UInt64 threadId = EventData.Sync[index + 1].NewThreadId;
 
 							ThreadDescription threadDesc = null;
-							int threadIndex = -1;
-							if (Group.Board.ThreadID2ThreadIndex.TryGetValue(threadId, out threadIndex))
-							{
-								threadDesc = Group.Board.Threads[threadIndex];
-							}
+							Group.Board.ThreadDescriptions.TryGetValue(threadId, out threadDesc);
 
 							interval.newThreadDesc = threadDesc;
 							interval.newThreadId = threadId;

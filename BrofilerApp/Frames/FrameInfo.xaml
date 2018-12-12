@@ -112,9 +112,6 @@
                     <ContentControl Style="{StaticResource appbar_crosshair}" Margin="-13"/>
                 </ToggleButton>
                 <ToggleButton x:Name="ShowPercentButton" Content="%" VerticalAlignment="Top" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" FontSize="18.667" Padding="1,-4,1,-1" ToolTip="Show events in percent" FontWeight="Bold"  Margin="1,1,0,1" />
-                <ToggleButton x:Name="ShowPathButton" VerticalAlignment="Top" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" ToolTip="Show source path" FontWeight="Bold" Margin="1">
-                    <ContentControl Style="{StaticResource appbar_folder}" Margin="-13"/>
-                </ToggleButton>
             </StackPanel>
         </Grid>
         <TreeView Grid.Column="0" Grid.Row="1" BorderThickness="0" VirtualizingStackPanel.IsVirtualizing="True" VirtualizingStackPanel.VirtualizationMode="Recycling" x:Name="EventTreeView" DataContext="{Binding Root}" ItemsSource="{Binding Children}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Margin="0" >
@@ -170,7 +167,6 @@
                         <Label x:Name="SelfText" Grid.Column="0" Content="{Binding SelfDuration, Mode=OneTime}" ContentStringFormat="{}{0:0.###}" Padding="0,0,4,0" HorizontalAlignment="Right" Foreground="White" FontSize="8pt" ToolTip="Self Time" />
                         <Label Grid.Column="1" Content="{Binding Name, Mode=OneTime}" Margin="4,0,0,0" Style="{StaticResource LabelUnderscoreStyle}" ToolTip="{Binding ToolTipName, Mode=OneTime}" />
                         <Controls:TagsControl Grid.Column="2" x:Name="Tags" DataContext="{Binding Tags, Mode=OneTime}" Margin="4,0,0,0" />
-                        <Label Grid.Column="3" Content="{Binding Path, Mode=OneTime}" Margin="4,0,0,0" Style="{StaticResource LabelUnderscoreStyle}" Foreground="Gray" ContentStringFormat="{}[{0}]" Visibility="{Binding IsChecked, ElementName=ShowPathButton, Converter={StaticResource BooleanToVisibilityConverter}}" />
                     </Grid>
                     <HierarchicalDataTemplate.Triggers>
                         <DataTrigger Binding="{Binding IsChecked, ElementName=ShowPercentButton}" Value="True">

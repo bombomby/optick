@@ -366,6 +366,7 @@ namespace Profiler.Data
 			List<Entry> entries = new List<Entry>();
 			node.ForEach((n, level) => { entries.Add((n as EventNode).Entry); return true; });
 			Init(new FrameHeader(frame.Header.ThreadIndex, frame.Header.FiberIndex, new Durable(node.Entry.Start, node.Entry.Finish)), entries);
+			Synchronization = frame.Synchronization;
 		}
 	}
 }

@@ -181,18 +181,24 @@ struct EventStorage
 	}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct ProcessDescription
+{
+	std::string name;
+	ProcessID processID;
+	uint64 uniqueKey;
+	ProcessDescription(const char* processName, ProcessID pid, uint64 key);
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct ThreadDescription
 {
-	static const int THREAD_NAME_LENGTH = 128;
-
-	char name[THREAD_NAME_LENGTH];
+	std::string name;
 	ThreadID threadID;
+	ProcessID processID;
 	int32 maxDepth;
 	int32 priority;
 	uint32 mask;
-	bool fromOtherProcess;
 
-	ThreadDescription(const char* threadName, ThreadID id, bool _fromOtherProcess, int32 maxDepth = 1, int32 priority = 0, uint32 mask = 0);
+	ThreadDescription(const char* threadName, ThreadID tid, ProcessID pid, int32 maxDepth = 1, int32 priority = 0, uint32 mask = 0);
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct FiberDescription
@@ -274,6 +280,10 @@ class Core
 
 	BroStateCallback stateCallback;
 
+	std::vector<ProcessDescription> processDescs;
+	std::vector<ThreadDescription> threadDescs;
+
+
 	void UpdateEvents();
 	uint32_t Update();
 
@@ -348,6 +358,12 @@ public:
 
 	// Registers finer and create EventStorage
 	bool RegisterFiber(const FiberDescription& description, EventStorage** slot);
+
+	// Registers ProcessDescription
+	bool RegisterProcessDescription(const ProcessDescription& description);
+
+	// Registers ThreaDescription (used for threads from other processes)
+	bool RegisterThreadDescription(const ThreadDescription& description);
 
 	// Sets state change callback
 	bool SetStateChangedCallback(BroStateCallback cb);

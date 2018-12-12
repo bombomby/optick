@@ -45,10 +45,14 @@ void SortMemoryPool(MemoryPool<T, SIZE>& memoryPool)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-ThreadDescription::ThreadDescription(const char* threadName, ThreadID id, bool _fromOtherProcess, int32 _maxDepth /*= 1*/, int32 _priority /*= 0*/, uint32 _mask /*= 0*/)
-	: threadID(id), fromOtherProcess(_fromOtherProcess), maxDepth(_maxDepth), priority(_priority), mask(_mask)
+ProcessDescription::ProcessDescription(const char* processName, ProcessID pid, uint64 key) : name(processName), processID(pid), uniqueKey(key)
 {
-	strncpy(name, threadName, BRO_ARRAY_SIZE(name) - 1);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ThreadDescription::ThreadDescription(const char* threadName, ThreadID tid, ProcessID pid, int32 _maxDepth /*= 1*/, int32 _priority /*= 0*/, uint32 _mask /*= 0*/)
+	: name(threadName), threadID(tid), processID(pid), maxDepth(_maxDepth), priority(_priority), mask(_mask)
+{
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -325,7 +329,13 @@ void Core::DumpBoard(uint32 mode, EventTime timeSlice)
 	boardStream << (uint32)0; // Filters
 	boardStream << (uint32)0; // ThreadDescs
 	boardStream << mode; // Mode
+	boardStream << processDescs;
+	boardStream << threadDescs;
 	Server::Get().Send(DataResponse::FrameDescriptionBoard, boardStream);
+
+	// Cleanup
+	processDescs.clear();
+	threadDescs.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -368,35 +378,13 @@ void Core::UpdateEvents()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::ReportSwitchContext(const SwitchContextDesc& desc)
 {
-	if (!schedulerTrace)
-	{
-		return false;
-	}
-
-	// finalize work interval
-	// auto oldThreadIt = schedulerTrace->activeThreadsIDs.find(desc.oldThreadId);
-	// if (oldThreadIt != schedulerTrace->activeThreadsIDs.end())
-	{
-		switchContextCollector.Add(desc);
-	}
-
+	switchContextCollector.Add(desc);
 	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::ReportStackWalk(const CallstackDesc& desc)
 {
-	if (!schedulerTrace)
-	{
-		return false;
-	}
-
-	auto it = schedulerTrace->activeThreadsIDs.find(desc.threadID);
-	if (it == schedulerTrace->activeThreadsIDs.end())
-	{
-		return false;
-	}
-
 	callstackCollector.Add(desc);
 	return true;
 }
@@ -415,10 +403,10 @@ void Core::Activate( bool active )
 
 		if (active)
 		{
-			CaptureStatus::Type status = schedulerTrace->Start(SchedulerTrace::ALL, threads, true);
+			CaptureStatus::Type status = schedulerTrace->Start(SchedulerTrace::ALL, threads);
 			// Let's retry with more narrow setup
 			if (status != CaptureStatus::OK)
-				status = schedulerTrace->Start(SchedulerTrace::SWITCH_CONTEXTS, threads, true);
+				status = schedulerTrace->Start(SchedulerTrace::SWITCH_CONTEXTS, threads);
 
 			if (gpuProfiler)
 				gpuProfiler->Start(0);
@@ -528,6 +516,18 @@ bool Core::RegisterFiber(const FiberDescription& description, EventStorage** slo
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool Core::RegisterProcessDescription(const ProcessDescription& description)
+{
+	processDescs.push_back(description);
+	return false;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool Core::RegisterThreadDescription(const ThreadDescription& description)
+{
+	threadDescs.push_back(description);
+	return false;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::SetStateChangedCallback(BroStateCallback cb)
 {
 	stateCallback = cb;
@@ -600,7 +600,7 @@ OutputDataStream& operator<<(OutputDataStream& stream, const ScopeData& ob)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const ThreadDescription& description)
 {
-	return stream << description.threadID << description.name << description.maxDepth << description.priority << description.mask;
+	return stream << description.threadID << description.processID << description.name << description.maxDepth << description.priority << description.mask;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const ThreadEntry* entry)
@@ -616,6 +616,11 @@ OutputDataStream& operator<<(OutputDataStream& stream, const FiberDescription& d
 OutputDataStream& operator<<(OutputDataStream& stream, const FiberEntry* entry)
 {
 	return stream << entry->description;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+OutputDataStream& operator<<(OutputDataStream& stream, const ProcessDescription& description)
+{
+	return stream << description.processID << description.name << description.uniqueKey;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 BROFILER_API bool SetStateChangedCallback(BroStateCallback cb)
@@ -665,8 +670,9 @@ BROFILER_API bool RegisterThread(const char* name)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 BROFILER_API bool RegisterThread(const wchar_t* name)
 {
-	char mbName[ThreadDescription::THREAD_NAME_LENGTH];
-	wcstombs(mbName, name, ThreadDescription::THREAD_NAME_LENGTH);
+	const int THREAD_NAME_LENGTH = 128;
+	char mbName[THREAD_NAME_LENGTH];
+	wcstombs(mbName, name, THREAD_NAME_LENGTH);
 	return Core::Get().RegisterThread(ThreadDescription(mbName, GetThreadID(), false), &Core::storage) != nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

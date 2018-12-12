@@ -35,7 +35,7 @@ public:
 	ETW();
 	~ETW();
 
-	virtual CaptureStatus::Type Start(int mode, const ThreadList& threads, bool autoAddUnknownThreads) override;
+	virtual CaptureStatus::Type Start(int mode, const ThreadList& threads) override;
 	virtual bool Stop() override;
 
 	DWORD GetProcessID() const { return currentProcessId; }

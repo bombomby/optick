@@ -13,15 +13,20 @@ namespace Brofiler
 	{
 		enum Mode
 		{
+			// Collect switch-contexts
 			SWITCH_CONTEXTS =	1 << 0,
+			// Collect callstacks
 			STACK_WALK =		1 << 1,
+			// Collect SysCalls 
 			SYS_CALLS =			1 << 2,
+			// Collect Process Stats
+			PROCESSES =			1 << 3,
 			ALL =				0xFFFFFFFF
 		};
 
 		std::unordered_set<uint64> activeThreadsIDs;
 
-		virtual CaptureStatus::Type Start(int mode, const ThreadList& threads, bool autoAddUnknownThreads);
+		virtual CaptureStatus::Type Start(int mode, const ThreadList& threads);
 		virtual bool Stop();
 
 		virtual ~SchedulerTrace() {};

@@ -40,13 +40,38 @@
                 </lvc:Axis>
             </lvc:CartesianChart.AxisX>
             <lvc:CartesianChart.AxisY>
-                <lvc:Axis Title="Frame Time (ms)" MinValue="0">
+                <lvc:Axis Title="Function Frame Time (ms)" MinValue="0">
                     <lvc:Axis.Separator>
                         <lvc:Separator StrokeThickness="0.33"/>
                     </lvc:Axis.Separator>
                 </lvc:Axis>
             </lvc:CartesianChart.AxisY>
         </lvc:CartesianChart>
+        <DataGrid 
+                    Grid.Row="3" 
+                    x:Name="FunctionInstanceDataGrid" 
+                    CanUserAddRows="False" 
+                    GridLinesVisibility="None" 
+                    IsReadOnly="True" 
+                    BorderThickness="0" 
+                    AutoGenerateColumns="False" 
+                    HeadersVisibility="Column" 
+                    ClipboardCopyMode="ExcludeHeader"
+                    ItemsSource="{Binding Samples, Mode=OneTime}">
+            <DataGrid.Resources>
+                <Style TargetType="{x:Type TextBlock}" x:Key="RightCell">
+                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                    <Setter Property="TextAlignment" Value="Right"/>
+                </Style>
+            </DataGrid.Resources>
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="1*" />
+                <DataGridTextColumn Header="Count" Binding="{Binding Count}" Width="Auto" ElementStyle="{StaticResource RightCell}" />
+                <DataGridTextColumn Header="Total" Binding="{Binding Total, StringFormat={}{0:0.000}}" Width="Auto" ElementStyle="{StaticResource RightCell}" />
+                <DataGridTextColumn Header="Work" Binding="{Binding Work, StringFormat={}{0:0.000}}" Width="Auto" Foreground="LimeGreen" ElementStyle="{StaticResource RightCell}" />
+                <DataGridTextColumn Header="Wait" Binding="{Binding Wait, StringFormat={}{0:0.000}}" Width="Auto" Foreground="Tomato" ElementStyle="{StaticResource RightCell}" />
+            </DataGrid.Columns>
+        </DataGrid>
         <!--<lvc:CartesianChart Grid.Row="2" x:Name="FunctionChart" DisableAnimations="True" Hoverable="False" DataTooltip="{x:Null}" Background="{StaticResource BroContentBackground}" Margin="0" MinHeight="100">
             <lvc:CartesianChart.AxisX>
                 <lvc:Axis>

@@ -157,13 +157,46 @@ namespace Profiler.Data
 		}
 	}
 
+	public class ProcessDescription
+	{
+		public String Name { get; set; }
+		public UInt32 ProcessID { get; set; }
+		public UInt64 UniqueKey { get; set; }
+
+		public static ProcessDescription Read(DataResponse response)
+		{
+			BinaryReader reader = response.Reader;
+			ProcessDescription res = new ProcessDescription();
+			res.ProcessID = reader.ReadUInt32();
+			res.Name = Utils.ReadBinaryString(reader);
+			res.UniqueKey = reader.ReadUInt64();
+			return res;
+		}
+	}
+
 	public class ThreadDescription
 	{
 		public String Name { get; set; }
 		public UInt64 ThreadID { get; set; }
+		public UInt32 ProcessID { get; set; }
 		public Int32 MaxDepth { get; set; }
 		public Int32 Priority { get; set; }
 		public Int32 Mask { get; set; }
+		public ProcessDescription Process { get; set; }
+
+		public String FullName
+		{
+			get
+			{
+				if (!String.IsNullOrEmpty(Name))
+					return Name;
+
+				if (Process != null)
+					return String.Format(Process.Name);
+
+				return String.Format("Pid 0x{0:X}", ProcessID);
+			}
+		}
 
 		public const UInt64 InvalidThreadID = UInt64.MaxValue;
 
@@ -173,8 +206,8 @@ namespace Profiler.Data
 			ThreadDescription res = new ThreadDescription();
 
 			res.ThreadID = reader.ReadUInt64();
-			int nameLength = reader.ReadInt32();
-			res.Name = new String(reader.ReadChars(nameLength));
+			res.ProcessID = reader.ReadUInt32();
+			res.Name = Utils.ReadBinaryString(reader);
 			res.MaxDepth = reader.ReadInt32();
 			res.Priority = reader.ReadInt32();
 			res.Mask = reader.ReadInt32();
@@ -192,13 +225,21 @@ namespace Profiler.Data
 		public List<ThreadDescription> Threads { get; private set; }
 		public Dictionary<UInt64, int> ThreadID2ThreadIndex { get; private set; }
 		public List<FiberDescription> Fibers { get; private set; }
+		public UInt32 Mode { get; set; }
+
+		public Dictionary<UInt64, ThreadDescription> ThreadDescriptions { get; set; }
+		public Dictionary<UInt32, ProcessDescription> ProcessDescritpions { get; set; }
 
 		private List<EventDescription> board = new List<EventDescription>();
 		public List<EventDescription> Board
 		{
 			get { return board; }
 		}
-		public EventDescriptionBoard() { }
+		public EventDescriptionBoard()
+		{
+			ThreadDescriptions = new Dictionary<ulong, ThreadDescription>();
+			ProcessDescritpions = new Dictionary<uint, ProcessDescription>();
+		}
 
 		public EventDescription this[int pos]
 		{
@@ -238,6 +279,7 @@ namespace Profiler.Data
 				if (!desc.ThreadID2ThreadIndex.ContainsKey(threadDesc.ThreadID))
 				{
 					desc.ThreadID2ThreadIndex.Add(threadDesc.ThreadID, i);
+					desc.ThreadDescriptions.Add(threadDesc.ThreadID, threadDesc);
 				}
 				else
 				{
@@ -268,16 +310,40 @@ namespace Profiler.Data
 			}
 
 			// TODO: Tags
+			reader.ReadUInt32();
 
 			// TODO: Run Info
+			reader.ReadUInt32();
 
 			// TODO: Run Info
+			reader.ReadUInt32();
 
 			// TODO: Filters
+			reader.ReadUInt32();
 
 			// TODO: Mode
+			desc.Mode = reader.ReadUInt32();
 
 			// TODO: Thread Descriptions
+			int processDescCount = reader.ReadInt32();
+			for (int i = 0; i < processDescCount; ++i)
+			{
+				ProcessDescription process = ProcessDescription.Read(response);
+				if (!desc.ProcessDescritpions.ContainsKey(process.ProcessID))
+					desc.ProcessDescritpions.Add(process.ProcessID, process);
+			}
+
+			int threadDescCount = reader.ReadInt32();
+			for (int i = 0; i < threadDescCount; ++i)
+			{
+				ThreadDescription thread = ThreadDescription.Read(response);
+				if (!desc.ThreadDescriptions.ContainsKey(thread.ThreadID))
+					desc.ThreadDescriptions.Add(thread.ThreadID, thread);
+
+				ProcessDescription process = null;
+				if (desc.ProcessDescritpions.TryGetValue(thread.ProcessID, out process))
+					thread.Process = process;
+			}
 
 			return desc;
 		}

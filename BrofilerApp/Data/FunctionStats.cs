@@ -10,9 +10,11 @@ namespace Profiler.Data
 	{
 		public class Sample
 		{
-			public double Duration { get; set; }
+			public String Name { get; set; }
+			public int Index { get; set; }
+			public double Total { get; set; }
 			public double Work { get; set; }
-			public double Wait { get { return Duration - Work; } }
+			public double Wait { get { return Total - Work; } }
 			public int Count { get; set; }
 			public List<Entry> Entries { get; set; }
 
@@ -28,7 +30,7 @@ namespace Profiler.Data
 
 			public void Add(Entry e)
 			{
-				Duration = Duration + e.Duration;
+				Total = Total + e.Duration;
 				Work = Work + e.CalculateWork();
 				Count = Count + 1;
 				Entries.Add(e);
@@ -61,7 +63,7 @@ namespace Profiler.Data
 
 				for (int i = 0; i < frames.Count; ++i)
 				{
-					Sample sample = new Sample();
+					Sample sample = new Sample() { Name = String.Format("Frame {0:000}", i), Index = i };
 
 					long start = frames[i].Start;
 					long finish = i == frames.Count - 1 ? frames[i].Finish : frames[i + 1].Start;
@@ -96,7 +98,7 @@ namespace Profiler.Data
 						{
 							foreach (Entry e in shortEntries)
 							{
-								Samples.Add(new Sample(e));
+								Samples.Add(new Sample(e) { Index = Samples.Count });
 							}
 						}
 					}
