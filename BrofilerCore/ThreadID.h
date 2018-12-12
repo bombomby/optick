@@ -6,7 +6,7 @@
 
 #if defined(BRO_PLATFORM_POSIX) || defined(BRO_PLATFORM_OSX)
 #include <pthread.h>
-#include <process.h>
+#include <unistd.h>
 #endif
 
 namespace Brofiler
