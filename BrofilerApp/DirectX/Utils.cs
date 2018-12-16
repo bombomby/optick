@@ -33,5 +33,9 @@ namespace Profiler.DirectX
 			return new System.Windows.Point(pos.X, pos.Y);
 		}
 
+		public static System.Windows.Media.Color MultiplyColor(System.Windows.Media.Color color, float mul)
+		{
+			return System.Windows.Media.Color.FromRgb((byte)(color.R * mul), (byte)(color.G * mul), (byte)(color.B * mul));
+		}
 	}
 }

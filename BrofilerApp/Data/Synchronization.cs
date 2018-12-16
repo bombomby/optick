@@ -158,7 +158,6 @@ namespace Profiler.Data
 			for (int i = 0; i < count; ++i)
 				events.Add(new SyncEvent(response.Reader));
 
-			//events.Sort();
 			Events = events;
 
 			for (int i = 0; i < count; ++i)

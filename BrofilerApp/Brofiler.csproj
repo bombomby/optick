@@ -252,6 +252,7 @@
     <Compile Include="SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ThreadView\ChartRow.cs" />
     <Compile Include="ThreadView\EventsThreadRow.cs" />
     <Compile Include="Frames\FrameDataTable.xaml.cs">
       <DependentUpon>FrameDataTable.xaml</DependentUpon>

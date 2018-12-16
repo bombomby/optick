@@ -100,6 +100,8 @@ namespace Profiler
 
 		List<EventsThreadRow> GenerateThreadRows(FrameGroup group)
 		{
+			id2row.Clear();
+
 			List<EventsThreadRow> eventThreads = new List<EventsThreadRow>();
 
 			for (int i = 0; i < Math.Min(group.Board.Threads.Count, group.Threads.Count); ++i)
@@ -119,6 +121,10 @@ namespace Profiler
 				{
 					EventsThreadRow row = new EventsThreadRow(group, thread, data);
 					eventThreads.Add(row);
+
+					id2row.Add(row.Description.ThreadIndex, row);
+					row.EventNodeHover += Row_EventNodeHover;
+					row.EventNodeSelected += Row_EventNodeSelected;
 				}
 			}
 
@@ -126,20 +132,76 @@ namespace Profiler
 			return eventThreads;
 		}
 
-		void SubscribeEvents(List<ThreadRow> rowList)
+		enum ProcessGroup
 		{
-			id2row.Clear();
+			None,
+			CurrentProcess,
+			OtherProcess,
+		}
 
-			for (int i = 0; i < rowList.Count; ++i)
+		ProcessGroup GetProcessGroup(FrameGroup group, UInt64 threadID)
+		{
+			return threadID == 0 ? ProcessGroup.None : (group.IsCurrentProcess(threadID) ? ProcessGroup.CurrentProcess : ProcessGroup.OtherProcess);
+		}
+
+		ChartRow GenerateCoreChart(FrameGroup group)
+		{
+			group.Synchronization.Events.Sort();
+
+			int eventsCount = group.Synchronization.Events.Count;
+
+			List<Tick> timestamps = new List<Tick>(eventsCount);
+			ChartRow.Entry currProcess = new ChartRow.Entry(eventsCount) { Fill = Colors.LimeGreen, Name = "Current Process" };
+			ChartRow.Entry otherProcess = new ChartRow.Entry(eventsCount) { Fill = Colors.Tomato, Name = "Other Process" };
+
+			List<bool> isCoreInUse = new List<bool>(group.Board.CPUCoreCount);
+			for (int i = 0; i < group.Board.CPUCoreCount; ++i)
+				isCoreInUse.Add(false);
+
+			int currCores = 0;
+			int otherCores = 0;
+
+			foreach (SyncEvent ev in group.Synchronization.Events)
 			{
-				EventsThreadRow row = rowList[i] as EventsThreadRow;
-				if (row != null)
+				ProcessGroup prevGroup = GetProcessGroup(group, ev.OldThreadID);
+				ProcessGroup currGroup = GetProcessGroup(group, ev.NewThreadID);
+
+				if ((prevGroup != currGroup) || !isCoreInUse[ev.CPUID])
 				{
-					id2row.Add(row.Description.ThreadIndex, row);
-					row.EventNodeHover += Row_EventNodeHover;
-					row.EventNodeSelected += Row_EventNodeSelected;
+					timestamps.Add(ev.Timestamp);
+
+					if (isCoreInUse[ev.CPUID])
+					{
+						switch (prevGroup)
+						{
+							case ProcessGroup.CurrentProcess:
+								--currCores;
+								break;
+							case ProcessGroup.OtherProcess:
+								--otherCores;
+								break;
+						}
+					}
+
+					isCoreInUse[ev.CPUID] = true;
+					switch (currGroup)
+					{
+						case ProcessGroup.CurrentProcess:
+							++currCores;
+							break;
+						case ProcessGroup.OtherProcess:
+							++otherCores;
+							break;
+					}
+
+					currProcess.Values.Add((double)currCores);
+					otherProcess.Values.Add((double)otherCores);
 				}
 			}
+
+			ChartRow chart = new ChartRow("CPU", timestamps, new List<ChartRow.Entry>() { currProcess, otherProcess }, group.Board.CPUCoreCount);
+			chart.ChartHover += Row_ChartHover;
+			return chart;
 		}
 
 		void InitThreadList(FrameGroup group)
@@ -160,9 +222,9 @@ namespace Profiler
 				TextColor = Colors.Gray
 			});
 
-			rows.AddRange(GenerateThreadRows(group));
+			rows.Add(GenerateCoreChart(group));
 
-			SubscribeEvents(rows);
+			rows.AddRange(GenerateThreadRows(group));
 
 			scroll.TimeSlice = group.Board.TimeSlice;
 			scroll.Height = 0.0;
@@ -234,8 +296,19 @@ namespace Profiler
 		{
 			if (node != null)
 			{
-				//HoverLines.AddRect(rect, FrameHover.Color);
 				ToolTip = new TooltipInfo { Text = String.Format("{0}   {1:0.000}ms", node.Name, node.Duration), Rect = rect };
+			}
+			else
+			{
+				ToolTip = new TooltipInfo();
+			}
+		}
+
+		private void Row_ChartHover(Point mousePos, Rect rect, String text)
+		{
+			if (text != null)
+			{
+				ToolTip = new TooltipInfo { Text = text, Rect = rect };
 			}
 			else
 			{

@@ -132,6 +132,13 @@ namespace Profiler
 		public abstract void OnMouseHover(Point point, ThreadScroll scroll, List<object> dataContext);
 		public abstract void OnMouseClick(Point point, ThreadScroll scroll);
 		public abstract void ApplyFilter(DirectX.DirectXCanvas canvas, ThreadScroll scroll, HashSet<EventDescription> descriptions);
+
+		public Matrix GetWorldMatrix(ThreadScroll scroll)
+		{
+			return new Matrix(scroll.Zoom, 0.0, 0.0, (Height - 2.0 * RenderParams.BaseMargin) / scroll.Height,
+							  -(scroll.ViewUnit.Left * scroll.Zoom),
+							  (Offset + 1.0 * RenderParams.BaseMargin) / scroll.Height);
+		}
 	}
 
 	public class HeaderThreadRow : ThreadRow

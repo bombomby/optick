@@ -202,12 +202,14 @@ namespace Profiler.Data
 				ThreadDescription desc = pair.Value;
 				if (desc.ProcessID == Board.ProcessID)
 				{
-					if (GetThread(pair.Key) == null)
+					ThreadData threadData = GetThread(pair.Key);
+					if (threadData == null || threadData.Events.Count == 0)
 					{
 						Synchronization sync = null;
 						if (Synchronization.SyncMap.TryGetValue(pair.Key, out sync))
 						{
-							ThreadData threadData = AddThread(pair.Value);
+							if (threadData == null)
+								threadData = AddThread(pair.Value);
 
 							EventDescription eventDesc = new EventDescription(desc.FullName);
 
@@ -381,6 +383,11 @@ namespace Profiler.Data
 				return Threads[threadIndex];
 			}
 			return null;
+		}
+
+		public bool IsCurrentProcess(UInt64 threadID)
+		{
+			return GetThread(threadID) != null;
 		}
 
 		public ThreadData AddThread(ThreadDescription desc)

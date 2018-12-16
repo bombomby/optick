@@ -150,6 +150,8 @@ namespace Profiler
 			}
 		}
 
+		const float NodeGradientShade = 0.85f;
+
 		void BuildMeshNode(DirectX.ComplexDynamicMesh builder, ThreadScroll scroll, EventNode node, int level)
 		{
 			if (level == MaxDepth)
@@ -160,7 +162,10 @@ namespace Profiler
 			double y = (double)level / MaxDepth;
 			double h = 1.0 / MaxDepth;
 
-			builder.AddRect(new Rect(interval.Left, y, interval.Width, h), node.Description.ForceColor);
+			Color nodeColor = node.Description.ForceColor;
+			Color nodeGradColor = DirectX.Utils.MultiplyColor(nodeColor, NodeGradientShade);
+
+			builder.AddRect(new Rect(interval.Left, y, interval.Width, h), new Color[] { nodeColor, nodeGradColor, nodeGradColor, nodeColor });
 
 			foreach (EventNode child in node.Children)
 			{
@@ -272,9 +277,7 @@ namespace Profiler
 
 		public override void Render(DirectX.DirectXCanvas canvas, ThreadScroll scroll, DirectXCanvas.Layer layer, Rect box)
 		{
-			Matrix world = new Matrix(scroll.Zoom, 0.0, 0.0, (Height - 2.0 * RenderParams.BaseMargin) / scroll.Height,
-									  -(scroll.ViewUnit.Left * scroll.Zoom),
-									  (Offset + 1.0 * RenderParams.BaseMargin) / scroll.Height);
+			Matrix world = GetWorldMatrix(scroll);
 
 			if (layer == DirectXCanvas.Layer.Background)
 			{

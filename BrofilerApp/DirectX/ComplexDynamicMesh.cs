@@ -10,7 +10,7 @@ namespace Profiler.DirectX
 	{
 		List<DynamicMesh> DIPs = new List<DynamicMesh>();
 
-		public ComplexDynamicMesh(DirectXCanvas canvas, int chunkCount)
+		public ComplexDynamicMesh(DirectXCanvas canvas, int chunkCount = 20)
 		{
 			double scaleX = 1.0 / chunkCount;
 

@@ -135,19 +135,4 @@ namespace Profiler.Data
 
 		public Durable() { }
 	}
-
-	public struct Timestamp
-	{
-		long time;
-		public long Time
-		{
-			get { return time; }
-			set { time = value; }
-		}
-
-		public double TimeMS
-		{
-			get { return Durable.TicksToMs(time); }
-		}
-	}
 }

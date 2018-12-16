@@ -355,6 +355,8 @@ namespace Profiler.Data
 				thread.Origin = ThreadDescription.Source.GameAuto;
 				if (!desc.ThreadDescriptions.ContainsKey(thread.ThreadID))
 					desc.ThreadDescriptions.Add(thread.ThreadID, thread);
+				else if (!String.IsNullOrEmpty(thread.Name))
+					desc.ThreadDescriptions[thread.ThreadID] = thread;
 
 				ProcessDescription process = null;
 				if (desc.ProcessDescritpions.TryGetValue(thread.ProcessID, out process))

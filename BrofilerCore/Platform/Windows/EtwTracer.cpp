@@ -439,6 +439,7 @@ const TRACEHANDLE INVALID_TRACEHANDLE = (TRACEHANDLE)-1;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 DWORD WINAPI ETW::RunProcessTraceThreadFunction( LPVOID parameter )
 {
+	Core::Get().RegisterThreadDescription(ThreadDescription("[Brofiler] ETW", GetCurrentThreadId(), GetCurrentProcessId()));
 	ETW* etw = (ETW*)parameter;
 	ULONG status = ProcessTrace(&etw->openedHandle, 1, 0, 0);
 	BRO_UNUSED(status);

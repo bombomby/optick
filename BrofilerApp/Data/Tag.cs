@@ -17,11 +17,11 @@ namespace Profiler.Data
 	public class Tag : ITick, IComparable<Tag>
 	{
 		public EventDescription Description { get; set; }
-		public Timestamp Time { get; set; }
+		public Tick Time { get; set; }
 		public String Name => Description.FullName;
 		public virtual String FormattedValue { get; }
 
-		public long Start => Time.Time;
+		public long Start => Time.Start;
 
 		public int CompareTo(Tag other)
 		{
@@ -31,7 +31,7 @@ namespace Profiler.Data
 
 		public virtual void Read(BinaryReader reader, EventDescriptionBoard board)
 		{
-			Time = new Timestamp { Time = Durable.ReadTime(reader) };
+			Time = new Tick { Start = Durable.ReadTime(reader) };
 			int descriptionID = reader.ReadInt32();
 			Description = (0 <= descriptionID && descriptionID < board.Board.Count) ? board.Board[descriptionID] : null;
 		}

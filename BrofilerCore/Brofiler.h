@@ -589,8 +589,8 @@ struct BROFILER_API GPUContextScope
 //				...
 //			}
 //		}
-#define BROFILER_THREAD(FRAME_NAME) ::Brofiler::ThreadScope brofilerThreadScope(FRAME_NAME); \
-									BRO_UNUSED(brofilerThreadScope);						 \
+#define BROFILER_THREAD(THREAD_NAME) ::Brofiler::ThreadScope brofilerThreadScope(THREAD_NAME);	\
+									 BRO_UNUSED(brofilerThreadScope);							\
 
 
 // Thread registration macros.
