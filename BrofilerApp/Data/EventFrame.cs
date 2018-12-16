@@ -29,7 +29,7 @@ namespace Profiler.Data
 
 		public FrameHeader() { }
 
-		public FrameHeader(int threadIndex, int fiberIndex, IDurable duration)
+		public FrameHeader(IDurable duration, int threadIndex = -1, int fiberIndex = -1)
 		{
 			ThreadIndex = threadIndex;
 			FiberIndex = fiberIndex;
@@ -106,7 +106,7 @@ namespace Profiler.Data
 				if (tags == null)
 				{
 					tags = new List<Tag>();
-					if (Group.Threads[Header.ThreadIndex].TagsPack != null)
+					if (Header.ThreadIndex != -1 && Group.Threads[Header.ThreadIndex].TagsPack != null)
 						Utils.ForEachInsideIntervalStrict(Group.Threads[Header.ThreadIndex].TagsPack.Tags, Header, tag => { tags.Add(tag); });
 				}
 
@@ -365,7 +365,7 @@ namespace Profiler.Data
 		{
 			List<Entry> entries = new List<Entry>();
 			node.ForEach((n, level) => { entries.Add((n as EventNode).Entry); return true; });
-			Init(new FrameHeader(frame.Header.ThreadIndex, frame.Header.FiberIndex, new Durable(node.Entry.Start, node.Entry.Finish)), entries);
+			Init(new FrameHeader(new Durable(node.Entry.Start, node.Entry.Finish), frame.Header.ThreadIndex, frame.Header.FiberIndex), entries);
 			Synchronization = frame.Synchronization;
 		}
 	}

@@ -18,6 +18,7 @@ using System.Threading;
 using System.ComponentModel;
 using Profiler.DirectX;
 using System.Windows.Threading;
+using System.Diagnostics;
 
 namespace Profiler
 {
@@ -97,25 +98,8 @@ namespace Profiler
 			return nameCompare != 0 ? nameCompare : a.Description.ThreadID.CompareTo(b.Description.ThreadID);
 		}
 
-		void InitThreadList(FrameGroup group)
+		List<EventsThreadRow> GenerateThreadRows(FrameGroup group)
 		{
-			rows.Clear();
-			id2row.Clear();
-
-			ThreadList.RowDefinitions.Clear();
-			ThreadList.Children.Clear();
-
-			if (group == null)
-				return;
-
-			rows.Add(new HeaderThreadRow(group)
-			{
-				GradientTop = (BroAlternativeBackground as SolidColorBrush).Color,
-				GradientBottom = (BroBackground as SolidColorBrush).Color,
-				SplitLines = (BroBackground as SolidColorBrush).Color,
-				TextColor = Colors.Gray
-			});
-
 			List<EventsThreadRow> eventThreads = new List<EventsThreadRow>();
 
 			for (int i = 0; i < Math.Min(group.Board.Threads.Count, group.Threads.Count); ++i)
@@ -135,15 +119,50 @@ namespace Profiler
 				{
 					EventsThreadRow row = new EventsThreadRow(group, thread, data);
 					eventThreads.Add(row);
-					id2row.Add(i, row);
-
-					row.EventNodeHover += Row_EventNodeHover;
-					row.EventNodeSelected += Row_EventNodeSelected;
 				}
 			}
 
 			eventThreads.Sort(ThreadNameSorter);
-			rows.AddRange(eventThreads);
+			return eventThreads;
+		}
+
+		void SubscribeEvents(List<ThreadRow> rowList)
+		{
+			id2row.Clear();
+
+			for (int i = 0; i < rowList.Count; ++i)
+			{
+				EventsThreadRow row = rowList[i] as EventsThreadRow;
+				if (row != null)
+				{
+					id2row.Add(row.Description.ThreadIndex, row);
+					row.EventNodeHover += Row_EventNodeHover;
+					row.EventNodeSelected += Row_EventNodeSelected;
+				}
+			}
+		}
+
+		void InitThreadList(FrameGroup group)
+		{
+			rows.Clear();
+
+			ThreadList.RowDefinitions.Clear();
+			ThreadList.Children.Clear();
+
+			if (group == null)
+				return;
+
+			rows.Add(new HeaderThreadRow(group)
+			{
+				GradientTop = (BroAlternativeBackground as SolidColorBrush).Color,
+				GradientBottom = (BroBackground as SolidColorBrush).Color,
+				SplitLines = (BroBackground as SolidColorBrush).Color,
+				TextColor = Colors.Gray
+			});
+
+			rows.AddRange(GenerateThreadRows(group));
+
+			SubscribeEvents(rows);
 
 			scroll.TimeSlice = group.Board.TimeSlice;
 			scroll.Height = 0.0;

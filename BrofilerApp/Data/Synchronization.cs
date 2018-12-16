@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 
 namespace Profiler.Data
@@ -145,6 +146,7 @@ namespace Profiler.Data
 		public override DataResponse Response { get; set; }
 		public FrameGroup Group { get; set; }
 		public Dictionary<UInt64, Synchronization> SyncMap { get; set; }
+		public List<SyncEvent> Events { get; set; }
 
 		public SynchronizationMap(DataResponse response, FrameGroup group)
 		{
@@ -156,7 +158,8 @@ namespace Profiler.Data
 			for (int i = 0; i < count; ++i)
 				events.Add(new SyncEvent(response.Reader));
 
-			events.Sort();
+			//events.Sort();
+			Events = events;
 
 			for (int i = 0; i < count; ++i)
 			{
@@ -209,6 +212,16 @@ namespace Profiler.Data
 				}
 			}
 
+#if DEBUG
+			foreach (Synchronization sync in SyncMap.Values)
+			{
+				for (int i = 0; i < sync.Count - 1; ++i)
+				{
+					Debug.Assert(sync[i].IsValid, "Invalid data!");
+					Debug.Assert(sync[i].Finish <= sync[i+1].Start, "Not sorted!");
+				}
+			}
+#endif
 		}
 	}
 

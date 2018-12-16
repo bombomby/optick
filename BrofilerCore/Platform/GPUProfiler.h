@@ -37,12 +37,12 @@ namespace Brofiler
 
 		struct ClockSynchronization
 		{
-			uint64_t frequencyCPU;
-			uint64_t frequencyGPU;
-			uint64_t timestampCPU;
-			uint64_t timestampGPU;
+			int64_t frequencyCPU;
+			int64_t frequencyGPU;
+			int64_t timestampCPU;
+			int64_t timestampGPU;
 
-			uint64_t GetCPUTimestamp(uint64_t gpuTimestamp)
+			int64_t GetCPUTimestamp(int64_t gpuTimestamp)
 			{
 				return timestampCPU + (gpuTimestamp - timestampGPU) * frequencyCPU / frequencyGPU;
 			}
@@ -72,15 +72,15 @@ namespace Brofiler
 		struct Node
 		{
 			std::array<QueryFrame, NUM_FRAMES_DELAY> queryGpuframes;
-			std::array<uint64_t, MAX_QUERIES_COUNT> queryGpuTimestamps;
-			std::array<uint64_t*, MAX_QUERIES_COUNT> queryCpuTimestamps;
+			std::array<int64_t, MAX_QUERIES_COUNT> queryGpuTimestamps;
+			std::array<int64_t*, MAX_QUERIES_COUNT> queryCpuTimestamps;
 			std::atomic<uint32_t> queryIndex;
 
 			ClockSynchronization clock;
 
 			std::array<EventStorage*, GPU_QUEUE_COUNT> gpuEventStorage;
 
-			uint32_t QueryTimestamp(uint64_t* outCpuTimestamp)
+			uint32_t QueryTimestamp(int64_t* outCpuTimestamp)
 			{
 				uint32_t index = queryIndex.fetch_add(1) % MAX_QUERIES_COUNT;
 				queryCpuTimestamps[index] = outCpuTimestamp;
@@ -117,7 +117,7 @@ namespace Brofiler
 
 		// Interface to implement
 		virtual ClockSynchronization GetClockSynchronization(uint32_t nodeIndex) = 0;
-		virtual void QueryTimestamp(void* context, uint64_t* cpuTimestampOut) = 0;
+		virtual void QueryTimestamp(void* context, int64_t* cpuTimestampOut) = 0;
 		virtual void Flip(void* swapChain) = 0;
 		
 		

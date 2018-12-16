@@ -103,7 +103,7 @@ namespace Brofiler
 		}
 	}
 
-	void GPUProfilerVulkan::QueryTimestamp(VkCommandBuffer commandBuffer, uint64_t* outCpuTimestamp)
+	void GPUProfilerVulkan::QueryTimestamp(VkCommandBuffer commandBuffer, int64_t* outCpuTimestamp)
 	{
 		if (currentState == STATE_RUNNING)
 		{

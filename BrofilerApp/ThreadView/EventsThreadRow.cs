@@ -5,6 +5,7 @@ using Profiler.Data;
 using System.Windows.Media;
 using Profiler.DirectX;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace Profiler
 {
@@ -210,17 +211,16 @@ namespace Profiler
 					//Ignoring all the waiting outside marked work to simplify the view
 					if (frameSyncIndex < EventData.Events.Count && EventData.Events[frameSyncIndex].Start <= workStart)
 					{
-						Interval syncInterval = scroll.TimeToUnit(new Durable(stallFrom, workStart));
+						Durable syncDurable = new Durable(stallFrom, workStart);
+						Interval syncInterval = scroll.TimeToUnit(syncDurable);
 
 						double syncWidth = syncInterval.Right - syncInterval.Left;
-						if (syncWidth <= 0)
+						if (syncWidth > 0)
 						{
-							syncWidth = 0.1;
+							// draw sleep
+							Color waitColor = IsUserInitiatedSync(stallReason) ? SynchronizationColorUser : SynchronizationColor;
+							syncBuilder.AddRect(new Rect(syncInterval.Left, 0, syncWidth, SyncLineHeight / Height), waitColor);
 						}
-
-						// draw sleep
-						Color waitColor = IsUserInitiatedSync(stallReason) ? SynchronizationColorUser : SynchronizationColor;
-						syncBuilder.AddRect(new Rect(syncInterval.Left, 0, syncWidth, SyncLineHeight / Height), waitColor);
 					}
 
 					stallFrom = workFinish;
@@ -251,7 +251,7 @@ namespace Profiler
 		}
 
 		public override double Height { get { return RenderParams.BaseHeight * MaxDepth; } }
-		public override string Name { get { return Description.ThreadID != UInt64.MaxValue ? string.Format("{0} (0x{1:x})", Description.Name, Description.ThreadID) : Description.Name; } }
+		public override string Name { get { return Description.ThreadID != UInt64.MaxValue ? string.Format("{0} (0x{1:x})", Description.FullName, Description.ThreadID) : Description.Name; } }
 
 		double TextDrawThreshold = 8.0 * RenderSettings.dpiScaleX;
 		double TextDrawOffset = 1.5 * RenderSettings.dpiScaleY;
@@ -433,11 +433,11 @@ namespace Profiler
 			{
 				Interval interval = scroll.TimeToPixel(node.Entry);
 				Rect rect = new Rect(interval.Left, Offset + level * RenderParams.BaseHeight + RenderParams.BaseMargin, interval.Width, RenderParams.BaseHeight - RenderParams.BaseMargin);
-				EventNodeHover(point, rect, this, node);
+				EventNodeHover?.Invoke(point, rect, this, node);
 			}
 			else
 			{
-				EventNodeHover(point, new Rect(), this, null);
+				EventNodeHover?.Invoke(point, new Rect(), this, null);
 			}
 		}
 

@@ -19,6 +19,7 @@ namespace Profiler.Data
 
 	public struct Tick : ITick
 	{
+		public static long INVALID_TIMESTAMP = (Int64)(-1);
 		public long Start { get; set; }
 	}
 
@@ -122,7 +123,7 @@ namespace Profiler.Data
 		{
 			get
 			{
-				return Finish > Start;
+				return (Finish > Start) && (Finish != Tick.INVALID_TIMESTAMP) && (Start != Tick.INVALID_TIMESTAMP);
 			}
 		}
 

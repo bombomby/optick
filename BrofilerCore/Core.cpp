@@ -5,6 +5,7 @@
 #include "ProfilerServer.h"
 #include "EventDescriptionBoard.h"
 
+#include "Platform/CPUInfo.h"
 #include "Platform/SchedulerTrace.h"
 #include "Platform/SymbolEngine.h"
 
@@ -181,13 +182,11 @@ void Core::DumpFrames(uint32 mode)
 	++boardNumber;
 
 	DumpProgress("Generating summary...");
-
 	if (stateCallback != nullptr)
 	{
-		DumpProgress("Generating summary...");
 		stateCallback(BRO_DUMP_CAPTURE);
 	}
-
+	GenerateCommonSummary();
 	DumpSummary();
 
 	DumpProgress("Collecting Frame Events...");
@@ -331,13 +330,19 @@ void Core::DumpBoard(uint32 mode, EventTime timeSlice)
 	boardStream << mode; // Mode
 	boardStream << processDescs;
 	boardStream << threadDescs;
+	boardStream << (uint32)GetProcessID();
+	boardStream << (uint32)std::thread::hardware_concurrency();
 	Server::Get().Send(DataResponse::FrameDescriptionBoard, boardStream);
 
 	// Cleanup
 	processDescs.clear();
 	threadDescs.clear();
 }
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Core::GenerateCommonSummary()
+{
+	AttachSummary("CPU", GetCPUName().c_str());
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core::Core() : progressReportedLastTimestampMS(0), isActive(false), stateCallback(nullptr), boardNumber(0), gpuProfiler(nullptr), frameNumber(0)
 {
@@ -665,7 +670,7 @@ BROFILER_API bool IsFiberStorage(EventStorage* fiberStorage)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 BROFILER_API bool RegisterThread(const char* name)
 {
-	return Core::Get().RegisterThread(ThreadDescription(name, GetThreadID(), false), &Core::storage) != nullptr;
+	return Core::Get().RegisterThread(ThreadDescription(name, GetThreadID(), GetProcessID()), &Core::storage) != nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 BROFILER_API bool RegisterThread(const wchar_t* name)
@@ -673,7 +678,7 @@ BROFILER_API bool RegisterThread(const wchar_t* name)
 	const int THREAD_NAME_LENGTH = 128;
 	char mbName[THREAD_NAME_LENGTH];
 	wcstombs(mbName, name, THREAD_NAME_LENGTH);
-	return Core::Get().RegisterThread(ThreadDescription(mbName, GetThreadID(), false), &Core::storage) != nullptr;
+	return Core::Get().RegisterThread(ThreadDescription(mbName, GetThreadID(), GetProcessID()), &Core::storage) != nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 BROFILER_API bool UnRegisterThread()
@@ -688,7 +693,7 @@ BROFILER_API bool RegisterFiber(uint64 fiberId, EventStorage** slot)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 BROFILER_API EventStorage* RegisterStorage(const char* name)
 {
-	ThreadEntry* entry = Core::Get().RegisterThread(ThreadDescription(name, INVALID_THREAD_ID, false), nullptr);
+	ThreadEntry* entry = Core::Get().RegisterThread(ThreadDescription(name, INVALID_THREAD_ID, GetProcessID(), false), nullptr);
 	return entry ? &entry->storage : nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

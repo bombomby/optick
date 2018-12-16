@@ -55,7 +55,7 @@ namespace Profiler.Data
 		private int id;
 		private Color forceColor;
 
-		public Color Color { get; private set; }
+		public Color Color { get; set; }
 		public Color ForceColor
 		{
 			get
@@ -99,7 +99,7 @@ namespace Profiler.Data
 		public bool IsSleep { get { return Color == Colors.White; } }
 
 		public EventDescription() { }
-		public EventDescription(String name, int id)
+		public EventDescription(String name, int id = -1)
 		{
 			FullName = name;
 			this.id = id;
@@ -183,6 +183,16 @@ namespace Profiler.Data
 		public Int32 Priority { get; set; }
 		public Int32 Mask { get; set; }
 		public ProcessDescription Process { get; set; }
+		public int ThreadIndex { get; set; }
+
+		public enum Source
+		{
+			Game,
+			GameAuto,
+			System,
+			Core,
+		}
+		public Source Origin { get; set; }
 
 		public String FullName
 		{
@@ -230,6 +240,9 @@ namespace Profiler.Data
 		public Dictionary<UInt64, ThreadDescription> ThreadDescriptions { get; set; }
 		public Dictionary<UInt32, ProcessDescription> ProcessDescritpions { get; set; }
 
+		public int ProcessID { get; private set; }
+		public int CPUCoreCount { get; set; }
+
 		private List<EventDescription> board = new List<EventDescription>();
 		public List<EventDescription> Board
 		{
@@ -274,6 +287,8 @@ namespace Profiler.Data
 			for (int i = 0; i < threadCount; ++i)
 			{
 				ThreadDescription threadDesc = ThreadDescription.Read(response);
+				threadDesc.Origin = ThreadDescription.Source.Game;
+				threadDesc.ThreadIndex = i;
 				desc.Threads.Add(threadDesc);
 
 				if (!desc.ThreadID2ThreadIndex.ContainsKey(threadDesc.ThreadID))
@@ -337,6 +352,7 @@ namespace Profiler.Data
 			for (int i = 0; i < threadDescCount; ++i)
 			{
 				ThreadDescription thread = ThreadDescription.Read(response);
+				thread.Origin = ThreadDescription.Source.GameAuto;
 				if (!desc.ThreadDescriptions.ContainsKey(thread.ThreadID))
 					desc.ThreadDescriptions.Add(thread.ThreadID, thread);
 
@@ -344,6 +360,9 @@ namespace Profiler.Data
 				if (desc.ProcessDescritpions.TryGetValue(thread.ProcessID, out process))
 					thread.Process = process;
 			}
+
+			desc.ProcessID = response.Reader.ReadInt32();
+			desc.CPUCoreCount = response.Reader.ReadInt32();
 
 			return desc;
 		}

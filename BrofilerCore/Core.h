@@ -304,6 +304,8 @@ class Core
 	void CleanupThreadsAndFibers();
 
 	void DumpBoard(uint32 mode, EventTime timeSlice);
+
+	void GenerateCommonSummary();
 public:
 	void Activate(bool active);
 	bool isActive;

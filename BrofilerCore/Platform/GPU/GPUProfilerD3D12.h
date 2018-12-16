@@ -88,7 +88,7 @@ namespace Brofiler
 
 		void InitDevice(ID3D12Device* pDevice, ID3D12CommandQueue** pCommandQueues, uint32_t numCommandQueues);
 
-		void QueryTimestamp(ID3D12GraphicsCommandList* context, uint64_t* outCpuTimestamp);
+		void QueryTimestamp(ID3D12GraphicsCommandList* context, int64_t* outCpuTimestamp);
 
 		void Flip(IDXGISwapChain* swapChain);
 
@@ -96,7 +96,7 @@ namespace Brofiler
 		// Interface implementation
 		ClockSynchronization GetClockSynchronization(uint32_t nodeIndex) override;
 
-		void QueryTimestamp(void* context, uint64_t* outCpuTimestamp) override
+		void QueryTimestamp(void* context, int64_t* outCpuTimestamp) override
 		{
 			QueryTimestamp((ID3D12GraphicsCommandList*)context, outCpuTimestamp);
 		}

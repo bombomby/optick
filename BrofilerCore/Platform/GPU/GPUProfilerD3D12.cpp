@@ -134,7 +134,7 @@ namespace Brofiler
 		BRO_CHECK(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&node->syncFence)));
 	}
 
-	void GPUProfilerD3D12::QueryTimestamp(ID3D12GraphicsCommandList* context, uint64_t* outCpuTimestamp)
+	void GPUProfilerD3D12::QueryTimestamp(ID3D12GraphicsCommandList* context, int64_t* outCpuTimestamp)
 	{
 		if (currentState == STATE_RUNNING)
 		{
@@ -266,8 +266,8 @@ namespace Brofiler
 	{
 		ClockSynchronization clock;
 		clock.frequencyCPU = GetHighPrecisionFrequency();
-		nodePayloads[nodeIndex]->commandQueue->GetTimestampFrequency(&clock.frequencyGPU);
-		nodePayloads[nodeIndex]->commandQueue->GetClockCalibration(&clock.timestampGPU, &clock.timestampCPU);
+		nodePayloads[nodeIndex]->commandQueue->GetTimestampFrequency((uint64_t*)&clock.frequencyGPU);
+		nodePayloads[nodeIndex]->commandQueue->GetClockCalibration((uint64_t*)&clock.timestampGPU, (uint64_t*)&clock.timestampCPU);
 		return clock;
 	}
 

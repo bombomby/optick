@@ -310,10 +310,10 @@ struct Frame;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct EventTime
 {
-	static const uint64_t INVALID_TIMESTAMP = 0XFFFFFFFFFFFFFFFFull;
+	static const int64_t INVALID_TIMESTAMP = (int64_t)-1;
 
-	uint64_t start;
-	uint64_t finish;
+	int64_t start;
+	int64_t finish;
 
 	BRO_INLINE void Start() { start  = Brofiler::GetHighPrecisionTime(); }
 	BRO_INLINE void Stop() 	{ finish = Brofiler::GetHighPrecisionTime(); }

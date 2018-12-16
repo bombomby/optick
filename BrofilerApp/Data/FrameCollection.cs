@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Data;
 using System.IO;
 using System.Diagnostics;
+using System.Windows.Media;
 
 namespace Profiler.Data
 {
@@ -99,8 +100,22 @@ namespace Profiler.Data
 		public List<ThreadData> Fibers { get; set; }
 		public ThreadData MainThread { get { return Threads[Board.MainThreadIndex]; } }
 		public SummaryPack Summary { get; set; }
+		public SynchronizationMap Synchronization { get; set; }
 
 		public List<DataResponse> Responses { get; set; }
+
+		public List<ThreadData> GetThreads(ThreadDescription.Source origin)
+		{
+			List<ThreadData> threads = new List<ThreadData>();
+			for (int i = 0; i < Board.Threads.Count; ++i)
+			{
+				if (Board.Threads[i].Origin == origin)
+				{
+					threads.Add(Threads[i]);
+				}
+			}
+			return threads;
+		}
 
 		public FrameGroup(EventDescriptionBoard board)
 		{
@@ -144,9 +159,76 @@ namespace Profiler.Data
 
 		}
 
+		void GenerateCoreThreads()
+		{
+			List<KeyValuePair<ThreadDescription, ThreadData>> cores = new List<KeyValuePair<ThreadDescription, ThreadData>>(Board.CPUCoreCount);
+
+			for (int i = 0; i < Board.CPUCoreCount; ++i)
+			{
+				ThreadDescription desc = new ThreadDescription() { Name = String.Format("CPU Core {0:00}", i), ThreadID = UInt64.MaxValue, Origin = ThreadDescription.Source.Core };
+				cores.Add(new KeyValuePair<ThreadDescription, ThreadData>(desc, AddThread(desc)));
+			}
+
+			foreach (KeyValuePair<UInt64, Synchronization> pair in Synchronization.SyncMap)
+			{
+				ThreadDescription threadDesc = null;
+				Board.ThreadDescriptions.TryGetValue(pair.Key, out threadDesc);
+
+				EventDescription eventDesc = new EventDescription(threadDesc != null ? String.Format("{0}:0x{1:X}", threadDesc.FullName, threadDesc.ThreadID) : pair.Key.ToString("X"));
+				if (threadDesc != null && threadDesc.ProcessID != Board.ProcessID)
+					eventDesc.Color = Colors.SlateGray;
+
+				foreach (SyncInterval interval in pair.Value)
+				{
+					Debug.Assert(0 <= interval.Core && interval.Core < cores.Count, "Invalid Core Index");
+
+					Entry entry = new Entry(eventDesc, interval.Start, interval.Finish);
+
+					EventFrame frame = new EventFrame(new FrameHeader(interval, cores[interval.Core].Key.ThreadIndex), new List<Entry>() { entry }, this);
+					entry.Frame = frame;
+
+					cores[interval.Core].Value.Events.Add(frame);
+				}
+			}
+
+			cores.ForEach(core => core.Value.Events.Sort());
+		}
+
+
+		private void GenerateMiscThreads()
+		{
+			foreach (KeyValuePair<UInt64, ThreadDescription> pair in Board.ThreadDescriptions)
+			{
+				ThreadDescription desc = pair.Value;
+				if (desc.ProcessID == Board.ProcessID)
+				{
+					if (GetThread(pair.Key) == null)
+					{
+						Synchronization sync = null;
+						if (Synchronization.SyncMap.TryGetValue(pair.Key, out sync))
+						{
+							ThreadData threadData = AddThread(pair.Value);
+
+							EventDescription eventDesc = new EventDescription(desc.FullName);
+
+							foreach (SyncInterval interval in sync)
+							{
+								Entry entry = new Entry(eventDesc, interval.Start, interval.Finish);
+								EventFrame frame = new EventFrame(new FrameHeader(interval, Threads.Count - 1), new List<Entry>() { entry }, this);
+								entry.Frame = frame;
+
+								threadData.Events.Add(frame);
+							}
+						}
+					}
+				}
+			}
+
+		}
 		public void AddSynchronization(SynchronizationMap syncMap)
 		{
 			Responses.Add(syncMap.Response);
+			Synchronization = syncMap;
 
 			for (int i = 0; i < Math.Min(Board.Threads.Count, Threads.Count); ++i)
 			{
@@ -157,6 +239,9 @@ namespace Profiler.Data
 					Threads[i].Sync = sync;
 				}
 			}
+
+			GenerateCoreThreads();
+			GenerateMiscThreads();
 		}
 
 		public void AddFiberSynchronization(FiberSynchronization fiberSync)
@@ -256,7 +341,7 @@ namespace Profiler.Data
 
 					if (entries != null && entries.Count > 0)
 					{
-						FrameHeader header = new FrameHeader(threadIndex, fiberIndex, border);
+						FrameHeader header = new FrameHeader(border, threadIndex, fiberIndex);
 						EventFrame block = new EventFrame(header, entries, this);
 						entries.ForEach(e => e.Frame = block);
 						Threads[threadIndex].AddWithMerge(block);
@@ -296,6 +381,18 @@ namespace Profiler.Data
 				return Threads[threadIndex];
 			}
 			return null;
+		}
+
+		public ThreadData AddThread(ThreadDescription desc)
+		{
+			int index = Threads.Count;
+			desc.ThreadIndex = index;
+			if (desc.ThreadID != UInt64.MaxValue)
+				Board.ThreadID2ThreadIndex.Add(desc.ThreadID, index);
+			ThreadData threadData = new ThreadData();
+			Threads.Add(threadData);
+			Board.Threads.Add(desc);
+			return threadData;
 		}
 
 		public List<Callstack> GetCallstacks(EventDescription desc, CallStackReason type = CallStackReason.AutoSample)

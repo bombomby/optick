@@ -48,13 +48,13 @@ namespace Brofiler
 		~GPUProfilerVulkan();
 
 		void InitDevice(VkDevice* devices, VkPhysicalDevice* physicalDevices, VkQueue* cmdQueues, uint32_t* cmdQueuesFamily, uint32_t nodeCount);
-		void QueryTimestamp(VkCommandBuffer commandBuffer, uint64_t* outCpuTimestamp);
+		void QueryTimestamp(VkCommandBuffer commandBuffer, int64_t* outCpuTimestamp);
 
 
 		// Interface implementation
 		ClockSynchronization GetClockSynchronization(uint32_t nodeIndex) override;
 
-		void QueryTimestamp(void* context, uint64_t* outCpuTimestamp) override
+		void QueryTimestamp(void* context, int64_t* outCpuTimestamp) override
 		{
 			QueryTimestamp((VkCommandBuffer)context, outCpuTimestamp);
 		}
