@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Common.h"
-#include "../GPUProfiler.h"
+#include "GPUProfiler.h"
 
 // GPU Support for Vulkan
 #if !defined(BRO_ENABLE_GPU_VULKAN)

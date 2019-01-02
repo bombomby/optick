@@ -2,8 +2,8 @@
 
 #if BRO_ENABLE_GPU
 #include <thread>
-#include "../BrofilerCore/Core.h"
-#include "../BrofilerCore/Memory.h"
+#include "Core.h"
+#include "Memory.h"
 
 namespace Brofiler
 {

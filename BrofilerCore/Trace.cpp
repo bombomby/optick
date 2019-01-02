@@ -1,4 +1,4 @@
-#include "SchedulerTrace.h"
+#include "Trace.h"
 
 namespace Brofiler
 {

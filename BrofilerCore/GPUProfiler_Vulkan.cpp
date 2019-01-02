@@ -1,8 +1,8 @@
-#include "GPUProfilerVulkan.h"
+#include "GPUProfiler_Vulkan.h"
 
 #if BRO_ENABLE_GPU_VULKAN
 
-#include "../BrofilerCore/Core.h"
+#include "Core.h"
 
 #define BRO_VK_CHECK(args) do { VkResult __hr = args; BRO_ASSERT(__hr == VK_SUCCESS, "Failed check"); } while(false);
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Common.h"
-#include "../GPUProfiler.h"
+#include "GPUProfiler.h"
 
 // GPU Support for D3D12
 #if !defined(BRO_ENABLE_GPU_D3D12)
@@ -19,7 +19,7 @@
 #include <dxgi.h>
 #include <dxgi1_4.h>
 
-#include "../BrofilerCore/Core.h"
+#include "Core.h"
 
 namespace Brofiler
 {

@@ -4,9 +4,9 @@
 #include "Timer.h"
 #include "ProfilerServer.h"
 
-#include "Platform/CPUInfo.h"
-#include "Platform/SchedulerTrace.h"
-#include "Platform/SymbolEngine.h"
+#include "CPUInfo.h"
+#include "Trace.h"
+#include "SymbolEngine.h"
 
 #include <algorithm>
 #include <unordered_set>

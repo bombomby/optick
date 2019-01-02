@@ -111,7 +111,7 @@ namespace Profiler
 
 			if (layer == DirectXCanvas.Layer.Background)
 			{
-				ChartMeshes.ForEach(mesh =>
+				ChartMeshes?.ForEach(mesh =>
 				{
 					mesh.WorldTransform = world;
 					canvas.Draw(mesh);

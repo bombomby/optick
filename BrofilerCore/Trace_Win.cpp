@@ -2,9 +2,9 @@
 
 #include <array>
 #include <vector>
-#include "EtwTracer.h"
-#include "../../Core.h"
-#include "../SymbolEngine.h"
+#include "Trace_Win.h"
+#include "Core.h"
+#include "SymbolEngine.h"
 
 #include <psapi.h>
 

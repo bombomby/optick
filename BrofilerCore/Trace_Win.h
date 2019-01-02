@@ -1,6 +1,9 @@
 #pragma once
+
 #ifdef _WIN32
 
+#include "Trace.h"
+#include <unordered_map>
 
 #define INITGUID  // Causes definition of SystemTraceControlGuid in evntrace.h.
 #include <strsafe.h>
@@ -94,6 +97,40 @@ typedef struct _EVENT_RECORD {
 #endif
 ///////////////////////////////////////////////////////////////////////////////
 
+namespace Brofiler
+{
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+class ETW : public SchedulerTrace
+{
+	EVENT_TRACE_PROPERTIES *traceProperties;
+	EVENT_TRACE_LOGFILE logFile;
+	TRACEHANDLE traceSessionHandle;
+	TRACEHANDLE openedHandle;
+
+	HANDLE processThreadHandle;
+	DWORD currentProcessId;
+
+
+	bool isActive;
+
+	static DWORD WINAPI RunProcessTraceThreadFunction(LPVOID parameter);
+	static void AdjustPrivileges();
+
+	std::unordered_map<uint64_t, const EventDescription*> syscallDescriptions;
+
+	void ResolveSysCalls();
+public:
+
+	ETW();
+	~ETW();
+
+	virtual CaptureStatus::Type Start(int mode, const ThreadList& threads) override;
+	virtual bool Stop() override;
+
+	DWORD GetProcessID() const { return currentProcessId; }
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+}
 
 #endif

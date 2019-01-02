@@ -1,6 +1,6 @@
 #ifdef _WIN32
 #include "Common.h"
-#include "SymEngine.h"
+#include "SymbolEngine_Win.h"
 
 #include <DbgHelp.h>
 #pragma comment( lib, "DbgHelp.Lib" )

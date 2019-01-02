@@ -9,7 +9,7 @@
 #include "MemoryPool.h"
 #include "Serialization.h"
 
-#include "Platform/GPUProfiler.h"
+#include "GPUProfiler.h"
 
 #include <array>
 #include <atomic>

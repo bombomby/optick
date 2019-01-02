@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <array>
 #include "Serialization.h"
-#include "../SymbolEngine.h"
+#include "SymbolEngine.h"
 
 namespace Brofiler
 {

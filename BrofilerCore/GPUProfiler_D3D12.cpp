@@ -1,11 +1,11 @@
-#include "GPUProfilerD3D12.h"
+#include "GPUProfiler_D3D12.h"
 
 #if BRO_ENABLE_GPU_D3D12
 
 #include <thread>
 
 #include "Memory.h"
-#include "../BrofilerCore/Core.h"
+#include "Core.h"
 
 #define BRO_CHECK(args) do { HRESULT __hr = args; BRO_ASSERT(__hr == S_OK, "Failed check"); } while(false);
 
