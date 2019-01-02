@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include "Common.h"
+
 ////////////////////////////////////////////////////////////////////////
 // Target Platform
 ////////////////////////////////////////////////////////////////////////
@@ -53,17 +55,6 @@
 #endif
 
 ////////////////////////////////////////////////////////////////////////
-// BRO_FORCEINLINE
-////////////////////////////////////////////////////////////////////////
-#if defined(BRO_MSVC_COMPILER_FAMILY)
-#define BRO_FORCEINLINE __forceinline
-#elif defined(BRO_GCC_COMPILER_FAMILY)
-#define BRO_FORCEINLINE __attribute__((always_inline)) inline
-#else
-#error Can not define BRO_FORCEINLINE. Unknown platform.
-#endif
-
-////////////////////////////////////////////////////////////////////////
 // BRO_THREAD_LOCAL
 ////////////////////////////////////////////////////////////////////////
 #if defined(BRO_CPP11_SUPPORTED)
@@ -76,25 +67,94 @@
 #error Can not define BRO_THREAD_LOCAL. Unknown platform.
 #endif
 
-////////////////////////////////////////////////////////////////////////
-// BRO_ALIGN
-////////////////////////////////////////////////////////////////////////
-#if defined(BRO_MSVC_COMPILER_FAMILY)
-#define BRO_ALIGN(N) __declspec( align( N ) )
-#elif defined(BRO_GCC_COMPILER_FAMILY)
-#define BRO_ALIGN(N) __attribute__((aligned(N)))
-#else
-#error Can not define BRO_ALIGN. Unknown platform.
+#if defined(BRO_GCC_COMPILER_FAMILY)
+#include <sys/time.h>
+#include <pthread.h>
+#include <unistd.h>
 #endif
 
-////////////////////////////////////////////////////////////////////////
-// BRO_DEBUG_BREAK
-////////////////////////////////////////////////////////////////////////
-#if defined(BRO_MSVC_COMPILER_FAMILY)
-#define BRO_DEBUG_BREAK __debugbreak()
-#elif defined(BRO_GCC_COMPILER_FAMILY)
-#define BRO_DEBUG_BREAK __builtin_trap()
-#else
-#error Can not define BRO_DEBUG_BREAK. Unknown platform.
-#endif
+namespace Brofiler
+{
+	typedef uint64 ThreadID;
+	static const ThreadID INVALID_THREAD_ID = (ThreadID)-1;
 
+	typedef uint32 ProcessID;
+	static const ProcessID INVALID_PROCESS_ID = (ProcessID)-1;
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	BRO_INLINE ThreadID GetThreadID()
+	{
+#if defined(BRO_PLATFORM_WINDOWS)
+		return GetCurrentThreadId();
+#elif defined(BRO_PLATFORM_POSIX) || defined(BRO_PLATFORM_OSX)
+		return (uint64)pthread_self();
+#else
+		#error Platform is not supported!
+#endif
+	}
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	BRO_INLINE ProcessID GetProcessID()
+	{
+#if defined(BRO_PLATFORM_WINDOWS)
+		return GetCurrentProcessId();
+#elif defined(BRO_PLATFORM_POSIX) || defined(BRO_PLATFORM_OSX)
+		return (ProcessID)getpid();
+#else
+		#error Platform is not supported!
+#endif
+	}
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	BRO_INLINE int64 GetFrequency()
+	{
+#if defined(BRO_MSVC_COMPILER_FAMILY)
+		LARGE_INTEGER frequency;
+		QueryPerformanceFrequency(&frequency);
+		return frequency.QuadPart;
+#elif defined(BRO_GCC_COMPILER_FAMILY)
+		return 1000000;
+#else
+	#error Platform is not supported!
+#endif
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	BRO_INLINE int64 GetTimeMicroSeconds()
+	{
+#if defined(BRO_MSVC_COMPILER_FAMILY)
+		LARGE_INTEGER largeInteger;
+		QueryPerformanceCounter(&largeInteger);
+		return (largeInteger.QuadPart * int64(1000000)) / GetFrequency();
+#elif defined(BRO_GCC_COMPILER_FAMILY)
+		struct timeval te;
+		gettimeofday(&te, nullptr);
+		return te.tv_sec * 1000000LL + te.tv_usec;
+#else
+	#error Platform is not supported!
+#endif
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	BRO_INLINE int64 GetTimeMilliSeconds()
+	{
+		return GetTimeMicroSeconds() / 1000;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	BRO_INLINE int64 GetTime()
+	{
+#if defined(BRO_MSVC_COMPILER_FAMILY)
+		LARGE_INTEGER largeInteger;
+		QueryPerformanceCounter(&largeInteger);
+		return largeInteger.QuadPart;
+#elif defined(BRO_GCC_COMPILER_FAMILY)
+		return GetTimeMicroSeconds();
+#else
+	#error Platform is not supported!
+#endif
+	}
+}

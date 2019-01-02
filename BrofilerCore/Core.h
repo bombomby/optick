@@ -3,10 +3,10 @@
 #include <thread>
 
 #include "Common.h"
-#include "ThreadID.h"
+#include "Platform.h"
 
 #include "Event.h"
-#include "MemoryPool.h"
+#include "Memory.h"
 #include "Serialization.h"
 
 #include "GPUProfiler.h"
@@ -457,9 +457,6 @@ public:
 
 	// Main Update Function
 	static uint32_t NextFrame() { return Get().Update(); }
-
-	// Get Active ThreadID
-	//static BRO_INLINE uint32 GetThreadID() { return Get().mainThreadID; }
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

@@ -3,51 +3,31 @@
 #include <string>
 
 
-#if BRO_MSVC_COMPILER_FAMILY
+#if defined(BRO_MSVC)
 #pragma warning( push )
-
 //C4127. Conditional expression is constant
 #pragma warning( disable : 4127 )
 #endif
 
-
-
-#if BRO_PLATFORM_WINDOWS
+#if defined(BRO_MSVC)
 #define USE_WINDOWS_SOCKETS (1)
 #else
 #define USE_BERKELEY_SOCKETS (1)
 #endif
-
-
 #define SOCKET_PROTOCOL_TCP (6)
-
-
 #if defined(USE_BERKELEY_SOCKETS)
-
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-
 #include <unistd.h>
 #include <fcntl.h>
 typedef int TcpSocket;
-
-
 #elif defined(USE_WINDOWS_SOCKETS)
-
-#if defined(BRO_UWP)
-#include <WinSock2.h>
-#else
 #include <winsock.h>
-#endif
-
 #include <basetsd.h>
 typedef UINT_PTR TcpSocket;
-
 #else
-
 #error Platform not supported
-
 #endif
 
 namespace Brofiler
@@ -263,6 +243,6 @@ namespace Brofiler
 }
 
 
-#if BRO_MSVC_COMPILER_FAMILY
+#if defined(BRO_MSVC)
 #pragma warning( pop )
 #endif

@@ -41,9 +41,9 @@
 #define BRO_CONCAT_IMPL(x, y) x##y
 #define BRO_CONCAT(x, y) BRO_CONCAT_IMPL(x, y)
 
-#if BRO_MSVC
+#if defined(BRO_MSVC)
 #define BRO_INLINE __forceinline
-#elif BRO_GCC
+#elif defined(BRO_GCC)
 #define BRO_INLINE __attribute__((always_inline)) inline
 #else
 #error Compiler is not supported

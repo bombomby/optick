@@ -264,7 +264,7 @@ EventDescription* EventDescriptionBoard::CreateDescription(const char* name, con
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventDescription* EventDescriptionBoard::CreateSharedDescription(const char* name, const char* file /*= nullptr*/, uint32_t line /*= 0*/, uint32_t color /*= Color::Null*/, uint32_t filter /*= 0*/)
 {
-	StringHash nameHash(name);
+	BroStringHash nameHash(name);
 
 	std::lock_guard<std::mutex> lock(sharedLock);
 

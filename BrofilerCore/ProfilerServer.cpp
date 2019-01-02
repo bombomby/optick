@@ -4,7 +4,7 @@
 #include "Socket.h"
 #include "Message.h"
 
-#if BRO_MSVC_COMPILER_FAMILY
+#if defined(BRO_MSVC)
 #pragma comment( lib, "ws2_32.lib" )
 #endif
 

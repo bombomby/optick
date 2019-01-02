@@ -1,10 +1,11 @@
 #pragma once
 #include "Common.h"
+#include "Memory.h"
+
 #include <vector>
 #include <sstream>
-#include "MemoryPool.h"
 
-#if BRO_MSVC_COMPILER_FAMILY
+#if defined(BRO_MSVC)
 #pragma warning( push )
 
 //C4250. inherits 'std::basic_ostream'
@@ -110,6 +111,6 @@ namespace Brofiler
 
 }
 
-#if BRO_MSVC_COMPILER_FAMILY
+#if defined(BRO_MSVC)
 #pragma warning( pop )
 #endif
