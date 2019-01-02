@@ -3,7 +3,6 @@
 #include "Event.h"
 #include "Message.h"
 #include "ProfilerServer.h"
-#include "EventDescriptionBoard.h"
 
 namespace Brofiler
 {

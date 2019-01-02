@@ -292,7 +292,7 @@ struct ETWRuntime
 
 	void Reset()
 	{
-		activeCores.assign(INVALID_THREAD_ID);
+		activeCores.fill(INVALID_THREAD_ID);
 		activeSyscalls.resize(0);;
 	}
 };
