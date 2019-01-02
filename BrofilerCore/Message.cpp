@@ -1,6 +1,5 @@
 #include "Common.h"
 #include "Core.h"
-#include "Event.h"
 #include "Message.h"
 #include "ProfilerServer.h"
 

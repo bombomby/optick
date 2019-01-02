@@ -1,5 +1,4 @@
 #include "Core.h"
-#include "Event.h"
 #include "ProfilerServer.h"
 
 #include "Trace.h"

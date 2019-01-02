@@ -6,7 +6,6 @@
 #include "Platform.h"
 
 #include "CityHash.h"
-#include "Event.h"
 #include "Memory.h"
 #include "Serialization.h"
 
