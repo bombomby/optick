@@ -349,6 +349,16 @@ struct BROFILER_API FiberSyncData : public EventTime
 	static void DetachFromThread(EventStorage* storage);
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+template<class T>
+struct TagData
+{
+	const EventDescription* description;
+	int64_t timestamp;
+	T data;
+	TagData() {}
+	TagData(const EventDescription& desc, T d) : description(&desc), timestamp(Brofiler::GetHighPrecisionTime()), data(d) {}
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct BROFILER_API EventDescription
 {
 	// HOT  \\

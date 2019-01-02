@@ -5,6 +5,7 @@
 #include "Common.h"
 #include "Platform.h"
 
+#include "CityHash.h"
 #include "Event.h"
 #include "Memory.h"
 #include "Serialization.h"
@@ -15,6 +16,36 @@
 #include <atomic>
 #include <map>
 #include <list>
+#include <unordered_map>
+
+// We expect to have 1k unique strings going through Brofiler at once
+// The chances to hit a collision are 1 in 10 trillion (odds of a meteor landing on your house)
+// We should be quite safe here :)
+// https://preshing.com/20110504/hash-collision-probabilities/
+// Feel free to add a seed and wait for another strike if armageddon starts
+struct BroStringHash
+{
+	uint64 hash;
+
+	BroStringHash(size_t h) : hash(h) {}
+	BroStringHash(const char* str) : hash(CityHash64(str, (int)strlen(str))) {}
+
+	bool operator==(const BroStringHash& other) const { return hash == other.hash; }
+	bool operator<(const BroStringHash& other) const { return hash < other.hash; }
+};
+
+// Overriding default hash function to return hash value directly
+namespace std
+{
+	template<>
+	struct hash<BroStringHash>
+	{
+		size_t operator()(const BroStringHash& x) const
+		{
+			return x.hash;
+		}
+	};
+}
 
 namespace Brofiler
 {
@@ -104,6 +135,36 @@ typedef MemoryPool<TagU32, 128> TagU32Buffer;
 typedef MemoryPool<TagU64, 128> TagU64Buffer;
 typedef MemoryPool<TagPoint, 64> TagPointBuffer;
 typedef MemoryPool<TagString, 64> TagStringBuffer;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Board
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+typedef MemoryPool<EventDescription, 4096> EventDescriptionList;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class EventDescriptionBoard
+{
+	// List of stored Event Descriptions
+	EventDescriptionList boardDescriptions;
+
+	// Shared Descriptions
+	typedef std::unordered_map<BroStringHash, EventDescription*> DescriptionMap;
+	DescriptionMap sharedDescriptions;
+	MemoryBuffer<64 * 1024> sharedNames;
+	std::mutex sharedLock;
+
+	// Singleton instance of the board
+	static EventDescriptionBoard instance;
+public:
+	EventDescription* CreateDescription(const char* name, const char* file = nullptr, uint32_t line = 0, uint32_t color = Color::Null, uint32_t filter = 0);
+	EventDescription* CreateSharedDescription(const char* name, const char* file = nullptr, uint32_t line = 0, uint32_t color = Color::Null, uint32_t filter = 0);
+
+	static EventDescriptionBoard& Get();
+
+	const EventDescriptionList& GetEvents() const;
+
+	friend OutputDataStream& operator << (OutputDataStream& stream, const EventDescriptionBoard& ob);
+};
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct EventStorage
 {
