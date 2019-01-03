@@ -181,7 +181,7 @@ public:
 	void Listen()
 	{
 		int result = ::listen(listenSocket, 8);
-		if (result != S_OK)
+		if (result != 0)
 		{
 			BRO_FAILED("Can't start listening");
 		}

@@ -2,8 +2,11 @@
 
 #include "Brofiler.h"
 
+#include <cstdio>
+#include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
+
 
 #if BRO_MSVC
 #ifndef WIN32_LEAN_AND_MEAN
@@ -90,4 +93,23 @@ static_assert(sizeof(uint64) == 8, "Invalid type size, uint64");
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Safe Functions
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#if BRO_GCC
+template<size_t sizeOfBuffer>
+inline int sprintf_s(char (&buffer)[sizeOfBuffer], const char* format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    int result = vsnprintf(buffer, sizeOfBuffer, format, ap);
+    va_end(ap);
+    return result;
+}
+template<size_t sizeOfBuffer>
+inline char* strcpy_s(char (&buffer)[sizeOfBuffer], const char* src)
+{
+    buffer[sizeOfBuffer - 1] = 0;
+    return strncpy(buffer, src, sizeOfBuffer - 1);
+}
+#endif
