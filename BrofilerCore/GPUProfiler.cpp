@@ -21,7 +21,7 @@ namespace Brofiler
 		for (int i = 0; i < GPU_QUEUE_COUNT; ++i)
 		{
 			char name[128] = { 0 };
-			sprintf(name, "%s [%s]", nodeName, GetGPUQueueName((GPUQueueType)i));
+			sprintf_s(name, "%s [%s]", nodeName, GetGPUQueueName((GPUQueueType)i));
 			node->gpuEventStorage[i] = RegisterStorage(name);
 		}
 		nodes[nodeIndex] = node;

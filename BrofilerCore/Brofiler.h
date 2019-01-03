@@ -6,6 +6,11 @@
 #define BRO_GCC (1)
 #elif defined(_MSC_VER)
 #define BRO_MSVC (1)
+#if defined(_DURANGO)
+#define BRO_DURANGO (1)
+#else
+#define BRO_PC (1)
+#endif
 #else
 #error Compiler not supported
 #endif

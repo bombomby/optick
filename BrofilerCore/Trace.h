@@ -9,7 +9,7 @@
 
 namespace Brofiler
 {
-	struct SchedulerTrace
+	struct Trace
 	{
 		enum Mode
 		{
@@ -29,7 +29,7 @@ namespace Brofiler
 		virtual CaptureStatus::Type Start(int mode, const ThreadList& threads);
 		virtual bool Stop();
 
-		virtual ~SchedulerTrace() {};
-		static SchedulerTrace* Get();
+		virtual ~Trace() {};
+		static Trace* Get();
 	};
 }

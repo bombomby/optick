@@ -464,25 +464,24 @@ bool CallstackCollector::SerializeSymbols(OutputDataStream& stream)
 	std::vector<const Symbol*> symbols;
 	symbols.reserve(symbolSet.size());
 
-	std::stringstream msg;
-
 	size_t callstacksCount = symbolSet.size();
 	size_t callstackIndex = 0;
 
-	for (auto it = symbolSet.begin(); it != symbolSet.end(); ++it)
+
+	Core::Get().DumpProgress("Resolving addresses... ");
+
+	if (symEngine)
 	{
-		callstackIndex++;
-		msg.str("");
-
-		uint64 address = *it;
-		if (const Symbol* symbol = symEngine->GetSymbol(address))
+		for (auto it = symbolSet.begin(); it != symbolSet.end(); ++it)
 		{
-			symbols.push_back(symbol);
+			callstackIndex++;
+
+			uint64 address = *it;
+			if (const Symbol* symbol = symEngine->GetSymbol(address))
+			{
+				symbols.push_back(symbol);
+			}
 		}
-
-		msg << "Resolving callstack " << (uint32)callstackIndex << " of " << (uint32)(callstacksCount + 1) << std::endl;
-
-		Core::Get().DumpProgress(msg.str().c_str());
 	}
 
 	stream << symbols;
@@ -849,7 +848,7 @@ void Core::GenerateCommonSummary()
 Core::Core() : progressReportedLastTimestampMS(0), isActive(false), stateCallback(nullptr), boardNumber(0), gpuProfiler(nullptr), frameNumber(0)
 {
 	mainThreadID = GetThreadID();
-	schedulerTrace = SchedulerTrace::Get();
+	schedulerTrace = Trace::Get();
 	symbolEngine = SymbolEngine::Get();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -910,10 +909,15 @@ void Core::Activate( bool active )
 
 		if (active)
 		{
-			CaptureStatus::Type status = schedulerTrace->Start(SchedulerTrace::ALL, threads);
-			// Let's retry with more narrow setup
-			if (status != CaptureStatus::OK)
-				status = schedulerTrace->Start(SchedulerTrace::SWITCH_CONTEXTS, threads);
+			CaptureStatus::Type status = CaptureStatus::FAILED;
+
+			if (schedulerTrace)
+			{
+				status = schedulerTrace->Start(Trace::ALL, threads);
+				// Let's retry with more narrow setup
+				if (status != CaptureStatus::OK)
+					status = schedulerTrace->Start(Trace::SWITCH_CONTEXTS, threads);
+			}
 
 			if (gpuProfiler)
 				gpuProfiler->Start(0);
@@ -922,7 +926,8 @@ void Core::Activate( bool active )
 		}
 		else
 		{
-			schedulerTrace->Stop();
+			if (schedulerTrace)
+				schedulerTrace->Stop();
 
 			if (gpuProfiler)
 				gpuProfiler->Stop(0);
@@ -1179,7 +1184,8 @@ BROFILER_API bool RegisterThread(const wchar_t* name)
 {
 	const int THREAD_NAME_LENGTH = 128;
 	char mbName[THREAD_NAME_LENGTH];
-	wcstombs(mbName, name, THREAD_NAME_LENGTH);
+	size_t numConverted = 0;
+	wcstombs_s(&numConverted, mbName, name, THREAD_NAME_LENGTH);
 	return Core::Get().RegisterThread(ThreadDescription(mbName, GetThreadID(), GetProcessID()), &Core::storage) != nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,9 +1,9 @@
 #pragma once
 
+#include "Message.h"
+
 #include <mutex>
 #include <thread>
-
-#include "Message.h"
 
 namespace Brofiler
 {

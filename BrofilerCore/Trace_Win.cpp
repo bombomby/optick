@@ -1,23 +1,563 @@
-#ifdef _WIN32
+#if _WIN32
+
+#include "Trace.h"
+
+#if BRO_ENABLE_TRACING
 
 #include <array>
 #include <vector>
-#include "Trace_Win.h"
 #include "Core.h"
 #include "SymbolEngine.h"
 
 #include <psapi.h>
-
-//#include <tdh.h>
-//#pragma comment(lib, "tdh.lib")
 
 /*
 Event Tracing Functions - API
 https://msdn.microsoft.com/en-us/library/windows/desktop/aa363795(v=vs.85).aspx
 */
 
+#define DECLARE_ETW (!WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP))
+
+#if DECLARE_ETW
+// Copied from Windows SDK
+#ifndef WMIAPI
+#ifndef MIDL_PASS
+#ifdef _WMI_SOURCE_
+#define WMIAPI __stdcall
+#else
+#define WMIAPI DECLSPEC_IMPORT __stdcall
+#endif // _WMI_SOURCE
+#endif // MIDL_PASS
+#endif // WMIAPI
+#include <guiddef.h>
+#if defined(_NTDDK_) || defined(_NTIFS_) || defined(_WMIKM_)
+#define _EVNTRACE_KERNEL_MODE
+#endif
+#if !defined(_EVNTRACE_KERNEL_MODE)
+#include <wmistr.h>
+#endif
+
+#if _MSC_VER <= 1600
+#define EVENT_DESCRIPTOR_DEF
+#define EVENT_HEADER_DEF
+#define EVENT_HEADER_EXTENDED_DATA_ITEM_DEF
+#define EVENT_RECORD_DEF
+#endif
+
+#ifndef _TRACEHANDLE_DEFINED
+#define _TRACEHANDLE_DEFINED
+typedef ULONG64 TRACEHANDLE, *PTRACEHANDLE;
+#endif
+
+//
+// EventTraceGuid is used to identify a event tracing session
+//
+DEFINE_GUID( /* 68fdd900-4a3e-11d1-84f4-0000f80464e3 */
+	EventTraceGuid,
+	0x68fdd900,
+	0x4a3e,
+	0x11d1,
+	0x84, 0xf4, 0x00, 0x00, 0xf8, 0x04, 0x64, 0xe3
+);
+
+//
+// SystemTraceControlGuid. Used to specify event tracing for kernel
+//
+DEFINE_GUID( /* 9e814aad-3204-11d2-9a82-006008a86939 */
+	SystemTraceControlGuid,
+	0x9e814aad,
+	0x3204,
+	0x11d2,
+	0x9a, 0x82, 0x00, 0x60, 0x08, 0xa8, 0x69, 0x39
+);
+
+//
+// EventTraceConfigGuid. Used to report system configuration records
+//
+DEFINE_GUID( /* 01853a65-418f-4f36-aefc-dc0f1d2fd235 */
+	EventTraceConfigGuid,
+	0x01853a65,
+	0x418f,
+	0x4f36,
+	0xae, 0xfc, 0xdc, 0x0f, 0x1d, 0x2f, 0xd2, 0x35
+);
+
+//
+// DefaultTraceSecurityGuid. Specifies the default event tracing security
+//
+DEFINE_GUID( /* 0811c1af-7a07-4a06-82ed-869455cdf713 */
+	DefaultTraceSecurityGuid,
+	0x0811c1af,
+	0x7a07,
+	0x4a06,
+	0x82, 0xed, 0x86, 0x94, 0x55, 0xcd, 0xf7, 0x13
+);
+
+
+///////////////////////////////////////////////////////////////////////////////
+#define PROCESS_TRACE_MODE_REAL_TIME                0x00000100
+#define PROCESS_TRACE_MODE_RAW_TIMESTAMP            0x00001000
+#define PROCESS_TRACE_MODE_EVENT_RECORD             0x10000000
+///////////////////////////////////////////////////////////////////////////////
+#define EVENT_HEADER_FLAG_EXTENDED_INFO				0x0001
+#define EVENT_HEADER_FLAG_PRIVATE_SESSION			0x0002
+#define EVENT_HEADER_FLAG_STRING_ONLY				0x0004
+#define EVENT_HEADER_FLAG_TRACE_MESSAGE				0x0008
+#define EVENT_HEADER_FLAG_NO_CPUTIME				0x0010
+#define EVENT_HEADER_FLAG_32_BIT_HEADER				0x0020
+#define EVENT_HEADER_FLAG_64_BIT_HEADER				0x0040
+#define EVENT_HEADER_FLAG_CLASSIC_HEADER			0x0100
+#define EVENT_HEADER_FLAG_PROCESSOR_INDEX			0x0200
+///////////////////////////////////////////////////////////////////////////////
+#define KERNEL_LOGGER_NAMEW							L"NT Kernel Logger"
+///////////////////////////////////////////////////////////////////////////////
+#define EVENT_TRACE_REAL_TIME_MODE          0x00000100  // Real time mode on
+///////////////////////////////////////////////////////////////////////////////
+#define EVENT_TRACE_CONTROL_STOP            1
+///////////////////////////////////////////////////////////////////////////////
+
+//
+// Enable flags for Kernel Events
+//
+#define EVENT_TRACE_FLAG_PROCESS            0x00000001  // process start & end
+#define EVENT_TRACE_FLAG_THREAD             0x00000002  // thread start & end
+#define EVENT_TRACE_FLAG_IMAGE_LOAD         0x00000004  // image load
+
+#define EVENT_TRACE_FLAG_DISK_IO            0x00000100  // physical disk IO
+#define EVENT_TRACE_FLAG_DISK_FILE_IO       0x00000200  // requires disk IO
+
+#define EVENT_TRACE_FLAG_MEMORY_PAGE_FAULTS 0x00001000  // all page faults
+#define EVENT_TRACE_FLAG_MEMORY_HARD_FAULTS 0x00002000  // hard faults only
+
+#define EVENT_TRACE_FLAG_NETWORK_TCPIP      0x00010000  // tcpip send & receive
+
+#define EVENT_TRACE_FLAG_REGISTRY           0x00020000  // registry calls
+#define EVENT_TRACE_FLAG_DBGPRINT           0x00040000  // DbgPrint(ex) Calls
+
+//
+// Enable flags for Kernel Events on Vista and above
+//
+#define EVENT_TRACE_FLAG_PROCESS_COUNTERS   0x00000008  // process perf counters
+#define EVENT_TRACE_FLAG_CSWITCH            0x00000010  // context switches
+#define EVENT_TRACE_FLAG_DPC                0x00000020  // deffered procedure calls
+#define EVENT_TRACE_FLAG_INTERRUPT          0x00000040  // interrupts
+#define EVENT_TRACE_FLAG_SYSTEMCALL         0x00000080  // system calls
+
+#define EVENT_TRACE_FLAG_DISK_IO_INIT       0x00000400  // physical disk IO initiation
+#define EVENT_TRACE_FLAG_ALPC               0x00100000  // ALPC traces
+#define EVENT_TRACE_FLAG_SPLIT_IO           0x00200000  // split io traces (VolumeManager)
+
+#define EVENT_TRACE_FLAG_DRIVER             0x00800000  // driver delays
+#define EVENT_TRACE_FLAG_PROFILE            0x01000000  // sample based profiling
+#define EVENT_TRACE_FLAG_FILE_IO            0x02000000  // file IO
+#define EVENT_TRACE_FLAG_FILE_IO_INIT       0x04000000  // file IO initiation
+
+#define EVENT_TRACE_FLAG_PMC_PROFILE		0x80000000	// sample based profiling (PMC) - NOT CONFIRMED!
+
+//
+// Enable flags for Kernel Events on Win7 and above
+//
+#define EVENT_TRACE_FLAG_DISPATCHER         0x00000800  // scheduler (ReadyThread)
+#define EVENT_TRACE_FLAG_VIRTUAL_ALLOC      0x00004000  // VM operations
+
+//
+// Enable flags for Kernel Events on Win8 and above
+//
+#define EVENT_TRACE_FLAG_VAMAP              0x00008000  // map/unmap (excluding images)
+#define EVENT_TRACE_FLAG_NO_SYSCONFIG       0x10000000  // Do not do sys config rundown
+
+///////////////////////////////////////////////////////////////////////////////
+
+#pragma warning(push)
+#pragma warning (disable:4201) 
+
+#ifndef EVENT_DESCRIPTOR_DEF
+#define EVENT_DESCRIPTOR_DEF
+typedef struct _EVENT_DESCRIPTOR {
+
+	USHORT      Id;
+	UCHAR       Version;
+	UCHAR       Channel;
+	UCHAR       Level;
+	UCHAR       Opcode;
+	USHORT      Task;
+	ULONGLONG   Keyword;
+
+} EVENT_DESCRIPTOR, *PEVENT_DESCRIPTOR;
+typedef const EVENT_DESCRIPTOR *PCEVENT_DESCRIPTOR;
+#endif
+///////////////////////////////////////////////////////////////////////////////
+#ifndef EVENT_HEADER_DEF
+#define EVENT_HEADER_DEF
+typedef struct _EVENT_HEADER {
+
+	USHORT              Size;
+	USHORT              HeaderType;
+	USHORT              Flags;
+	USHORT              EventProperty;
+	ULONG               ThreadId;
+	ULONG               ProcessId;
+	LARGE_INTEGER       TimeStamp;
+	GUID                ProviderId;
+	EVENT_DESCRIPTOR    EventDescriptor;
+	union {
+		struct {
+			ULONG       KernelTime;
+			ULONG       UserTime;
+		} DUMMYSTRUCTNAME;
+		ULONG64         ProcessorTime;
+
+	} DUMMYUNIONNAME;
+	GUID                ActivityId;
+
+} EVENT_HEADER, *PEVENT_HEADER;
+#endif
+///////////////////////////////////////////////////////////////////////////////
+#ifndef EVENT_HEADER_EXTENDED_DATA_ITEM_DEF
+#define EVENT_HEADER_EXTENDED_DATA_ITEM_DEF
+typedef struct _EVENT_HEADER_EXTENDED_DATA_ITEM {
+
+	USHORT      Reserved1;                      // Reserved for internal use
+	USHORT      ExtType;                        // Extended info type 
+	struct {
+		USHORT  Linkage : 1;       // Indicates additional extended 
+								   // data item
+		USHORT  Reserved2 : 15;
+	};
+	USHORT      DataSize;                       // Size of extended info data
+	ULONGLONG   DataPtr;                        // Pointer to extended info data
+
+} EVENT_HEADER_EXTENDED_DATA_ITEM, *PEVENT_HEADER_EXTENDED_DATA_ITEM;
+#endif
+///////////////////////////////////////////////////////////////////////////////
+#ifndef ETW_BUFFER_CONTEXT_DEF
+#define ETW_BUFFER_CONTEXT_DEF
+typedef struct _ETW_BUFFER_CONTEXT {
+	union {
+		struct {
+			UCHAR ProcessorNumber;
+			UCHAR Alignment;
+		} DUMMYSTRUCTNAME;
+		USHORT ProcessorIndex;
+	} DUMMYUNIONNAME;
+	USHORT  LoggerId;
+} ETW_BUFFER_CONTEXT, *PETW_BUFFER_CONTEXT;
+#endif
+///////////////////////////////////////////////////////////////////////////////
+#ifndef EVENT_RECORD_DEF
+#define EVENT_RECORD_DEF
+typedef struct _EVENT_RECORD {
+	EVENT_HEADER        EventHeader;
+	ETW_BUFFER_CONTEXT  BufferContext;
+	USHORT              ExtendedDataCount;
+
+	USHORT              UserDataLength;
+	PEVENT_HEADER_EXTENDED_DATA_ITEM ExtendedData;
+	PVOID               UserData;
+	PVOID               UserContext;
+} EVENT_RECORD, *PEVENT_RECORD;
+#endif
+///////////////////////////////////////////////////////////////////////////////
+typedef struct _EVENT_TRACE_PROPERTIES {
+	WNODE_HEADER Wnode;
+	//
+	// data provided by caller
+	ULONG BufferSize;                   // buffer size for logging (kbytes)
+	ULONG MinimumBuffers;               // minimum to preallocate
+	ULONG MaximumBuffers;               // maximum buffers allowed
+	ULONG MaximumFileSize;              // maximum logfile size (in MBytes)
+	ULONG LogFileMode;                  // sequential, circular
+	ULONG FlushTimer;                   // buffer flush timer, in seconds
+	ULONG EnableFlags;                  // trace enable flags
+	union {
+		LONG  AgeLimit;                 // unused
+		LONG  FlushThreshold;           // Number of buffers to fill before flushing
+	} DUMMYUNIONNAME;
+
+	// data returned to caller
+	ULONG NumberOfBuffers;              // no of buffers in use
+	ULONG FreeBuffers;                  // no of buffers free
+	ULONG EventsLost;                   // event records lost
+	ULONG BuffersWritten;               // no of buffers written to file
+	ULONG LogBuffersLost;               // no of logfile write failures
+	ULONG RealTimeBuffersLost;          // no of rt delivery failures
+	HANDLE LoggerThreadId;              // thread id of Logger
+	ULONG LogFileNameOffset;            // Offset to LogFileName
+	ULONG LoggerNameOffset;             // Offset to LoggerName
+} EVENT_TRACE_PROPERTIES, *PEVENT_TRACE_PROPERTIES;
+
+typedef struct _EVENT_TRACE_HEADER {        // overlays WNODE_HEADER
+	USHORT          Size;                   // Size of entire record
+	union {
+		USHORT      FieldTypeFlags;         // Indicates valid fields
+		struct {
+			UCHAR   HeaderType;             // Header type - internal use only
+			UCHAR   MarkerFlags;            // Marker - internal use only
+		} DUMMYSTRUCTNAME;
+	} DUMMYUNIONNAME;
+	union {
+		ULONG       Version;
+		struct {
+			UCHAR   Type;                   // event type
+			UCHAR   Level;                  // trace instrumentation level
+			USHORT  Version;                // version of trace record
+		} Class;
+	} DUMMYUNIONNAME2;
+	ULONG           ThreadId;               // Thread Id
+	ULONG           ProcessId;              // Process Id
+	LARGE_INTEGER   TimeStamp;              // time when event happens
+	union {
+		GUID        Guid;                   // Guid that identifies event
+		ULONGLONG   GuidPtr;                // use with WNODE_FLAG_USE_GUID_PTR
+	} DUMMYUNIONNAME3;
+	union {
+		struct {
+			ULONG   KernelTime;             // Kernel Mode CPU ticks
+			ULONG   UserTime;               // User mode CPU ticks
+		} DUMMYSTRUCTNAME;
+		ULONG64     ProcessorTime;          // Processor Clock
+		struct {
+			ULONG   ClientContext;          // Reserved
+			ULONG   Flags;                  // Event Flags
+		} DUMMYSTRUCTNAME2;
+	} DUMMYUNIONNAME4;
+} EVENT_TRACE_HEADER, *PEVENT_TRACE_HEADER;
+
+typedef struct _EVENT_TRACE {
+	EVENT_TRACE_HEADER      Header;             // Event trace header
+	ULONG                   InstanceId;         // Instance Id of this event
+	ULONG                   ParentInstanceId;   // Parent Instance Id.
+	GUID                    ParentGuid;         // Parent Guid;
+	PVOID                   MofData;            // Pointer to Variable Data
+	ULONG                   MofLength;          // Variable Datablock Length
+	union {
+		ULONG               ClientContext;
+		ETW_BUFFER_CONTEXT  BufferContext;
+	} DUMMYUNIONNAME;
+} EVENT_TRACE, *PEVENT_TRACE;
+
+typedef struct _TRACE_LOGFILE_HEADER {
+	ULONG           BufferSize;         // Logger buffer size in Kbytes
+	union {
+		ULONG       Version;            // Logger version
+		struct {
+			UCHAR   MajorVersion;
+			UCHAR   MinorVersion;
+			UCHAR   SubVersion;
+			UCHAR   SubMinorVersion;
+		} VersionDetail;
+	} DUMMYUNIONNAME;
+	ULONG           ProviderVersion;    // defaults to NT version
+	ULONG           NumberOfProcessors; // Number of Processors
+	LARGE_INTEGER   EndTime;            // Time when logger stops
+	ULONG           TimerResolution;    // assumes timer is constant!!!
+	ULONG           MaximumFileSize;    // Maximum in Mbytes
+	ULONG           LogFileMode;        // specify logfile mode
+	ULONG           BuffersWritten;     // used to file start of Circular File
+	union {
+		GUID LogInstanceGuid;           // For RealTime Buffer Delivery
+		struct {
+			ULONG   StartBuffers;       // Count of buffers written at start.
+			ULONG   PointerSize;        // Size of pointer type in bits
+			ULONG   EventsLost;         // Events losts during log session
+			ULONG   CpuSpeedInMHz;      // Cpu Speed in MHz
+		} DUMMYSTRUCTNAME;
+	} DUMMYUNIONNAME2;
+#if defined(_WMIKM_)
+	PWCHAR          LoggerName;
+	PWCHAR          LogFileName;
+	RTL_TIME_ZONE_INFORMATION TimeZone;
+#else
+	LPWSTR          LoggerName;
+	LPWSTR          LogFileName;
+	TIME_ZONE_INFORMATION TimeZone;
+#endif
+	LARGE_INTEGER   BootTime;
+	LARGE_INTEGER   PerfFreq;           // Reserved
+	LARGE_INTEGER   StartTime;          // Reserved
+	ULONG           ReservedFlags;      // ClockType
+	ULONG           BuffersLost;
+} TRACE_LOGFILE_HEADER, *PTRACE_LOGFILE_HEADER;
+
+typedef struct _EVENT_TRACE_LOGFILEW
+EVENT_TRACE_LOGFILEW, *PEVENT_TRACE_LOGFILEW;
+
+typedef ULONG(WINAPI * PEVENT_TRACE_BUFFER_CALLBACKW)
+(PEVENT_TRACE_LOGFILEW Logfile);
+
+typedef VOID(WINAPI *PEVENT_CALLBACK)(PEVENT_TRACE pEvent);
+
+typedef struct _EVENT_RECORD
+EVENT_RECORD, *PEVENT_RECORD;
+
+typedef VOID(WINAPI *PEVENT_RECORD_CALLBACK) (PEVENT_RECORD EventRecord);
+
+struct _EVENT_TRACE_LOGFILEW {
+	LPWSTR                  LogFileName;      // Logfile Name
+	LPWSTR                  LoggerName;       // LoggerName
+	LONGLONG                CurrentTime;      // timestamp of last event
+	ULONG                   BuffersRead;      // buffers read to date
+	union {
+		// Mode of the logfile
+		ULONG               LogFileMode;
+		// Processing flags used on Vista and above
+		ULONG               ProcessTraceMode;
+	} DUMMYUNIONNAME;
+	EVENT_TRACE             CurrentEvent;     // Current Event from this stream.
+	TRACE_LOGFILE_HEADER    LogfileHeader;    // logfile header structure
+	PEVENT_TRACE_BUFFER_CALLBACKW             // callback before each buffer
+		BufferCallback;   // is read
+						  //
+						  // following variables are filled for BufferCallback.
+						  //
+	ULONG                   BufferSize;
+	ULONG                   Filled;
+	ULONG                   EventsLost;
+	//
+	// following needs to be propaged to each buffer
+	//
+	union {
+		// Callback with EVENT_TRACE
+		PEVENT_CALLBACK         EventCallback;
+		// Callback with EVENT_RECORD on Vista and above
+		PEVENT_RECORD_CALLBACK  EventRecordCallback;
+	} DUMMYUNIONNAME2;
+
+	ULONG                   IsKernelTrace;    // TRUE for kernel logfile
+
+	PVOID                   Context;          // reserved for internal use
+};
+
+#pragma warning(pop)
+
+#define PEVENT_TRACE_BUFFER_CALLBACK    PEVENT_TRACE_BUFFER_CALLBACKW
+#define EVENT_TRACE_LOGFILE             EVENT_TRACE_LOGFILEW
+#define PEVENT_TRACE_LOGFILE            PEVENT_TRACE_LOGFILEW
+#define KERNEL_LOGGER_NAME              KERNEL_LOGGER_NAMEW
+#define GLOBAL_LOGGER_NAME              GLOBAL_LOGGER_NAMEW
+#define EVENT_LOGGER_NAME               EVENT_LOGGER_NAMEW
+
+EXTERN_C
+ULONG
+WMIAPI
+ProcessTrace(
+	_In_reads_(HandleCount) PTRACEHANDLE HandleArray,
+	_In_ ULONG HandleCount,
+	_In_opt_ LPFILETIME StartTime,
+	_In_opt_ LPFILETIME EndTime
+);
+
+EXTERN_C
+ULONG
+WMIAPI
+StartTraceW(
+	_Out_ PTRACEHANDLE TraceHandle,
+	_In_ LPCWSTR InstanceName,
+	_Inout_ PEVENT_TRACE_PROPERTIES Properties
+);
+
+EXTERN_C
+ULONG
+WMIAPI
+ControlTraceW(
+	_In_ TRACEHANDLE TraceHandle,
+	_In_opt_ LPCWSTR InstanceName,
+	_Inout_ PEVENT_TRACE_PROPERTIES Properties,
+	_In_ ULONG ControlCode
+);
+
+EXTERN_C
+TRACEHANDLE
+WMIAPI
+OpenTraceW(
+	_Inout_ PEVENT_TRACE_LOGFILEW Logfile
+);
+
+EXTERN_C
+ULONG
+WMIAPI
+CloseTrace(
+	_In_ TRACEHANDLE TraceHandle
+);
+
+EXTERN_C
+ULONG
+WMIAPI
+TraceSetInformation(
+	_In_ TRACEHANDLE SessionHandle,
+	_In_ TRACE_INFO_CLASS InformationClass,
+	_In_reads_bytes_(InformationLength) PVOID TraceInformation,
+	_In_ ULONG InformationLength
+);
+
+EXTERN_C
+ULONG
+WMIAPI
+TraceQueryInformation(
+	_In_ TRACEHANDLE SessionHandle,
+	_In_ TRACE_INFO_CLASS InformationClass,
+	_Out_writes_bytes_(InformationLength) PVOID TraceInformation,
+	_In_ ULONG InformationLength,
+	_Out_opt_ PULONG ReturnLength
+);
+
+//////////////////////////////////////////////////////////////////////////
+#define RegisterTraceGuids      RegisterTraceGuidsW
+#define StartTrace              StartTraceW
+#define ControlTrace            ControlTraceW
+#define StopTrace               StopTraceW
+#define QueryTrace              QueryTraceW
+#define UpdateTrace             UpdateTraceW
+#define FlushTrace              FlushTraceW
+#define QueryAllTraces          QueryAllTracesW
+#define OpenTrace               OpenTraceW
+//////////////////////////////////////////////////////////////////////////
+
+#else
+
+#define INITGUID  // Causes definition of SystemTraceControlGuid in evntrace.h.
+#include <wmistr.h>
+#include <evntrace.h>
+#include <strsafe.h>
+#include <evntcons.h>
+
+#endif //DECLARE_ETW
+
 namespace Brofiler
 {
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class ETW : public Trace
+{
+	EVENT_TRACE_PROPERTIES *traceProperties;
+	EVENT_TRACE_LOGFILE logFile;
+	TRACEHANDLE traceSessionHandle;
+	TRACEHANDLE openedHandle;
+
+	HANDLE processThreadHandle;
+	DWORD currentProcessId;
+
+
+	bool isActive;
+
+	static DWORD WINAPI RunProcessTraceThreadFunction(LPVOID parameter);
+	static void AdjustPrivileges();
+
+	std::unordered_map<uint64_t, const EventDescription*> syscallDescriptions;
+
+	void ResolveSysCalls();
+public:
+
+	ETW();
+	~ETW();
+
+	virtual CaptureStatus::Type Start(int mode, const ThreadList& threads) override;
+	virtual bool Stop() override;
+
+	DWORD GetProcessID() const { return currentProcessId; }
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct CSwitch 
 {
@@ -449,6 +989,7 @@ DWORD WINAPI ETW::RunProcessTraceThreadFunction( LPVOID parameter )
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ETW::AdjustPrivileges()
 {
+#if BRO_PC
 	HANDLE token = 0;
 	if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &token))
 	{
@@ -461,6 +1002,7 @@ void ETW::AdjustPrivileges()
 		AdjustTokenPrivileges(token, FALSE, &tokenPrivileges, 0, (PTOKEN_PRIVILEGES)NULL, 0);
 		CloseHandle(token);
 	}
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -507,7 +1049,7 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads)
 
 		g_ETWRuntime.Reset();
 
-		CaptureStatus::Type res = SchedulerTrace::Start(mode, threads);
+		CaptureStatus::Type res = Trace::Start(mode, threads);
 		if (res != CaptureStatus::OK)
 		{
 			return res;
@@ -683,7 +1225,7 @@ bool ETW::Stop()
 	//VS TODO: Disabling resolving of the syscalls - we can't use then as EventDescriptions at the moment
 	//ResolveSysCalls();
 	
-	if (!SchedulerTrace::Stop())
+	if (!Trace::Stop())
 	{
 		return false;
 	}
@@ -698,11 +1240,12 @@ ETW::~ETW()
 	traceProperties = nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-SchedulerTrace* SchedulerTrace::Get()
+Trace* Trace::Get()
 {
 	return &g_ETW;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
-#endif
+#endif //BRO_ENABLE_TRACING
+#endif //_WIN32

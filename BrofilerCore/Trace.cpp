@@ -3,7 +3,7 @@
 namespace Brofiler
 {
 //////////////////////////////////////////////////////////////////////////
-CaptureStatus::Type SchedulerTrace::Start(int mode, const ThreadList& threads)
+CaptureStatus::Type Trace::Start(int mode, const ThreadList& threads)
 {
 	Core::Get().DumpProgress("Starting");
 
@@ -21,14 +21,14 @@ CaptureStatus::Type SchedulerTrace::Start(int mode, const ThreadList& threads)
 	return CaptureStatus::OK;
 }
 //////////////////////////////////////////////////////////////////////////
-bool SchedulerTrace::Stop()
+bool Trace::Stop()
 {
 	activeThreadsIDs.clear();
 	return true;
 }
 //////////////////////////////////////////////////////////////////////////
 #if !BRO_ENABLE_TRACING
-SchedulerTrace* SchedulerTrace::Get()
+Trace* Trace::Get()
 {
     return nullptr;
 }

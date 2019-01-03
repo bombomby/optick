@@ -49,7 +49,7 @@ namespace std
 namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct SchedulerTrace;
+struct Trace;
 struct SymbolEngine;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct ScopeHeader
@@ -94,7 +94,7 @@ struct BroString
 {
 	char data[N];
 	BroString() {}
-	BroString<N>& operator=(const char* text) { strncpy(data, text, N - 1); return *this; }
+	BroString<N>& operator=(const char* text) { strcpy_s(data, text); return *this; }
 	BroString(const char* text) { *this = text; }
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -449,7 +449,7 @@ public:
 	// Graphics graphics;
 
 	// System scheduler trace
-	SchedulerTrace* schedulerTrace;
+	Trace* schedulerTrace;
 
 	// SysCall Collector
 	SysCallCollector syscallCollector;

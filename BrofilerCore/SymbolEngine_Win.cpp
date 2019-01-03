@@ -1,9 +1,11 @@
-#ifdef _WIN32
-#include "Common.h"
-#include "SymbolEngine_Win.h"
+#if _WIN32
+#include "SymbolEngine.h"
 
+#if BRO_ENABLE_SYMENGINE
 #include <DbgHelp.h>
 #pragma comment( lib, "DbgHelp.Lib" )
+
+#include "Serialization.h"
 
 namespace Brofiler
 {
@@ -21,6 +23,36 @@ namespace Brofiler
 //	LocalFree(lpMsgBuf);
 //}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+typedef std::array<uintptr_t, 512> CallStackBuffer;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class SymEngine : public SymbolEngine
+{
+	HANDLE hProcess;
+
+	bool isInitialized;
+
+	bool needRestorePreviousSettings;
+	uint32 previousOptions;
+	static const size_t MAX_SEARCH_PATH_LENGTH = 2048;
+	char previousSearchPath[MAX_SEARCH_PATH_LENGTH];
+
+	void InitSystemModules();
+public:
+	SymEngine();
+	~SymEngine();
+
+	void Init();
+	void Close();
+
+	// Get Symbol from PDB file
+	virtual const Symbol * const GetSymbol(uint64 dwAddress) override;
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 SymEngine::SymEngine() : isInitialized(false), hProcess(GetCurrentProcess()), needRestorePreviousSettings(false), previousOptions(0)
 {
 }
@@ -223,6 +255,5 @@ SymbolEngine* SymbolEngine::Get()
 }
 
 }
-
-#endif
-
+#endif //BRO_ENABLE_SYMENGINE
+#endif //_WIN32
