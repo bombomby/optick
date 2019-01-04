@@ -1184,8 +1184,7 @@ BROFILER_API bool RegisterThread(const wchar_t* name)
 {
 	const int THREAD_NAME_LENGTH = 128;
 	char mbName[THREAD_NAME_LENGTH];
-	size_t numConverted = 0;
-	wcstombs_s(&numConverted, mbName, name, THREAD_NAME_LENGTH);
+	wcstombs(mbName, name, THREAD_NAME_LENGTH);
 	return Core::Get().RegisterThread(ThreadDescription(mbName, GetThreadID(), GetProcessID()), &Core::storage) != nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

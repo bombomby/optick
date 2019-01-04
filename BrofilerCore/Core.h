@@ -94,7 +94,7 @@ struct BroString
 {
 	char data[N];
 	BroString() {}
-	BroString<N>& operator=(const char* text) { strcpy_s(data, text); return *this; }
+	BroString<N>& operator=(const char* text) { strncpy(data, text, N-1); return *this; }
 	BroString(const char* text) { *this = text; }
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
