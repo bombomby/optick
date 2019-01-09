@@ -110,7 +110,7 @@ inline int sprintf_s(char(&buffer)[sizeOfBuffer], const char* format, ...)
 template<size_t sizeOfBuffer>
 inline int wcstombs_s(char(&buffer)[sizeOfBuffer], const wchar_t* src, size_t maxCount)
 {
-	wctombcs(buffer, src, maxCount);
+	wcstombs(buffer, src, maxCount);
 }
 #endif
 
