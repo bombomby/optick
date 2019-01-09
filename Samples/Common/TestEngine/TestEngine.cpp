@@ -24,7 +24,7 @@ inline void SpinSleep(uint32_t milliseconds)
     while (std::chrono::system_clock::now() < finish) {}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void OnBrofilerStateChanged(Brofiler::BroState state)
+bool OnBrofilerStateChanged(Brofiler::BroState state)
 {
 	if (state == Brofiler::BRO_DUMP_CAPTURE)
 	{
@@ -38,6 +38,7 @@ void OnBrofilerStateChanged(Brofiler::BroState state)
 		const char* textFile = "You could attach custom text files!\nFor example you could add dxdiag.txt or current game settings.";
 		Brofiler::AttachFile(Brofiler::BroFile::BRO_TEXT, "Test.txt", (uint8_t*)textFile, (uint32_t)strlen(textFile));
 	}
+	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 float randf()
