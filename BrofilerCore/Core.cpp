@@ -700,8 +700,8 @@ EventTime CalculateRange(const ThreadEntry& entry, const EventDescription* rootD
 	{
 		if (data.description == rootDescription)
 		{
-			timeSlice.start = min(timeSlice.start, data.start);
-			timeSlice.finish = max(timeSlice.finish, data.finish);
+			timeSlice.start = std::min(timeSlice.start, data.start);
+			timeSlice.finish = std::max(timeSlice.finish, data.finish);
 		}
 	});
 	return timeSlice;
