@@ -104,5 +104,20 @@ inline int sprintf_s(char(&buffer)[sizeOfBuffer], const char* format, ...)
 	va_end(ap);
 	return result;
 }
+
+template<size_t sizeOfBuffer>
+inline int wcstombs_s(char(&buffer)[sizeOfBuffer], const wchar_t* src, size_t maxCount)
+{
+	wctombcs(buffer, src, maxCount);
+}
+#endif
+
+#if BRO_MSVC
+template<size_t sizeOfBuffer>
+inline int wcstombs_s(char(&buffer)[sizeOfBuffer], const wchar_t* src, size_t maxCount)
+{
+	size_t converted = 0;
+	return wcstombs_s(&converted, buffer, src, maxCount);
+}
 #endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

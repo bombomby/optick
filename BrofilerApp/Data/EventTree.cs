@@ -154,6 +154,11 @@ namespace Profiler.Data
 
 			Children.ForEach(node => node.ForEach(action, level + 1));
 		}
+
+		public override String ToString()
+		{
+			return Name;
+		}
 	}
 
 	public abstract class TreeNode<TDescription> : BaseTreeNode

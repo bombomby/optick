@@ -89,6 +89,8 @@ struct ScopeData
 	void Clear();
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#pragma warning( push )
+#pragma warning( disable : 4996 )
 template<int N>
 struct BroString
 {
@@ -97,6 +99,7 @@ struct BroString
 	BroString<N>& operator=(const char* text) { strncpy(data, text, N-1); return *this; }
 	BroString(const char* text) { *this = text; }
 };
+#pragma warning( pop )
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct BroPoint
 {
@@ -412,9 +415,14 @@ class Core
 	std::vector<ProcessDescription> processDescs;
 	std::vector<ThreadDescription> threadDescs;
 
+	std::array<const EventDescription*, FrameType::COUNT> frameDescriptions;
+
+	BroState currentState;
+	BroState pendingState;
 
 	void UpdateEvents();
 	uint32_t Update();
+	bool UpdateState();
 
 	Core();
 	~Core();
@@ -432,7 +440,7 @@ class Core
 
 	void CleanupThreadsAndFibers();
 
-	void DumpBoard(uint32 mode, EventTime timeSlice);
+	void DumpBoard(uint32 mode, EventTime timeSlice, uint32 mainThreadIndex);
 
 	void GenerateCommonSummary();
 public:
@@ -459,6 +467,15 @@ public:
 
 	// Returns thread collection
 	const std::vector<ThreadEntry*>& GetThreads() const;
+
+	// Request to start a new capture
+	void StartCapture();
+
+	// Request to stop an active capture
+	void StopCapture();
+
+	// Requests to dump current capture
+	void DumpCapture();
 
 	// Report switch context event
 	bool ReportSwitchContext(const SwitchContextDesc& desc);
@@ -511,6 +528,8 @@ public:
 	// Current Frame Number (since the game started)
 	uint32_t GetCurrentFrame() const { return frameNumber; }
 
+	// Returns Frame Description
+	const EventDescription* GetFrameDescription(FrameType::Type frame) const;
 
 	// NOT Thread Safe singleton (performance)
 	static BRO_INLINE Core& Get() { return notThreadSafeInstance; }

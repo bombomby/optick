@@ -122,7 +122,11 @@ namespace Profiler.Data
 			System.Diagnostics.Debug.Assert(board != null && board.Response != null, "Invalid EventDescriptionBoard response");
 
 			Board = board;
-			Threads = new List<ThreadData>();
+
+			Threads = new List<ThreadData>(board.Threads.Count);
+			foreach (ThreadDescription desc in board.Threads)
+				Threads.Add(new ThreadData());
+
 			Fibers = new List<ThreadData>();
 			Responses = new List<DataResponse>();
 			Responses.Add(board.Response);

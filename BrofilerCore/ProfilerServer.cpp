@@ -1,5 +1,5 @@
-#include "Common.h"
 #include "ProfilerServer.h"
+#include "Common.h"
 
 
 #if defined(BRO_MSVC)

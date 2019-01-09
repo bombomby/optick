@@ -111,7 +111,7 @@ namespace Brofiler
 		factory->Release();
 
 		char deviceName[128] = { 0 };
-		wcstombs(deviceName, desc.Description, BRO_ARRAY_SIZE(deviceName) - 1);
+		wcstombs_s(deviceName, desc.Description, BRO_ARRAY_SIZE(deviceName) - 1);
 
 		for (uint32_t nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
 			InitNode(deviceName, nodeIndex, pCommandQueues[nodeIndex]);

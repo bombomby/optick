@@ -1,5 +1,5 @@
-#include "Common.h"
 #include "Serialization.h"
+#include "Common.h"
 
 namespace Brofiler
 {

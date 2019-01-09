@@ -569,6 +569,25 @@ std::string GetCPUName()
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Core::StartCapture()
+{
+	pendingState = BRO_START_CAPTURE;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Core::StopCapture()
+{
+	pendingState = BRO_STOP_CAPTURE;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Core::DumpCapture()
+{
+	pendingState = BRO_DUMP_CAPTURE;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpProgress(const char* message)
 {
@@ -673,7 +692,20 @@ void Core::DumpFiber(FiberEntry& entry, const EventTime& timeSlice, ScopeData& s
 		Server::Get().Send(DataResponse::FiberSynchronizationData, fiberSynchronizationStream);
 	}
 }
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+EventTime CalculateRange(const ThreadEntry& entry, const EventDescription* rootDescription)
+{
+	EventTime timeSlice = { INT64_MAX, INT64_MIN };
+	entry.storage.eventBuffer.ForEach([&](const EventData& data)
+	{
+		if (data.description == rootDescription)
+		{
+			timeSlice.start = min(timeSlice.start, data.start);
+			timeSlice.finish = max(timeSlice.finish, data.finish);
+		}
+	});
+	return timeSlice;
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpFrames(uint32 mode)
 {
@@ -683,20 +715,25 @@ void Core::DumpFrames(uint32 mode)
 	++boardNumber;
 
 	DumpProgress("Generating summary...");
-	if (stateCallback != nullptr)
-	{
-		stateCallback(BRO_DUMP_CAPTURE);
-	}
+
 	GenerateCommonSummary();
 	DumpSummary();
 
 	DumpProgress("Collecting Frame Events...");
 
-	EventTime timeSlice;
-	timeSlice.start = frames.front().start;
-	timeSlice.finish = frames.back().finish;
+	uint32 mainThreadIndex = 0;
+	for (size_t i = 0; i < threads.size(); ++i)
+		if (threads[i]->description.threadID == mainThreadID)
+			mainThreadIndex = (uint32)i;
 
-	DumpBoard(mode, timeSlice);
+	EventTime timeSlice = CalculateRange(*threads[mainThreadIndex], GetFrameDescription(FrameType::CPU)); 
+	if (timeSlice.start >= timeSlice.finish)
+	{
+		timeSlice.start = frames.front().start;
+		timeSlice.finish = frames.back().finish;
+	}
+
+	DumpBoard(mode, timeSlice, mainThreadIndex);
 
 	ScopeData threadScope;
 	threadScope.header.boardNumber = boardNumber;
@@ -753,6 +790,8 @@ void Core::DumpFrames(uint32 mode)
 		callstackCollector.SerializeCallstacks(callstacksStream);
 		Server::Get().Send(DataResponse::CallstackPack, callstacksStream);
 	}
+
+	Server::Get().Send(DataResponse::NullFrame, OutputDataStream::Empty);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpSummary()
@@ -805,14 +844,8 @@ void Core::CleanupThreadsAndFibers()
 	}
 }
 
-void Core::DumpBoard(uint32 mode, EventTime timeSlice)
+void Core::DumpBoard(uint32 mode, EventTime timeSlice, uint32 mainThreadIndex)
 {
-	uint32 mainThreadIndex = 0;
-
-	for (size_t i = 0; i < threads.size(); ++i)
-		if (threads[i]->description.threadID == mainThreadID)
-			mainThreadIndex = (uint32)i;
-
 	OutputDataStream boardStream;
 
 	boardStream << boardNumber;
@@ -845,13 +878,49 @@ void Core::GenerateCommonSummary()
 	AttachSummary("CPU", GetCPUName().c_str());
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Core::Core() : progressReportedLastTimestampMS(0), isActive(false), stateCallback(nullptr), boardNumber(0), gpuProfiler(nullptr), frameNumber(0)
+Core::Core() : progressReportedLastTimestampMS(0), isActive(false), stateCallback(nullptr), boardNumber(0), gpuProfiler(nullptr), frameNumber(0), currentState(BRO_DUMP_CAPTURE), pendingState(BRO_DUMP_CAPTURE)
 {
 	mainThreadID = GetThreadID();
 	schedulerTrace = Trace::Get();
 	symbolEngine = SymbolEngine::Get();
+
+	frameDescriptions[FrameType::CPU] = EventDescription::Create("CPU Frame", __FILE__, __LINE__);
+	frameDescriptions[FrameType::GPU] = EventDescription::Create("GPU Frame", __FILE__, __LINE__);
+	frameDescriptions[FrameType::Render] = EventDescription::Create("Render Frame", __FILE__, __LINE__);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool Core::UpdateState()
+{
+	if (currentState != pendingState)
+	{
+		BroState nextState = pendingState;
+		if (pendingState == BRO_DUMP_CAPTURE && currentState == BRO_START_CAPTURE)
+			nextState = BRO_STOP_CAPTURE;
+
+		if (!stateCallback(nextState))
+			return false;
+
+		switch (nextState)
+		{
+		case BRO_START_CAPTURE:
+			Activate(true);
+			break;
+
+		case BRO_STOP_CAPTURE:
+			Activate(false);
+			break;
+
+		case BRO_DUMP_CAPTURE:
+			DumpFrames();
+			break;
+		}
+		currentState = nextState;
+		return true;
+	}
+	return false;
+}
+
+
 uint32_t Core::Update()
 {
 	std::lock_guard<std::recursive_mutex> lock(coreLock);
@@ -866,6 +935,8 @@ uint32_t Core::Update()
 	}
 
 	UpdateEvents();
+
+	while (UpdateState()) {}
 
 	if (isActive)
 	{
@@ -932,9 +1003,6 @@ void Core::Activate( bool active )
 			if (gpuProfiler)
 				gpuProfiler->Stop(0);
 		}
-
-		if (stateCallback != nullptr)
-			stateCallback(isActive ? BRO_START_CAPTURE : BRO_STOP_CAPTURE);
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1067,6 +1135,11 @@ void Core::InitGPUProfiler(GPUProfiler* profiler)
 	gpuProfiler = profiler;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+const EventDescription* Core::GetFrameDescription(FrameType::Type frame) const
+{
+	return frameDescriptions[frame];
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core::~Core()
 {
 	std::lock_guard<std::recursive_mutex> lock(coreLock);
@@ -1184,7 +1257,8 @@ BROFILER_API bool RegisterThread(const wchar_t* name)
 {
 	const int THREAD_NAME_LENGTH = 128;
 	char mbName[THREAD_NAME_LENGTH];
-	wcstombs(mbName, name, THREAD_NAME_LENGTH);
+	wcstombs_s(mbName, name, THREAD_NAME_LENGTH);
+
 	return Core::Get().RegisterThread(ThreadDescription(mbName, GetThreadID(), GetProcessID()), &Core::storage) != nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1198,9 +1272,9 @@ BROFILER_API bool RegisterFiber(uint64 fiberId, EventStorage** slot)
 	return Core::Get().RegisterFiber(FiberDescription(fiberId), slot);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API EventStorage* RegisterStorage(const char* name)
+BROFILER_API EventStorage* RegisterStorage(const char* name, uint64_t threadID)
 {
-	ThreadEntry* entry = Core::Get().RegisterThread(ThreadDescription(name, INVALID_THREAD_ID, GetProcessID(), false), nullptr);
+	ThreadEntry* entry = Core::Get().RegisterThread(ThreadDescription(name, threadID, GetProcessID(), false), nullptr);
 	return entry ? &entry->storage : nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1219,6 +1293,12 @@ BROFILER_API GPUContext SetGpuContext(GPUContext context)
 		return prevContext;
 	}
 	return GPUContext();
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+BROFILER_API const EventDescription* GetFrameDescription(FrameType::Type frame)
+{
+	return Core::Get().GetFrameDescription(frame);
+
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventStorage::EventStorage(): isFiberStorage(false), pushPopEventStackIndex(0)
@@ -1247,8 +1327,8 @@ void ThreadEntry::Sort()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool IsSleepOnlyScope(const ScopeData& scope)
 {
-	if (!scope.categories.empty())
-		return false;
+	//if (!scope.categories.empty())
+	//	return false;
 
 	const std::vector<EventData>& events = scope.events;
 	for(auto it = events.begin(); it != events.end(); ++it)
