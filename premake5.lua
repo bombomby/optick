@@ -232,17 +232,17 @@ end
 group "Samples"
 if isFibersEnabled then
 	project "TaskScheduler"
-		excludes { "ThirdParty/TaskScheduler/Scheduler/Source/MTDefaultAppInterop.cpp", }
+		excludes { "Samples/Common/TaskScheduler/Scheduler/Source/MTDefaultAppInterop.cpp", }
 		kind "StaticLib"
 		flags {"NoPCH"}
 		defines {"USE_BROFILER=1"}
 		files {
-			"ThirdParty/TaskScheduler/Scheduler/**.*", 
+			"Samples/Common/TaskScheduler/Scheduler/**.*", 
 		}
 
 		includedirs
 		{
-			"ThirdParty/TaskScheduler/Scheduler/Include",
+			"Samples/Common/TaskScheduler/Scheduler/Include",
 			"BrofilerCore"
 		}
 
@@ -276,7 +276,7 @@ else
 		includedirs {
 			"BrofilerCore",
 			"Samples/Common/TestEngine",
-			"ThirdParty/TaskScheduler/Scheduler/Include"
+			"Samples/Common/TaskScheduler/Scheduler/Include"
 		}
 		
 		links {
@@ -292,7 +292,7 @@ else
 			"BRO_ENABLE_FIBERS=1"
 		}
 		files {
-            "ThirdParty/TaskScheduler/Scheduler/Source/MTDefaultAppInterop.cpp",
+            "Samples/Common/TaskScheduler/Scheduler/Source/MTDefaultAppInterop.cpp",
         }
         links {
             "TaskScheduler"

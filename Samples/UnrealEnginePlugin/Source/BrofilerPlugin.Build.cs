@@ -14,8 +14,8 @@ namespace UnrealBuildTool.Rules
 
 			PrivateIncludePaths.AddRange(
 				new string[] {
-					"BrofilerPlugin/Private",
-					"BrofilerPlugin/Private/BrofilerCore",
+					"Private",
+					"Private/BrofilerCore",
 					// ... add other private include paths required here ...
 				}
 				);
