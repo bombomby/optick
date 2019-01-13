@@ -9,3 +9,4 @@ Publish/
 *.rej
 *.orig
 .DS_Store
+/Samples/UnrealEnginePlugin/Binaries

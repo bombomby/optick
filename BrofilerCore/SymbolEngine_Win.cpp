@@ -186,7 +186,11 @@ void SymEngine::InitSystemModules()
 	ULONG systemInformationLength = 0;
 	MODULE_LIST* pModuleList = nullptr;
 
+#pragma warning (push)
+#pragma warning(disable : 4191)
 	pZwQuerySystemInformation ZwQuerySystemInformation = (pZwQuerySystemInformation)GetProcAddress(GetModuleHandle(TEXT("ntdll.dll")), "ZwQuerySystemInformation");
+#pragma warning (pop)
+
 	ZwQuerySystemInformation(SystemModuleInformation, pModuleList, systemInformationLength, &returnLength);
 	systemInformationLength = returnLength;
 	pModuleList = (MODULE_LIST*)Memory::Alloc(systemInformationLength);
