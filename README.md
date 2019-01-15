@@ -9,5 +9,5 @@ Please use the latest [stable version](https://github.com/bombomby/brofiler/rele
 
 
 ## [Tutorial](https://github.com/bombomby/brofiler/wiki)   
-![](http://brofiler.com/images/screenshots/Screen0.png)
+![](https://user-images.githubusercontent.com/10573248/51151456-d6bbbc00-1862-11e9-9e00-8ce644ff1300.png)
 [![Analytics](https://ga-beacon.appspot.com/UA-59213040-1/brofiler/readme)](https://github.com/bombomby/brofiler)
