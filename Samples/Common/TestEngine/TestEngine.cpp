@@ -500,7 +500,7 @@ Engine::Engine() : isAlive(true)
     , scheduler(SCHEDULER_WORKERS_COUNT, nullptr, GetProfiler())
 #endif
 {
-	Brofiler::SetStateChangedCallback(OnBrofilerStateChanged);
+	BROFILER_SET_STATE_CHANGED_CALLBACK(OnBrofilerStateChanged);
 
 	for (size_t i = 0; i < WORKER_THREAD_COUNT; ++i)
 	{

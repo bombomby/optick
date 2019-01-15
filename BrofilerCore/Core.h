@@ -521,6 +521,9 @@ public:
 
 	// Attaches a screenshot to the current capture
 	bool AttachFile(BroFile::Type type, const char* name, const uint8_t* data, uint32_t size);
+	bool AttachFile(BroFile::Type type, const char* name, std::istream& stream);
+	bool AttachFile(BroFile::Type type, const char* name, const char* path);
+	bool AttachFile(BroFile::Type type, const char* name, const wchar_t* path);
 
 	// Initalizes GPU profiler
 	void InitGPUProfiler(GPUProfiler* profiler);

@@ -13,7 +13,43 @@
 #include "D3D12Multithreading.h"
 #include "FrameResource.h"
 
+#include "ScreenGrab12.h"
+#include <cstdio>
+#include <string>
+#include <wincodec.h>
 #include <Brofiler.h>
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+std::wstring g_ScreenshotRequest;
+bool g_TakingScreenshot = false;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool OnBrofilerStateChanged(Brofiler::BroState state)
+{
+	if (state == Brofiler::BRO_STOP_CAPTURE)
+	{
+		wchar_t tempPath[MAX_PATH] = { 0 };
+		GetTempPath(MAX_PATH, tempPath);
+		std::wstring fullPath(tempPath);
+		g_ScreenshotRequest = fullPath + L"BrofilerScreenshot.jpg";
+		g_TakingScreenshot = true;
+	}
+
+	if (state == Brofiler::BRO_DUMP_CAPTURE)
+	{
+		if (g_TakingScreenshot)
+			return false;
+
+		// Attach screenshot
+		Brofiler::AttachFile(Brofiler::BroFile::BRO_IMAGE, "Screenshot.jpg", g_ScreenshotRequest.c_str());
+
+		// Remove temp file
+		_wremove(g_ScreenshotRequest.c_str());
+		g_ScreenshotRequest.clear();
+	}
+	return true;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 D3D12Multithreading* D3D12Multithreading::s_app = nullptr;
 
@@ -49,6 +85,8 @@ void D3D12Multithreading::OnInit()
 	ID3D12Device* pDevice = m_device.Get();
 	ID3D12CommandQueue* pCommandQueue = m_commandQueue.Get();
 	BROFILER_GPU_INIT_D3D12((void*)pDevice, (void**)&pCommandQueue, 1);
+	BROFILER_SET_STATE_CHANGED_CALLBACK(OnBrofilerStateChanged);
+
 }
 
 // Load the rendering pipeline dependencies.
@@ -774,6 +812,16 @@ void D3D12Multithreading::OnRender()
 		m_cpuTimer.ResetElapsedTime();
 	}
 
+
+	if (g_TakingScreenshot)
+	{
+		ThrowIfFailed(SaveWICTextureToFile(m_commandQueue.Get(), m_renderTargets[m_frameIndex].Get(),
+			GUID_ContainerFormatJpeg, g_ScreenshotRequest.c_str(),
+			D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_PRESENT)
+		);
+		g_TakingScreenshot = false;
+	}
+
 	// Present and update the frame index for the next frame.
 	//PIXBeginEvent(m_commandQueue.Get(), 0, L"Presenting to screen");
 	{
@@ -781,6 +829,10 @@ void D3D12Multithreading::OnRender()
 		BROFILER_GPU_FLIP(m_swapChain.Get());
 		ThrowIfFailed(m_swapChain->Present(1, 0));
 	}
+
+
+
+
 	//PIXEndEvent(m_commandQueue.Get());
 	m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
 

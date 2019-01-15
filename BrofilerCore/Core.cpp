@@ -5,6 +5,7 @@
 #include "SymbolEngine.h"
 
 #include <algorithm>
+#include <fstream>
 #include <unordered_set>
 
 
@@ -1128,6 +1129,34 @@ bool Core::AttachFile(BroFile::Type type, const char* name, const uint8_t* data,
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool Core::AttachFile(BroFile::Type type, const char* name, std::istream& stream)
+{
+	std::streampos beg = stream.tellg();
+	stream.seekg(0, std::ios::end);
+	std::streampos end = stream.tellg();
+	stream.seekg(beg, std::ios::beg);
+
+	size_t size = end - beg;
+	void* buffer = Memory::Alloc(size);
+
+	stream.read((char*)buffer, size);
+	bool result = AttachFile(type, name, (uint8*)buffer, (uint32_t)size);
+
+	Memory::Free(buffer);
+	return result;
+
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool Core::AttachFile(BroFile::Type type, const char* name, const char* path)
+{
+	return AttachFile(type, name, std::ifstream(path, std::ios::binary));
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool Core::AttachFile(BroFile::Type type, const char* name, const wchar_t* path)
+{
+	return AttachFile(type, name, std::ifstream(path, std::ios::binary));
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::InitGPUProfiler(GPUProfiler* profiler)
 {
 	BRO_ASSERT(gpuProfiler == nullptr, "Can't reinitialize GPU profiler! Not supported yet!");
@@ -1221,6 +1250,16 @@ BROFILER_API bool AttachSummary(const char* key, const char* value)
 BROFILER_API bool AttachFile(BroFile::Type type, const char* name, const uint8_t* data, uint32_t size)
 {
 	return Core::Get().AttachFile(type, name, data, size);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+BROFILER_API bool AttachFile(BroFile::Type type, const char* name, const char* path)
+{
+	return Core::Get().AttachFile(type, name, path);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+BROFILER_API bool AttachFile(BroFile::Type type, const char* name, const wchar_t* path)
+{
+	return Core::Get().AttachFile(type, name, path);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const BroPoint& ob)

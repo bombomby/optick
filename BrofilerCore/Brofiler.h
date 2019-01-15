@@ -311,6 +311,8 @@ struct BroFile
 };
 // Attaches a file to the current capture
 BROFILER_API bool AttachFile(BroFile::Type type, const char* name, const uint8_t* data, uint32_t size);
+BROFILER_API bool AttachFile(BroFile::Type type, const char* name, const char* path);
+BROFILER_API bool AttachFile(BroFile::Type type, const char* name, const wchar_t* path);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct EventDescription;
 struct Frame;
@@ -706,6 +708,12 @@ BROFILER_API const EventDescription* GetFrameDescription(FrameType::Type frame);
 #define BROFILER_STORAGE_PUSH(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START)							if (::Brofiler::IsActive()) { ::Brofiler::Event::Push(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START); }
 #define BROFILER_STORAGE_POP(STORAGE, CPU_TIMESTAMP_FINISH)											if (::Brofiler::IsActive()) { ::Brofiler::Event::Pop(STORAGE, CPU_TIMESTAMP_FINISH); }
 
+
+// Registers state change callback
+// If callback returns false - the call is repeated the next frame
+#define BROFILER_SET_STATE_CHANGED_CALLBACK(CALLBACK)			::Brofiler::SetStateChangedCallback(CALLBACK);
+
+
 // GPU events
 #define BROFILER_GPU_INIT_D3D12(DEVICE, CMD_QUEUES, NUM_CMD_QUEUS)			::Brofiler::InitGpuD3D12(DEVICE, CMD_QUEUES, NUM_CMD_QUEUS);
 #define BROFILER_GPU_INIT_VULKAN(DEVICES, PHYSICAL_DEVICES, CMD_QUEUES, CMD_QUEUES_FAMILY, NUM_CMD_QUEUS)			::Brofiler::InitGpuVulkan(DEVICES, PHYSICAL_DEVICES, CMD_QUEUES, CMD_QUEUES_FAMILY, NUM_CMD_QUEUS);
@@ -746,4 +754,5 @@ BROFILER_API const EventDescription* GetFrameDescription(FrameType::Type frame);
 #define BROFILER_STORAGE_EVENT(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START, CPU_TIMESTAMP_FINISH)
 #define BROFILER_STORAGE_PUSH(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START)
 #define BROFILER_STORAGE_POP(STORAGE, CPU_TIMESTAMP_FINISH)				
+#define BROFILER_SET_STATE_CHANGED_CALLBACK(CALLBACK)
 #endif
