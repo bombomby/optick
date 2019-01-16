@@ -42,7 +42,7 @@ namespace Profiler.Controls
 
 		public FileHistory()
 		{
-			History = new SharedSettings<History>("Brofiler.Recent.xml");
+			History = new SharedSettings<History>("Brofiler.Recent.xml", SettingsType.Local);
 			History.OnChanged += History_OnChanged;
 			InitializeComponent();
 			History_OnChanged();

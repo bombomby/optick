@@ -214,6 +214,9 @@
       <DependentUpon>PlatformSelector.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\RoutedEvents.cs" />
+    <Compile Include="Controls\SettingsControl.xaml.cs">
+      <DependentUpon>SettingsControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\SharedSettings.cs" />
     <Compile Include="Controls\SummaryViewer.xaml.cs">
       <DependentUpon>SummaryViewer.xaml</DependentUpon>
@@ -230,6 +233,7 @@
     <Compile Include="Data\Frame.cs" />
     <Compile Include="Data\FunctionStats.cs" />
     <Compile Include="Data\SamplingFrame.cs" />
+    <Compile Include="Controls\Settings.cs" />
     <Compile Include="Data\SourceView.cs" />
     <Compile Include="Data\Summary.cs" />
     <Compile Include="Data\Synchronization.cs" />
@@ -260,7 +264,6 @@
     <Compile Include="Frames\SourceViewControl.xaml.cs">
       <DependentUpon>SourceViewControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="GlobalSettings.cs" />
     <Compile Include="Platform\Platform.cs" />
     <Compile Include="ProfilerClient.cs" />
     <Compile Include="Data\EventTree.cs" />
@@ -310,6 +313,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\PlatformSelector.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\SettingsControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -8,6 +8,12 @@ using System.Xml.Serialization;
 
 namespace Profiler.Controls
 {
+	public enum SettingsType
+	{
+		Global,
+		Local,
+	}
+
 	public class SharedSettings<T> where T : new()
 	{
 		public T Data { get; set; }
@@ -19,10 +25,20 @@ namespace Profiler.Controls
 		public delegate void OnChangedHandler();
 		public event OnChangedHandler OnChanged;
 
-		public SharedSettings(String name)
+
+		public SharedSettings(String name, SettingsType type)
 		{
 			FileName = name;
-			DirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Brofiler");
+			switch (type)
+			{
+				case SettingsType.Global:
+					DirectoryPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+					break;
+
+				case SettingsType.Local:
+					DirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Brofiler");
+					break;
+			}
 			FilePath = System.IO.Path.Combine(DirectoryPath, name);
 			Directory.CreateDirectory(DirectoryPath);
 			Watcher = new FileSystemWatcher(DirectoryPath, name);
@@ -40,6 +56,11 @@ namespace Profiler.Controls
 		private void Watcher_Changed(object sender, FileSystemEventArgs e)
 		{
 			Load();
+		}
+
+		public void Reset()
+		{
+			Data = new T();
 		}
 
 		public bool Save()
