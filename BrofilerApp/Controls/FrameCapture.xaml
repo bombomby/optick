@@ -15,7 +15,6 @@
     <UserControl.Resources>
         <Profiler:MultiplyConverter x:Key="MultiplyConverter"/>
         <Profiler:SubtractConverter x:Key="SubtractConverter"/>
-        <sys:Double x:Key="MinFrameInfoHeight">350</sys:Double>
         <sys:Double x:Key="ThreadViewHeightRatio">0.5</sys:Double>
     </UserControl.Resources>
     <UserControl.CommandBindings>
@@ -98,7 +97,7 @@
             </Grid.ColumnDefinitions>
             <Expander Header="Thread Timeline (Block Info = Ctrl + LMB)" Margin="0" VerticalContentAlignment="Stretch" UseLayoutRounding="False" IsExpanded="True" MahApps:ButtonHelper.PreserveTextCase="True">
                 <Grid>
-                    <Profiler:ThreadView x:Name="ThreadView" Height="Auto" MinHeight="1" HorizontalAlignment="Stretch" Margin="-4,-2,-4,0" VerticalAlignment="Stretch" Width="Auto" MaxHeight="{Binding ActualHeight, ElementName=BottomGrid, Converter={StaticResource SubtractConverter}, ConverterParameter={StaticResource MinFrameInfoHeight}}" />
+                    <Profiler:ThreadView x:Name="ThreadView" MinHeight="1" Height="Auto" Margin="-4,-2,-4,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" />
                 </Grid>
             </Expander>
 

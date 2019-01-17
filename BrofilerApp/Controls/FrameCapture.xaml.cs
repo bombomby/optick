@@ -39,6 +39,32 @@ namespace Profiler.Controls
 
 			timeLine.ShowWarning += TimeLine_ShowWarning;
 			warningBlock.Visibility = Visibility.Collapsed;
+
+			// Workaround for WPF bug with MaxHeight binding
+			SizeChanged += FrameCapture_SizeChanged;
+			this.ThreadView.ThreadList.SizeChanged += ThreadList_SizeChanged;
+		}
+
+		const double BOTTOM_GRID_MIN_HEIGHT = 350;
+
+		private void UpdateThreadViewLayout()
+		{
+			double maxHeight = Math.Max(ThreadView.MinHeight, BottomGrid.ActualHeight - BOTTOM_GRID_MIN_HEIGHT);
+			if (this.ThreadView.ThreadList.ActualHeight > maxHeight)
+				ThreadView.Height = maxHeight;
+			else
+				ThreadView.Height = double.NaN;
+		}
+
+		private void ThreadList_SizeChanged(object sender, SizeChangedEventArgs e)
+		{
+			UpdateThreadViewLayout();
+		}
+
+
+		private void FrameCapture_SizeChanged(object sender, SizeChangedEventArgs e)
+		{
+			UpdateThreadViewLayout();
 		}
 
 		public bool LoadFile(string path)
