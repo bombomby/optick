@@ -18,6 +18,7 @@ using System.Net.Cache;
 using Profiler.Controls;
 using System.Threading.Tasks;
 using System.Windows.Threading;
+using Profiler.TaskManager;
 
 namespace Profiler
 {

@@ -1,0 +1,3149 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Google.Apis.Drive.v3</name>
+    </assembly>
+    <members>
+        <member name="T:Google.Apis.Drive.v3.DriveService">
+            <summary>The Drive Service.</summary>
+        </member>
+        <member name="F:Google.Apis.Drive.v3.DriveService.Version">
+            <summary>The API version.</summary>
+        </member>
+        <member name="F:Google.Apis.Drive.v3.DriveService.DiscoveryVersionUsed">
+            <summary>The discovery version used to generate this service.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.DriveService.#ctor">
+            <summary>Constructs a new service.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.DriveService.#ctor(Google.Apis.Services.BaseClientService.Initializer)">
+            <summary>Constructs a new service.</summary>
+            <param name="initializer">The service initializer.</param>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.DriveService.Features">
+            <summary>Gets the service supported features.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.DriveService.Name">
+            <summary>Gets the service name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.DriveService.BaseUri">
+            <summary>Gets the service base URI.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.DriveService.BasePath">
+            <summary>Gets the service base path.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.DriveService.BatchUri">
+            <summary>Gets the batch base URI; <c>null</c> if unspecified.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.DriveService.BatchPath">
+            <summary>Gets the batch base path; <c>null</c> if unspecified.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.DriveService.Scope">
+            <summary>Available OAuth 2.0 scopes for use with the Drive API.</summary>
+        </member>
+        <member name="F:Google.Apis.Drive.v3.DriveService.Scope.Drive">
+            <summary>See, edit, create, and delete all of your Google Drive files</summary>
+        </member>
+        <member name="F:Google.Apis.Drive.v3.DriveService.Scope.DriveAppdata">
+            <summary>View and manage its own configuration data in your Google Drive</summary>
+        </member>
+        <member name="F:Google.Apis.Drive.v3.DriveService.Scope.DriveFile">
+            <summary>View and manage Google Drive files and folders that you have opened or created with this
+            app</summary>
+        </member>
+        <member name="F:Google.Apis.Drive.v3.DriveService.Scope.DriveMetadata">
+            <summary>View and manage metadata of files in your Google Drive</summary>
+        </member>
+        <member name="F:Google.Apis.Drive.v3.DriveService.Scope.DriveMetadataReadonly">
+            <summary>View metadata for files in your Google Drive</summary>
+        </member>
+        <member name="F:Google.Apis.Drive.v3.DriveService.Scope.DrivePhotosReadonly">
+            <summary>View the photos, videos and albums in your Google Photos</summary>
+        </member>
+        <member name="F:Google.Apis.Drive.v3.DriveService.Scope.DriveReadonly">
+            <summary>See and download all your Google Drive files</summary>
+        </member>
+        <member name="F:Google.Apis.Drive.v3.DriveService.Scope.DriveScripts">
+            <summary>Modify your Google Apps Script scripts' behavior</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.DriveService.About">
+            <summary>Gets the About resource.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.DriveService.Changes">
+            <summary>Gets the Changes resource.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.DriveService.Channels">
+            <summary>Gets the Channels resource.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.DriveService.Comments">
+            <summary>Gets the Comments resource.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.DriveService.Files">
+            <summary>Gets the Files resource.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.DriveService.Permissions">
+            <summary>Gets the Permissions resource.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.DriveService.Replies">
+            <summary>Gets the Replies resource.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.DriveService.Revisions">
+            <summary>Gets the Revisions resource.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.DriveService.Teamdrives">
+            <summary>Gets the Teamdrives resource.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.DriveBaseServiceRequest`1">
+            <summary>A base abstract class for Drive requests.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.DriveBaseServiceRequest`1.#ctor(Google.Apis.Services.IClientService)">
+            <summary>Constructs a new DriveBaseServiceRequest instance.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.DriveBaseServiceRequest`1.Alt">
+            <summary>Data format for the response.</summary>
+            [default: json]
+        </member>
+        <member name="T:Google.Apis.Drive.v3.DriveBaseServiceRequest`1.AltEnum">
+            <summary>Data format for the response.</summary>
+        </member>
+        <member name="F:Google.Apis.Drive.v3.DriveBaseServiceRequest`1.AltEnum.Json">
+            <summary>Responses with Content-Type of application/json</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.DriveBaseServiceRequest`1.Fields">
+            <summary>Selector specifying which fields to include in a partial response.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.DriveBaseServiceRequest`1.Key">
+            <summary>API key. Your API key identifies your project and provides you with API access, quota, and reports.
+            Required unless you provide an OAuth 2.0 token.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.DriveBaseServiceRequest`1.OauthToken">
+            <summary>OAuth 2.0 token for the current user.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.DriveBaseServiceRequest`1.PrettyPrint">
+            <summary>Returns response with indentations and line breaks.</summary>
+            [default: true]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.DriveBaseServiceRequest`1.QuotaUser">
+            <summary>An opaque string that represents a user for quota purposes. Must not exceed 40
+            characters.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.DriveBaseServiceRequest`1.UserIp">
+            <summary>Deprecated. Please use quotaUser instead.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.DriveBaseServiceRequest`1.InitParameters">
+            <summary>Initializes Drive parameter list.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.AboutResource">
+            <summary>The "about" collection of methods.</summary>
+        </member>
+        <member name="F:Google.Apis.Drive.v3.AboutResource.service">
+            <summary>The service which this resource belongs to.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.AboutResource.#ctor(Google.Apis.Services.IClientService)">
+            <summary>Constructs a new resource.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.AboutResource.Get">
+            <summary>Gets information about the user, the user's Drive, and system capabilities.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.AboutResource.GetRequest">
+            <summary>Gets information about the user, the user's Drive, and system capabilities.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.AboutResource.GetRequest.#ctor(Google.Apis.Services.IClientService)">
+            <summary>Constructs a new Get request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.AboutResource.GetRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.AboutResource.GetRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.AboutResource.GetRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.AboutResource.GetRequest.InitParameters">
+            <summary>Initializes Get parameter list.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.ChangesResource">
+            <summary>The "changes" collection of methods.</summary>
+        </member>
+        <member name="F:Google.Apis.Drive.v3.ChangesResource.service">
+            <summary>The service which this resource belongs to.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.ChangesResource.#ctor(Google.Apis.Services.IClientService)">
+            <summary>Constructs a new resource.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.ChangesResource.GetStartPageToken">
+            <summary>Gets the starting pageToken for listing future changes.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.ChangesResource.GetStartPageTokenRequest">
+            <summary>Gets the starting pageToken for listing future changes.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.ChangesResource.GetStartPageTokenRequest.#ctor(Google.Apis.Services.IClientService)">
+            <summary>Constructs a new GetStartPageToken request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.GetStartPageTokenRequest.SupportsTeamDrives">
+            <summary>Whether the requesting application supports Team Drives.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.GetStartPageTokenRequest.TeamDriveId">
+            <summary>The ID of the Team Drive for which the starting pageToken for listing future changes from that
+            Team Drive will be returned.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.GetStartPageTokenRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.GetStartPageTokenRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.GetStartPageTokenRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.ChangesResource.GetStartPageTokenRequest.InitParameters">
+            <summary>Initializes GetStartPageToken parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.ChangesResource.List(System.String)">
+            <summary>Lists the changes for a user or Team Drive.</summary>
+            <param name="pageToken">The token for continuing a previous list request on the next page. This should be set to the
+            value of 'nextPageToken' from the previous response or to the response from the getStartPageToken
+            method.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.ChangesResource.ListRequest">
+            <summary>Lists the changes for a user or Team Drive.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.ChangesResource.ListRequest.#ctor(Google.Apis.Services.IClientService,System.String)">
+            <summary>Constructs a new List request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.ListRequest.PageToken">
+            <summary>The token for continuing a previous list request on the next page. This should be set to the
+            value of 'nextPageToken' from the previous response or to the response from the getStartPageToken
+            method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.ListRequest.IncludeCorpusRemovals">
+            <summary>Whether changes should include the file resource if the file is still accessible by the user at
+            the time of the request, even when a file was removed from the list of changes and there will be no
+            further change entries for this file.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.ListRequest.IncludeRemoved">
+            <summary>Whether to include changes indicating that items have been removed from the list of changes,
+            for example by deletion or loss of access.</summary>
+            [default: true]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.ListRequest.IncludeTeamDriveItems">
+            <summary>Whether Team Drive files or changes should be included in results.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.ListRequest.PageSize">
+            <summary>The maximum number of changes to return per page.</summary>
+            [default: 100]
+            [minimum: 1]
+            [maximum: 1000]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.ListRequest.RestrictToMyDrive">
+            <summary>Whether to restrict the results to changes inside the My Drive hierarchy. This omits changes to
+            files such as those in the Application Data folder or shared files which have not been added to My
+            Drive.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.ListRequest.Spaces">
+            <summary>A comma-separated list of spaces to query within the user corpus. Supported values are 'drive',
+            'appDataFolder' and 'photos'.</summary>
+            [default: drive]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.ListRequest.SupportsTeamDrives">
+            <summary>Whether the requesting application supports Team Drives.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.ListRequest.TeamDriveId">
+            <summary>The Team Drive from which changes will be returned. If specified the change IDs will be
+            reflective of the Team Drive; use the combined Team Drive ID and change ID as an identifier.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.ListRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.ListRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.ListRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.ChangesResource.ListRequest.InitParameters">
+            <summary>Initializes List parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.ChangesResource.Watch(Google.Apis.Drive.v3.Data.Channel,System.String)">
+            <summary>Subscribes to changes for a user.</summary>
+            <param name="body">The body of the request.</param>
+            <param name="pageToken">The token for continuing a previous list request on the next page. This should be set to the
+            value of 'nextPageToken' from the previous response or to the response from the getStartPageToken
+            method.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.ChangesResource.WatchRequest">
+            <summary>Subscribes to changes for a user.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.ChangesResource.WatchRequest.#ctor(Google.Apis.Services.IClientService,Google.Apis.Drive.v3.Data.Channel,System.String)">
+            <summary>Constructs a new Watch request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.WatchRequest.PageToken">
+            <summary>The token for continuing a previous list request on the next page. This should be set to the
+            value of 'nextPageToken' from the previous response or to the response from the getStartPageToken
+            method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.WatchRequest.IncludeCorpusRemovals">
+            <summary>Whether changes should include the file resource if the file is still accessible by the user at
+            the time of the request, even when a file was removed from the list of changes and there will be no
+            further change entries for this file.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.WatchRequest.IncludeRemoved">
+            <summary>Whether to include changes indicating that items have been removed from the list of changes,
+            for example by deletion or loss of access.</summary>
+            [default: true]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.WatchRequest.IncludeTeamDriveItems">
+            <summary>Whether Team Drive files or changes should be included in results.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.WatchRequest.PageSize">
+            <summary>The maximum number of changes to return per page.</summary>
+            [default: 100]
+            [minimum: 1]
+            [maximum: 1000]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.WatchRequest.RestrictToMyDrive">
+            <summary>Whether to restrict the results to changes inside the My Drive hierarchy. This omits changes to
+            files such as those in the Application Data folder or shared files which have not been added to My
+            Drive.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.WatchRequest.Spaces">
+            <summary>A comma-separated list of spaces to query within the user corpus. Supported values are 'drive',
+            'appDataFolder' and 'photos'.</summary>
+            [default: drive]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.WatchRequest.SupportsTeamDrives">
+            <summary>Whether the requesting application supports Team Drives.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.WatchRequest.TeamDriveId">
+            <summary>The Team Drive from which changes will be returned. If specified the change IDs will be
+            reflective of the Team Drive; use the combined Team Drive ID and change ID as an identifier.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.WatchRequest.Body">
+            <summary>Gets or sets the body of this request.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.ChangesResource.WatchRequest.GetBody">
+            <summary>Returns the body of the request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.WatchRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.WatchRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChangesResource.WatchRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.ChangesResource.WatchRequest.InitParameters">
+            <summary>Initializes Watch parameter list.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.ChannelsResource">
+            <summary>The "channels" collection of methods.</summary>
+        </member>
+        <member name="F:Google.Apis.Drive.v3.ChannelsResource.service">
+            <summary>The service which this resource belongs to.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.ChannelsResource.#ctor(Google.Apis.Services.IClientService)">
+            <summary>Constructs a new resource.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.ChannelsResource.Stop(Google.Apis.Drive.v3.Data.Channel)">
+            <summary>Stop watching resources through this channel</summary>
+            <param name="body">The body of the request.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.ChannelsResource.StopRequest">
+            <summary>Stop watching resources through this channel</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.ChannelsResource.StopRequest.#ctor(Google.Apis.Services.IClientService,Google.Apis.Drive.v3.Data.Channel)">
+            <summary>Constructs a new Stop request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChannelsResource.StopRequest.Body">
+            <summary>Gets or sets the body of this request.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.ChannelsResource.StopRequest.GetBody">
+            <summary>Returns the body of the request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChannelsResource.StopRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChannelsResource.StopRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.ChannelsResource.StopRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.ChannelsResource.StopRequest.InitParameters">
+            <summary>Initializes Stop parameter list.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.CommentsResource">
+            <summary>The "comments" collection of methods.</summary>
+        </member>
+        <member name="F:Google.Apis.Drive.v3.CommentsResource.service">
+            <summary>The service which this resource belongs to.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.CommentsResource.#ctor(Google.Apis.Services.IClientService)">
+            <summary>Constructs a new resource.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.CommentsResource.Create(Google.Apis.Drive.v3.Data.Comment,System.String)">
+            <summary>Creates a new comment on a file.</summary>
+            <param name="body">The body of the request.</param>
+            <param name="fileId">The ID of the file.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.CommentsResource.CreateRequest">
+            <summary>Creates a new comment on a file.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.CommentsResource.CreateRequest.#ctor(Google.Apis.Services.IClientService,Google.Apis.Drive.v3.Data.Comment,System.String)">
+            <summary>Constructs a new Create request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.CreateRequest.FileId">
+            <summary>The ID of the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.CreateRequest.Body">
+            <summary>Gets or sets the body of this request.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.CommentsResource.CreateRequest.GetBody">
+            <summary>Returns the body of the request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.CreateRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.CreateRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.CreateRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.CommentsResource.CreateRequest.InitParameters">
+            <summary>Initializes Create parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.CommentsResource.Delete(System.String,System.String)">
+            <summary>Deletes a comment.</summary>
+            <param name="fileId">The ID of the file.</param>
+            <param name="commentId">The ID of the comment.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.CommentsResource.DeleteRequest">
+            <summary>Deletes a comment.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.CommentsResource.DeleteRequest.#ctor(Google.Apis.Services.IClientService,System.String,System.String)">
+            <summary>Constructs a new Delete request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.DeleteRequest.FileId">
+            <summary>The ID of the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.DeleteRequest.CommentId">
+            <summary>The ID of the comment.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.DeleteRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.DeleteRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.DeleteRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.CommentsResource.DeleteRequest.InitParameters">
+            <summary>Initializes Delete parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.CommentsResource.Get(System.String,System.String)">
+            <summary>Gets a comment by ID.</summary>
+            <param name="fileId">The ID of the file.</param>
+            <param name="commentId">The ID of the comment.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.CommentsResource.GetRequest">
+            <summary>Gets a comment by ID.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.CommentsResource.GetRequest.#ctor(Google.Apis.Services.IClientService,System.String,System.String)">
+            <summary>Constructs a new Get request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.GetRequest.FileId">
+            <summary>The ID of the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.GetRequest.CommentId">
+            <summary>The ID of the comment.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.GetRequest.IncludeDeleted">
+            <summary>Whether to return deleted comments. Deleted comments will not include their original
+            content.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.GetRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.GetRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.GetRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.CommentsResource.GetRequest.InitParameters">
+            <summary>Initializes Get parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.CommentsResource.List(System.String)">
+            <summary>Lists a file's comments.</summary>
+            <param name="fileId">The ID of the file.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.CommentsResource.ListRequest">
+            <summary>Lists a file's comments.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.CommentsResource.ListRequest.#ctor(Google.Apis.Services.IClientService,System.String)">
+            <summary>Constructs a new List request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.ListRequest.FileId">
+            <summary>The ID of the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.ListRequest.IncludeDeleted">
+            <summary>Whether to include deleted comments. Deleted comments will not include their original
+            content.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.ListRequest.PageSize">
+            <summary>The maximum number of comments to return per page.</summary>
+            [default: 20]
+            [minimum: 1]
+            [maximum: 100]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.ListRequest.PageToken">
+            <summary>The token for continuing a previous list request on the next page. This should be set to the
+            value of 'nextPageToken' from the previous response.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.ListRequest.StartModifiedTime">
+            <summary>The minimum value of 'modifiedTime' for the result comments (RFC 3339 date-time).</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.ListRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.ListRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.ListRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.CommentsResource.ListRequest.InitParameters">
+            <summary>Initializes List parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.CommentsResource.Update(Google.Apis.Drive.v3.Data.Comment,System.String,System.String)">
+            <summary>Updates a comment with patch semantics.</summary>
+            <param name="body">The body of the request.</param>
+            <param name="fileId">The ID of the file.</param>
+            <param name="commentId">The ID of the comment.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.CommentsResource.UpdateRequest">
+            <summary>Updates a comment with patch semantics.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.CommentsResource.UpdateRequest.#ctor(Google.Apis.Services.IClientService,Google.Apis.Drive.v3.Data.Comment,System.String,System.String)">
+            <summary>Constructs a new Update request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.UpdateRequest.FileId">
+            <summary>The ID of the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.UpdateRequest.CommentId">
+            <summary>The ID of the comment.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.UpdateRequest.Body">
+            <summary>Gets or sets the body of this request.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.CommentsResource.UpdateRequest.GetBody">
+            <summary>Returns the body of the request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.UpdateRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.UpdateRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.CommentsResource.UpdateRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.CommentsResource.UpdateRequest.InitParameters">
+            <summary>Initializes Update parameter list.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.FilesResource">
+            <summary>The "files" collection of methods.</summary>
+        </member>
+        <member name="F:Google.Apis.Drive.v3.FilesResource.service">
+            <summary>The service which this resource belongs to.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.#ctor(Google.Apis.Services.IClientService)">
+            <summary>Constructs a new resource.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.Copy(Google.Apis.Drive.v3.Data.File,System.String)">
+            <summary>Creates a copy of a file and applies any requested updates with patch semantics.</summary>
+            <param name="body">The body of the request.</param>
+            <param name="fileId">The ID of the file.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.FilesResource.CopyRequest">
+            <summary>Creates a copy of a file and applies any requested updates with patch semantics.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.CopyRequest.#ctor(Google.Apis.Services.IClientService,Google.Apis.Drive.v3.Data.File,System.String)">
+            <summary>Constructs a new Copy request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CopyRequest.FileId">
+            <summary>The ID of the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CopyRequest.IgnoreDefaultVisibility">
+            <summary>Whether to ignore the domain's default visibility settings for the created file. Domain
+            administrators can choose to make all uploaded files visible to the domain by default; this parameter
+            bypasses that behavior for the request. Permissions are still inherited from parent folders.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CopyRequest.KeepRevisionForever">
+            <summary>Whether to set the 'keepForever' field in the new head revision. This is only applicable to
+            files with binary content in Drive.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CopyRequest.OcrLanguage">
+            <summary>A language hint for OCR processing during image import (ISO 639-1 code).</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CopyRequest.SupportsTeamDrives">
+            <summary>Whether the requesting application supports Team Drives.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CopyRequest.Body">
+            <summary>Gets or sets the body of this request.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.CopyRequest.GetBody">
+            <summary>Returns the body of the request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CopyRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CopyRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CopyRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.CopyRequest.InitParameters">
+            <summary>Initializes Copy parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.Create(Google.Apis.Drive.v3.Data.File)">
+            <summary>Creates a new file.</summary>
+            <param name="body">The body of the request.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.FilesResource.CreateRequest">
+            <summary>Creates a new file.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.CreateRequest.#ctor(Google.Apis.Services.IClientService,Google.Apis.Drive.v3.Data.File)">
+            <summary>Constructs a new Create request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CreateRequest.IgnoreDefaultVisibility">
+            <summary>Whether to ignore the domain's default visibility settings for the created file. Domain
+            administrators can choose to make all uploaded files visible to the domain by default; this parameter
+            bypasses that behavior for the request. Permissions are still inherited from parent folders.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CreateRequest.KeepRevisionForever">
+            <summary>Whether to set the 'keepForever' field in the new head revision. This is only applicable to
+            files with binary content in Drive.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CreateRequest.OcrLanguage">
+            <summary>A language hint for OCR processing during image import (ISO 639-1 code).</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CreateRequest.SupportsTeamDrives">
+            <summary>Whether the requesting application supports Team Drives.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CreateRequest.UseContentAsIndexableText">
+            <summary>Whether to use the uploaded content as indexable text.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CreateRequest.Body">
+            <summary>Gets or sets the body of this request.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.CreateRequest.GetBody">
+            <summary>Returns the body of the request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CreateRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CreateRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CreateRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.CreateRequest.InitParameters">
+            <summary>Initializes Create parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.Create(Google.Apis.Drive.v3.Data.File,System.IO.Stream,System.String)">
+            <summary>Creates a new file.</summary>
+            <param name="body">The body of the request.</param>
+            <param name="stream">The stream to upload.</param>
+            <param name="contentType">The content type of the stream to upload.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.FilesResource.CreateMediaUpload">
+            <summary>Create media upload which supports resumable upload.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CreateMediaUpload.Alt">
+            <summary>Data format for the response.</summary>
+            [default: json]
+        </member>
+        <member name="T:Google.Apis.Drive.v3.FilesResource.CreateMediaUpload.AltEnum">
+            <summary>Data format for the response.</summary>
+        </member>
+        <member name="F:Google.Apis.Drive.v3.FilesResource.CreateMediaUpload.AltEnum.Json">
+            <summary>Responses with Content-Type of application/json</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CreateMediaUpload.Fields">
+            <summary>Selector specifying which fields to include in a partial response.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CreateMediaUpload.Key">
+            <summary>API key. Your API key identifies your project and provides you with API access, quota, and
+            reports. Required unless you provide an OAuth 2.0 token.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CreateMediaUpload.OauthToken">
+            <summary>OAuth 2.0 token for the current user.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CreateMediaUpload.PrettyPrint">
+            <summary>Returns response with indentations and line breaks.</summary>
+            [default: true]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CreateMediaUpload.QuotaUser">
+            <summary>An opaque string that represents a user for quota purposes. Must not exceed 40
+            characters.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CreateMediaUpload.UserIp">
+            <summary>Deprecated. Please use quotaUser instead.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CreateMediaUpload.IgnoreDefaultVisibility">
+            <summary>Whether to ignore the domain's default visibility settings for the created file. Domain
+            administrators can choose to make all uploaded files visible to the domain by default; this parameter
+            bypasses that behavior for the request. Permissions are still inherited from parent folders.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CreateMediaUpload.KeepRevisionForever">
+            <summary>Whether to set the 'keepForever' field in the new head revision. This is only applicable to
+            files with binary content in Drive.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CreateMediaUpload.OcrLanguage">
+            <summary>A language hint for OCR processing during image import (ISO 639-1 code).</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CreateMediaUpload.SupportsTeamDrives">
+            <summary>Whether the requesting application supports Team Drives.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.CreateMediaUpload.UseContentAsIndexableText">
+            <summary>Whether to use the uploaded content as indexable text.</summary>
+            [default: false]
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.CreateMediaUpload.#ctor(Google.Apis.Services.IClientService,Google.Apis.Drive.v3.Data.File,System.IO.Stream,System.String)">
+            <summary>Constructs a new Create media upload instance.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.Delete(System.String)">
+            <summary>Permanently deletes a file owned by the user without moving it to the trash. If the file belongs to
+            a Team Drive the user must be an organizer on the parent. If the target is a folder, all descendants owned
+            by the user are also deleted.</summary>
+            <param name="fileId">The ID of the file.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.FilesResource.DeleteRequest">
+            <summary>Permanently deletes a file owned by the user without moving it to the trash. If the file belongs to
+            a Team Drive the user must be an organizer on the parent. If the target is a folder, all descendants owned
+            by the user are also deleted.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.DeleteRequest.#ctor(Google.Apis.Services.IClientService,System.String)">
+            <summary>Constructs a new Delete request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.DeleteRequest.FileId">
+            <summary>The ID of the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.DeleteRequest.SupportsTeamDrives">
+            <summary>Whether the requesting application supports Team Drives.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.DeleteRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.DeleteRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.DeleteRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.DeleteRequest.InitParameters">
+            <summary>Initializes Delete parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.EmptyTrash">
+            <summary>Permanently deletes all of the user's trashed files.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.FilesResource.EmptyTrashRequest">
+            <summary>Permanently deletes all of the user's trashed files.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.EmptyTrashRequest.#ctor(Google.Apis.Services.IClientService)">
+            <summary>Constructs a new EmptyTrash request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.EmptyTrashRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.EmptyTrashRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.EmptyTrashRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.EmptyTrashRequest.InitParameters">
+            <summary>Initializes EmptyTrash parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.Export(System.String,System.String)">
+            <summary>Exports a Google Doc to the requested MIME type and returns the exported content. Please note that
+            the exported content is limited to 10MB.</summary>
+            <param name="fileId">The ID of the file.</param>
+            <param name="mimeType">The MIME type of the format
+            requested for this export.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.FilesResource.ExportRequest">
+            <summary>Exports a Google Doc to the requested MIME type and returns the exported content. Please note that
+            the exported content is limited to 10MB.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.ExportRequest.#ctor(Google.Apis.Services.IClientService,System.String,System.String)">
+            <summary>Constructs a new Export request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.ExportRequest.FileId">
+            <summary>The ID of the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.ExportRequest.MimeType">
+            <summary>The MIME type of the format requested for this export.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.ExportRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.ExportRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.ExportRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.ExportRequest.InitParameters">
+            <summary>Initializes Export parameter list.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.ExportRequest.MediaDownloader">
+            <summary>Gets the media downloader.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.ExportRequest.Download(System.IO.Stream)">
+            <summary>
+            <para>Synchronously download the media into the given stream.</para>
+            <para>Warning: This method hides download errors; use <see cref="M:Google.Apis.Drive.v3.FilesResource.ExportRequest.DownloadWithStatus(System.IO.Stream)"/> instead.</para>
+            </summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.ExportRequest.DownloadWithStatus(System.IO.Stream)">
+            <summary>Synchronously download the media into the given stream.</summary>
+            <returns>The final status of the download; including whether the download succeeded or failed.</returns>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.ExportRequest.DownloadAsync(System.IO.Stream)">
+            <summary>Asynchronously download the media into the given stream.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.ExportRequest.DownloadAsync(System.IO.Stream,System.Threading.CancellationToken)">
+            <summary>Asynchronously download the media into the given stream.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.ExportRequest.DownloadRange(System.IO.Stream,System.Net.Http.Headers.RangeHeaderValue)">
+            <summary>Synchronously download a range of the media into the given stream.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.ExportRequest.DownloadRangeAsync(System.IO.Stream,System.Net.Http.Headers.RangeHeaderValue,System.Threading.CancellationToken)">
+            <summary>Asynchronously download a range of the media into the given stream.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.GenerateIds">
+            <summary>Generates a set of file IDs which can be provided in create requests.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.FilesResource.GenerateIdsRequest">
+            <summary>Generates a set of file IDs which can be provided in create requests.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.GenerateIdsRequest.#ctor(Google.Apis.Services.IClientService)">
+            <summary>Constructs a new GenerateIds request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.GenerateIdsRequest.Count">
+            <summary>The number of IDs to return.</summary>
+            [default: 10]
+            [minimum: 1]
+            [maximum: 1000]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.GenerateIdsRequest.Space">
+            <summary>The space in which the IDs can be used to create new files. Supported values are 'drive' and
+            'appDataFolder'.</summary>
+            [default: drive]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.GenerateIdsRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.GenerateIdsRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.GenerateIdsRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.GenerateIdsRequest.InitParameters">
+            <summary>Initializes GenerateIds parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.Get(System.String)">
+            <summary>Gets a file's metadata or content by ID.</summary>
+            <param name="fileId">The ID of the file.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.FilesResource.GetRequest">
+            <summary>Gets a file's metadata or content by ID.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.GetRequest.#ctor(Google.Apis.Services.IClientService,System.String)">
+            <summary>Constructs a new Get request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.GetRequest.FileId">
+            <summary>The ID of the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.GetRequest.AcknowledgeAbuse">
+            <summary>Whether the user is acknowledging the risk of downloading known malware or other abusive files.
+            This is only applicable when alt=media.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.GetRequest.SupportsTeamDrives">
+            <summary>Whether the requesting application supports Team Drives.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.GetRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.GetRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.GetRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.GetRequest.InitParameters">
+            <summary>Initializes Get parameter list.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.GetRequest.MediaDownloader">
+            <summary>Gets the media downloader.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.GetRequest.Download(System.IO.Stream)">
+            <summary>
+            <para>Synchronously download the media into the given stream.</para>
+            <para>Warning: This method hides download errors; use <see cref="M:Google.Apis.Drive.v3.FilesResource.GetRequest.DownloadWithStatus(System.IO.Stream)"/> instead.</para>
+            </summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.GetRequest.DownloadWithStatus(System.IO.Stream)">
+            <summary>Synchronously download the media into the given stream.</summary>
+            <returns>The final status of the download; including whether the download succeeded or failed.</returns>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.GetRequest.DownloadAsync(System.IO.Stream)">
+            <summary>Asynchronously download the media into the given stream.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.GetRequest.DownloadAsync(System.IO.Stream,System.Threading.CancellationToken)">
+            <summary>Asynchronously download the media into the given stream.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.GetRequest.DownloadRange(System.IO.Stream,System.Net.Http.Headers.RangeHeaderValue)">
+            <summary>Synchronously download a range of the media into the given stream.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.GetRequest.DownloadRangeAsync(System.IO.Stream,System.Net.Http.Headers.RangeHeaderValue,System.Threading.CancellationToken)">
+            <summary>Asynchronously download a range of the media into the given stream.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.List">
+            <summary>Lists or searches files.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.FilesResource.ListRequest">
+            <summary>Lists or searches files.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.ListRequest.#ctor(Google.Apis.Services.IClientService)">
+            <summary>Constructs a new List request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.ListRequest.Corpora">
+            <summary>Comma-separated list of bodies of items (files/documents) to which the query applies. Supported
+            bodies are 'user', 'domain', 'teamDrive' and 'allTeamDrives'. 'allTeamDrives' must be combined with
+            'user'; all other values must be used in isolation. Prefer 'user' or 'teamDrive' to 'allTeamDrives' for
+            efficiency.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.ListRequest.Corpus">
+            <summary>The source of files to list. Deprecated: use 'corpora' instead.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.FilesResource.ListRequest.CorpusEnum">
+            <summary>The source of files to list. Deprecated: use 'corpora' instead.</summary>
+        </member>
+        <member name="F:Google.Apis.Drive.v3.FilesResource.ListRequest.CorpusEnum.Domain">
+            <summary>Files shared to the user's domain.</summary>
+        </member>
+        <member name="F:Google.Apis.Drive.v3.FilesResource.ListRequest.CorpusEnum.User">
+            <summary>Files owned by or shared to the user.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.ListRequest.IncludeTeamDriveItems">
+            <summary>Whether Team Drive items should be included in results.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.ListRequest.OrderBy">
+            <summary>A comma-separated list of sort keys. Valid keys are 'createdTime', 'folder',
+            'modifiedByMeTime', 'modifiedTime', 'name', 'name_natural', 'quotaBytesUsed', 'recency',
+            'sharedWithMeTime', 'starred', and 'viewedByMeTime'. Each key sorts ascending by default, but may be
+            reversed with the 'desc' modifier. Example usage: ?orderBy=folder,modifiedTime desc,name. Please note
+            that there is a current limitation for users with approximately one million files in which the requested
+            sort order is ignored.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.ListRequest.PageSize">
+            <summary>The maximum number of files to return per page. Partial or empty result pages are possible even
+            before the end of the files list has been reached.</summary>
+            [default: 100]
+            [minimum: 1]
+            [maximum: 1000]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.ListRequest.PageToken">
+            <summary>The token for continuing a previous list request on the next page. This should be set to the
+            value of 'nextPageToken' from the previous response.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.ListRequest.Q">
+            <summary>A query for filtering the file results. See the "Search for Files" guide for supported
+            syntax.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.ListRequest.Spaces">
+            <summary>A comma-separated list of spaces to query within the corpus. Supported values are 'drive',
+            'appDataFolder' and 'photos'.</summary>
+            [default: drive]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.ListRequest.SupportsTeamDrives">
+            <summary>Whether the requesting application supports Team Drives.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.ListRequest.TeamDriveId">
+            <summary>ID of Team Drive to search.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.ListRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.ListRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.ListRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.ListRequest.InitParameters">
+            <summary>Initializes List parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.Update(Google.Apis.Drive.v3.Data.File,System.String)">
+            <summary>Updates a file's metadata and/or content with patch semantics.</summary>
+            <param name="body">The body of the request.</param>
+            <param name="fileId">The ID of the file.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.FilesResource.UpdateRequest">
+            <summary>Updates a file's metadata and/or content with patch semantics.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.UpdateRequest.#ctor(Google.Apis.Services.IClientService,Google.Apis.Drive.v3.Data.File,System.String)">
+            <summary>Constructs a new Update request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.UpdateRequest.FileId">
+            <summary>The ID of the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.UpdateRequest.AddParents">
+            <summary>A comma-separated list of parent IDs to add.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.UpdateRequest.KeepRevisionForever">
+            <summary>Whether to set the 'keepForever' field in the new head revision. This is only applicable to
+            files with binary content in Drive.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.UpdateRequest.OcrLanguage">
+            <summary>A language hint for OCR processing during image import (ISO 639-1 code).</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.UpdateRequest.RemoveParents">
+            <summary>A comma-separated list of parent IDs to remove.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.UpdateRequest.SupportsTeamDrives">
+            <summary>Whether the requesting application supports Team Drives.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.UpdateRequest.UseContentAsIndexableText">
+            <summary>Whether to use the uploaded content as indexable text.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.UpdateRequest.Body">
+            <summary>Gets or sets the body of this request.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.UpdateRequest.GetBody">
+            <summary>Returns the body of the request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.UpdateRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.UpdateRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.UpdateRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.UpdateRequest.InitParameters">
+            <summary>Initializes Update parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.Update(Google.Apis.Drive.v3.Data.File,System.String,System.IO.Stream,System.String)">
+            <summary>Updates a file's metadata and/or content with patch semantics.</summary>
+            <param name="body">The body of the request.</param>
+            <param name="fileId">The ID of the file.</param>
+            <param name="stream">The stream to upload.</param>
+            <param name="contentType">The content type of the stream to upload.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.FilesResource.UpdateMediaUpload">
+            <summary>Update media upload which supports resumable upload.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.UpdateMediaUpload.Alt">
+            <summary>Data format for the response.</summary>
+            [default: json]
+        </member>
+        <member name="T:Google.Apis.Drive.v3.FilesResource.UpdateMediaUpload.AltEnum">
+            <summary>Data format for the response.</summary>
+        </member>
+        <member name="F:Google.Apis.Drive.v3.FilesResource.UpdateMediaUpload.AltEnum.Json">
+            <summary>Responses with Content-Type of application/json</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.UpdateMediaUpload.Fields">
+            <summary>Selector specifying which fields to include in a partial response.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.UpdateMediaUpload.Key">
+            <summary>API key. Your API key identifies your project and provides you with API access, quota, and
+            reports. Required unless you provide an OAuth 2.0 token.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.UpdateMediaUpload.OauthToken">
+            <summary>OAuth 2.0 token for the current user.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.UpdateMediaUpload.PrettyPrint">
+            <summary>Returns response with indentations and line breaks.</summary>
+            [default: true]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.UpdateMediaUpload.QuotaUser">
+            <summary>An opaque string that represents a user for quota purposes. Must not exceed 40
+            characters.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.UpdateMediaUpload.UserIp">
+            <summary>Deprecated. Please use quotaUser instead.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.UpdateMediaUpload.FileId">
+            <summary>The ID of the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.UpdateMediaUpload.AddParents">
+            <summary>A comma-separated list of parent IDs to add.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.UpdateMediaUpload.KeepRevisionForever">
+            <summary>Whether to set the 'keepForever' field in the new head revision. This is only applicable to
+            files with binary content in Drive.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.UpdateMediaUpload.OcrLanguage">
+            <summary>A language hint for OCR processing during image import (ISO 639-1 code).</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.UpdateMediaUpload.RemoveParents">
+            <summary>A comma-separated list of parent IDs to remove.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.UpdateMediaUpload.SupportsTeamDrives">
+            <summary>Whether the requesting application supports Team Drives.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.UpdateMediaUpload.UseContentAsIndexableText">
+            <summary>Whether to use the uploaded content as indexable text.</summary>
+            [default: false]
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.UpdateMediaUpload.#ctor(Google.Apis.Services.IClientService,Google.Apis.Drive.v3.Data.File,System.String,System.IO.Stream,System.String)">
+            <summary>Constructs a new Update media upload instance.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.Watch(Google.Apis.Drive.v3.Data.Channel,System.String)">
+            <summary>Subscribes to changes to a file</summary>
+            <param name="body">The body of the request.</param>
+            <param name="fileId">The ID of the file.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.FilesResource.WatchRequest">
+            <summary>Subscribes to changes to a file</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.WatchRequest.#ctor(Google.Apis.Services.IClientService,Google.Apis.Drive.v3.Data.Channel,System.String)">
+            <summary>Constructs a new Watch request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.WatchRequest.FileId">
+            <summary>The ID of the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.WatchRequest.AcknowledgeAbuse">
+            <summary>Whether the user is acknowledging the risk of downloading known malware or other abusive files.
+            This is only applicable when alt=media.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.WatchRequest.SupportsTeamDrives">
+            <summary>Whether the requesting application supports Team Drives.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.WatchRequest.Body">
+            <summary>Gets or sets the body of this request.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.WatchRequest.GetBody">
+            <summary>Returns the body of the request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.WatchRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.WatchRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.WatchRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.WatchRequest.InitParameters">
+            <summary>Initializes Watch parameter list.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.FilesResource.WatchRequest.MediaDownloader">
+            <summary>Gets the media downloader.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.WatchRequest.Download(System.IO.Stream)">
+            <summary>
+            <para>Synchronously download the media into the given stream.</para>
+            <para>Warning: This method hides download errors; use <see cref="M:Google.Apis.Drive.v3.FilesResource.WatchRequest.DownloadWithStatus(System.IO.Stream)"/> instead.</para>
+            </summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.WatchRequest.DownloadWithStatus(System.IO.Stream)">
+            <summary>Synchronously download the media into the given stream.</summary>
+            <returns>The final status of the download; including whether the download succeeded or failed.</returns>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.WatchRequest.DownloadAsync(System.IO.Stream)">
+            <summary>Asynchronously download the media into the given stream.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.WatchRequest.DownloadAsync(System.IO.Stream,System.Threading.CancellationToken)">
+            <summary>Asynchronously download the media into the given stream.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.WatchRequest.DownloadRange(System.IO.Stream,System.Net.Http.Headers.RangeHeaderValue)">
+            <summary>Synchronously download a range of the media into the given stream.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.FilesResource.WatchRequest.DownloadRangeAsync(System.IO.Stream,System.Net.Http.Headers.RangeHeaderValue,System.Threading.CancellationToken)">
+            <summary>Asynchronously download a range of the media into the given stream.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.PermissionsResource">
+            <summary>The "permissions" collection of methods.</summary>
+        </member>
+        <member name="F:Google.Apis.Drive.v3.PermissionsResource.service">
+            <summary>The service which this resource belongs to.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.PermissionsResource.#ctor(Google.Apis.Services.IClientService)">
+            <summary>Constructs a new resource.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.PermissionsResource.Create(Google.Apis.Drive.v3.Data.Permission,System.String)">
+            <summary>Creates a permission for a file or Team Drive.</summary>
+            <param name="body">The body of the request.</param>
+            <param name="fileId">The ID of the file or Team Drive.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.PermissionsResource.CreateRequest">
+            <summary>Creates a permission for a file or Team Drive.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.PermissionsResource.CreateRequest.#ctor(Google.Apis.Services.IClientService,Google.Apis.Drive.v3.Data.Permission,System.String)">
+            <summary>Constructs a new Create request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.CreateRequest.FileId">
+            <summary>The ID of the file or Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.CreateRequest.EmailMessage">
+            <summary>A plain text custom message to include in the notification email.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.CreateRequest.SendNotificationEmail">
+            <summary>Whether to send a notification email when sharing to users or groups. This defaults to true for
+            users and groups, and is not allowed for other requests. It must not be disabled for ownership
+            transfers.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.CreateRequest.SupportsTeamDrives">
+            <summary>Whether the requesting application supports Team Drives.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.CreateRequest.TransferOwnership">
+            <summary>Whether to transfer ownership to the specified user and downgrade the current owner to a
+            writer. This parameter is required as an acknowledgement of the side effect.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.CreateRequest.UseDomainAdminAccess">
+            <summary>Issue the request as a domain administrator; if set to true, then the requester will be granted
+            access if they are an administrator of the domain to which the item belongs.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.CreateRequest.Body">
+            <summary>Gets or sets the body of this request.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.PermissionsResource.CreateRequest.GetBody">
+            <summary>Returns the body of the request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.CreateRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.CreateRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.CreateRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.PermissionsResource.CreateRequest.InitParameters">
+            <summary>Initializes Create parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.PermissionsResource.Delete(System.String,System.String)">
+            <summary>Deletes a permission.</summary>
+            <param name="fileId">The ID of the file or Team Drive.</param>
+            <param name="permissionId">The ID of the
+            permission.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.PermissionsResource.DeleteRequest">
+            <summary>Deletes a permission.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.PermissionsResource.DeleteRequest.#ctor(Google.Apis.Services.IClientService,System.String,System.String)">
+            <summary>Constructs a new Delete request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.DeleteRequest.FileId">
+            <summary>The ID of the file or Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.DeleteRequest.PermissionId">
+            <summary>The ID of the permission.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.DeleteRequest.SupportsTeamDrives">
+            <summary>Whether the requesting application supports Team Drives.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.DeleteRequest.UseDomainAdminAccess">
+            <summary>Issue the request as a domain administrator; if set to true, then the requester will be granted
+            access if they are an administrator of the domain to which the item belongs.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.DeleteRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.DeleteRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.DeleteRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.PermissionsResource.DeleteRequest.InitParameters">
+            <summary>Initializes Delete parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.PermissionsResource.Get(System.String,System.String)">
+            <summary>Gets a permission by ID.</summary>
+            <param name="fileId">The ID of the file.</param>
+            <param name="permissionId">The ID of the
+            permission.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.PermissionsResource.GetRequest">
+            <summary>Gets a permission by ID.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.PermissionsResource.GetRequest.#ctor(Google.Apis.Services.IClientService,System.String,System.String)">
+            <summary>Constructs a new Get request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.GetRequest.FileId">
+            <summary>The ID of the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.GetRequest.PermissionId">
+            <summary>The ID of the permission.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.GetRequest.SupportsTeamDrives">
+            <summary>Whether the requesting application supports Team Drives.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.GetRequest.UseDomainAdminAccess">
+            <summary>Issue the request as a domain administrator; if set to true, then the requester will be granted
+            access if they are an administrator of the domain to which the item belongs.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.GetRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.GetRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.GetRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.PermissionsResource.GetRequest.InitParameters">
+            <summary>Initializes Get parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.PermissionsResource.List(System.String)">
+            <summary>Lists a file's or Team Drive's permissions.</summary>
+            <param name="fileId">The ID of the file or Team Drive.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.PermissionsResource.ListRequest">
+            <summary>Lists a file's or Team Drive's permissions.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.PermissionsResource.ListRequest.#ctor(Google.Apis.Services.IClientService,System.String)">
+            <summary>Constructs a new List request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.ListRequest.FileId">
+            <summary>The ID of the file or Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.ListRequest.PageSize">
+            <summary>The maximum number of permissions to return per page. When not set for files in a Team Drive,
+            at most 100 results will be returned. When not set for files that are not in a Team Drive, the entire
+            list will be returned.</summary>
+            [minimum: 1]
+            [maximum: 100]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.ListRequest.PageToken">
+            <summary>The token for continuing a previous list request on the next page. This should be set to the
+            value of 'nextPageToken' from the previous response.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.ListRequest.SupportsTeamDrives">
+            <summary>Whether the requesting application supports Team Drives.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.ListRequest.UseDomainAdminAccess">
+            <summary>Issue the request as a domain administrator; if set to true, then the requester will be granted
+            access if they are an administrator of the domain to which the item belongs.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.ListRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.ListRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.ListRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.PermissionsResource.ListRequest.InitParameters">
+            <summary>Initializes List parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.PermissionsResource.Update(Google.Apis.Drive.v3.Data.Permission,System.String,System.String)">
+            <summary>Updates a permission with patch semantics.</summary>
+            <param name="body">The body of the request.</param>
+            <param name="fileId">The ID of the file or Team Drive.</param>
+            <param name="permissionId">The ID of the
+            permission.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.PermissionsResource.UpdateRequest">
+            <summary>Updates a permission with patch semantics.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.PermissionsResource.UpdateRequest.#ctor(Google.Apis.Services.IClientService,Google.Apis.Drive.v3.Data.Permission,System.String,System.String)">
+            <summary>Constructs a new Update request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.UpdateRequest.FileId">
+            <summary>The ID of the file or Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.UpdateRequest.PermissionId">
+            <summary>The ID of the permission.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.UpdateRequest.RemoveExpiration">
+            <summary>Whether to remove the expiration date.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.UpdateRequest.SupportsTeamDrives">
+            <summary>Whether the requesting application supports Team Drives.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.UpdateRequest.TransferOwnership">
+            <summary>Whether to transfer ownership to the specified user and downgrade the current owner to a
+            writer. This parameter is required as an acknowledgement of the side effect.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.UpdateRequest.UseDomainAdminAccess">
+            <summary>Issue the request as a domain administrator; if set to true, then the requester will be granted
+            access if they are an administrator of the domain to which the item belongs.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.UpdateRequest.Body">
+            <summary>Gets or sets the body of this request.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.PermissionsResource.UpdateRequest.GetBody">
+            <summary>Returns the body of the request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.UpdateRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.UpdateRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.PermissionsResource.UpdateRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.PermissionsResource.UpdateRequest.InitParameters">
+            <summary>Initializes Update parameter list.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.RepliesResource">
+            <summary>The "replies" collection of methods.</summary>
+        </member>
+        <member name="F:Google.Apis.Drive.v3.RepliesResource.service">
+            <summary>The service which this resource belongs to.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RepliesResource.#ctor(Google.Apis.Services.IClientService)">
+            <summary>Constructs a new resource.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RepliesResource.Create(Google.Apis.Drive.v3.Data.Reply,System.String,System.String)">
+            <summary>Creates a new reply to a comment.</summary>
+            <param name="body">The body of the request.</param>
+            <param name="fileId">The ID of the file.</param>
+            <param name="commentId">The ID of the comment.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.RepliesResource.CreateRequest">
+            <summary>Creates a new reply to a comment.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RepliesResource.CreateRequest.#ctor(Google.Apis.Services.IClientService,Google.Apis.Drive.v3.Data.Reply,System.String,System.String)">
+            <summary>Constructs a new Create request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.CreateRequest.FileId">
+            <summary>The ID of the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.CreateRequest.CommentId">
+            <summary>The ID of the comment.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.CreateRequest.Body">
+            <summary>Gets or sets the body of this request.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RepliesResource.CreateRequest.GetBody">
+            <summary>Returns the body of the request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.CreateRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.CreateRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.CreateRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RepliesResource.CreateRequest.InitParameters">
+            <summary>Initializes Create parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RepliesResource.Delete(System.String,System.String,System.String)">
+            <summary>Deletes a reply.</summary>
+            <param name="fileId">The ID of the file.</param>
+            <param name="commentId">The ID of the
+            comment.</param>
+            <param name="replyId">The ID of the reply.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.RepliesResource.DeleteRequest">
+            <summary>Deletes a reply.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RepliesResource.DeleteRequest.#ctor(Google.Apis.Services.IClientService,System.String,System.String,System.String)">
+            <summary>Constructs a new Delete request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.DeleteRequest.FileId">
+            <summary>The ID of the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.DeleteRequest.CommentId">
+            <summary>The ID of the comment.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.DeleteRequest.ReplyId">
+            <summary>The ID of the reply.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.DeleteRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.DeleteRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.DeleteRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RepliesResource.DeleteRequest.InitParameters">
+            <summary>Initializes Delete parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RepliesResource.Get(System.String,System.String,System.String)">
+            <summary>Gets a reply by ID.</summary>
+            <param name="fileId">The ID of the file.</param>
+            <param name="commentId">The ID of the
+            comment.</param>
+            <param name="replyId">The ID of the reply.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.RepliesResource.GetRequest">
+            <summary>Gets a reply by ID.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RepliesResource.GetRequest.#ctor(Google.Apis.Services.IClientService,System.String,System.String,System.String)">
+            <summary>Constructs a new Get request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.GetRequest.FileId">
+            <summary>The ID of the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.GetRequest.CommentId">
+            <summary>The ID of the comment.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.GetRequest.ReplyId">
+            <summary>The ID of the reply.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.GetRequest.IncludeDeleted">
+            <summary>Whether to return deleted replies. Deleted replies will not include their original
+            content.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.GetRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.GetRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.GetRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RepliesResource.GetRequest.InitParameters">
+            <summary>Initializes Get parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RepliesResource.List(System.String,System.String)">
+            <summary>Lists a comment's replies.</summary>
+            <param name="fileId">The ID of the file.</param>
+            <param name="commentId">The ID of the comment.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.RepliesResource.ListRequest">
+            <summary>Lists a comment's replies.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RepliesResource.ListRequest.#ctor(Google.Apis.Services.IClientService,System.String,System.String)">
+            <summary>Constructs a new List request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.ListRequest.FileId">
+            <summary>The ID of the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.ListRequest.CommentId">
+            <summary>The ID of the comment.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.ListRequest.IncludeDeleted">
+            <summary>Whether to include deleted replies. Deleted replies will not include their original
+            content.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.ListRequest.PageSize">
+            <summary>The maximum number of replies to return per page.</summary>
+            [default: 20]
+            [minimum: 1]
+            [maximum: 100]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.ListRequest.PageToken">
+            <summary>The token for continuing a previous list request on the next page. This should be set to the
+            value of 'nextPageToken' from the previous response.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.ListRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.ListRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.ListRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RepliesResource.ListRequest.InitParameters">
+            <summary>Initializes List parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RepliesResource.Update(Google.Apis.Drive.v3.Data.Reply,System.String,System.String,System.String)">
+            <summary>Updates a reply with patch semantics.</summary>
+            <param name="body">The body of the request.</param>
+            <param name="fileId">The ID of the file.</param>
+            <param name="commentId">The ID of the
+            comment.</param>
+            <param name="replyId">The ID of the reply.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.RepliesResource.UpdateRequest">
+            <summary>Updates a reply with patch semantics.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RepliesResource.UpdateRequest.#ctor(Google.Apis.Services.IClientService,Google.Apis.Drive.v3.Data.Reply,System.String,System.String,System.String)">
+            <summary>Constructs a new Update request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.UpdateRequest.FileId">
+            <summary>The ID of the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.UpdateRequest.CommentId">
+            <summary>The ID of the comment.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.UpdateRequest.ReplyId">
+            <summary>The ID of the reply.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.UpdateRequest.Body">
+            <summary>Gets or sets the body of this request.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RepliesResource.UpdateRequest.GetBody">
+            <summary>Returns the body of the request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.UpdateRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.UpdateRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RepliesResource.UpdateRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RepliesResource.UpdateRequest.InitParameters">
+            <summary>Initializes Update parameter list.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.RevisionsResource">
+            <summary>The "revisions" collection of methods.</summary>
+        </member>
+        <member name="F:Google.Apis.Drive.v3.RevisionsResource.service">
+            <summary>The service which this resource belongs to.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RevisionsResource.#ctor(Google.Apis.Services.IClientService)">
+            <summary>Constructs a new resource.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RevisionsResource.Delete(System.String,System.String)">
+            <summary>Permanently deletes a revision. This method is only applicable to files with binary content in
+            Drive.</summary>
+            <param name="fileId">The ID of the file.</param>
+            <param name="revisionId">The ID of the
+            revision.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.RevisionsResource.DeleteRequest">
+            <summary>Permanently deletes a revision. This method is only applicable to files with binary content in
+            Drive.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RevisionsResource.DeleteRequest.#ctor(Google.Apis.Services.IClientService,System.String,System.String)">
+            <summary>Constructs a new Delete request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RevisionsResource.DeleteRequest.FileId">
+            <summary>The ID of the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RevisionsResource.DeleteRequest.RevisionId">
+            <summary>The ID of the revision.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RevisionsResource.DeleteRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RevisionsResource.DeleteRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RevisionsResource.DeleteRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RevisionsResource.DeleteRequest.InitParameters">
+            <summary>Initializes Delete parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RevisionsResource.Get(System.String,System.String)">
+            <summary>Gets a revision's metadata or content by ID.</summary>
+            <param name="fileId">The ID of the file.</param>
+            <param name="revisionId">The ID of the
+            revision.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.RevisionsResource.GetRequest">
+            <summary>Gets a revision's metadata or content by ID.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RevisionsResource.GetRequest.#ctor(Google.Apis.Services.IClientService,System.String,System.String)">
+            <summary>Constructs a new Get request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RevisionsResource.GetRequest.FileId">
+            <summary>The ID of the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RevisionsResource.GetRequest.RevisionId">
+            <summary>The ID of the revision.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RevisionsResource.GetRequest.AcknowledgeAbuse">
+            <summary>Whether the user is acknowledging the risk of downloading known malware or other abusive files.
+            This is only applicable when alt=media.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RevisionsResource.GetRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RevisionsResource.GetRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RevisionsResource.GetRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RevisionsResource.GetRequest.InitParameters">
+            <summary>Initializes Get parameter list.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RevisionsResource.GetRequest.MediaDownloader">
+            <summary>Gets the media downloader.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RevisionsResource.GetRequest.Download(System.IO.Stream)">
+            <summary>
+            <para>Synchronously download the media into the given stream.</para>
+            <para>Warning: This method hides download errors; use <see cref="M:Google.Apis.Drive.v3.RevisionsResource.GetRequest.DownloadWithStatus(System.IO.Stream)"/> instead.</para>
+            </summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RevisionsResource.GetRequest.DownloadWithStatus(System.IO.Stream)">
+            <summary>Synchronously download the media into the given stream.</summary>
+            <returns>The final status of the download; including whether the download succeeded or failed.</returns>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RevisionsResource.GetRequest.DownloadAsync(System.IO.Stream)">
+            <summary>Asynchronously download the media into the given stream.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RevisionsResource.GetRequest.DownloadAsync(System.IO.Stream,System.Threading.CancellationToken)">
+            <summary>Asynchronously download the media into the given stream.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RevisionsResource.GetRequest.DownloadRange(System.IO.Stream,System.Net.Http.Headers.RangeHeaderValue)">
+            <summary>Synchronously download a range of the media into the given stream.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RevisionsResource.GetRequest.DownloadRangeAsync(System.IO.Stream,System.Net.Http.Headers.RangeHeaderValue,System.Threading.CancellationToken)">
+            <summary>Asynchronously download a range of the media into the given stream.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RevisionsResource.List(System.String)">
+            <summary>Lists a file's revisions.</summary>
+            <param name="fileId">The ID of the file.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.RevisionsResource.ListRequest">
+            <summary>Lists a file's revisions.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RevisionsResource.ListRequest.#ctor(Google.Apis.Services.IClientService,System.String)">
+            <summary>Constructs a new List request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RevisionsResource.ListRequest.FileId">
+            <summary>The ID of the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RevisionsResource.ListRequest.PageSize">
+            <summary>The maximum number of revisions to return per page.</summary>
+            [default: 200]
+            [minimum: 1]
+            [maximum: 1000]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RevisionsResource.ListRequest.PageToken">
+            <summary>The token for continuing a previous list request on the next page. This should be set to the
+            value of 'nextPageToken' from the previous response.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RevisionsResource.ListRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RevisionsResource.ListRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RevisionsResource.ListRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RevisionsResource.ListRequest.InitParameters">
+            <summary>Initializes List parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RevisionsResource.Update(Google.Apis.Drive.v3.Data.Revision,System.String,System.String)">
+            <summary>Updates a revision with patch semantics.</summary>
+            <param name="body">The body of the request.</param>
+            <param name="fileId">The ID of the file.</param>
+            <param name="revisionId">The ID of the
+            revision.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.RevisionsResource.UpdateRequest">
+            <summary>Updates a revision with patch semantics.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RevisionsResource.UpdateRequest.#ctor(Google.Apis.Services.IClientService,Google.Apis.Drive.v3.Data.Revision,System.String,System.String)">
+            <summary>Constructs a new Update request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RevisionsResource.UpdateRequest.FileId">
+            <summary>The ID of the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RevisionsResource.UpdateRequest.RevisionId">
+            <summary>The ID of the revision.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RevisionsResource.UpdateRequest.Body">
+            <summary>Gets or sets the body of this request.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RevisionsResource.UpdateRequest.GetBody">
+            <summary>Returns the body of the request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RevisionsResource.UpdateRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RevisionsResource.UpdateRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.RevisionsResource.UpdateRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.RevisionsResource.UpdateRequest.InitParameters">
+            <summary>Initializes Update parameter list.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.TeamdrivesResource">
+            <summary>The "teamdrives" collection of methods.</summary>
+        </member>
+        <member name="F:Google.Apis.Drive.v3.TeamdrivesResource.service">
+            <summary>The service which this resource belongs to.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.TeamdrivesResource.#ctor(Google.Apis.Services.IClientService)">
+            <summary>Constructs a new resource.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.TeamdrivesResource.Create(Google.Apis.Drive.v3.Data.TeamDrive,System.String)">
+            <summary>Creates a new Team Drive.</summary>
+            <param name="body">The body of the request.</param>
+            <param name="requestId">An ID, such as a random UUID, which uniquely identifies this user's request for idempotent
+            creation of a Team Drive. A repeated request by the same user and with the same request ID will avoid creating
+            duplicates by attempting to create the same Team Drive. If the Team Drive already exists a 409 error will be
+            returned.</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.TeamdrivesResource.CreateRequest">
+            <summary>Creates a new Team Drive.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.TeamdrivesResource.CreateRequest.#ctor(Google.Apis.Services.IClientService,Google.Apis.Drive.v3.Data.TeamDrive,System.String)">
+            <summary>Constructs a new Create request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.CreateRequest.RequestId">
+            <summary>An ID, such as a random UUID, which uniquely identifies this user's request for idempotent
+            creation of a Team Drive. A repeated request by the same user and with the same request ID will avoid
+            creating duplicates by attempting to create the same Team Drive. If the Team Drive already exists a 409
+            error will be returned.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.CreateRequest.Body">
+            <summary>Gets or sets the body of this request.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.TeamdrivesResource.CreateRequest.GetBody">
+            <summary>Returns the body of the request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.CreateRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.CreateRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.CreateRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.TeamdrivesResource.CreateRequest.InitParameters">
+            <summary>Initializes Create parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.TeamdrivesResource.Delete(System.String)">
+            <summary>Permanently deletes a Team Drive for which the user is an organizer. The Team Drive cannot contain
+            any untrashed items.</summary>
+            <param name="teamDriveId">The ID of the Team Drive</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.TeamdrivesResource.DeleteRequest">
+            <summary>Permanently deletes a Team Drive for which the user is an organizer. The Team Drive cannot contain
+            any untrashed items.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.TeamdrivesResource.DeleteRequest.#ctor(Google.Apis.Services.IClientService,System.String)">
+            <summary>Constructs a new Delete request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.DeleteRequest.TeamDriveId">
+            <summary>The ID of the Team Drive</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.DeleteRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.DeleteRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.DeleteRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.TeamdrivesResource.DeleteRequest.InitParameters">
+            <summary>Initializes Delete parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.TeamdrivesResource.Get(System.String)">
+            <summary>Gets a Team Drive's metadata by ID.</summary>
+            <param name="teamDriveId">The ID of the Team Drive</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.TeamdrivesResource.GetRequest">
+            <summary>Gets a Team Drive's metadata by ID.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.TeamdrivesResource.GetRequest.#ctor(Google.Apis.Services.IClientService,System.String)">
+            <summary>Constructs a new Get request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.GetRequest.TeamDriveId">
+            <summary>The ID of the Team Drive</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.GetRequest.UseDomainAdminAccess">
+            <summary>Issue the request as a domain administrator; if set to true, then the requester will be granted
+            access if they are an administrator of the domain to which the Team Drive belongs.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.GetRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.GetRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.GetRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.TeamdrivesResource.GetRequest.InitParameters">
+            <summary>Initializes Get parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.TeamdrivesResource.List">
+            <summary>Lists the user's Team Drives.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.TeamdrivesResource.ListRequest">
+            <summary>Lists the user's Team Drives.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.TeamdrivesResource.ListRequest.#ctor(Google.Apis.Services.IClientService)">
+            <summary>Constructs a new List request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.ListRequest.PageSize">
+            <summary>Maximum number of Team Drives to return.</summary>
+            [default: 10]
+            [minimum: 1]
+            [maximum: 100]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.ListRequest.PageToken">
+            <summary>Page token for Team Drives.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.ListRequest.Q">
+            <summary>Query string for searching Team Drives.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.ListRequest.UseDomainAdminAccess">
+            <summary>Issue the request as a domain administrator; if set to true, then all Team Drives of the domain
+            in which the requester is an administrator are returned.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.ListRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.ListRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.ListRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.TeamdrivesResource.ListRequest.InitParameters">
+            <summary>Initializes List parameter list.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.TeamdrivesResource.Update(Google.Apis.Drive.v3.Data.TeamDrive,System.String)">
+            <summary>Updates a Team Drive's metadata</summary>
+            <param name="body">The body of the request.</param>
+            <param name="teamDriveId">The ID of the Team Drive</param>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.TeamdrivesResource.UpdateRequest">
+            <summary>Updates a Team Drive's metadata</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.TeamdrivesResource.UpdateRequest.#ctor(Google.Apis.Services.IClientService,Google.Apis.Drive.v3.Data.TeamDrive,System.String)">
+            <summary>Constructs a new Update request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.UpdateRequest.TeamDriveId">
+            <summary>The ID of the Team Drive</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.UpdateRequest.UseDomainAdminAccess">
+            <summary>Issue the request as a domain administrator; if set to true, then the requester will be granted
+            access if they are an administrator of the domain to which the Team Drive belongs.</summary>
+            [default: false]
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.UpdateRequest.Body">
+            <summary>Gets or sets the body of this request.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.TeamdrivesResource.UpdateRequest.GetBody">
+            <summary>Returns the body of the request.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.UpdateRequest.MethodName">
+            <summary>Gets the method name.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.UpdateRequest.HttpMethod">
+            <summary>Gets the HTTP method.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.TeamdrivesResource.UpdateRequest.RestPath">
+            <summary>Gets the REST path.</summary>
+        </member>
+        <member name="M:Google.Apis.Drive.v3.TeamdrivesResource.UpdateRequest.InitParameters">
+            <summary>Initializes Update parameter list.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.About">
+            <summary>Information about the user, the user's Drive, and system capabilities.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.About.AppInstalled">
+            <summary>Whether the user has installed the requesting app.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.About.CanCreateTeamDrives">
+            <summary>Whether the user can create Team Drives.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.About.ExportFormats">
+            <summary>A map of source MIME type to possible targets for all supported exports.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.About.FolderColorPalette">
+            <summary>The currently supported folder colors as RGB hex strings.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.About.ImportFormats">
+            <summary>A map of source MIME type to possible targets for all supported imports.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.About.Kind">
+            <summary>Identifies what kind of resource this is. Value: the fixed string "drive#about".</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.About.MaxImportSizes">
+            <summary>A map of maximum import sizes by MIME type, in bytes.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.About.MaxUploadSize">
+            <summary>The maximum upload size in bytes.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.About.StorageQuota">
+            <summary>The user's storage quota limits and usage. All fields are measured in bytes.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.About.TeamDriveThemes">
+            <summary>A list of themes that are supported for Team Drives.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.About.User">
+            <summary>The authenticated user.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.About.ETag">
+            <summary>The ETag of the item.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.About.StorageQuotaData">
+            <summary>The user's storage quota limits and usage. All fields are measured in bytes.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.About.StorageQuotaData.Limit">
+            <summary>The usage limit, if applicable. This will not be present if the user has unlimited
+            storage.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.About.StorageQuotaData.Usage">
+            <summary>The total usage across all services.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.About.StorageQuotaData.UsageInDrive">
+            <summary>The usage by all files in Google Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.About.StorageQuotaData.UsageInDriveTrash">
+            <summary>The usage by trashed files in Google Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.About.TeamDriveThemesData.BackgroundImageLink">
+            <summary>A link to this Team Drive theme's background image.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.About.TeamDriveThemesData.ColorRgb">
+            <summary>The color of this Team Drive theme as an RGB hex string.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.About.TeamDriveThemesData.Id">
+            <summary>The ID of the theme.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.Change">
+            <summary>A change to a file or Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Change.File">
+            <summary>The updated state of the file. Present if the type is file and the file has not been removed from
+            this list of changes.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Change.FileId">
+            <summary>The ID of the file which has changed.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Change.Kind">
+            <summary>Identifies what kind of resource this is. Value: the fixed string "drive#change".</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Change.Removed">
+            <summary>Whether the file or Team Drive has been removed from this list of changes, for example by deletion
+            or loss of access.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Change.TeamDrive">
+            <summary>The updated state of the Team Drive. Present if the type is teamDrive, the user is still a member
+            of the Team Drive, and the Team Drive has not been removed.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Change.TeamDriveId">
+            <summary>The ID of the Team Drive associated with this change.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Change.TimeRaw">
+            <summary>The time of this change (RFC 3339 date-time).</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Change.Time">
+            <summary><seealso cref="T:System.DateTime"/> representation of <see cref="P:Google.Apis.Drive.v3.Data.Change.TimeRaw"/>.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Change.Type">
+            <summary>The type of the change. Possible values are file and teamDrive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Change.ETag">
+            <summary>The ETag of the item.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.ChangeList">
+            <summary>A list of changes for a user.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.ChangeList.Changes">
+            <summary>The list of changes. If nextPageToken is populated, then this list may be incomplete and an
+            additional page of results should be fetched.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.ChangeList.Kind">
+            <summary>Identifies what kind of resource this is. Value: the fixed string "drive#changeList".</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.ChangeList.NewStartPageToken">
+            <summary>The starting page token for future changes. This will be present only if the end of the current
+            changes list has been reached.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.ChangeList.NextPageToken">
+            <summary>The page token for the next page of changes. This will be absent if the end of the changes list has
+            been reached. If the token is rejected for any reason, it should be discarded, and pagination should be
+            restarted from the first page of results.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.ChangeList.ETag">
+            <summary>The ETag of the item.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.Channel">
+            <summary>An notification channel used to watch for resource changes.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Channel.Address">
+            <summary>The address where notifications are delivered for this channel.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Channel.Expiration">
+            <summary>Date and time of notification channel expiration, expressed as a Unix timestamp, in milliseconds.
+            Optional.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Channel.Id">
+            <summary>A UUID or similar unique string that identifies this channel.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Channel.Kind">
+            <summary>Identifies this as a notification channel used to watch for changes to a resource. Value: the fixed
+            string "api#channel".</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Channel.Params__">
+            <summary>Additional parameters controlling delivery channel behavior. Optional.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Channel.Payload">
+            <summary>A Boolean value to indicate whether payload is wanted. Optional.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Channel.ResourceId">
+            <summary>An opaque ID that identifies the resource being watched on this channel. Stable across different
+            API versions.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Channel.ResourceUri">
+            <summary>A version-specific identifier for the watched resource.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Channel.Token">
+            <summary>An arbitrary string delivered to the target address with each notification delivered over this
+            channel. Optional.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Channel.Type">
+            <summary>The type of delivery mechanism used for this channel.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Channel.ETag">
+            <summary>The ETag of the item.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.Comment">
+            <summary>A comment on a file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Comment.Anchor">
+            <summary>A region of the document represented as a JSON string. See anchor documentation for details on how
+            to define and interpret anchor properties.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Comment.Author">
+            <summary>The user who created the comment.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Comment.Content">
+            <summary>The plain text content of the comment. This field is used for setting the content, while
+            htmlContent should be displayed.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Comment.CreatedTimeRaw">
+            <summary>The time at which the comment was created (RFC 3339 date-time).</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Comment.CreatedTime">
+            <summary><seealso cref="T:System.DateTime"/> representation of <see cref="P:Google.Apis.Drive.v3.Data.Comment.CreatedTimeRaw"/>.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Comment.Deleted">
+            <summary>Whether the comment has been deleted. A deleted comment has no content.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Comment.HtmlContent">
+            <summary>The content of the comment with HTML formatting.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Comment.Id">
+            <summary>The ID of the comment.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Comment.Kind">
+            <summary>Identifies what kind of resource this is. Value: the fixed string "drive#comment".</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Comment.ModifiedTimeRaw">
+            <summary>The last time the comment or any of its replies was modified (RFC 3339 date-time).</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Comment.ModifiedTime">
+            <summary><seealso cref="T:System.DateTime"/> representation of <see cref="P:Google.Apis.Drive.v3.Data.Comment.ModifiedTimeRaw"/>.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Comment.QuotedFileContent">
+            <summary>The file content to which the comment refers, typically within the anchor region. For a text file,
+            for example, this would be the text at the location of the comment.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Comment.Replies">
+            <summary>The full list of replies to the comment in chronological order.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Comment.Resolved">
+            <summary>Whether the comment has been resolved by one of its replies.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Comment.ETag">
+            <summary>The ETag of the item.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.Comment.QuotedFileContentData">
+            <summary>The file content to which the comment refers, typically within the anchor region. For a text file,
+            for example, this would be the text at the location of the comment.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Comment.QuotedFileContentData.MimeType">
+            <summary>The MIME type of the quoted content.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Comment.QuotedFileContentData.Value">
+            <summary>The quoted content itself. This is interpreted as plain text if set through the API.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.CommentList">
+            <summary>A list of comments on a file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.CommentList.Comments">
+            <summary>The list of comments. If nextPageToken is populated, then this list may be incomplete and an
+            additional page of results should be fetched.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.CommentList.Kind">
+            <summary>Identifies what kind of resource this is. Value: the fixed string "drive#commentList".</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.CommentList.NextPageToken">
+            <summary>The page token for the next page of comments. This will be absent if the end of the comments list
+            has been reached. If the token is rejected for any reason, it should be discarded, and pagination should be
+            restarted from the first page of results.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.CommentList.ETag">
+            <summary>The ETag of the item.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.File">
+            <summary>The metadata for a file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.AppProperties">
+            <summary>A collection of arbitrary key-value pairs which are private to the requesting app. Entries with
+            null values are cleared in update and copy requests.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.Capabilities">
+            <summary>Capabilities the current user has on this file. Each capability corresponds to a fine-grained
+            action that a user may take.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ContentHints">
+            <summary>Additional information about the content of the file. These fields are never populated in
+            responses.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CopyRequiresWriterPermission">
+            <summary>Whether the options to copy, print, or download this file, should be disabled for readers and
+            commenters.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CreatedTimeRaw">
+            <summary>The time at which the file was created (RFC 3339 date-time).</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CreatedTime">
+            <summary><seealso cref="T:System.DateTime"/> representation of <see cref="P:Google.Apis.Drive.v3.Data.File.CreatedTimeRaw"/>.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.Description">
+            <summary>A short description of the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ExplicitlyTrashed">
+            <summary>Whether the file has been explicitly trashed, as opposed to recursively trashed from a parent
+            folder.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ExportLinks">
+            <summary>Links for exporting Google Docs to specific formats.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.FileExtension">
+            <summary>The final component of fullFileExtension. This is only available for files with binary content in
+            Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.FolderColorRgb">
+            <summary>The color for a folder as an RGB hex string. The supported colors are published in the
+            folderColorPalette field of the About resource. If an unsupported color is specified, the closest color in
+            the palette will be used instead.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.FullFileExtension">
+            <summary>The full file extension extracted from the name field. May contain multiple concatenated
+            extensions, such as "tar.gz". This is only available for files with binary content in Drive. This is
+            automatically updated when the name field changes, however it is not cleared if the new name does not
+            contain a valid extension.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.HasAugmentedPermissions">
+            <summary>Whether any users are granted file access directly on this file. This field is only populated for
+            Team Drive files.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.HasThumbnail">
+            <summary>Whether this file has a thumbnail. This does not indicate whether the requesting app has access to
+            the thumbnail. To check access, look for the presence of the thumbnailLink field.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.HeadRevisionId">
+            <summary>The ID of the file's head revision. This is currently only available for files with binary content
+            in Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.IconLink">
+            <summary>A static, unauthenticated link to the file's icon.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.Id">
+            <summary>The ID of the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ImageMediaMetadata">
+            <summary>Additional metadata about image media, if available.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.IsAppAuthorized">
+            <summary>Whether the file was created or opened by the requesting app.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.Kind">
+            <summary>Identifies what kind of resource this is. Value: the fixed string "drive#file".</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.LastModifyingUser">
+            <summary>The last user to modify the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.Md5Checksum">
+            <summary>The MD5 checksum for the content of the file. This is only applicable to files with binary content
+            in Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.MimeType">
+            <summary>The MIME type of the file. Drive will attempt to automatically detect an appropriate value from
+            uploaded content if no value is provided. The value cannot be changed unless a new revision is uploaded. If
+            a file is created with a Google Doc MIME type, the uploaded content will be imported if possible. The
+            supported import formats are published in the About resource.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ModifiedByMe">
+            <summary>Whether the file has been modified by this user.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ModifiedByMeTimeRaw">
+            <summary>The last time the file was modified by the user (RFC 3339 date-time).</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ModifiedByMeTime">
+            <summary><seealso cref="T:System.DateTime"/> representation of <see cref="P:Google.Apis.Drive.v3.Data.File.ModifiedByMeTimeRaw"/>.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ModifiedTimeRaw">
+            <summary>The last time the file was modified by anyone (RFC 3339 date-time). Note that setting modifiedTime
+            will also update modifiedByMeTime for the user.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ModifiedTime">
+            <summary><seealso cref="T:System.DateTime"/> representation of <see cref="P:Google.Apis.Drive.v3.Data.File.ModifiedTimeRaw"/>.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.Name">
+            <summary>The name of the file. This is not necessarily unique within a folder. Note that for immutable items
+            such as the top level folders of Team Drives, My Drive root folder, and Application Data folder the name is
+            constant.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.OriginalFilename">
+            <summary>The original filename of the uploaded content if available, or else the original value of the name
+            field. This is only available for files with binary content in Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.OwnedByMe">
+            <summary>Whether the user owns the file. Not populated for Team Drive files.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.Owners">
+            <summary>The owners of the file. Currently, only certain legacy files may have more than one owner. Not
+            populated for Team Drive files.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.Parents">
+            <summary>The IDs of the parent folders which contain the file. If not specified as part of a create request,
+            the file will be placed directly in the user's My Drive folder. If not specified as part of a copy request,
+            the file will inherit any discoverable parents of the source file. Update requests must use the addParents
+            and removeParents parameters to modify the parents list.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.PermissionIds">
+            <summary>List of permission IDs for users with access to this file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.Permissions">
+            <summary>The full list of permissions for the file. This is only available if the requesting user can share
+            the file. Not populated for Team Drive files.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.Properties">
+            <summary>A collection of arbitrary key-value pairs which are visible to all apps. Entries with null values
+            are cleared in update and copy requests.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.QuotaBytesUsed">
+            <summary>The number of storage quota bytes used by the file. This includes the head revision as well as
+            previous revisions with keepForever enabled.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.Shared">
+            <summary>Whether the file has been shared. Not populated for Team Drive files.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.SharedWithMeTimeRaw">
+            <summary>The time at which the file was shared with the user, if applicable (RFC 3339 date-time).</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.SharedWithMeTime">
+            <summary><seealso cref="T:System.DateTime"/> representation of <see cref="P:Google.Apis.Drive.v3.Data.File.SharedWithMeTimeRaw"/>.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.SharingUser">
+            <summary>The user who shared the file with the requesting user, if applicable.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.Size">
+            <summary>The size of the file's content in bytes. This is only applicable to files with binary content in
+            Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.Spaces">
+            <summary>The list of spaces which contain the file. The currently supported values are 'drive',
+            'appDataFolder' and 'photos'.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.Starred">
+            <summary>Whether the user has starred the file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.TeamDriveId">
+            <summary>ID of the Team Drive the file resides in.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ThumbnailLink">
+            <summary>A short-lived link to the file's thumbnail, if available. Typically lasts on the order of hours.
+            Only populated when the requesting app can access the file's content.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ThumbnailVersion">
+            <summary>The thumbnail version for use in thumbnail cache invalidation.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.Trashed">
+            <summary>Whether the file has been trashed, either explicitly or from a trashed parent folder. Only the
+            owner may trash a file, and other users cannot see files in the owner's trash.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.TrashedTimeRaw">
+            <summary>The time that the item was trashed (RFC 3339 date-time). Only populated for Team Drive
+            files.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.TrashedTime">
+            <summary><seealso cref="T:System.DateTime"/> representation of <see cref="P:Google.Apis.Drive.v3.Data.File.TrashedTimeRaw"/>.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.TrashingUser">
+            <summary>If the file has been explicitly trashed, the user who trashed it. Only populated for Team Drive
+            files.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.Version">
+            <summary>A monotonically increasing version number for the file. This reflects every change made to the file
+            on the server, even those not visible to the user.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.VideoMediaMetadata">
+            <summary>Additional metadata about video media. This may not be available immediately upon upload.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ViewedByMe">
+            <summary>Whether the file has been viewed by this user.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ViewedByMeTimeRaw">
+            <summary>The last time the file was viewed by the user (RFC 3339 date-time).</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ViewedByMeTime">
+            <summary><seealso cref="T:System.DateTime"/> representation of <see cref="P:Google.Apis.Drive.v3.Data.File.ViewedByMeTimeRaw"/>.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ViewersCanCopyContent">
+            <summary>Deprecated - use copyRequiresWriterPermission instead.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.WebContentLink">
+            <summary>A link for downloading the content of the file in a browser. This is only available for files with
+            binary content in Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.WebViewLink">
+            <summary>A link for opening the file in a relevant Google editor or viewer in a browser.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.WritersCanShare">
+            <summary>Whether users with only writer permission can modify the file's permissions. Not populated for Team
+            Drive files.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ETag">
+            <summary>The ETag of the item.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.File.CapabilitiesData">
+            <summary>Capabilities the current user has on this file. Each capability corresponds to a fine-grained
+            action that a user may take.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CapabilitiesData.CanAddChildren">
+            <summary>Whether the current user can add children to this folder. This is always false when the item is
+            not a folder.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CapabilitiesData.CanChangeCopyRequiresWriterPermission">
+            <summary>Whether the current user can change the copyRequiresWriterPermission restriction of this
+            file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CapabilitiesData.CanChangeViewersCanCopyContent">
+            <summary>Deprecated</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CapabilitiesData.CanComment">
+            <summary>Whether the current user can comment on this file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CapabilitiesData.CanCopy">
+            <summary>Whether the current user can copy this file. For a Team Drive item, whether the current user
+            can copy non-folder descendants of this item, or this item itself if it is not a folder.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CapabilitiesData.CanDelete">
+            <summary>Whether the current user can delete this file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CapabilitiesData.CanDeleteChildren">
+            <summary>Whether the current user can delete children of this folder. This is false when the item is not
+            a folder. Only populated for Team Drive items.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CapabilitiesData.CanDownload">
+            <summary>Whether the current user can download this file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CapabilitiesData.CanEdit">
+            <summary>Whether the current user can edit this file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CapabilitiesData.CanListChildren">
+            <summary>Whether the current user can list the children of this folder. This is always false when the
+            item is not a folder.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CapabilitiesData.CanMoveChildrenOutOfTeamDrive">
+            <summary>Whether the current user can move children of this folder outside of the Team Drive. This is
+            false when the item is not a folder. Only populated for Team Drive items.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CapabilitiesData.CanMoveChildrenWithinTeamDrive">
+            <summary>Whether the current user can move children of this folder within the Team Drive. This is false
+            when the item is not a folder. Only populated for Team Drive items.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CapabilitiesData.CanMoveItemIntoTeamDrive">
+            <summary>Whether the current user can move this item into a Team Drive. If the item is in a Team Drive,
+            this field is equivalent to canMoveTeamDriveItem.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CapabilitiesData.CanMoveItemOutOfTeamDrive">
+            <summary>Whether the current user can move this Team Drive item outside of this Team Drive by changing
+            its parent. Note that a request to change the parent of the item may still fail depending on the new
+            parent that is being added. Only populated for Team Drive items.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CapabilitiesData.CanMoveItemWithinTeamDrive">
+            <summary>Whether the current user can move this Team Drive item within this Team Drive. Note that a
+            request to change the parent of the item may still fail depending on the new parent that is being added.
+            Only populated for Team Drive items.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CapabilitiesData.CanMoveTeamDriveItem">
+            <summary>Deprecated - use canMoveItemWithinTeamDrive or canMoveItemOutOfTeamDrive instead.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CapabilitiesData.CanReadRevisions">
+            <summary>Whether the current user can read the revisions resource of this file. For a Team Drive item,
+            whether revisions of non-folder descendants of this item, or this item itself if it is not a folder, can
+            be read.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CapabilitiesData.CanReadTeamDrive">
+            <summary>Whether the current user can read the Team Drive to which this file belongs. Only populated for
+            Team Drive files.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CapabilitiesData.CanRemoveChildren">
+            <summary>Whether the current user can remove children from this folder. This is always false when the
+            item is not a folder. For Team Drive items, use canDeleteChildren or canTrashChildren instead.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CapabilitiesData.CanRename">
+            <summary>Whether the current user can rename this file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CapabilitiesData.CanShare">
+            <summary>Whether the current user can modify the sharing settings for this file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CapabilitiesData.CanTrash">
+            <summary>Whether the current user can move this file to trash.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CapabilitiesData.CanTrashChildren">
+            <summary>Whether the current user can trash children of this folder. This is false when the item is not
+            a folder. Only populated for Team Drive items.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.CapabilitiesData.CanUntrash">
+            <summary>Whether the current user can restore this file from trash.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.File.ContentHintsData">
+            <summary>Additional information about the content of the file. These fields are never populated in
+            responses.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ContentHintsData.IndexableText">
+            <summary>Text to be indexed for the file to improve fullText queries. This is limited to 128KB in length
+            and may contain HTML elements.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ContentHintsData.Thumbnail">
+            <summary>A thumbnail for the file. This will only be used if Drive cannot generate a standard
+            thumbnail.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.File.ContentHintsData.ThumbnailData">
+            <summary>A thumbnail for the file. This will only be used if Drive cannot generate a standard
+            thumbnail.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ContentHintsData.ThumbnailData.Image">
+            <summary>The thumbnail data encoded with URL-safe Base64 (RFC 4648 section 5).</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ContentHintsData.ThumbnailData.MimeType">
+            <summary>The MIME type of the thumbnail.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData">
+            <summary>Additional metadata about image media, if available.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData.Aperture">
+            <summary>The aperture used to create the photo (f-number).</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData.CameraMake">
+            <summary>The make of the camera used to create the photo.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData.CameraModel">
+            <summary>The model of the camera used to create the photo.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData.ColorSpace">
+            <summary>The color space of the photo.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData.ExposureBias">
+            <summary>The exposure bias of the photo (APEX value).</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData.ExposureMode">
+            <summary>The exposure mode used to create the photo.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData.ExposureTime">
+            <summary>The length of the exposure, in seconds.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData.FlashUsed">
+            <summary>Whether a flash was used to create the photo.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData.FocalLength">
+            <summary>The focal length used to create the photo, in millimeters.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData.Height">
+            <summary>The height of the image in pixels.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData.IsoSpeed">
+            <summary>The ISO speed used to create the photo.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData.Lens">
+            <summary>The lens used to create the photo.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData.Location">
+            <summary>Geographic location information stored in the image.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData.MaxApertureValue">
+            <summary>The smallest f-number of the lens at the focal length used to create the photo (APEX
+            value).</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData.MeteringMode">
+            <summary>The metering mode used to create the photo.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData.Rotation">
+            <summary>The rotation in clockwise degrees from the image's original orientation.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData.Sensor">
+            <summary>The type of sensor used to create the photo.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData.SubjectDistance">
+            <summary>The distance to the subject of the photo, in meters.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData.Time">
+            <summary>The date and time the photo was taken (EXIF DateTime).</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData.WhiteBalance">
+            <summary>The white balance mode used to create the photo.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData.Width">
+            <summary>The width of the image in pixels.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData.LocationData">
+            <summary>Geographic location information stored in the image.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData.LocationData.Altitude">
+            <summary>The altitude stored in the image.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData.LocationData.Latitude">
+            <summary>The latitude stored in the image.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.ImageMediaMetadataData.LocationData.Longitude">
+            <summary>The longitude stored in the image.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.File.VideoMediaMetadataData">
+            <summary>Additional metadata about video media. This may not be available immediately upon upload.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.VideoMediaMetadataData.DurationMillis">
+            <summary>The duration of the video in milliseconds.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.VideoMediaMetadataData.Height">
+            <summary>The height of the video in pixels.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.File.VideoMediaMetadataData.Width">
+            <summary>The width of the video in pixels.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.FileList">
+            <summary>A list of files.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.FileList.Files">
+            <summary>The list of files. If nextPageToken is populated, then this list may be incomplete and an
+            additional page of results should be fetched.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.FileList.IncompleteSearch">
+            <summary>Whether the search process was incomplete. If true, then some search results may be missing, since
+            all documents were not searched. This may occur when searching multiple Team Drives with the
+            "user,allTeamDrives" corpora, but all corpora could not be searched. When this happens, it is suggested that
+            clients narrow their query by choosing a different corpus such as "user" or "teamDrive".</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.FileList.Kind">
+            <summary>Identifies what kind of resource this is. Value: the fixed string "drive#fileList".</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.FileList.NextPageToken">
+            <summary>The page token for the next page of files. This will be absent if the end of the files list has
+            been reached. If the token is rejected for any reason, it should be discarded, and pagination should be
+            restarted from the first page of results.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.FileList.ETag">
+            <summary>The ETag of the item.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.GeneratedIds">
+            <summary>A list of generated file IDs which can be provided in create requests.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.GeneratedIds.Ids">
+            <summary>The IDs generated for the requesting user in the specified space.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.GeneratedIds.Kind">
+            <summary>Identifies what kind of resource this is. Value: the fixed string "drive#generatedIds".</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.GeneratedIds.Space">
+            <summary>The type of file that can be created with these IDs.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.GeneratedIds.ETag">
+            <summary>The ETag of the item.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.Permission">
+            <summary>A permission for a file. A permission grants a user, group, domain or the world access to a file or a
+            folder hierarchy.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Permission.AllowFileDiscovery">
+            <summary>Whether the permission allows the file to be discovered through search. This is only applicable for
+            permissions of type domain or anyone.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Permission.Deleted">
+            <summary>Whether the account associated with this permission has been deleted. This field only pertains to
+            user and group permissions.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Permission.DisplayName">
+            <summary>A displayable name for users, groups or domains.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Permission.Domain">
+            <summary>The domain to which this permission refers.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Permission.EmailAddress">
+            <summary>The email address of the user or group to which this permission refers.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Permission.ExpirationTimeRaw">
+            <summary>The time at which this permission will expire (RFC 3339 date-time). Expiration times have the
+            following restrictions: - They can only be set on user and group permissions - The time must be in the
+            future - The time cannot be more than a year in the future</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Permission.ExpirationTime">
+            <summary><seealso cref="T:System.DateTime"/> representation of <see cref="P:Google.Apis.Drive.v3.Data.Permission.ExpirationTimeRaw"/>.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Permission.Id">
+            <summary>The ID of this permission. This is a unique identifier for the grantee, and is published in User
+            resources as permissionId.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Permission.Kind">
+            <summary>Identifies what kind of resource this is. Value: the fixed string "drive#permission".</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Permission.PhotoLink">
+            <summary>A link to the user's profile photo, if available.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Permission.Role">
+            <summary>The role granted by this permission. While new values may be supported in the future, the following
+            are currently allowed: - owner - organizer - fileOrganizer - writer - commenter - reader</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Permission.TeamDrivePermissionDetails">
+            <summary>Details of whether the permissions on this Team Drive item are inherited or directly on this item.
+            This is an output-only field which is present only for Team Drive items.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Permission.Type">
+            <summary>The type of the grantee. Valid values are: - user - group - domain - anyone</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Permission.ETag">
+            <summary>The ETag of the item.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Permission.TeamDrivePermissionDetailsData.Inherited">
+            <summary>Whether this permission is inherited. This field is always populated. This is an output-only
+            field.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Permission.TeamDrivePermissionDetailsData.InheritedFrom">
+            <summary>The ID of the item from which this permission is inherited. This is an output-only field and is
+            only populated for members of the Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Permission.TeamDrivePermissionDetailsData.Role">
+            <summary>The primary role for this user. While new values may be added in the future, the following are
+            currently possible: - organizer - fileOrganizer - writer - commenter - reader</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Permission.TeamDrivePermissionDetailsData.TeamDrivePermissionType">
+            <summary>The Team Drive permission type for this user. While new values may be added in future, the
+            following are currently possible: - file - member</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.PermissionList">
+            <summary>A list of permissions for a file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.PermissionList.Kind">
+            <summary>Identifies what kind of resource this is. Value: the fixed string "drive#permissionList".</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.PermissionList.NextPageToken">
+            <summary>The page token for the next page of permissions. This field will be absent if the end of the
+            permissions list has been reached. If the token is rejected for any reason, it should be discarded, and
+            pagination should be restarted from the first page of results.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.PermissionList.Permissions">
+            <summary>The list of permissions. If nextPageToken is populated, then this list may be incomplete and an
+            additional page of results should be fetched.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.PermissionList.ETag">
+            <summary>The ETag of the item.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.Reply">
+            <summary>A reply to a comment on a file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Reply.Action">
+            <summary>The action the reply performed to the parent comment. Valid values are: - resolve -
+            reopen</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Reply.Author">
+            <summary>The user who created the reply.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Reply.Content">
+            <summary>The plain text content of the reply. This field is used for setting the content, while htmlContent
+            should be displayed. This is required on creates if no action is specified.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Reply.CreatedTimeRaw">
+            <summary>The time at which the reply was created (RFC 3339 date-time).</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Reply.CreatedTime">
+            <summary><seealso cref="T:System.DateTime"/> representation of <see cref="P:Google.Apis.Drive.v3.Data.Reply.CreatedTimeRaw"/>.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Reply.Deleted">
+            <summary>Whether the reply has been deleted. A deleted reply has no content.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Reply.HtmlContent">
+            <summary>The content of the reply with HTML formatting.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Reply.Id">
+            <summary>The ID of the reply.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Reply.Kind">
+            <summary>Identifies what kind of resource this is. Value: the fixed string "drive#reply".</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Reply.ModifiedTimeRaw">
+            <summary>The last time the reply was modified (RFC 3339 date-time).</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Reply.ModifiedTime">
+            <summary><seealso cref="T:System.DateTime"/> representation of <see cref="P:Google.Apis.Drive.v3.Data.Reply.ModifiedTimeRaw"/>.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Reply.ETag">
+            <summary>The ETag of the item.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.ReplyList">
+            <summary>A list of replies to a comment on a file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.ReplyList.Kind">
+            <summary>Identifies what kind of resource this is. Value: the fixed string "drive#replyList".</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.ReplyList.NextPageToken">
+            <summary>The page token for the next page of replies. This will be absent if the end of the replies list has
+            been reached. If the token is rejected for any reason, it should be discarded, and pagination should be
+            restarted from the first page of results.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.ReplyList.Replies">
+            <summary>The list of replies. If nextPageToken is populated, then this list may be incomplete and an
+            additional page of results should be fetched.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.ReplyList.ETag">
+            <summary>The ETag of the item.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.Revision">
+            <summary>The metadata for a revision to a file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Revision.ExportLinks">
+            <summary>Links for exporting Google Docs to specific formats.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Revision.Id">
+            <summary>The ID of the revision.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Revision.KeepForever">
+            <summary>Whether to keep this revision forever, even if it is no longer the head revision. If not set, the
+            revision will be automatically purged 30 days after newer content is uploaded. This can be set on a maximum
+            of 200 revisions for a file. This field is only applicable to files with binary content in Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Revision.Kind">
+            <summary>Identifies what kind of resource this is. Value: the fixed string "drive#revision".</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Revision.LastModifyingUser">
+            <summary>The last user to modify this revision.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Revision.Md5Checksum">
+            <summary>The MD5 checksum of the revision's content. This is only applicable to files with binary content in
+            Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Revision.MimeType">
+            <summary>The MIME type of the revision.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Revision.ModifiedTimeRaw">
+            <summary>The last time the revision was modified (RFC 3339 date-time).</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Revision.ModifiedTime">
+            <summary><seealso cref="T:System.DateTime"/> representation of <see cref="P:Google.Apis.Drive.v3.Data.Revision.ModifiedTimeRaw"/>.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Revision.OriginalFilename">
+            <summary>The original filename used to create this revision. This is only applicable to files with binary
+            content in Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Revision.PublishAuto">
+            <summary>Whether subsequent revisions will be automatically republished. This is only applicable to Google
+            Docs.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Revision.Published">
+            <summary>Whether this revision is published. This is only applicable to Google Docs.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Revision.PublishedOutsideDomain">
+            <summary>Whether this revision is published outside the domain. This is only applicable to Google
+            Docs.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Revision.Size">
+            <summary>The size of the revision's content in bytes. This is only applicable to files with binary content
+            in Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.Revision.ETag">
+            <summary>The ETag of the item.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.RevisionList">
+            <summary>A list of revisions of a file.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.RevisionList.Kind">
+            <summary>Identifies what kind of resource this is. Value: the fixed string "drive#revisionList".</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.RevisionList.NextPageToken">
+            <summary>The page token for the next page of revisions. This will be absent if the end of the revisions list
+            has been reached. If the token is rejected for any reason, it should be discarded, and pagination should be
+            restarted from the first page of results.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.RevisionList.Revisions">
+            <summary>The list of revisions. If nextPageToken is populated, then this list may be incomplete and an
+            additional page of results should be fetched.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.RevisionList.ETag">
+            <summary>The ETag of the item.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.StartPageToken.Kind">
+            <summary>Identifies what kind of resource this is. Value: the fixed string "drive#startPageToken".</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.StartPageToken.StartPageTokenValue">
+            <summary>The starting page token for listing changes.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.StartPageToken.ETag">
+            <summary>The ETag of the item.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.TeamDrive">
+            <summary>Representation of a Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.BackgroundImageFile">
+            <summary>An image file and cropping parameters from which a background image for this Team Drive is set.
+            This is a write only field; it can only be set on drive.teamdrives.update requests that don't set themeId.
+            When specified, all fields of the backgroundImageFile must be set.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.BackgroundImageLink">
+            <summary>A short-lived link to this Team Drive's background image.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.Capabilities">
+            <summary>Capabilities the current user has on this Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.ColorRgb">
+            <summary>The color of this Team Drive as an RGB hex string. It can only be set on a drive.teamdrives.update
+            request that does not set themeId.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.CreatedTimeRaw">
+            <summary>The time at which the Team Drive was created (RFC 3339 date-time).</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.CreatedTime">
+            <summary><seealso cref="T:System.DateTime"/> representation of <see cref="P:Google.Apis.Drive.v3.Data.TeamDrive.CreatedTimeRaw"/>.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.Id">
+            <summary>The ID of this Team Drive which is also the ID of the top level folder of this Team
+            Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.Kind">
+            <summary>Identifies what kind of resource this is. Value: the fixed string "drive#teamDrive".</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.Name">
+            <summary>The name of this Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.Restrictions">
+            <summary>A set of restrictions that apply to this Team Drive or items inside this Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.ThemeId">
+            <summary>The ID of the theme from which the background image and color will be set. The set of possible
+            teamDriveThemes can be retrieved from a drive.about.get response. When not specified on a
+            drive.teamdrives.create request, a random theme is chosen from which the background image and color are set.
+            This is a write-only field; it can only be set on requests that don't set colorRgb or
+            backgroundImageFile.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.ETag">
+            <summary>The ETag of the item.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.TeamDrive.BackgroundImageFileData">
+            <summary>An image file and cropping parameters from which a background image for this Team Drive is set.
+            This is a write only field; it can only be set on drive.teamdrives.update requests that don't set themeId.
+            When specified, all fields of the backgroundImageFile must be set.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.BackgroundImageFileData.Id">
+            <summary>The ID of an image file in Drive to use for the background image.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.BackgroundImageFileData.Width">
+            <summary>The width of the cropped image in the closed range of 0 to 1. This value represents the width
+            of the cropped image divided by the width of the entire image. The height is computed by applying a
+            width to height aspect ratio of 80 to 9. The resulting image must be at least 1280 pixels wide and 144
+            pixels high.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.BackgroundImageFileData.XCoordinate">
+            <summary>The X coordinate of the upper left corner of the cropping area in the background image. This is
+            a value in the closed range of 0 to 1. This value represents the horizontal distance from the left side
+            of the entire image to the left side of the cropping area divided by the width of the entire
+            image.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.BackgroundImageFileData.YCoordinate">
+            <summary>The Y coordinate of the upper left corner of the cropping area in the background image. This is
+            a value in the closed range of 0 to 1. This value represents the vertical distance from the top side of
+            the entire image to the top side of the cropping area divided by the height of the entire
+            image.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.TeamDrive.CapabilitiesData">
+            <summary>Capabilities the current user has on this Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.CapabilitiesData.CanAddChildren">
+            <summary>Whether the current user can add children to folders in this Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.CapabilitiesData.CanChangeCopyRequiresWriterPermissionRestriction">
+            <summary>Whether the current user can change the copyRequiresWriterPermission restriction of this Team
+            Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.CapabilitiesData.CanChangeDomainUsersOnlyRestriction">
+            <summary>Whether the current user can change the domainUsersOnly restriction of this Team
+            Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.CapabilitiesData.CanChangeTeamDriveBackground">
+            <summary>Whether the current user can change the background of this Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.CapabilitiesData.CanChangeTeamMembersOnlyRestriction">
+            <summary>Whether the current user can change the teamMembersOnly restriction of this Team
+            Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.CapabilitiesData.CanComment">
+            <summary>Whether the current user can comment on files in this Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.CapabilitiesData.CanCopy">
+            <summary>Whether the current user can copy files in this Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.CapabilitiesData.CanDeleteChildren">
+            <summary>Whether the current user can delete children from folders in this Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.CapabilitiesData.CanDeleteTeamDrive">
+            <summary>Whether the current user can delete this Team Drive. Attempting to delete the Team Drive may
+            still fail if there are untrashed items inside the Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.CapabilitiesData.CanDownload">
+            <summary>Whether the current user can download files in this Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.CapabilitiesData.CanEdit">
+            <summary>Whether the current user can edit files in this Team Drive</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.CapabilitiesData.CanListChildren">
+            <summary>Whether the current user can list the children of folders in this Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.CapabilitiesData.CanManageMembers">
+            <summary>Whether the current user can add members to this Team Drive or remove them or change their
+            role.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.CapabilitiesData.CanReadRevisions">
+            <summary>Whether the current user can read the revisions resource of files in this Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.CapabilitiesData.CanRemoveChildren">
+            <summary>Deprecated - use canDeleteChildren or canTrashChildren instead.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.CapabilitiesData.CanRename">
+            <summary>Whether the current user can rename files or folders in this Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.CapabilitiesData.CanRenameTeamDrive">
+            <summary>Whether the current user can rename this Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.CapabilitiesData.CanShare">
+            <summary>Whether the current user can share files or folders in this Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.CapabilitiesData.CanTrashChildren">
+            <summary>Whether the current user can trash children from folders in this Team Drive.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.TeamDrive.RestrictionsData">
+            <summary>A set of restrictions that apply to this Team Drive or items inside this Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.RestrictionsData.AdminManagedRestrictions">
+            <summary>Whether administrative privileges on this Team Drive are required to modify
+            restrictions.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.RestrictionsData.CopyRequiresWriterPermission">
+            <summary>Whether the options to copy, print, or download files inside this Team Drive, should be
+            disabled for readers and commenters. When this restriction is set to true, it will override the
+            similarly named field to true for any file inside this Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.RestrictionsData.DomainUsersOnly">
+            <summary>Whether access to this Team Drive and items inside this Team Drive is restricted to users of
+            the domain to which this Team Drive belongs. This restriction may be overridden by other sharing
+            policies controlled outside of this Team Drive.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDrive.RestrictionsData.TeamMembersOnly">
+            <summary>Whether access to items inside this Team Drive is restricted to members of this Team
+            Drive.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.TeamDriveList">
+            <summary>A list of Team Drives.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDriveList.Kind">
+            <summary>Identifies what kind of resource this is. Value: the fixed string "drive#teamDriveList".</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDriveList.NextPageToken">
+            <summary>The page token for the next page of Team Drives. This will be absent if the end of the Team Drives
+            list has been reached. If the token is rejected for any reason, it should be discarded, and pagination
+            should be restarted from the first page of results.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDriveList.TeamDrives">
+            <summary>The list of Team Drives. If nextPageToken is populated, then this list may be incomplete and an
+            additional page of results should be fetched.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.TeamDriveList.ETag">
+            <summary>The ETag of the item.</summary>
+        </member>
+        <member name="T:Google.Apis.Drive.v3.Data.User">
+            <summary>Information about a Drive user.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.User.DisplayName">
+            <summary>A plain text displayable name for this user.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.User.EmailAddress">
+            <summary>The email address of the user. This may not be present in certain contexts if the user has not made
+            their email address visible to the requester.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.User.Kind">
+            <summary>Identifies what kind of resource this is. Value: the fixed string "drive#user".</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.User.Me">
+            <summary>Whether this user is the requesting user.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.User.PermissionId">
+            <summary>The user's ID as visible in Permission resources.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.User.PhotoLink">
+            <summary>A link to the user's profile photo, if available.</summary>
+        </member>
+        <member name="P:Google.Apis.Drive.v3.Data.User.ETag">
+            <summary>The ETag of the item.</summary>
+        </member>
+    </members>
+</doc>
