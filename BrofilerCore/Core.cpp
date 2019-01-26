@@ -1154,7 +1154,13 @@ bool Core::AttachFile(BroFile::Type type, const char* name, const char* path)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::AttachFile(BroFile::Type type, const char* name, const wchar_t* path)
 {
+#if BRO_MSVC
 	return AttachFile(type, name, std::ifstream(path, std::ios::binary));
+#else
+	char p[256] = { 0 };
+	wcstombs(p, path, sizeof(p));
+	return AttachFile(type, name, std::ifstream(p, std::ios::binary));
+#endif
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::InitGPUProfiler(GPUProfiler* profiler)
