@@ -5,6 +5,16 @@ namespace Profiler
 {
 	public class Platform
 	{
+		public enum Type
+		{
+			Unknown,
+			Windows,
+			Linux,
+			MacOS,
+			XBox,
+			Playstation,
+		}
+
 		public static IPAddress GetPS4Address()
 		{
 			return IPAddress.None;

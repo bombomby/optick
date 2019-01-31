@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Windows;
+using System.Net;
+using System.Net.Sockets;
 
 namespace Profiler
 {
@@ -63,6 +65,13 @@ namespace Profiler
 		public Type ResponseType { get; set; }
 		public UInt32 Version { get; set; }
 		public BinaryReader Reader { get; set; }
+
+		public struct ConnectionSource
+		{
+			public IPAddress Address { get; set; }
+			public int Port { get; set; }
+		}
+		public ConnectionSource Source;
 
 		public DataResponse(UInt16 appID, Type type, UInt32 version, BinaryReader reader)
 		{
@@ -145,6 +154,14 @@ namespace Profiler
 			MemoryStream stream = new MemoryStream(Convert.FromBase64String(base64));
 			return DataResponse.Create(stream);
 		}
+
+		internal static DataResponse Create(NetworkStream stream, IPAddress ipAddress, int port)
+		{
+			DataResponse response = Create(stream);
+			response.Source.Address = ipAddress;
+			response.Source.Port = port;
+			return response;
+		}
 	}
 
 	public enum MessageType
@@ -152,7 +169,6 @@ namespace Profiler
 		Start,
 		Stop,
 		TurnSampling,
-		SetupHook,
 	}
 
 	public abstract class Message

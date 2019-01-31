@@ -559,4 +559,9 @@
   <ItemGroup>
     <EmbeddedResource Include="AutoEmbedLibs\System.Windows.Interactivity.dll" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="D3DCompiler_43.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>
