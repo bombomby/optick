@@ -1149,7 +1149,8 @@ bool Core::AttachFile(BroFile::Type type, const char* name, std::istream& stream
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::AttachFile(BroFile::Type type, const char* name, const char* path)
 {
-	return AttachFile(type, name, std::ifstream(path, std::ios::binary));
+    std::ifstream stream(path, std::ios::binary);
+	return AttachFile(type, name, stream);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::AttachFile(BroFile::Type type, const char* name, const wchar_t* path)
@@ -1159,7 +1160,8 @@ bool Core::AttachFile(BroFile::Type type, const char* name, const wchar_t* path)
 #else
 	char p[256] = { 0 };
 	wcstombs(p, path, sizeof(p));
-	return AttachFile(type, name, std::ifstream(p, std::ios::binary));
+    std::ifstream stream(p, std::ios::binary);
+	return AttachFile(type, name, stream);
 #endif
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
