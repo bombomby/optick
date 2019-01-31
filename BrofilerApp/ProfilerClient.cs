@@ -77,7 +77,7 @@ namespace Profiler
 					stream = client.GetStream();
 				}
 
-				return DataResponse.Create(stream);
+				return DataResponse.Create(stream, IpAddress, Port);
 			}
 			catch (System.IO.IOException ex)
 			{
