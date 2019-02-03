@@ -21,8 +21,6 @@ class Server
 
 	std::recursive_mutex socketLock;
 
-	bool isInitialized;
-	
 	Server( short port );
 	~Server();
 

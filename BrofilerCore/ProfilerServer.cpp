@@ -244,7 +244,7 @@ public:
 	}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Server::Server(short port) : socket(Memory::New<Socket>()), isInitialized(false)
+Server::Server(short port) : socket(Memory::New<Socket>())
 {
 	if (!socket->Bind(port, 4))
 	{
