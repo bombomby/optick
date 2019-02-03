@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignWidth="300">
+    
     <Grid VerticalAlignment="Top">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -39,12 +40,24 @@
             </ComboBox>
            
             <Button Grid.Column="2" Margin="1" Content="{Binding Test}" />
-       
-            
+               
         </Grid>
         <Border Grid.Row="1" BorderThickness="1" BorderBrush="Black" 
                 x:Name="AttachmentContentBorder" Margin="0,1,0,1" Height="200">
-            <ContentControl Content="{Binding AttachmentContent}" />
+            <ContentControl Content="{Binding AttachmentContent}"/>
+
+            <Border.Resources>
+                <Cursor x:Key="magnifyingGlass">../../Resources/magnifyingGlass.cur</Cursor>
+                <Style TargetType="{x:Type ContentControl}">
+                    <Setter Property="Cursor" Value="Arrow"/>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Cursor" Value="../../Resources/magnifyingGlass.cur" />  <!-- Value="{StaticResource magnifyingGlass}"/> -->
+                        </Trigger>
+                    </Style.Triggers>
+
+                </Style>
+            </Border.Resources>
         </Border>
 
     </Grid>

@@ -247,7 +247,11 @@
       <DependentUpon>TagsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\ViewModel\BaseViewModel.cs" />
+    <Compile Include="Controls\ViewModel\ScreenshotViewModel.cs" />
     <Compile Include="Controls\ViewModel\SummaryViewerModel.cs" />
+    <Compile Include="Controls\View\ScreenshotView.xaml.cs">
+      <DependentUpon>ScreenshotView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\View\SummaryViewer.xaml.cs">
       <DependentUpon>SummaryViewer.xaml</DependentUpon>
     </Compile>
@@ -355,6 +359,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\TagsControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\View\ScreenshotView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -572,6 +580,7 @@
     <Content Include="D3DCompiler_43.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Resources\magnifyingGlass.cur" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Controls\Helpers\" />
