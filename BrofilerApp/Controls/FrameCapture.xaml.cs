@@ -17,17 +17,42 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;            //CallerMemberName
+using Profiler.Controls.ViewModel;
 
 namespace Profiler.Controls
 {
-	/// <summary>
-	/// Interaction logic for FrameCapture.xaml
-	/// </summary>
-	public partial class FrameCapture : UserControl
+    /// <summary>
+    /// Interaction logic for FrameCapture.xaml
+    /// </summary>
+    public partial class FrameCapture : UserControl, INotifyPropertyChanged
 	{
-		public FrameCapture()
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        SummaryViewerModel _summaryVM;
+
+        public SummaryViewerModel SummaryVM
+        {
+            get { return _summaryVM; }
+            set
+            {
+                _summaryVM = value;
+                OnPropertyChanged("SummaryVM");
+            }
+        }
+
+        public FrameCapture()
 		{
-			InitializeComponent();
+            //ToDo  Create IoC
+            SummaryVM = new SummaryViewerModel();
+
+            InitializeComponent();
 
 			this.AddHandler(TimeLine.FocusFrameEvent, new TimeLine.FocusFrameEventHandler(this.OpenFrame));
 
@@ -109,8 +134,9 @@ namespace Profiler.Controls
 
 			if (frame != null && frame.Group != null)
 			{
-				SummaryViewerControl.DataContext = frame.Group.Summary;
-			}
+                //SummaryViewerControl.DataContext = frame.Group.Summary;
+                SummaryVM.Summary = frame.Group.Summary;
+            }
 		}
 
 		void FrameInfo_OnSelectedTreeNodeChanged(Data.Frame frame, BaseTreeNode node)
@@ -160,7 +186,7 @@ namespace Profiler.Controls
 			FunctionHistoryControl.Clear();
 			ThreadView.Group = null;
 			FrameInfoControl.SetFrame(null, null);
-			SummaryViewerControl.DataContext = null;
+			//SummaryViewerControl.DataContext = null;
 		}
 
 		private void ClearSamplingButton_Click(object sender, System.Windows.RoutedEventArgs e)

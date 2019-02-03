@@ -5,18 +5,27 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:Profiler="clr-namespace:Profiler" 
              xmlns:Controls="clr-namespace:Profiler.Controls" 
+             xmlns:ControlsView="clr-namespace:Profiler.Controls.View" 
+             xmlns:ControlsViewModel="clr-namespace:Profiler.Controls.ViewModel"
              xmlns:MahApps="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              xmlns:xcad="http://schemas.xceed.com/wpf/xaml/avalondock"
              mc:Ignorable="d" 
              d:DesignHeight="900" d:DesignWidth="1400"
-             MinHeight="400">
+             MinHeight="400"
+             DataContext="{Binding RelativeSource={RelativeSource Self}}" 
+             >
     <UserControl.Resources>
         <Profiler:MultiplyConverter x:Key="MultiplyConverter"/>
         <Profiler:SubtractConverter x:Key="SubtractConverter"/>
         <sys:Double x:Key="ThreadViewHeightRatio">0.5</sys:Double>
+         <DataTemplate DataType="{x:Type ControlsViewModel:SummaryViewerModel}">
+            <ControlsView:SummaryViewer />
+        </DataTemplate>
+                
     </UserControl.Resources>
+
     <UserControl.CommandBindings>
         <CommandBinding Command="ApplicationCommands.Find" Executed="OnSearchCommandExecuted" />
         <CommandBinding Command="ApplicationCommands.Open" Executed="OnOpenCommandExecuted" />
@@ -83,8 +92,11 @@
             <Border Grid.Row="1">
                 <Profiler:TimeLine Margin="1" x:Name="timeLine" />
             </Border>
-            <Border Grid.RowSpan="2" Grid.Column="1">
-                <Controls:SummaryViewer x:Name="SummaryViewerControl" Margin="1" />
+            <Border Grid.RowSpan="2"  Grid.Column="1">
+                <ContentControl   Content="{Binding SummaryVM}" Margin="1"/> 
+                <!--  <ControlsView:SummaryViewer2 x:Name="SummaryViewerControl" Margin="1"  DataContext="{Binding ElementName=FrameCapture, Path= SummaryVM}"/> -->
+                <!-- <ContentControl  DataContext="{Binding RelativeSource={RelativeSource Self}}"   Grid.Column="1"  Content="{Binding ElementName=FrameCapture, Path= SummaryVM}" Margin="1"/> -->
+                <!--  <Controls:SummaryViewer x:Name="SummaryViewerControl" Margin="1" /> -->
             </Border>
         </Grid>
         <Grid Grid.Row="1" x:Name="BottomGrid">

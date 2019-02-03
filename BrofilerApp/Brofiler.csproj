@@ -246,6 +246,11 @@
     <Compile Include="Controls\TagsControl.xaml.cs">
       <DependentUpon>TagsControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\ViewModel\BaseViewModel.cs" />
+    <Compile Include="Controls\ViewModel\SummaryViewerModel.cs" />
+    <Compile Include="Controls\View\SummaryViewer.xaml.cs">
+      <DependentUpon>SummaryViewer.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Data\Callstack.cs" />
     <Compile Include="Data\Capture.cs" />
     <Compile Include="Data\Durationable.cs" />
@@ -350,6 +355,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\TagsControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\View\SummaryViewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -563,5 +572,8 @@
     <Content Include="D3DCompiler_43.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Controls\Helpers\" />
   </ItemGroup>
 </Project>
