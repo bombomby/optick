@@ -42,6 +42,10 @@
        
             
         </Grid>
-        <Border Grid.Row="1" BorderThickness="1" BorderBrush="Black" x:Name="AttachmentContent" Margin="0,1,0,1" Height="200" />
+        <Border Grid.Row="1" BorderThickness="1" BorderBrush="Black" 
+                x:Name="AttachmentContentBorder" Margin="0,1,0,1" Height="200">
+            <ContentControl Content="{Binding AttachmentContent}" />
+        </Border>
+
     </Grid>
 </UserControl>
