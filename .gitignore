@@ -10,3 +10,4 @@ Publish/
 *.orig
 .DS_Store
 /Samples/UnrealEnginePlugin/Binaries
+/.vs

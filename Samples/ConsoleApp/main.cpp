@@ -2,7 +2,7 @@
 #include "Brofiler.h"
 #include "TestEngine.h"
 
-#if MT_MSVC_COMPILER_FAMILY
+#if BRO_MSVC
 #pragma warning( push )
 
 //C4250. inherits 'std::basic_ostream'
@@ -14,7 +14,7 @@
 
 using namespace std;
 
-#if MT_PLATFORM_WINDOWS
+#if BRO_MSVC
 int wmain()
 #else
 int main()
@@ -34,12 +34,12 @@ int main()
 		if (!engine.Update())
 			break;
 
-		cout<<'.'; 
+		cout<<'.'<<flush; 
 	}
 
 	return 0;
 }
 
-#if MT_MSVC_COMPILER_FAMILY
+#if BRO_MSVC
 #pragma warning( pop )
 #endif
