@@ -35,7 +35,7 @@ namespace Brofiler
 
 			std::array<Frame, NUM_FRAMES_DELAY> frames;
 
-		//	NodePayload() : device(nullptr), physicalDevice(nullptr), queue(nullptr), queryPool(nullptr), commandPool(nullptr) {}
+			NodePayload() : device(nullptr), physicalDevice(nullptr), queue(nullptr), queryPool(nullptr), commandPool(nullptr) {}
 			~NodePayload();
 		};
 		std::vector<NodePayload*> nodePayloads;

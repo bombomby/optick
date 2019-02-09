@@ -27,7 +27,7 @@ namespace Profiler
 	/// </summary>
 	public partial class MainWindow : MetroWindow
 	{
-        public MainWindow()
+		public MainWindow()
 		{
 			InitializeComponent();
 
@@ -37,9 +37,9 @@ namespace Profiler
 			this.AddHandler(SaveCaptureEvent, new SaveCaptureEventHandler(MainWindow_SaveCapture));
 
 			this.Loaded += MainWindow_Loaded;
-			this.Closing += MainWindow_Closing;
 
-        }
+			this.Closing += MainWindow_Closing;
+		}
 
 		private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
