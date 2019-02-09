@@ -99,6 +99,8 @@ namespace Profiler.Controls.ViewModel
             }
         }
 
+        public string CaptureName { get; set; }
+
         #endregion
 
         #region Commands
@@ -113,7 +115,7 @@ namespace Profiler.Controls.ViewModel
         {
             // OpenScreenShotViewCommand = new RelayCommand(x =>  _viewService.Show());
             OpenScreenShotViewCommand = new RelayCommand(x => {
-                var screenShotVM = new ScreenShotViewModel(CurrentAttachment, "");
+                var screenShotVM = new ScreenShotViewModel(CurrentAttachment, CaptureName);
                 var screenShotView = new Profiler.Controls.View.ScreenShotView();
                 screenShotView.DataContext = screenShotVM;
                 screenShotView.Show();

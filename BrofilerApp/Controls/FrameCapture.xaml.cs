@@ -28,6 +28,8 @@ namespace Profiler.Controls
     /// </summary>
     public partial class FrameCapture : UserControl, INotifyPropertyChanged
 	{
+        private string _captureName;
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -94,7 +96,8 @@ namespace Profiler.Controls
 
 		public bool LoadFile(string path)
 		{
-			timeLine.Clear();
+            _captureName = path;
+            timeLine.Clear();
 			return timeLine.LoadFile(path);
 		}
 
@@ -136,6 +139,7 @@ namespace Profiler.Controls
 			{
                 //SummaryViewerControl.DataContext = frame.Group.Summary;
                 SummaryVM.Summary = frame.Group.Summary;
+                SummaryVM.CaptureName = _captureName;
             }
 		}
 
