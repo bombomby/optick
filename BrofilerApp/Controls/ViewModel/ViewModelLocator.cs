@@ -39,7 +39,7 @@ namespace Profiler.Controls.ViewModel
             var viewType = d.GetType();
 
             string str = viewType.FullName;
-            str = str.Replace(".Views.", ".ViewModel.");
+            str = str.Replace(".View.", ".ViewModel.");
 
             var viewTypeName = str;
             var viewModelTypeName = viewTypeName + "Model";

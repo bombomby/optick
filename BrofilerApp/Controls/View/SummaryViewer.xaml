@@ -40,8 +40,9 @@
                 </ComboBox.Resources>-->
             </ComboBox>
            
+            <!--
             <Button Grid.Column="2" Margin="1" Content="{Binding Test}" />
-               
+               -->
         </Grid>
         <Border Grid.Row="1" BorderThickness="1" BorderBrush="Black" 
                 x:Name="AttachmentContentBorder" Margin="0,1,0,1" Height="200">
