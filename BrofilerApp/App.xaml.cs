@@ -34,9 +34,9 @@ namespace Profiler
             base.OnStartup(e);
 
             // Create IoC container
-            ContainerBuilder builder = new ContainerBuilder();
-            builder.RegisterModule<IocConfiguration>();
-            _iocContainer = builder.Build();
+            //ContainerBuilder builder = new ContainerBuilder();
+            //builder.RegisterModule<IocConfiguration>();
+            //_iocContainer = builder.Build();
 
             //var mainWindow = new MainWindow();  //_iocContainer.Resolve(MainWindow);
             //mainWindow.DataContext = 
