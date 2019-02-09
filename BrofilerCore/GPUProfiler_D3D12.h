@@ -5,7 +5,7 @@
 
 // GPU Support for D3D12
 #if !defined(BRO_ENABLE_GPU_D3D12)
-#define BRO_ENABLE_GPU_D3D12 (BRO_ENABLE_GPU /*&& 0*/)
+#define BRO_ENABLE_GPU_D3D12 (BRO_ENABLE_GPU && BRO_PLATFORM_WINDOWS /*&& 0*/)
 #endif
 
 #if BRO_ENABLE_GPU_D3D12

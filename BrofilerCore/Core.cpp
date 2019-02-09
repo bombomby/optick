@@ -465,9 +465,7 @@ bool CallstackCollector::SerializeSymbols(OutputDataStream& stream)
 	std::vector<const Symbol*> symbols;
 	symbols.reserve(symbolSet.size());
 
-	size_t callstacksCount = symbolSet.size();
 	size_t callstackIndex = 0;
-
 
 	Core::Get().DumpProgress("Resolving addresses... ");
 
@@ -879,7 +877,15 @@ void Core::GenerateCommonSummary()
 	AttachSummary("CPU", GetCPUName().c_str());
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Core::Core() : progressReportedLastTimestampMS(0), isActive(false), stateCallback(nullptr), boardNumber(0), gpuProfiler(nullptr), frameNumber(0), currentState(BRO_DUMP_CAPTURE), pendingState(BRO_DUMP_CAPTURE)
+Core::Core() 
+	: progressReportedLastTimestampMS(0)
+	, boardNumber(0)
+	, frameNumber(0)
+	, stateCallback(nullptr)
+	, currentState(BRO_DUMP_CAPTURE)
+	, pendingState(BRO_DUMP_CAPTURE)
+	, isActive(false)
+	, gpuProfiler(nullptr)
 {
 	mainThreadID = GetThreadID();
 	schedulerTrace = Trace::Get();
@@ -898,7 +904,7 @@ bool Core::UpdateState()
 		if (pendingState == BRO_DUMP_CAPTURE && currentState == BRO_START_CAPTURE)
 			nextState = BRO_STOP_CAPTURE;
 
-		if (!stateCallback(nextState))
+		if ((stateCallback != nullptr) && !stateCallback(nextState))
 			return false;
 
 		switch (nextState)
@@ -1348,7 +1354,7 @@ BROFILER_API const EventDescription* GetFrameDescription(FrameType::Type frame)
 
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-EventStorage::EventStorage(): isFiberStorage(false), pushPopEventStackIndex(0)
+EventStorage::EventStorage(): pushPopEventStackIndex(0), isFiberStorage(false)
 {
 	 
 }

@@ -4,7 +4,7 @@
 
 #include "Core.h"
 
-#define BRO_VK_CHECK(args) do { VkResult __hr = args; BRO_ASSERT(__hr == VK_SUCCESS, "Failed check"); } while(false);
+#define BRO_VK_CHECK(args) do { VkResult __hr = args; BRO_ASSERT(__hr == VK_SUCCESS, "Failed check"); (void)__hr; } while(false);
 
 namespace Brofiler
 {
@@ -120,7 +120,7 @@ namespace Brofiler
 
 			NodePayload* payload = nodePayloads[currentNode];
 
-			BRO_VK_CHECK(vkGetQueryPoolResults(payload->device, payload->queryPool, startIndex, count, 8 * count, &nodes[currentNode]->queryGpuTimestamps[startIndex], 8, VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_PARTIAL_BIT));
+			BRO_VK_CHECK(vkGetQueryPoolResults(payload->device, payload->queryPool, startIndex, count, 8 * count, &nodes[currentNode]->queryGpuTimestamps[startIndex], 8, VK_QUERY_RESULT_64_BIT));
 			vkCmdResetQueryPool(commandBuffer, payload->queryPool, startIndex, count);
 
 			// Convert GPU timestamps => CPU Timestamps
@@ -215,7 +215,7 @@ namespace Brofiler
 				{
 					ResolveTimestamps(commandBuffer, startIndex, finishIndex - startIndex);
 				}
-				else
+				else if (startIndex > finishIndex)
 				{
 					ResolveTimestamps(commandBuffer, startIndex, MAX_QUERIES_COUNT - startIndex);
 					ResolveTimestamps(commandBuffer, 0, finishIndex);

@@ -89,8 +89,10 @@ struct ScopeData
 	void Clear();
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#if BRO_MSVC
 #pragma warning( push )
 #pragma warning( disable : 4996 )
+#endif //BRO_MSVC
 template<int N>
 struct BroString
 {
@@ -99,7 +101,9 @@ struct BroString
 	BroString<N>& operator=(const char* text) { strncpy(data, text, N-1); return *this; }
 	BroString(const char* text) { *this = text; }
 };
+#if BRO_MSVC
 #pragma warning( pop )
+#endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct BroPoint
 {
@@ -406,7 +410,7 @@ class Core
 		std::string name;
 		std::vector<uint8_t> data;
 		BroFile::Type type;
-		Attachment(BroFile::Type t, const char* n) : type(t), name(n) {}
+		Attachment(BroFile::Type t, const char* n) : name(n), type(t) {}
 	};
 	std::list<Attachment> attachments;
 
