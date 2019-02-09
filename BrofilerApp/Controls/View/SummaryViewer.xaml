@@ -46,24 +46,31 @@
         </Grid>
         <Border Grid.Row="1" BorderThickness="1" BorderBrush="Black" 
                 x:Name="AttachmentContentBorder" Margin="0,1,0,1" Height="200">
-            <ContentControl Content="{Binding AttachmentContent}"/>
-            <i:Interaction.Triggers>
-                <i:EventTrigger EventName="MouseLeftButtonUp" >
-                    <i:InvokeCommandAction Command="{Binding OpenScreenShotViewCommand}" /> <!-- CommandParameter="{Binding ElementName=ReportsBarGroup, Path=Key}"  /> -->
-                </i:EventTrigger>
-            </i:Interaction.Triggers>
-            <Border.Resources>
-                <Cursor x:Key="magnifyingGlass">../../Resources/magnifyingGlass.cur</Cursor>
-                <Style TargetType="{x:Type ContentControl}">
-                    <Setter Property="Cursor" Value="Arrow"/>
-                    <Style.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Cursor" Value="../../Resources/magnifyingGlass.cur" />
-                            <!-- Value="{StaticResource magnifyingGlass}"/> -->
-                        </Trigger>
-                    </Style.Triggers>
-                </Style>
-            </Border.Resources>
+            <ContentControl Content="{Binding AttachmentContent}">
+                <ContentControl.Resources>
+                    <Cursor x:Key="magnifyingGlass">../../Resources/magnifyingGlass.cur</Cursor>
+                    <Style TargetType="{x:Type ContentControl}">
+                        <Setter Property="Cursor" Value="Arrow"/>
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsMouseOver}" Value="True"/>
+                                    <Condition Binding="{Binding Path=IsEnableMagnifyingGlass}" Value="True"/>
+
+                                </MultiDataTrigger.Conditions>
+                                    <Setter Property="Cursor" Value="../../Resources/magnifyingGlass.cur" />
+                                    <!-- Value="{StaticResource magnifyingGlass}"/> -->
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ContentControl.Resources>
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="MouseLeftButtonUp" >
+                        <i:InvokeCommandAction Command="{Binding OpenScreenShotViewCommand}" />
+                        <!-- CommandParameter="{Binding ElementName=ReportsBarGroup, Path=Key}"  /> -->
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </ContentControl>
         </Border>
 
     </Grid>

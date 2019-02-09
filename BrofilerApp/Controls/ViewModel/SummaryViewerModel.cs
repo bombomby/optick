@@ -21,6 +21,7 @@ namespace Profiler.Controls.ViewModel
 
         SummaryPack _summary;
         bool _visibility;
+        bool _isEnableMagnifyingGlass;
         ObservableCollection<SummaryPack.Attachment> _attachments;
         SummaryPack.Attachment _currentAttachment;
         UIElement _attachmentContent;
@@ -52,6 +53,19 @@ namespace Profiler.Controls.ViewModel
             set{SetField(ref _visibility, value);}
         }
 
+
+
+        public bool IsEnableMagnifyingGlass
+        {
+            get { return (bool)GetValue(IsEnableMagnifyingGlassProperty); }
+            set { SetValue(IsEnableMagnifyingGlassProperty, value); }
+        }
+        public static readonly DependencyProperty IsEnableMagnifyingGlassProperty =
+            DependencyProperty.Register("IsEnableMagnifyingGlass", typeof(bool), typeof(SummaryViewerModel), new PropertyMetadata(false));
+
+
+
+
         public ObservableCollection<SummaryPack.Attachment> Attachments
         {
             get { return _attachments; }
@@ -80,6 +94,7 @@ namespace Profiler.Controls.ViewModel
                         imageSource.EndInit();
 
                         AttachmentContent = new Image() { Source = imageSource, Stretch = Stretch.UniformToFill };
+                        IsEnableMagnifyingGlass = true;
                     }
 
                     if (value.FileType == SummaryPack.Attachment.Type.BRO_TEXT)
@@ -93,6 +108,8 @@ namespace Profiler.Controls.ViewModel
                             Text = reader.ReadToEnd(),
                             IsReadOnly = true
                         };
+
+                        IsEnableMagnifyingGlass = false;
                     }
                 }
                 SetField(ref _currentAttachment, value);
@@ -115,10 +132,13 @@ namespace Profiler.Controls.ViewModel
         {
             // OpenScreenShotViewCommand = new RelayCommand(x =>  _viewService.Show());
             OpenScreenShotViewCommand = new RelayCommand(x => {
-                var screenShotVM = new ScreenShotViewModel(CurrentAttachment, CaptureName);
-                var screenShotView = new Profiler.Controls.View.ScreenShotView();
-                screenShotView.DataContext = screenShotVM;
-                screenShotView.Show();
+                if(IsEnableMagnifyingGlass)
+                {
+                    var screenShotVM = new ScreenShotViewModel(CurrentAttachment, CaptureName);
+                    var screenShotView = new Profiler.Controls.View.ScreenShotView();
+                    screenShotView.DataContext = screenShotVM;
+                    screenShotView.Show();
+                }
             });
         }
 
