@@ -18,9 +18,9 @@ namespace Profiler.Controls.View
     /// <summary>
     /// Interaction logic for ScreenshotView.xaml
     /// </summary>
-    public partial class ScreenshotView : MetroWindow
+    public partial class ScreenShotView : MetroWindow
     {
-        public ScreenshotView()
+        public ScreenShotView()
         {
             InitializeComponent();
         }

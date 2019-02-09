@@ -7,9 +7,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Profiler.Data;
+using Profiler.Controls.Helpers;
 
 namespace Profiler.Controls.ViewModel
 {
@@ -22,6 +24,7 @@ namespace Profiler.Controls.ViewModel
         ObservableCollection<SummaryPack.Attachment> _attachments;
         SummaryPack.Attachment _currentAttachment;
         UIElement _attachmentContent;
+       // IViewService<T> _viewService;
 
         #endregion
 
@@ -94,6 +97,27 @@ namespace Profiler.Controls.ViewModel
                 }
                 SetField(ref _currentAttachment, value);
             }
+        }
+
+        #endregion
+
+        #region Commands
+
+        public ICommand OpenScreenShotViewCommand { get; set; }
+
+        #endregion
+
+        #region Constructor
+
+        public SummaryViewerModel()
+        {
+            // OpenScreenShotViewCommand = new RelayCommand(x =>  _viewService.Show());
+            OpenScreenShotViewCommand = new RelayCommand(x => {
+                var screenShotVM = new ScreenShotViewModel(CurrentAttachment, "");
+                var screenShotView = new Profiler.Controls.View.ScreenShotView();
+                screenShotView.DataContext = screenShotVM;
+                screenShotView.Show();
+            });
         }
 
         #endregion

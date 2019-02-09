@@ -6,11 +6,14 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Input;                 //ICommand
 using Profiler.Data;
+using Profiler.Controls.Helpers;
+using System.Windows;
 
 namespace Profiler.Controls.ViewModel
 {
-    public class ScreenshotViewModel: BaseViewModel
+    public class ScreenShotViewModel: BaseViewModel
     {
         ImageSource _attachmentImage;
         public ImageSource AttachmentImage
@@ -21,10 +24,13 @@ namespace Profiler.Controls.ViewModel
 
         public string Title { get; set; }
 
-        public ScreenshotViewModel(SummaryPack.Attachment attachment, string nameCapture)
+        public ICommand CloseViewCommand { get; set; }
+
+        public ScreenShotViewModel(SummaryPack.Attachment attachment, string nameCapture)
         {
             if(attachment.FileType == SummaryPack.Attachment.Type.BRO_IMAGE)
             {
+                attachment.Data.Position = 0;
                 BitmapImage imageSource = new BitmapImage();
                 imageSource.BeginInit();
                 imageSource.StreamSource = attachment.Data;
@@ -33,6 +39,12 @@ namespace Profiler.Controls.ViewModel
                 AttachmentImage = imageSource;
             }
             Title = String.Format("{0} ({1})", attachment.Name, nameCapture);
+
+            CloseViewCommand = new RelayCommand<Window>(x =>
+            {
+                if (x != null)
+                    x.Close();
+            });
         }
 
     }
