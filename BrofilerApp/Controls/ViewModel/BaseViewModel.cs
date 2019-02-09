@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel;                      //INotifyPropertyChanged
 using System.Runtime.CompilerServices;            //CallerMemberName
-using System.Windows;                             //DependencyObject, DependencyProperty            
+// using System.Windows;                             //DependencyObject, DependencyProperty            
 
 namespace Profiler.Controls.ViewModel
 {
-    public abstract class BaseViewModel : DependencyObject, INotifyPropertyChanged
+    public abstract class BaseViewModel : INotifyPropertyChanged //DependencyObject, 
     {
         public event PropertyChangedEventHandler PropertyChanged;
 

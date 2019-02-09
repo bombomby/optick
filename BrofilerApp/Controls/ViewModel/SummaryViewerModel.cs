@@ -53,18 +53,11 @@ namespace Profiler.Controls.ViewModel
             set{SetField(ref _visibility, value);}
         }
 
-
-
         public bool IsEnableMagnifyingGlass
         {
-            get { return (bool)GetValue(IsEnableMagnifyingGlassProperty); }
-            set { SetValue(IsEnableMagnifyingGlassProperty, value); }
+            get { return _isEnableMagnifyingGlass; }
+            set { SetField(ref _isEnableMagnifyingGlass, value); }
         }
-        public static readonly DependencyProperty IsEnableMagnifyingGlassProperty =
-            DependencyProperty.Register("IsEnableMagnifyingGlass", typeof(bool), typeof(SummaryViewerModel), new PropertyMetadata(false));
-
-
-
 
         public ObservableCollection<SummaryPack.Attachment> Attachments
         {

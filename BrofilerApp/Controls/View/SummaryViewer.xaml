@@ -67,7 +67,6 @@
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="MouseLeftButtonUp" >
                         <i:InvokeCommandAction Command="{Binding OpenScreenShotViewCommand}" />
-                        <!-- CommandParameter="{Binding ElementName=ReportsBarGroup, Path=Key}"  /> -->
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
             </ContentControl>
