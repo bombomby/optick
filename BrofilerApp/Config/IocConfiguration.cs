@@ -13,12 +13,6 @@ namespace Profiler.Config
             // builder.RegisterModule<DataModule>();
 
             builder.RegisterType<DialogService>().As<IDialogService>();
-
-
-
-
-
-
         }
     }
 }

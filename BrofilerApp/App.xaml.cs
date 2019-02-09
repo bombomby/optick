@@ -7,8 +7,8 @@ using System.Windows;
 using System.Reflection;
 using System.IO;
 using System.Diagnostics;
-using Autofac;
-using Profiler.Config;
+//using Autofac;
+//using Profiler.Config;
 
 namespace Profiler
 {
@@ -17,7 +17,7 @@ namespace Profiler
 	/// </summary>
 	public partial class App : Application
 	{
-        private IContainer _iocContainer;          
+       // private IContainer _iocContainer;          
 
         static App()
         {
