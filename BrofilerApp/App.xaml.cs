@@ -7,6 +7,8 @@ using System.Windows;
 using System.Reflection;
 using System.IO;
 using System.Diagnostics;
+//using Autofac;
+//using Profiler.Config;
 
 namespace Profiler
 {
@@ -15,8 +17,10 @@ namespace Profiler
 	/// </summary>
 	public partial class App : Application
 	{
-    static App()
-    {
+       // private IContainer _iocContainer;          
+
+        static App()
+        {
 			AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
         }
 
@@ -25,5 +29,20 @@ namespace Profiler
 			return AutoEmbedLibs.EmbeddedAssembly.Get(args.Name);
 		}
 
-	}
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            base.OnStartup(e);
+
+            // Create IoC container
+            //ContainerBuilder builder = new ContainerBuilder();
+            //builder.RegisterModule<IocConfiguration>();
+            //_iocContainer = builder.Build();
+
+            //var mainWindow = new MainWindow();  //_iocContainer.Resolve(MainWindow);
+            //mainWindow.DataContext = 
+            //mainWindow.Show();
+        }
+
+
+    }
 }
