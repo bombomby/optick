@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Diagnostics;
 using Profiler.Data;
 using Profiler.Controls.Helpers;
 using Profiler.Services;
@@ -22,10 +23,11 @@ namespace Profiler.Controls.ViewModel
     #region private fields
          
         IDialogService _dialogService;
+      //  Process process;
 
     #endregion
 
-    #region propertyes
+        #region propertyes
 
         SummaryPack _summary;
         public SummaryPack Summary
@@ -48,8 +50,11 @@ namespace Profiler.Controls.ViewModel
         public ObservableCollection<SummaryPack.Attachment> Attachments
         {
             get { return _attachments; }
-            set { SetField(ref _attachments, value); }
-        }
+            set {
+                CurrentAttachment = value?.FirstOrDefault(x => x.FileType == SummaryPack.Attachment.Type.BRO_IMAGE);
+                SetField(ref _attachments, value);
+            }
+        } 
 
         SummaryPack.Attachment _currentAttachment;
         public SummaryPack.Attachment CurrentAttachment
@@ -145,13 +150,39 @@ namespace Profiler.Controls.ViewModel
                   {
                       try
                       {
+                          string defaultPath = System.AppDomain.CurrentDomain.BaseDirectory + CurrentAttachment.Name;
+
+                          SaveAttachment(CurrentAttachment, defaultPath);
+                          StartProcessWithHandleExit(defaultPath);
+
+                      }
+                      catch (Exception ex)
+                      {
+                          _dialogService.ShowMessage(ex.Message);
+                      }
+                  },
+                  // Condition execute command
+                  enable => CurrentAttachment != null
+                  ));
+            }
+        }
+
+        private ICommand _saveCurrentAttachmentCommand;
+        public ICommand SaveCurrentAttachmentCommand
+        {
+            get
+            {
+                return _saveCurrentAttachmentCommand ??
+                  (_saveCurrentAttachmentCommand = new RelayCommand(obj =>
+                  {
+                      try
+                      {
                           string defaultExt =
                             (CurrentAttachment.FileType == SummaryPack.Attachment.Type.BRO_IMAGE) ? "png" : "txt";
 
                           if (_dialogService.SaveFileDialog(CurrentAttachment.Name, defaultExt) == true)
                           {
-                              ExportAttachment(CurrentAttachment, _dialogService.FilePath);
-                              System.Diagnostics.Process.Start(_dialogService.FilePath);
+                              SaveAttachment(CurrentAttachment, _dialogService.FilePath);
                           }
                       }
                       catch (Exception ex)
@@ -165,22 +196,20 @@ namespace Profiler.Controls.ViewModel
             }
         }
 
-        private ICommand _exportAllAttachmentCommand;
-        public ICommand ExportAllAttachmentCommand
+        private ICommand _saveAllAttachmentCommand;
+        public ICommand SaveAllAttachmentCommand
         {
             get
             {
-                return _exportAllAttachmentCommand ??
-                  (_exportAllAttachmentCommand = new RelayCommand(obj =>
+                return _saveAllAttachmentCommand ??
+                  (_saveAllAttachmentCommand = new RelayCommand(obj =>
                   {
                       try
                       {
                           if (_dialogService.OpenFolderDialog() == true)
                           {
                               foreach (var attachment in Summary.Attachments)
-                                 ExportAttachment(attachment,String.Format("{0}\\{1}", _dialogService.FilePath, attachment.Name));
-
-                              _dialogService.ShowMessage("Attachments export completed.");
+                                 SaveAttachment(attachment,String.Format("{0}\\{1}", _dialogService.FilePath, attachment.Name));
                           }
                       }
                       catch (Exception ex)
@@ -204,9 +233,9 @@ namespace Profiler.Controls.ViewModel
         }
 
 
-    #endregion
+        #endregion
 
-    #region Private Methods
+        #region Private Methods
 
 
         private BitmapImage GetImageFromAttachment(SummaryPack.Attachment attachment)
@@ -220,7 +249,7 @@ namespace Profiler.Controls.ViewModel
             return imageSource;
         }
 
-        private void ExportAttachment(SummaryPack.Attachment attachment, string filePath)
+        private void SaveAttachment(SummaryPack.Attachment attachment, string filePath)
         {
             attachment.Data.Position = 0;
             
@@ -234,10 +263,30 @@ namespace Profiler.Controls.ViewModel
             }
             catch (Exception e)
             {
-                throw new Exception(String.Format("Error create file (0)", e.Message));
+                throw new Exception(String.Format(@"Error create file (0)", e.Message));
             }
         }
 
-    #endregion
+        private void StartProcessWithHandleExit(string filePath)
+        {
+
+            Process process = new Process();
+            ProcessStartInfo info = new ProcessStartInfo();
+
+            info.FileName = filePath;
+            process.StartInfo = info;
+
+            // Handle process exit to remove temp file
+            process.EnableRaisingEvents = true;
+            process.Exited += (sender, e) =>
+            {
+                if (File.Exists(filePath))
+                    File.Delete(filePath);
+            };
+
+            process.Start();
+        }
+
+        #endregion
     }
 }
