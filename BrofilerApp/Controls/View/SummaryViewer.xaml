@@ -6,16 +6,17 @@
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" 
              mc:Ignorable="d" 
              d:DesignWidth="300">
-    
+
     <Grid VerticalAlignment="Top">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Grid>
+        <Grid HorizontalAlignment="Left" Width="300">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Border Width="24" Height="24" >
@@ -39,10 +40,19 @@
                     </Style>
                 </ComboBox.Resources>-->
             </ComboBox>
-           
-            <!--
-            <Button Grid.Column="2" Margin="1" Content="{Binding Test}" />
-               -->
+            <Border Grid.Column="2" Width="24" Height="24">
+                <Button  Margin="-2" ToolTip="Export current attachment"
+                    Command="{Binding ExportCurrentAttachmentCommand}">
+                    <ContentControl Style="{StaticResource appbar_app}" Margin="-10" />
+                </Button>
+            </Border>
+            <Border Grid.Column="3" Width="24" Height="24">
+                <Button  Margin="-2" ToolTip="Export all attachments"
+                    Command="{Binding ExportAllAttachmentCommand}">
+                    <ContentControl Style="{StaticResource appbar_save}" Margin="-10" />
+                </Button>
+            </Border>
+
         </Grid>
         <Border Grid.Row="1" BorderThickness="1" BorderBrush="Black" 
                 x:Name="AttachmentContentBorder" Margin="0,1,0,1" Height="200">
@@ -58,8 +68,8 @@
                                     <Condition Binding="{Binding Path=IsEnableMagnifyingGlass}" Value="True"/>
 
                                 </MultiDataTrigger.Conditions>
-                                    <Setter Property="Cursor" Value="../../Resources/magnifyingGlass.cur" />
-                                    <!-- Value="{StaticResource magnifyingGlass}"/> -->
+                                <Setter Property="Cursor" Value="../../Resources/magnifyingGlass.cur" />
+                                <!-- Value="{StaticResource magnifyingGlass}"/> -->
                             </MultiDataTrigger>
                         </Style.Triggers>
                     </Style>

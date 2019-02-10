@@ -10,7 +10,7 @@ namespace Profiler.Config
         protected override void Load(ContainerBuilder builder)
         {
             // optional: chain ServiceModule with other modules for going deeper down in the architecture: 
-            // builder.RegisterModule<DataModule>();
+           // builder.RegisterModule<MainWindow>();
 
             builder.RegisterType<DialogService>().As<IDialogService>();
         }

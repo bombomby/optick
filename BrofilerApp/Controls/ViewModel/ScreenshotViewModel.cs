@@ -26,19 +26,10 @@ namespace Profiler.Controls.ViewModel
 
         public ICommand CloseViewCommand { get; set; }
 
-        public ScreenShotViewModel(SummaryPack.Attachment attachment, string nameCapture)
+        public ScreenShotViewModel(BitmapImage image, string title)
         {
-            if(attachment.FileType == SummaryPack.Attachment.Type.BRO_IMAGE)
-            {
-                attachment.Data.Position = 0;
-                BitmapImage imageSource = new BitmapImage();
-                imageSource.BeginInit();
-                imageSource.StreamSource = attachment.Data;
-                imageSource.EndInit();
-
-                AttachmentImage = imageSource;
-            }
-            Title = String.Format("{0} ({1})", attachment.Name, nameCapture);
+            AttachmentImage = image;
+            Title = title; 
 
             CloseViewCommand = new RelayCommand<Window>(x =>
             {

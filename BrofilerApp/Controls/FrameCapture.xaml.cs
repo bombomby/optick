@@ -20,6 +20,7 @@ using System.Windows.Threading;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;            //CallerMemberName
 using Profiler.Controls.ViewModel;
+using Profiler.Services;
 
 namespace Profiler.Controls
 {
@@ -52,7 +53,8 @@ namespace Profiler.Controls
         public FrameCapture()
 		{
             //ToDo  Create IoC
-            SummaryVM = new SummaryViewerModel();
+            
+            SummaryVM = new SummaryViewerModel(new DialogService());
 
             InitializeComponent();
 
