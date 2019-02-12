@@ -10,8 +10,6 @@
                         WindowStartupLocation="CenterScreen"
                         Width="Auto" Height="Auto"  
                         SizeToContent="WidthAndHeight"
-                        MaxHeight="768"
-                        MaxWidth="1024"
                         Title="{Binding Title}">
     <Window.InputBindings>
         <KeyBinding Modifiers="Alt"

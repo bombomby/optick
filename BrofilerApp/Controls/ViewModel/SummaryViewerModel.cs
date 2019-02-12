@@ -10,7 +10,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Diagnostics;
 using Profiler.Data;
 using Profiler.Controls.Helpers;
 using Profiler.Services;
@@ -23,7 +22,6 @@ namespace Profiler.Controls.ViewModel
     #region private fields
          
         IDialogService _dialogService;
-      //  Process process;
 
     #endregion
 
@@ -150,11 +148,18 @@ namespace Profiler.Controls.ViewModel
                   {
                       try
                       {
-                          string defaultPath = System.AppDomain.CurrentDomain.BaseDirectory + CurrentAttachment.Name;
+                          string defaultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Brofiler\\Temp\\");
+                          DirectoryInfo dirInfo = new DirectoryInfo(defaultPath);
+                          if (!dirInfo.Exists)
+                              dirInfo.Create();
+
+                          // Generate unique name
+                          string fileName = Guid.NewGuid().ToString() + CurrentAttachment.Name;
+
+                          defaultPath = defaultPath + fileName;
 
                           SaveAttachment(CurrentAttachment, defaultPath);
-                          StartProcessWithHandleExit(defaultPath);
-
+                          System.Diagnostics.Process.Start(defaultPath);
                       }
                       catch (Exception ex)
                       {
@@ -265,26 +270,6 @@ namespace Profiler.Controls.ViewModel
             {
                 throw new Exception(String.Format(@"Error create file (0)", e.Message));
             }
-        }
-
-        private void StartProcessWithHandleExit(string filePath)
-        {
-
-            Process process = new Process();
-            ProcessStartInfo info = new ProcessStartInfo();
-
-            info.FileName = filePath;
-            process.StartInfo = info;
-
-            // Handle process exit to remove temp file
-            process.EnableRaisingEvents = true;
-            process.Exited += (sender, e) =>
-            {
-                if (File.Exists(filePath))
-                    File.Delete(filePath);
-            };
-
-            process.Start();
         }
 
         #endregion

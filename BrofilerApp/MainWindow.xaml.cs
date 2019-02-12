@@ -44,6 +44,7 @@ namespace Profiler
 		private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
 		{
 			FrameCaptureControl.Close();
+            DeleteTempFiles();
 		}
 
 		public delegate void OpenCaptureEventHandler(object sender, OpenCaptureEventArgs e);
@@ -209,7 +210,25 @@ namespace Profiler
 			from.CopyTo(to);
 			from.Seek(pos, SeekOrigin.Begin);
 		}
-	}
+
+        private void DeleteTempFiles()
+        {
+            string defaultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Brofiler\\Temp\\");
+            DirectoryInfo dirInfo = new DirectoryInfo(defaultPath);
+
+            if (dirInfo.Exists)
+            try
+            {
+               foreach (FileInfo file in dirInfo.GetFiles())
+                 file.Delete();
+            }
+            catch (Exception)
+            {
+               
+            }
+        }
+
+    }
 
 
 	public static class Extensions
