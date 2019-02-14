@@ -182,7 +182,7 @@ namespace Brofiler
 #if defined(BRO_PLATFORM_WINDOWS)
 		return Platform::Windows;
 #elif defined(BRO_PLATFORM_LINUX)
-		return Platform::Linux
+		return Platform::Linux;
 #elif defined(BRO_PLATFORM_OSX)
 		return Platform::MacOS;
 #elif defined(BRO_PLATFORM_XBOX)
@@ -190,7 +190,7 @@ namespace Brofiler
 #elif defined(BRO_PLATFORM_PS)
 		return Platform::Playstation;
 #else
-#error Platform is not supported!
+		#error Platform is not supported!
 #endif
 	}
 }
