@@ -11,11 +11,11 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Profiler.Data;
-using Profiler.Controls.Helpers;
+using Profiler.Helpers;
 using Profiler.Services;
 
 
-namespace Profiler.Controls.ViewModel
+namespace Profiler.ViewModel
 {
     public class SummaryViewerModel: BaseViewModel
     {
@@ -34,11 +34,12 @@ namespace Profiler.Controls.ViewModel
             set {
                 if (value != null && value.Attachments.Count > 0)
                 {
-                    Visibility = true;
+                    Visible = Visibility.Visible;
                     Attachments = new ObservableCollection<SummaryPack.Attachment>(value.Attachments);
                 }
                 else
-                    Visibility = false;
+                    Visible = Visibility.Collapsed;
+
 
                 SetField(ref _summary, value);
             }
@@ -65,7 +66,7 @@ namespace Profiler.Controls.ViewModel
                     if (value.FileType == SummaryPack.Attachment.Type.BRO_IMAGE)
                     {
                         AttachmentContent = new Image() { Source = GetImageFromAttachment(value), Stretch = Stretch.UniformToFill };
-                        IsEnableMagnifyingGlass = true;
+                        IsEnableOpenScreenShotView = true;
                     }
 
                     if (value.FileType == SummaryPack.Attachment.Type.BRO_TEXT)
@@ -80,25 +81,25 @@ namespace Profiler.Controls.ViewModel
                             IsReadOnly = true
                         };
 
-                        IsEnableMagnifyingGlass = false;
+                        IsEnableOpenScreenShotView = false;
                     }
                 }
                 SetField(ref _currentAttachment, value);
             }
         }
 
-        bool _visibility;
-        public bool Visibility
+        Visibility _visible;
+        public Visibility Visible
         {
-            get { return _visibility; }
-            set{SetField(ref _visibility, value);}
+            get { return _visible; }
+            set{SetField(ref _visible, value);}
         }
 
-        bool _isEnableMagnifyingGlass;
-        public bool IsEnableMagnifyingGlass
+        bool _isEnableOpenScreenShotView;
+        public bool IsEnableOpenScreenShotView
         {
-            get { return _isEnableMagnifyingGlass; }
-            set { SetField(ref _isEnableMagnifyingGlass, value); }
+            get { return _isEnableOpenScreenShotView; }
+            set { SetField(ref _isEnableOpenScreenShotView, value); }
         }
 
         UIElement _attachmentContent;
@@ -122,12 +123,12 @@ namespace Profiler.Controls.ViewModel
                 return _openScreenShotViewCommand ??
                     (_openScreenShotViewCommand = new RelayCommand(obj =>
                     {
-                        if (IsEnableMagnifyingGlass && CurrentAttachment.FileType == SummaryPack.Attachment.Type.BRO_IMAGE)
+                        if (IsEnableOpenScreenShotView && CurrentAttachment.FileType == SummaryPack.Attachment.Type.BRO_IMAGE)
                         {
                             BitmapImage image = GetImageFromAttachment(CurrentAttachment);
                             string title = String.Format("{0} ({1})", CurrentAttachment.Name, CaptureName);
                             var screenShotVM = new ScreenShotViewModel(image, title);
-                            var screenShotView = new Profiler.Controls.View.ScreenShotView();
+                            var screenShotView = new Profiler.View.ScreenShotView();
                             screenShotView.DataContext = screenShotVM;
                             screenShotView.Show();
                         }
@@ -155,11 +156,12 @@ namespace Profiler.Controls.ViewModel
 
                           // Generate unique name
                           string fileName = Guid.NewGuid().ToString() + CurrentAttachment.Name;
-
                           defaultPath = defaultPath + fileName;
 
                           SaveAttachment(CurrentAttachment, defaultPath);
                           System.Diagnostics.Process.Start(defaultPath);
+                          // System.Diagnostics.Process.Start doesn't block file
+                          // File.Delete(defaultPath);
                       }
                       catch (Exception ex)
                       {

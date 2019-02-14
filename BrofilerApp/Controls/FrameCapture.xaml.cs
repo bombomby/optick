@@ -19,7 +19,7 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;            //CallerMemberName
-using Profiler.Controls.ViewModel;
+using Profiler.ViewModel;
 using Profiler.Services;
 
 namespace Profiler.Controls
@@ -139,7 +139,6 @@ namespace Profiler.Controls
 
 			if (frame != null && frame.Group != null)
 			{
-                //SummaryViewerControl.DataContext = frame.Group.Summary;
                 SummaryVM.Summary = frame.Group.Summary;
                 SummaryVM.CaptureName = _captureName;
             }

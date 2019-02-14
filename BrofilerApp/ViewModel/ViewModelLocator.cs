@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace Profiler.Controls.ViewModel
+namespace Profiler.ViewModel
 {
     // using in XAML
     // vml:ViewModelLocator.AutoHookedUpViewModel = "True" 
@@ -24,9 +24,6 @@ namespace Profiler.Controls.ViewModel
             obj.SetValue(AutoHookedUpViewModelProperty, value);
         }
 
-
-        // Using a DependencyProperty as the backing store for AutoHookedUpViewModel. 
-        //This enables animation, styling, binding, etc...
         public static readonly DependencyProperty AutoHookedUpViewModelProperty =
            DependencyProperty.RegisterAttached("AutoHookedUpViewModel",
            typeof(bool), typeof(ViewModelLocator), new

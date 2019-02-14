@@ -1,6 +1,6 @@
 ﻿using Autofac;
-using Profiler.Controls.View;
-using Profiler.Controls.ViewModel;
+using Profiler.View;
+using Profiler.ViewModel;
 using Profiler.Services;
 
 namespace Profiler.Config

@@ -236,8 +236,8 @@
       <DependentUpon>FunctionSearch.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\HamburgerMenuContentItem.cs" />
-    <Compile Include="Controls\Helpers\RelayCommand.cs" />
-    <Compile Include="Controls\Helpers\RelayCommandGeneric.cs" />
+    <Compile Include="Helpers\RelayCommand.cs" />
+    <Compile Include="Helpers\RelayCommandGeneric.cs" />
     <Compile Include="Controls\PlatformSelector.xaml.cs">
       <DependentUpon>PlatformSelector.xaml</DependentUpon>
     </Compile>
@@ -246,20 +246,17 @@
       <DependentUpon>SettingsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\SharedSettings.cs" />
-    <Compile Include="Controls\SummaryViewer.xaml.cs">
-      <DependentUpon>SummaryViewer.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Controls\TagsControl.xaml.cs">
       <DependentUpon>TagsControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\ViewModel\BaseViewModel.cs" />
-    <Compile Include="Controls\ViewModel\ScreenShotViewModel.cs" />
-    <Compile Include="Controls\ViewModel\SummaryViewerModel.cs" />
-    <Compile Include="Controls\ViewModel\ViewModelLocator.cs" />
-    <Compile Include="Controls\View\ScreenShotView.xaml.cs">
+    <Compile Include="ViewModel\BaseViewModel.cs" />
+    <Compile Include="ViewModel\ScreenShotViewModel.cs" />
+    <Compile Include="ViewModel\SummaryViewerModel.cs" />
+    <Compile Include="ViewModel\ViewModelLocator.cs" />
+    <Compile Include="View\ScreenShotView.xaml.cs">
       <DependentUpon>ScreenShotView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\View\SummaryViewer.xaml.cs">
+    <Compile Include="View\SummaryViewer.xaml.cs">
       <DependentUpon>SummaryViewer.xaml</DependentUpon>
     </Compile>
     <Compile Include="Data\Callstack.cs" />
@@ -364,19 +361,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Controls\SummaryViewer.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Controls\TagsControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Controls\View\ScreenShotView.xaml">
+    <Page Include="View\ScreenShotView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Controls\View\SummaryViewer.xaml">
+    <Page Include="View\SummaryViewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

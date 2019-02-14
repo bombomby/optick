@@ -1,17 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Input;                 //ICommand
-using Profiler.Data;
-using Profiler.Controls.Helpers;
+using Profiler.Helpers;
 using System.Windows;
 
-namespace Profiler.Controls.ViewModel
+namespace Profiler.ViewModel
 {
     public class ScreenShotViewModel: BaseViewModel
     {
@@ -29,7 +23,7 @@ namespace Profiler.Controls.ViewModel
         public ScreenShotViewModel(BitmapImage image, string title)
         {
             AttachmentImage = image;
-            Title = title; 
+            Title = title;
 
             CloseViewCommand = new RelayCommand<Window>(x =>
             {
