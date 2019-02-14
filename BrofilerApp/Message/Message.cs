@@ -19,13 +19,15 @@ namespace Profiler
                 public const UInt32 NETWORK_PROTOCOL_VERSION_10 = 10; // Added StackWalk event
                 public const UInt32 NETWORK_PROTOCOL_VERSION_11 = 11; // Added thread synchronization switch to thread ID
                 public const UInt32 NETWORK_PROTOCOL_VERSION_12 = 12; // Added separate fiber sync data stream
-                ...
+				public const UInt32 NETWORK_PROTOCOL_VERSION_18 = 18; // Bumped version
+				public const UInt32 NETWORK_PROTOCOL_VERSION_20 = 20; // Added Summary                
+				...
          */
-
 		public const UInt32 NETWORK_PROTOCOL_VERSION_18 = 18; // Bumped version
-		public const UInt32 NETWORK_PROTOCOL_VERSION_20 = 20; // Added Summary
+		public const UInt32 NETWORK_PROTOCOL_VERSION_20 = 20; // Added Summary   
+		public const UInt32 NETWORK_PROTOCOL_VERSION_23 = 23; // Added Support for Target Platform and Computer name in Handshake response
 
-		public const UInt32 NETWORK_PROTOCOL_VERSION = NETWORK_PROTOCOL_VERSION_20;
+		public const UInt32 NETWORK_PROTOCOL_VERSION = NETWORK_PROTOCOL_VERSION_23;
 		public const UInt32 NETWORK_PROTOCOL_MIN_VERSION = NETWORK_PROTOCOL_VERSION_18;
 
 
@@ -158,8 +160,11 @@ namespace Profiler
 		internal static DataResponse Create(NetworkStream stream, IPAddress ipAddress, int port)
 		{
 			DataResponse response = Create(stream);
-			response.Source.Address = ipAddress;
-			response.Source.Port = port;
+			if (response != null)
+			{
+				response.Source.Address = ipAddress;
+				response.Source.Port = port;
+			}
 			return response;
 		}
 	}

@@ -14,6 +14,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <limits.h>
 typedef int TcpSocket;
 #elif defined(USE_WINDOWS_SOCKETS)
 #include <winsock2.h>
@@ -290,6 +291,23 @@ void Server::Send(DataResponse::Type type, OutputDataStream& stream)
 bool Server::InitConnection()
 {
 	return socket->Accept();
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+std::string Server::GetHostName() const
+{
+#if defined(USE_BERKELEY_SOCKETS)
+	char hostname[HOST_NAME_MAX] = { 0 };
+	gethostname(hostname, HOST_NAME_MAX);
+	return hostname;
+#elif defined(USE_WINDOWS_SOCKETS)
+	const DWORD HOST_NAME_MAX = 256;
+	char hostname[HOST_NAME_MAX] = { 0 };
+	DWORD length = HOST_NAME_MAX;
+	GetComputerNameA(hostname, &length);
+	return hostname;
+#else
+	#error Platform is not supported yet!
+#endif
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Server::~Server()

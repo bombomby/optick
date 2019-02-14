@@ -31,8 +31,8 @@
 #define BRO_PLATFORM_WINDOWS (1)
 #elif __APPLE_CC__
 #define BRO_PLATFORM_OSX (1)
-#else
-#define BRO_PLATFORM_POSIX (1)
+#elif defined(__linux__)
+#define BRO_PLATFORM_LINUX (1)
 #endif
 
 ////////////////////////////////////////////////////////////////////////
@@ -73,6 +73,11 @@
 #include <unistd.h>
 #endif
 
+#if defined (BRO_PLATFORM_LINUX)
+#include <sys/types.h>
+#include <sys/syscall.h>
+#endif
+
 namespace Brofiler
 {
 	typedef uint64 ThreadID;
@@ -81,13 +86,26 @@ namespace Brofiler
 	typedef uint32 ProcessID;
 	static const ProcessID INVALID_PROCESS_ID = (ProcessID)-1;
 
+	struct Platform
+	{
+		enum ID
+		{
+			Unknown,
+			Windows,
+			Linux,
+			MacOS,
+			XBox,
+			Playstation,
+		};
+	};
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	BRO_INLINE ThreadID GetThreadID()
 	{
 #if defined(BRO_PLATFORM_WINDOWS)
 		return GetCurrentThreadId();
-#elif defined(BRO_PLATFORM_POSIX) || defined(BRO_PLATFORM_OSX)
-		return (uint64)pthread_self();
+#elif defined(BRO_PLATFORM_LINUX) || defined(BRO_PLATFORM_OSX)
+		return syscall(SYS_gettid); // (uint64)pthread_self();
 #else
 		#error Platform is not supported!
 #endif
@@ -99,7 +117,7 @@ namespace Brofiler
 	{
 #if defined(BRO_PLATFORM_WINDOWS)
 		return GetCurrentProcessId();
-#elif defined(BRO_PLATFORM_POSIX) || defined(BRO_PLATFORM_OSX)
+#elif defined(BRO_PLATFORM_LINUX) || defined(BRO_PLATFORM_OSX)
 		return (ProcessID)getpid();
 #else
 		#error Platform is not supported!
@@ -116,7 +134,7 @@ namespace Brofiler
 		QueryPerformanceFrequency(&frequency);
 		return frequency.QuadPart;
 #elif defined(BRO_GCC_COMPILER_FAMILY)
-		return 1000000;
+		return 1000000000;
 #else
 	#error Platform is not supported!
 #endif
@@ -130,9 +148,9 @@ namespace Brofiler
 		QueryPerformanceCounter(&largeInteger);
 		return (largeInteger.QuadPart * int64(1000000)) / GetFrequency();
 #elif defined(BRO_GCC_COMPILER_FAMILY)
-		struct timeval te;
-		gettimeofday(&te, nullptr);
-		return te.tv_sec * 1000000LL + te.tv_usec;
+		struct timespec ts;
+		clock_gettime(CLOCK_MONOTONIC, &ts);
+		return ts.tv_sec * 1000000000LL + ts.tv_nsec;
 #else
 	#error Platform is not supported!
 #endif
@@ -155,6 +173,24 @@ namespace Brofiler
 		return GetTimeMicroSeconds();
 #else
 	#error Platform is not supported!
+#endif
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	BRO_INLINE Platform::ID GetPlatform()
+	{
+#if defined(BRO_PLATFORM_WINDOWS)
+		return Platform::Windows;
+#elif defined(BRO_PLATFORM_LINUX)
+		return Platform::Linux
+#elif defined(BRO_PLATFORM_OSX)
+		return Platform::MacOS;
+#elif defined(BRO_PLATFORM_XBOX)
+		return Platform::XBox;
+#elif defined(BRO_PLATFORM_PS)
+		return Platform::Playstation;
+#else
+#error Platform is not supported!
 #endif
 	}
 }

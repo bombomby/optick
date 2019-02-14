@@ -3,6 +3,7 @@
 #include "Message.h"
 
 #include <mutex>
+#include <string>
 #include <thread>
 
 namespace Brofiler
@@ -25,9 +26,12 @@ class Server
 	~Server();
 
 	bool InitConnection();
+
 public:
 	void Send(DataResponse::Type type, OutputDataStream& stream = OutputDataStream::Empty);
 	void Update();
+
+	std::string GetHostName() const;
 
 	static Server &Get();
 };

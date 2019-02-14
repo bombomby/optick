@@ -7,7 +7,7 @@ namespace Profiler.Data
 {
 	public enum SyncReason
 	{
-		// Windows and XBox
+		//===> Windows and XBox
 		Win_Executive = 0,
 		Win_FreePage,
 		Win_PageIn,
@@ -47,9 +47,24 @@ namespace Profiler.Data
 		Win_WrRundown,
 		Win_MaximumWaitReason,
 
-		SyncReasonCount,
+		//===> Linux
+		Pthread_Unknown = 40,
+		//D	Uninterruptible sleep(usually IO)
+		Pthread_UninterruptibleSleep,
+		//R	Running or runnable(on run queue)
+		Pthread_Running,
+		//S	Interruptible sleep(waiting for an event to complete)
+		Pthread_InterruptibleSleep,
+		//T	Stopped, either by a job control signal or because it is being traced.
+		Pthread_Stopped,
+		//X	dead(should never be seen)
+		Pthread_Dead,
+		//Z	Defunct(“zombie”) process, terminated but not reaped by its parent.
+		Pthread_Zombie,
 
-		SyncReasonActive
+		
+		SyncReasonActive,
+		SyncReasonCount,
 	}
 
 

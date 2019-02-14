@@ -78,9 +78,6 @@ namespace Profiler.Controls
 			{
 				return false;
 			}
-			finally
-			{
-			}
 		}
 
 		public bool Load()
