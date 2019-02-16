@@ -25,8 +25,10 @@ namespace Profiler.Controls
 		public FrameGroup Group { get; set; }
 		public EventDescription Description { get; set; }
 		public FunctionStats Stats { get; set; }
+        public FunctionSummary Summary { get; set; }
 
-		public FunctionHistory()
+
+        public FunctionHistory()
 		{
 			InitializeComponent();
 
@@ -113,7 +115,7 @@ namespace Profiler.Controls
 			FunctionStatsSummary.DataContext = null;
 		}
 
-		class FunctionSummary
+		public class FunctionSummary
 		{
 			public EventDescription Description { get; set; }
 			public double Total { get; set; }
@@ -141,6 +143,7 @@ namespace Profiler.Controls
 					Stats = frameStats;
 					FunctionInstanceDataGrid.DataContext = Stats;
 					FunctionStatsSummary.DataContext = summary;
+                    Summary = summary;
 					FrameChart.Series = BuildAreaChart(frameStats); ;
 				}));
 

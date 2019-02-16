@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
 using System.Windows;
 using System.Reflection;
 using System.IO;
 using System.Diagnostics;
-//using Autofac;
-//using Profiler.Config;
 
 namespace Profiler
 {
@@ -16,8 +10,7 @@ namespace Profiler
 	/// Interaction logic for App.xaml
 	/// </summary>
 	public partial class App : Application
-	{
-       // private IContainer _iocContainer;          
+	{        
 
         static App()
         {
@@ -32,14 +25,6 @@ namespace Profiler
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
-
-            //ContainerBuilder builder = new ContainerBuilder();
-            //builder.RegisterModule<IocConfiguration>();
-            //_iocContainer = builder.Build();
-
-            //var mainWindow = new MainView();  //_iocContainer.Resolve(MainView);
-            //mainWindow.DataContext = 
-            //mainWindow.Show();
         }
 
 

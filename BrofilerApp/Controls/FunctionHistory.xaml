@@ -23,12 +23,12 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <Rectangle Grid.Column="0" Width="16" Height="16" VerticalAlignment="Center" StrokeThickness="2" Stroke="Black" Fill="{Binding Description.ForceBrush}" Margin="2,0,6,0" />
-            <TextBlock Grid.Column="1" Text="{Binding Description.Name}" />
+            <Rectangle Grid.Column="0" Width="16" Height="16" VerticalAlignment="Center" StrokeThickness="2" Stroke="Black" Fill="{Binding Description.ForceBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" Margin="2,0,6,0" />
+            <TextBlock Grid.Column="1" Text="{Binding Description.Name, RelativeSource={RelativeSource AncestorType=UserControl}}" />
             <StackPanel Grid.Column="2" Orientation="Horizontal">
-                <TextBlock Text="{Binding Total, StringFormat={}{0:0.###}}" Margin="6,0,0,0" />
-                <TextBlock Text="{Binding Work, StringFormat={}{0:0.###}}" Margin="6,0,0,0" Foreground="LimeGreen" />
-                <TextBlock Text="{Binding Wait, StringFormat={}{0:0.###}}" Margin="6,0,0,0" Foreground="Tomato" />
+                <TextBlock Text="{Binding Summary.Total, RelativeSource={RelativeSource AncestorType=UserControl}, StringFormat={}{0:0.###}}" Margin="6,0,0,0" />
+                <TextBlock Text="{Binding Summary.Work, RelativeSource={RelativeSource AncestorType=UserControl}, StringFormat={}{0:0.###}}" Margin="6,0,0,0" Foreground="LimeGreen" />
+                <TextBlock Text="{Binding Summary.Wait, RelativeSource={RelativeSource AncestorType=UserControl}, StringFormat={}{0:0.###}}" Margin="6,0,0,0" Foreground="Tomato" />
             </StackPanel>
         </Grid>
         <lvc:CartesianChart Grid.Row="1" x:Name="FrameChart" DisableAnimations="True" Hoverable="True" Background="{StaticResource BroContentBackground}" Margin="2,2,0,0" MinHeight="100" DataClick="FrameChart_DataClick">
@@ -57,7 +57,7 @@
                     AutoGenerateColumns="False" 
                     HeadersVisibility="Column" 
                     ClipboardCopyMode="ExcludeHeader"
-                    ItemsSource="{Binding Samples, Mode=OneTime}">
+                    ItemsSource="{Binding Stats.Samples, RelativeSource={RelativeSource AncestorType=UserControl}, Mode=OneTime}">
             <DataGrid.Resources>
                 <Style TargetType="{x:Type TextBlock}" x:Key="RightCell">
                     <Setter Property="HorizontalAlignment" Value="Stretch"/>

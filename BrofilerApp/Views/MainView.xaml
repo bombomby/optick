@@ -11,7 +11,7 @@
         Height="1000" Width="1600" 
         Drop="Window_Drop" DragEnter="Window_DragEnter" 
         AllowDrop="True"
-        Icon="../icon.ico" TextOptions.TextFormattingMode="Display"
+        Icon="../Resources/icon.ico" TextOptions.TextFormattingMode="Display"
         TitleCaps="False"
         TitlebarHeight="28"
         IconBitmapScalingMode="HighQuality"
