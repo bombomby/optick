@@ -11,3 +11,5 @@ Publish/
 .DS_Store
 /Samples/UnrealEnginePlugin/Binaries
 /.vs
+/Brofiler/.vs/Brofiler_vs2017/v15/Server/sqlite3
+/Brofiler/.vs
