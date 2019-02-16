@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace Profiler.Helpers
+namespace Profiler.InfrastructureMvvm
 {
     /// <summary>
     /// The <see cref="RelayCommand{T}"/> class assigns an <see cref="Action{T}"/> delegate to the <see cref="Execute"/>

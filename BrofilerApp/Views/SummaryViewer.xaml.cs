@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using Profiler.ViewModel;
+using Profiler.ViewModels;
 
-namespace Profiler.View
+namespace Profiler.Views
 {
     /// <summary>
     /// Interaction logic for SummaryViewer.xaml

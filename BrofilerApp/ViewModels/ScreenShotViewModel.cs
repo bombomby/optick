@@ -2,10 +2,10 @@
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Input;                 //ICommand
-using Profiler.Helpers;
+using Profiler.InfrastructureMvvm;
 using System.Windows;
 
-namespace Profiler.ViewModel
+namespace Profiler.ViewModels
 {
     public class ScreenShotViewModel: BaseViewModel
     {

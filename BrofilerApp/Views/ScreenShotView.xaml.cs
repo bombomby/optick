@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using MahApps.Metro.Controls;
 
-namespace Profiler.View
+namespace Profiler.Views
 {
     /// <summary>
     /// Interaction logic for ScreenshotView.xaml

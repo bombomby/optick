@@ -37,7 +37,7 @@ namespace Profiler
             //builder.RegisterModule<IocConfiguration>();
             //_iocContainer = builder.Build();
 
-            //var mainWindow = new MainWindow();  //_iocContainer.Resolve(MainWindow);
+            //var mainWindow = new MainView();  //_iocContainer.Resolve(MainView);
             //mainWindow.DataContext = 
             //mainWindow.Show();
         }

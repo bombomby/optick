@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using Profiler.Views;
 
 namespace Profiler.Controls
 {
@@ -13,7 +14,7 @@ namespace Profiler.Controls
 		public Data.SummaryPack Summary { get; set; }
 
 		public OpenCaptureEventArgs(String path, Data.SummaryPack summary = null)
-			: base(MainWindow.OpenCaptureEvent)
+			: base(MainView.OpenCaptureEvent)
 		{
 			Path = path;
 			Summary = summary;
@@ -26,7 +27,7 @@ namespace Profiler.Controls
 		public Data.SummaryPack Summary { get; set; }
 
 		public SaveCaptureEventArgs(String path)
-			: base(MainWindow.SaveCaptureEvent)
+			: base(MainView.SaveCaptureEvent)
 		{
 			Path = path;
 		}

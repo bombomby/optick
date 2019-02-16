@@ -6,14 +6,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace Profiler.ViewModel
+namespace Profiler.InfrastructureMvvm
 {
     // using in XAML
     // vml:ViewModelLocator.AutoHookedUpViewModel = "True" 
 
     public static class ViewModelLocator
     {
-
         public static bool GetAutoHookedUpViewModel(DependencyObject obj)
         {
             return (bool)obj.GetValue(AutoHookedUpViewModelProperty);
@@ -36,7 +35,7 @@ namespace Profiler.ViewModel
             var viewType = d.GetType();
 
             string str = viewType.FullName;
-            str = str.Replace(".View.", ".ViewModel.");
+            str = str.Replace(".Views.", ".ViewModels.");
 
             var viewTypeName = str;
             var viewModelTypeName = viewTypeName + "Model";

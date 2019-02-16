@@ -2,7 +2,7 @@
 using System.Windows.Input; //ICommand
 
 
-namespace Profiler.Helpers
+namespace Profiler.InfrastructureMvvm
 {
     class RelayCommand : ICommand 
     {

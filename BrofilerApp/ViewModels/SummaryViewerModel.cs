@@ -11,11 +11,11 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Profiler.Data;
-using Profiler.Helpers;
+using Profiler.InfrastructureMvvm;
 using Profiler.Services;
 
 
-namespace Profiler.ViewModel
+namespace Profiler.ViewModels
 {
     public class SummaryViewerModel: BaseViewModel
     {
@@ -128,7 +128,7 @@ namespace Profiler.ViewModel
                             BitmapImage image = GetImageFromAttachment(CurrentAttachment);
                             string title = String.Format("{0} ({1})", CurrentAttachment.Name, CaptureName);
                             var screenShotVM = new ScreenShotViewModel(image, title);
-                            var screenShotView = new Profiler.View.ScreenShotView();
+                            var screenShotView = new Profiler.Views.ScreenShotView();
                             screenShotView.DataContext = screenShotVM;
                             screenShotView.Show();
                         }

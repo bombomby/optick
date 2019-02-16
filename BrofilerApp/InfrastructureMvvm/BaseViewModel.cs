@@ -4,7 +4,7 @@ using System.ComponentModel;                      //INotifyPropertyChanged
 using System.Runtime.CompilerServices;            //CallerMemberName
 // using System.Windows;                             //DependencyObject, DependencyProperty            
 
-namespace Profiler.ViewModel
+namespace Profiler.InfrastructureMvvm
 {
     public abstract class BaseViewModel : INotifyPropertyChanged  // DependencyObject, 
     {

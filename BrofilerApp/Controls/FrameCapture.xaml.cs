@@ -19,7 +19,7 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;            //CallerMemberName
-using Profiler.ViewModel;
+using Profiler.ViewModels;
 using Profiler.Services;
 
 namespace Profiler.Controls
