@@ -25,7 +25,6 @@ namespace Profiler.InfrastructureMvvm
 
             builder.RegisterType<WindowManager>().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<DialogManager>().AsImplementedInterfaces().SingleInstance();
-          //  builder.RegisterType<FlyoutManager>().AsImplementedInterfaces().SingleInstance();
 
             ConfigureContainer(builder);
 

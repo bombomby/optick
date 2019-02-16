@@ -43,17 +43,17 @@
                 </ComboBox.Resources>-->
             </ComboBox>
             <StackPanel Grid.Column="2" Height="24" Orientation="Horizontal">
-                <Button  Margin="-2" ToolTip="Export current attachment"
+                <Button  ToolTip="Export current attachment"
                     Command="{Binding ExportCurrentAttachmentCommand}">
-                    <ContentControl Style="{StaticResource appbar_app}" Margin="-10" />
+                    <ContentControl Style="{StaticResource appbar_app}" Margin="-8" Padding="-6" />
                 </Button>
-                <Button  Margin="-2" ToolTip="Save current attachment"
+                <Button   ToolTip="Save current attachment"
                     Command="{Binding SaveCurrentAttachmentCommand}">
-                    <ContentControl Style="{StaticResource appbar_save}" Margin="-10" />
+                    <ContentControl Style="{StaticResource appbar_save}" Margin="-5" Padding="-6" />
                 </Button>
-                <Button  Margin="-2" ToolTip="Save all attachments"
+                <Button  ToolTip="Save all attachments"
                     Command="{Binding SaveAllAttachmentCommand}">
-                    <ContentControl Style="{StaticResource appbar_save}" Margin="-10" />
+                    <ContentControl Style="{StaticResource appbar_save}" Margin="-8" />
                 </Button>
             </StackPanel>
 

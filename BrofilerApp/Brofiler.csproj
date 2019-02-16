@@ -221,7 +221,6 @@
     <Compile Include="InfrastructureMvvm\DialogViewModel.cs" />
     <Compile Include="InfrastructureMvvm\IDialogManager.cs" />
     <Compile Include="InfrastructureMvvm\IDialogViewModel.cs" />
-    <Compile Include="InfrastructureMvvm\IocConfiguration.cs" />
     <Compile Include="Controls\CaptureStats.xaml.cs">
       <DependentUpon>CaptureStats.xaml</DependentUpon>
     </Compile>
@@ -262,6 +261,7 @@
     <Compile Include="InfrastructureMvvm\IWindowManager.cs" />
     <Compile Include="InfrastructureMvvm\RelayCommandGenericAsync.cs" />
     <Compile Include="InfrastructureMvvm\ViewLocator.cs" />
+    <Compile Include="InfrastructureMvvm\ViewModelPresenter.cs" />
     <Compile Include="InfrastructureMvvm\WindowManager.cs" />
     <Compile Include="InfrastructureMvvm\BaseViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
@@ -303,9 +303,8 @@
     <Compile Include="DirectX\TextManager.cs" />
     <Compile Include="DirectX\TextureLoader.cs" />
     <Compile Include="DirectX\Utils.cs" />
-    <Compile Include="Services\DialogService.cs" />
-    <Compile Include="Services\IDialogService.cs" />
-    <Compile Include="Services\IViewService.cs" />
+    <Compile Include="InfrastructureMvvm\FileDialogService.cs" />
+    <Compile Include="InfrastructureMvvm\IFileDialogService.cs" />
     <Compile Include="SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>

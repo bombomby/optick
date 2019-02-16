@@ -12,7 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Profiler.Data;
 using Profiler.InfrastructureMvvm;
-using Profiler.Services;
+using Autofac;
 
 
 namespace Profiler.ViewModels
@@ -21,7 +21,7 @@ namespace Profiler.ViewModels
     {
     #region private fields
          
-        IDialogService _dialogService;
+        IFileDialogService _dialogService;
 
     #endregion
 
@@ -125,12 +125,10 @@ namespace Profiler.ViewModels
                     {
                         if (IsEnableOpenScreenShotView && CurrentAttachment.FileType == SummaryPack.Attachment.Type.BRO_IMAGE)
                         {
-                            BitmapImage image = GetImageFromAttachment(CurrentAttachment);
-                            string title = String.Format("{0} ({1})", CurrentAttachment.Name, CaptureName);
-                            var screenShotVM = new ScreenShotViewModel(image, title);
-                            var screenShotView = new Profiler.Views.ScreenShotView();
-                            screenShotView.DataContext = screenShotVM;
-                            screenShotView.Show();
+                            var viewModel = BootStrapperBase.Container.Resolve<ScreenShotViewModel>();
+                            viewModel.AttachmentImage = GetImageFromAttachment(CurrentAttachment);
+                            viewModel.Title = String.Format("{0} ({1})", CurrentAttachment.Name, CaptureName);
+                            var screenShotView = BootStrapperBase.Container.Resolve<IWindowManager>().ShowWindow(viewModel);
                         }
                     },
                   // Condition execute command
@@ -160,7 +158,9 @@ namespace Profiler.ViewModels
 
                           SaveAttachment(CurrentAttachment, defaultPath);
                           System.Diagnostics.Process.Start(defaultPath);
-                          // System.Diagnostics.Process.Start doesn't block file
+
+                          // System.Diagnostics.Process.Start doesn't block file,
+                          // the file can be removed immediately
                           // File.Delete(defaultPath);
                       }
                       catch (Exception ex)
@@ -234,7 +234,7 @@ namespace Profiler.ViewModels
 
     #region Constructor
 
-        public SummaryViewerModel(IDialogService dialogService)
+        public SummaryViewerModel(IFileDialogService dialogService)
         {
             _dialogService = dialogService;
         }

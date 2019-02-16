@@ -20,7 +20,7 @@ namespace Profiler.ViewModels
 
         public ICommand CloseViewCommand { get; set; }
 
-        public ScreenShotViewModel(BitmapImage image, string title)
+        public ScreenShotViewModel(BitmapImage image =null, string title=null)
         {
             AttachmentImage = image;
             Title = title;
@@ -31,6 +31,5 @@ namespace Profiler.ViewModels
                     x.Close();
             });
         }
-
     }
 }

@@ -2,9 +2,9 @@
 using System.Windows;
 
 
-namespace Profiler.Services
+namespace Profiler.InfrastructureMvvm
 {
-    class DialogService : IDialogService
+    class FileDialogService : IFileDialogService
     {
         public string FilePath { get; set; }
 

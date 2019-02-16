@@ -1,7 +1,7 @@
 ﻿
-namespace Profiler.Services
+namespace Profiler.InfrastructureMvvm
 {
-    public interface IDialogService
+    public interface IFileDialogService
     {
         void ShowMessage(string message);   
         string FilePath { get; set; }   

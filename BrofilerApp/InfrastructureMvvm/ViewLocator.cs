@@ -103,7 +103,6 @@ namespace Profiler.InfrastructureMvvm
 
             var view = BootStrapperBase.Container.Resolve(viewType);
 
-
             var frameworkElement = view as FrameworkElement;
             if (frameworkElement != null)
             {

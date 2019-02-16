@@ -20,7 +20,8 @@ using System.Windows.Threading;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;            //CallerMemberName
 using Profiler.ViewModels;
-using Profiler.Services;
+using Profiler.InfrastructureMvvm;
+using Autofac;
 
 namespace Profiler.Controls
 {
@@ -52,9 +53,8 @@ namespace Profiler.Controls
 
         public FrameCapture()
 		{
-            //ToDo  Create IoC
-            
-            SummaryVM = new SummaryViewerModel(new DialogService());
+   
+            SummaryVM = BootStrapperBase.Container.Resolve<SummaryViewerModel>();
 
             InitializeComponent();
 
