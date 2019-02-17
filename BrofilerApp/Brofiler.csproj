@@ -15,7 +15,7 @@
     </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
     <Utf8Output>true</Utf8Output>
     <ExpressionBlendVersion>4.0.20525.0</ExpressionBlendVersion>
     <IsWebBootstrapper>false</IsWebBootstrapper>
@@ -213,9 +213,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="AppBootStrapper.cs" />
     <Compile Include="AutoEmbedLibs\EmbeddedAssembly.cs" />
     <Compile Include="ColorToBrushConverter.cs" />
-    <Compile Include="Config\IocConfiguration.cs" />
+    <Compile Include="InfrastructureMvvm\BootStrapperBase.cs" />
+    <Compile Include="InfrastructureMvvm\DialogManager.cs" />
+    <Compile Include="InfrastructureMvvm\DialogViewModel.cs" />
+    <Compile Include="InfrastructureMvvm\IDialogManager.cs" />
+    <Compile Include="InfrastructureMvvm\IDialogViewModel.cs" />
     <Compile Include="Controls\CaptureStats.xaml.cs">
       <DependentUpon>CaptureStats.xaml</DependentUpon>
     </Compile>
@@ -236,8 +241,11 @@
       <DependentUpon>FunctionSearch.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\HamburgerMenuContentItem.cs" />
-    <Compile Include="Controls\Helpers\RelayCommand.cs" />
-    <Compile Include="Controls\Helpers\RelayCommandGeneric.cs" />
+    <Compile Include="InfrastructureMvvm\IOnClosingHandler.cs" />
+    <Compile Include="InfrastructureMvvm\IOnLoadedHandler.cs" />
+    <Compile Include="InfrastructureMvvm\RelayCommand.cs" />
+    <Compile Include="InfrastructureMvvm\RelayCommandAsync.cs" />
+    <Compile Include="InfrastructureMvvm\RelayCommandGeneric.cs" />
     <Compile Include="Controls\PlatformSelector.xaml.cs">
       <DependentUpon>PlatformSelector.xaml</DependentUpon>
     </Compile>
@@ -246,20 +254,24 @@
       <DependentUpon>SettingsControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\SharedSettings.cs" />
-    <Compile Include="Controls\SummaryViewer.xaml.cs">
-      <DependentUpon>SummaryViewer.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Controls\TagsControl.xaml.cs">
       <DependentUpon>TagsControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\ViewModel\BaseViewModel.cs" />
-    <Compile Include="Controls\ViewModel\ScreenShotViewModel.cs" />
-    <Compile Include="Controls\ViewModel\SummaryViewerModel.cs" />
-    <Compile Include="Controls\ViewModel\ViewModelLocator.cs" />
-    <Compile Include="Controls\View\ScreenShotView.xaml.cs">
+    <Compile Include="InfrastructureMvvm\IUiExecution.cs" />
+    <Compile Include="InfrastructureMvvm\IWindowManager.cs" />
+    <Compile Include="InfrastructureMvvm\RelayCommandGenericAsync.cs" />
+    <Compile Include="InfrastructureMvvm\ViewLocator.cs" />
+    <Compile Include="InfrastructureMvvm\ViewModelPresenter.cs" />
+    <Compile Include="InfrastructureMvvm\WindowManager.cs" />
+    <Compile Include="InfrastructureMvvm\BaseViewModel.cs" />
+    <Compile Include="ViewModels\MainViewModel.cs" />
+    <Compile Include="ViewModels\ScreenShotViewModel.cs" />
+    <Compile Include="ViewModels\SummaryViewerModel.cs" />
+    <Compile Include="InfrastructureMvvm\ViewModelLocator.cs" />
+    <Compile Include="Views\ScreenShotView.xaml.cs">
       <DependentUpon>ScreenShotView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\View\SummaryViewer.xaml.cs">
+    <Compile Include="Views\SummaryViewer.xaml.cs">
       <DependentUpon>SummaryViewer.xaml</DependentUpon>
     </Compile>
     <Compile Include="Data\Callstack.cs" />
@@ -291,9 +303,8 @@
     <Compile Include="DirectX\TextManager.cs" />
     <Compile Include="DirectX\TextureLoader.cs" />
     <Compile Include="DirectX\Utils.cs" />
-    <Compile Include="Services\DialogService.cs" />
-    <Compile Include="Services\IDialogService.cs" />
-    <Compile Include="Services\IViewService.cs" />
+    <Compile Include="InfrastructureMvvm\FileDialogService.cs" />
+    <Compile Include="InfrastructureMvvm\IFileDialogService.cs" />
     <Compile Include="SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
@@ -364,19 +375,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Controls\SummaryViewer.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Controls\TagsControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Controls\View\ScreenShotView.xaml">
+    <Page Include="Views\ScreenShotView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Controls\View\SummaryViewer.xaml">
+    <Page Include="Views\SummaryViewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -396,7 +403,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="MainWindow.xaml">
+    <Page Include="Views\MainView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -405,8 +412,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Data\EventDescription.cs" />
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
+    <Compile Include="Views\MainView.xaml.cs">
+      <DependentUpon>MainView.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Properties\DesignTimeResources.xaml" Condition="'$(DesignTime)'=='true' OR ('$(SolutionPath)'!='' AND Exists('$(SolutionPath)') AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true')">
@@ -530,7 +537,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="icon.ico" />
+    <Resource Include="Resources\icon.ico" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="TimeLine\Icons\Stop-icon.ico" />
@@ -590,7 +597,6 @@
     <Content Include="D3DCompiler_43.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Resource Include="Resources\magnifyingGlass.cur" />
   </ItemGroup>
   <ItemGroup />
 </Project>

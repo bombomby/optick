@@ -19,7 +19,9 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;            //CallerMemberName
-using Profiler.Controls.ViewModel;
+using Profiler.ViewModels;
+using Profiler.InfrastructureMvvm;
+using Autofac;
 
 namespace Profiler.Controls
 {
@@ -51,8 +53,8 @@ namespace Profiler.Controls
 
         public FrameCapture()
 		{
-            //ToDo  Create IoC
-            SummaryVM = new SummaryViewerModel();
+   
+            SummaryVM = BootStrapperBase.Container.Resolve<SummaryViewerModel>();
 
             InitializeComponent();
 
@@ -145,7 +147,6 @@ namespace Profiler.Controls
 
 			if (frame != null && frame.Group != null)
 			{
-                //SummaryViewerControl.DataContext = frame.Group.Summary;
                 SummaryVM.Summary = frame.Group.Summary;
                 SummaryVM.CaptureName = _captureName;
             }

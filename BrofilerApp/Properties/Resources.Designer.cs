@@ -59,15 +59,5 @@ namespace Profiler.Properties {
                 resourceCulture = value;
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        internal static byte[] magnifyingGlass {
-            get {
-                object obj = ResourceManager.GetObject("magnifyingGlass", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
     }
 }

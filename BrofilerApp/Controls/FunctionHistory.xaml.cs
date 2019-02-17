@@ -26,7 +26,8 @@ namespace Profiler.Controls
 		public EventDescription Description { get; set; }
 		public FunctionStats Stats { get; set; }
 
-		public FunctionHistory()
+
+        public FunctionHistory()
 		{
 			InitializeComponent();
 
@@ -113,7 +114,7 @@ namespace Profiler.Controls
 			FunctionStatsSummary.DataContext = null;
 		}
 
-		class FunctionSummary
+		public class FunctionSummary
 		{
 			public EventDescription Description { get; set; }
 			public double Total { get; set; }
