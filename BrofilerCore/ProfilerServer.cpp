@@ -301,7 +301,7 @@ std::string Server::GetHostName() const
 #if defined(USE_BERKELEY_SOCKETS)
 	gethostname(hostname, HOST_NAME_LENGTH);
 #elif defined(USE_WINDOWS_SOCKETS)
-    uint32 length = HOST_NAME_LENGTH;
+    DWORD length = HOST_NAME_LENGTH;
 	GetComputerNameA(hostname, &length);
 #else
 	#error Platform is not supported yet!
