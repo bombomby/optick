@@ -127,6 +127,9 @@
   </Target>
   -->
   <ItemGroup>
+    <Reference Include="Autofac, Version=4.8.1.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>packages\Autofac.4.8.1\lib\net45\Autofac.dll</HintPath>
+    </Reference>
     <Reference Include="ControlzEx, Version=3.0.2.4, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\ControlzEx.3.0.2.4\lib\net45\ControlzEx.dll</HintPath>
     </Reference>
@@ -212,6 +215,7 @@
     </ApplicationDefinition>
     <Compile Include="AutoEmbedLibs\EmbeddedAssembly.cs" />
     <Compile Include="ColorToBrushConverter.cs" />
+    <Compile Include="Config\IocConfiguration.cs" />
     <Compile Include="Controls\CaptureStats.xaml.cs">
       <DependentUpon>CaptureStats.xaml</DependentUpon>
     </Compile>
@@ -232,6 +236,8 @@
       <DependentUpon>FunctionSearch.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\HamburgerMenuContentItem.cs" />
+    <Compile Include="Controls\Helpers\RelayCommand.cs" />
+    <Compile Include="Controls\Helpers\RelayCommandGeneric.cs" />
     <Compile Include="Controls\PlatformSelector.xaml.cs">
       <DependentUpon>PlatformSelector.xaml</DependentUpon>
     </Compile>
@@ -245,6 +251,16 @@
     </Compile>
     <Compile Include="Controls\TagsControl.xaml.cs">
       <DependentUpon>TagsControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ViewModel\BaseViewModel.cs" />
+    <Compile Include="Controls\ViewModel\ScreenShotViewModel.cs" />
+    <Compile Include="Controls\ViewModel\SummaryViewerModel.cs" />
+    <Compile Include="Controls\ViewModel\ViewModelLocator.cs" />
+    <Compile Include="Controls\View\ScreenShotView.xaml.cs">
+      <DependentUpon>ScreenShotView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\View\SummaryViewer.xaml.cs">
+      <DependentUpon>SummaryViewer.xaml</DependentUpon>
     </Compile>
     <Compile Include="Data\Callstack.cs" />
     <Compile Include="Data\Capture.cs" />
@@ -275,6 +291,9 @@
     <Compile Include="DirectX\TextManager.cs" />
     <Compile Include="DirectX\TextureLoader.cs" />
     <Compile Include="DirectX\Utils.cs" />
+    <Compile Include="Services\DialogService.cs" />
+    <Compile Include="Services\IDialogService.cs" />
+    <Compile Include="Services\IViewService.cs" />
     <Compile Include="SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
@@ -350,6 +369,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\TagsControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\View\ScreenShotView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\View\SummaryViewer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -563,5 +590,7 @@
     <Content Include="D3DCompiler_43.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Resources\magnifyingGlass.cur" />
   </ItemGroup>
+  <ItemGroup />
 </Project>
