@@ -295,19 +295,19 @@ bool Server::InitConnection()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 std::string Server::GetHostName() const
 {
+    const uint32 HOST_NAME_LENGTH = 256;
+    char hostname[HOST_NAME_LENGTH] = { 0 };
+    
 #if defined(USE_BERKELEY_SOCKETS)
-	char hostname[HOST_NAME_MAX] = { 0 };
-	gethostname(hostname, HOST_NAME_MAX);
-	return hostname;
+	gethostname(hostname, HOST_NAME_LENGTH);
 #elif defined(USE_WINDOWS_SOCKETS)
-	const DWORD HOST_NAME_MAX = 256;
-	char hostname[HOST_NAME_MAX] = { 0 };
-	DWORD length = HOST_NAME_MAX;
+    uint32 length = HOST_NAME_LENGTH;
 	GetComputerNameA(hostname, &length);
-	return hostname;
 #else
 	#error Platform is not supported yet!
 #endif
+
+    return hostname;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Server::~Server()

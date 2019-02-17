@@ -73,7 +73,7 @@
 #include <unistd.h>
 #endif
 
-#if defined (BRO_PLATFORM_LINUX)
+#if defined (BRO_GCC_COMPILER_FAMILY)
 #include <sys/types.h>
 #include <sys/syscall.h>
 #endif
@@ -102,10 +102,12 @@ namespace Brofiler
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	BRO_INLINE ThreadID GetThreadID()
 	{
-#if defined(BRO_PLATFORM_WINDOWS)
+#if defined(BRO_MSVC_COMPILER_FAMILY)
 		return GetCurrentThreadId();
-#elif defined(BRO_PLATFORM_LINUX) || defined(BRO_PLATFORM_OSX)
-		return syscall(SYS_gettid); // (uint64)pthread_self();
+#elif defined(BRO_GCC_COMPILER_FAMILY)
+        uint64_t tid;
+        pthread_threadid_np(pthread_self(), &tid);
+        return tid;
 #else
 		#error Platform is not supported!
 #endif
@@ -115,9 +117,9 @@ namespace Brofiler
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	BRO_INLINE ProcessID GetProcessID()
 	{
-#if defined(BRO_PLATFORM_WINDOWS)
+#if defined(BRO_MSVC_COMPILER_FAMILY)
 		return GetCurrentProcessId();
-#elif defined(BRO_PLATFORM_LINUX) || defined(BRO_PLATFORM_OSX)
+#elif defined(BRO_GCC_COMPILER_FAMILY)
 		return (ProcessID)getpid();
 #else
 		#error Platform is not supported!
