@@ -50,9 +50,15 @@ namespace Profiler
 
 		bool IsUserInitiatedSync(SyncReason reason)
 		{
-			if (SyncReason.Win_UserRequest < reason && reason < SyncReason.Win_MaximumWaitReason)
+			if (reason <= SyncReason.Win_MaximumWaitReason)
 			{
-				return false;
+				return reason <= SyncReason.Win_UserRequest;
+			}
+
+			if (reason <= SyncReason.Pthread_Zombie)
+			{
+				// VS TODO: Find out proper user\kernel pre-emption mapping
+				return true; // (reason == SyncReason.Pthread_InterruptibleSleep) || (reason == SyncReason.Pthread_UninterruptibleSleep);
 			}
 
 			return true;

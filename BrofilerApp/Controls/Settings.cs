@@ -23,27 +23,9 @@ namespace Profiler.Controls
 	{
 		const int CURRENT_VERSION = 1;
 
-		public enum PlatformType
-		{
-			Unknown,
-			Windows,
-			Linux,
-			MacOS,
-			XBox,
-			Playstation,
-		}
-
-		public class Platform
-		{
-			public PlatformType Target { get; set; }
-			public String Name { get; set; }
-			public IPAddress Address { get; set; }
-			public int Port { get; set; }
-		}
-
 		public int Version { get; set; }
 
-		public List<Platform> Platforms { get; set; }
+		public List<Platform.Connection> Connections { get; set; }
 
 		public LocalSettings()
 		{

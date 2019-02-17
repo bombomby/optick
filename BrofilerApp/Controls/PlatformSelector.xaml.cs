@@ -74,13 +74,13 @@ namespace Profiler
 		{
 			InitializeComponent();
 
-			IPAddress ip = Platform.GetPCAddress();
+			List<IPAddress> listIP = Platform.GetPCAddresses();
 
 			int defaultSelectionIndex = 0;
-			platforms.Add(new PlatformDescription() { Name = Environment.MachineName, IP = ip, Icon = "appbar_os_windows_8" });
+			platforms.Add(new PlatformDescription() { Name = Environment.MachineName, IP = listIP[0], Icon = "appbar_os_windows_8" });
 
-			platforms.Add(new PlatformDescription() { Name = "PS4", IP = Platform.GetPS4Address(), Icon = "appbar_social_playstation" });
-			platforms.Add(new PlatformDescription() { Name = "Xbox", IP = Platform.GetXONEAddress(), Icon = "appbar_controller_xbox" });
+			//platforms.Add(new PlatformDescription() { Name = "PS4", IP = Platform.GetPS4Address(), Icon = "appbar_social_playstation" });
+			//platforms.Add(new PlatformDescription() { Name = "Xbox", IP = Platform.GetXONEAddress(), Icon = "appbar_controller_xbox" });
 			platforms.Add(new PlatformDescription() { Name = "Network", IP = IPAddress.Loopback, Icon = "appbar_network", Detailed = true });
 
 			comboBox.ItemsSource = platforms;

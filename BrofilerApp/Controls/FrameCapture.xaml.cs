@@ -66,6 +66,7 @@ namespace Profiler.Controls
 
 			FrameInfoControl.SelectedTreeNodeChanged += new SelectedTreeNodeChangedHandler(FrameInfo_OnSelectedTreeNodeChanged);
 
+			timeLine.NewConnection += TimeLine_NewConnection;
 			timeLine.ShowWarning += TimeLine_ShowWarning;
 			warningBlock.Visibility = Visibility.Collapsed;
 
@@ -115,6 +116,13 @@ namespace Profiler.Controls
 		{
 			TimeLine.ShowWarningEventArgs args = e as TimeLine.ShowWarningEventArgs;
 			ShowWarning(args.Message, args.URL.ToString());
+		}
+
+		private void TimeLine_NewConnection(object sender, RoutedEventArgs e)
+		{
+			TimeLine.NewConnectionEventArgs args = e as TimeLine.NewConnectionEventArgs;
+			// TODO: Implement new connection processing
+			Debug.Print("New Connection: [{0}] {1}:{2} {3}", args.Connection.Target, args.Connection.Address, args.Connection.Port, args.Connection.Name);
 		}
 
 		private void OpenFrame(object source, TimeLine.FocusFrameEventArgs args)

@@ -541,7 +541,7 @@ bool SwitchContextCollector::Serialize(OutputDataStream& stream)
 #if defined(BRO_PLATFORM_WINDOWS)
 #define CPUID(INFO, ID) __cpuid(INFO, ID)
 #include <intrin.h> 
-#elif defined(BRO_PLATFORM_POSIX) || defined(BRO_PLATFORM_OSX)
+#elif defined(BRO_PLATFORM_LINUX) || defined(BRO_PLATFORM_OSX)
 #include <cpuid.h>
 #define CPUID(INFO, ID) __cpuid(ID, INFO[0], INFO[1], INFO[2], INFO[3])
 #else
@@ -1032,10 +1032,10 @@ void Core::SendHandshakeResponse(CaptureStatus::Type status)
 {
 	OutputDataStream stream;
 	stream << (uint32)status;
+	stream << (uint32)GetPlatform();
+	stream << Server::Get().GetHostName();
 	Server::Get().Send(DataResponse::Handshake, stream);
 }
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::IsRegistredThread(ThreadID id)
 {

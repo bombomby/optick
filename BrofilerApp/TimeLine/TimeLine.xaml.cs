@@ -184,6 +184,18 @@ namespace Profiler
 						{
 							RaiseEvent(new ShowWarningEventArgs(warning.Key, warning.Value));
 						}
+
+						if (response.Version >= NetworkProtocol.NETWORK_PROTOCOL_VERSION_23)
+						{
+							Platform.Connection connection = new Platform.Connection() {
+								Address = response.Source.Address,
+								Port = response.Source.Port
+							};
+							connection.Target = (Platform.Type)response.Reader.ReadUInt32();
+							connection.Name = Utils.ReadBinaryString(response.Reader);
+							RaiseEvent(new NewConnectionEventArgs(connection));
+						}
+
 						break;
 
 					default:
@@ -237,8 +249,7 @@ namespace Profiler
 			public Data.Frame Frame { get; set; }
 			public Data.EventNode Node { get; set; }
 
-			public FocusFrameEventArgs(RoutedEvent routedEvent, Data.Frame frame, Data.EventNode node = null)
-				: base(routedEvent)
+			public FocusFrameEventArgs(RoutedEvent routedEvent, Data.Frame frame, Data.EventNode node = null) : base(routedEvent)
 			{
 				Frame = frame;
 				Node = node;
@@ -250,20 +261,30 @@ namespace Profiler
 			public String Message { get; set; }
 			public String URL { get; set; }
 
-			public ShowWarningEventArgs(String message, String url)
-				: base(ShowWarningEvent)
+			public ShowWarningEventArgs(String message, String url) : base(ShowWarningEvent)
 			{
 				Message = message;
 				URL = url;
 			}
 		}
 
+		public class NewConnectionEventArgs : RoutedEventArgs
+		{
+			public Platform.Connection Connection { get; set; }
+
+			public NewConnectionEventArgs(Platform.Connection connection) : base(NewConnectionEvent)
+			{
+				Connection = connection;
+			}
+		}
 
 		public delegate void FocusFrameEventHandler(object sender, FocusFrameEventArgs e);
 		public delegate void ShowWarningEventHandler(object sender, ShowWarningEventArgs e);
+		public delegate void NewConnectionEventHandler(object sender, NewConnectionEventArgs e);
 
 		public static readonly RoutedEvent FocusFrameEvent = EventManager.RegisterRoutedEvent("FocusFrame", RoutingStrategy.Bubble, typeof(FocusFrameEventHandler), typeof(TimeLine));
 		public static readonly RoutedEvent ShowWarningEvent = EventManager.RegisterRoutedEvent("ShowWarning", RoutingStrategy.Bubble, typeof(ShowWarningEventArgs), typeof(TimeLine));
+		public static readonly RoutedEvent NewConnectionEvent = EventManager.RegisterRoutedEvent("NewConnection", RoutingStrategy.Bubble, typeof(NewConnectionEventHandler), typeof(TimeLine));
 
 		public event RoutedEventHandler FocusFrame
 		{
@@ -275,6 +296,12 @@ namespace Profiler
 		{
 			add { AddHandler(ShowWarningEvent, value); }
 			remove { RemoveHandler(ShowWarningEvent, value); }
+		}
+
+		public event RoutedEventHandler NewConnection
+		{
+			add { AddHandler(NewConnectionEvent, value); }
+			remove { RemoveHandler(NewConnectionEvent, value); }
 		}
 		#endregion
 
