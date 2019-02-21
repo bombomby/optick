@@ -7,7 +7,7 @@ using System.Windows;
 
 namespace Profiler.ViewModels
 {
-    public class ScreenShotViewModel: BaseViewModel, IDisposable    
+    public class ScreenShotViewModel: BaseViewModel
     {
     #region properties
 
@@ -37,18 +37,12 @@ namespace Profiler.ViewModels
             CloseViewCommand = new RelayCommand<Window>(x =>
             {
                 if (x != null)
-                {
                     x.Close();
-                    Dispose();
-                }
+
                     
             });
         }
 
-        public void Dispose()
-        {
-            AttachmentImage = null;
-        }
         #endregion
     }
 }

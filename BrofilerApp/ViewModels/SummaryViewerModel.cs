@@ -124,13 +124,13 @@ namespace Profiler.ViewModels
                     {
                         if (IsEnableOpenScreenShotView && CurrentAttachment.FileType == SummaryPack.Attachment.Type.BRO_IMAGE)
                         {
+                            ScreenShotViewModel viewModel = new ScreenShotViewModel();
+                            viewModel.AttachmentImage = GetImageFromAttachment(CurrentAttachment);
+                            viewModel.Title = (CaptureName?.Length > 0) ? String.Format("{0} ({1})", CurrentAttachment.Name, CaptureName) : CurrentAttachment.Name;
                             using (var scope = BootStrapperBase.Container.BeginLifetimeScope())
                             {
-                                var viewModel = scope.Resolve<ScreenShotViewModel>();
-                                viewModel.AttachmentImage = GetImageFromAttachment(CurrentAttachment);
-                                viewModel.Title = (CaptureName?.Length > 0) ? String.Format("{0} ({1})", CurrentAttachment.Name, CaptureName) : CurrentAttachment.Name;
                                 var screenShotView = scope.Resolve<IWindowManager>().ShowWindow(viewModel);
-                            }
+                            }                               
                         }
                     },
                   // Condition execute command
