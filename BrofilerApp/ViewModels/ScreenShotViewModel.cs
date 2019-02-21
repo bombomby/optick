@@ -7,7 +7,7 @@ using System.Windows;
 
 namespace Profiler.ViewModels
 {
-    public class ScreenShotViewModel: BaseViewModel
+    public class ScreenShotViewModel: BaseViewModel, IDisposable
     {
         ImageSource _attachmentImage;
         public ImageSource AttachmentImage
@@ -28,8 +28,17 @@ namespace Profiler.ViewModels
             CloseViewCommand = new RelayCommand<Window>(x =>
             {
                 if (x != null)
+                {
                     x.Close();
+                    this.Dispose();
+                }
+                    
             });
+        }
+
+        public void Dispose()
+        {
+            AttachmentImage = null;
         }
     }
 }

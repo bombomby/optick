@@ -16,6 +16,8 @@ using System.Text;
 using System.Web;
 using System.Net.Cache;
 using Profiler.Controls;
+using Profiler.InfrastructureMvvm;
+using Autofac;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using Profiler.TaskManager;
@@ -213,7 +215,12 @@ namespace Profiler.Views
 
         private void DeleteTempFiles()
         {
-            string defaultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Brofiler\\Temp\\");
+            string defaultPath;
+            using (var scope = BootStrapperBase.Container.BeginLifetimeScope())
+            {
+                defaultPath = scope.Resolve<Controls.LocalSettings>().TempDirectoryPath;
+            }
+            
             DirectoryInfo dirInfo = new DirectoryInfo(defaultPath);
 
             if (dirInfo.Exists)
@@ -221,7 +228,10 @@ namespace Profiler.Views
             {
                foreach (FileInfo file in dirInfo.GetFiles())
                  file.Delete();
-            }
+
+               foreach (DirectoryInfo dir in dirInfo.GetDirectories())               
+                 dir.Delete(true);                   
+             }
             catch (Exception)
             {
                

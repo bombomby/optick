@@ -36,17 +36,21 @@ namespace Profiler.InfrastructureMvvm
 
         public bool SaveFileDialog()
         {
-            return SaveFileDialog(null,null,null);
+            return SaveFileDialog(null,null,null,null);
         }
 
-        public bool SaveFileDialog(string defaultFileName, string defaultExt, string initialDirectory=null)
+        public bool SaveFileDialog(string defaultFileName, string defaultExt, string filter = null, string initialDirectory=null)
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.InitialDirectory = initialDirectory != null ? initialDirectory: System.AppDomain.CurrentDomain.BaseDirectory;
             saveFileDialog.RestoreDirectory = true;
             saveFileDialog.Title = @"Select save location file name";
-            saveFileDialog.DefaultExt = defaultExt; 
+            saveFileDialog.DefaultExt = defaultExt;
+            saveFileDialog.Filter = filter;
+            saveFileDialog.AddExtension = true;
             saveFileDialog.FileName = defaultFileName;
+            saveFileDialog.RestoreDirectory = true;
+
             if (saveFileDialog.ShowDialog() == true)
             {
                 FilePath = saveFileDialog.FileName;

@@ -14,7 +14,6 @@ using Profiler.Data;
 using Profiler.InfrastructureMvvm;
 using Autofac;
 
-
 namespace Profiler.ViewModels
 {
     public class SummaryViewerModel: BaseViewModel
@@ -125,10 +124,13 @@ namespace Profiler.ViewModels
                     {
                         if (IsEnableOpenScreenShotView && CurrentAttachment.FileType == SummaryPack.Attachment.Type.BRO_IMAGE)
                         {
-                            var viewModel = BootStrapperBase.Container.Resolve<ScreenShotViewModel>();
-                            viewModel.AttachmentImage = GetImageFromAttachment(CurrentAttachment);
-                            viewModel.Title = String.Format("{0} ({1})", CurrentAttachment.Name, CaptureName);
-                            var screenShotView = BootStrapperBase.Container.Resolve<IWindowManager>().ShowWindow(viewModel);
+                            using (var scope = BootStrapperBase.Container.BeginLifetimeScope())
+                            {
+                               var viewModel = scope.Resolve<ScreenShotViewModel>();
+                               var screenShotView = scope.Resolve<IWindowManager>().ShowWindow(viewModel);
+                                viewModel.AttachmentImage = GetImageFromAttachment(CurrentAttachment);
+                                viewModel.Title = (CaptureName?.Length > 0) ? String.Format("{0} ({1})", CurrentAttachment.Name, CaptureName) : CurrentAttachment.Name;
+                            }
                         }
                     },
                   // Condition execute command
@@ -147,17 +149,25 @@ namespace Profiler.ViewModels
                   {
                       try
                       {
-                          string defaultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Brofiler\\Temp\\");
+                          string defaultPath;
+
+                          using (var scope = BootStrapperBase.Container.BeginLifetimeScope())
+                          {
+                              defaultPath = scope.Resolve<Controls.LocalSettings>().TempDirectoryPath;
+                          }
+
+                          // Generate unique folder name
+                          string uniqueFolderName = Guid.NewGuid().ToString();
+                          defaultPath = Path.Combine(defaultPath, uniqueFolderName);
+
                           DirectoryInfo dirInfo = new DirectoryInfo(defaultPath);
                           if (!dirInfo.Exists)
                               dirInfo.Create();
 
-                          // Generate unique name
-                          string fileName = Guid.NewGuid().ToString() + CurrentAttachment.Name;
-                          defaultPath = defaultPath + fileName;
-
-                          SaveAttachment(CurrentAttachment, defaultPath);
-                          System.Diagnostics.Process.Start(defaultPath);
+                          string filePath = Path.Combine(defaultPath, CurrentAttachment.Name);
+                        
+                          SaveAttachment(CurrentAttachment, filePath);
+                          System.Diagnostics.Process.Start(filePath);
 
                           // System.Diagnostics.Process.Start doesn't block file,
                           // the file can be removed immediately
@@ -184,10 +194,12 @@ namespace Profiler.ViewModels
                   {
                       try
                       {
-                          string defaultExt =
-                            (CurrentAttachment.FileType == SummaryPack.Attachment.Type.BRO_IMAGE) ? "png" : "txt";
-
-                          if (_dialogService.SaveFileDialog(CurrentAttachment.Name, defaultExt) == true)
+                          string defaultExt = Path.GetExtension(CurrentAttachment.Name);
+                          string filter = (CurrentAttachment.FileType == SummaryPack.Attachment.Type.BRO_IMAGE) ?
+                          "Image Files (*.png, *.jpeg, *.bmp, *.gif)|*.png;*.jpg;*.bmp;*.gif|All files (*.*)|*.*" :
+                          "Text Files (*.txt)|*.txt|Word Files (*.doc, *.docx)|*.doc; *.docx|XML Files (*.xml)|*.xml|All files(*.*)|*.*";
+                          
+                          if (_dialogService.SaveFileDialog(CurrentAttachment.Name, defaultExt, filter) == true)
                           {
                               SaveAttachment(CurrentAttachment, _dialogService.FilePath);
                           }
@@ -237,6 +249,7 @@ namespace Profiler.ViewModels
         public SummaryViewerModel(IFileDialogService dialogService)
         {
             _dialogService = dialogService;
+            Visible = Visibility.Collapsed;
         }
 
 
