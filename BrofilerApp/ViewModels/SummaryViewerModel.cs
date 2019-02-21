@@ -24,7 +24,7 @@ namespace Profiler.ViewModels
 
     #endregion
 
-        #region propertyes
+    #region properties
 
         SummaryPack _summary;
         public SummaryPack Summary
@@ -110,9 +110,9 @@ namespace Profiler.ViewModels
 
         public string CaptureName { get; set; }
 
-        #endregion
+    #endregion
 
-        #region Commands
+    #region Commands
 
         private ICommand _openScreenShotViewCommand;
         public ICommand OpenScreenShotViewCommand
@@ -126,10 +126,10 @@ namespace Profiler.ViewModels
                         {
                             using (var scope = BootStrapperBase.Container.BeginLifetimeScope())
                             {
-                               var viewModel = scope.Resolve<ScreenShotViewModel>();
-                               var screenShotView = scope.Resolve<IWindowManager>().ShowWindow(viewModel);
+                                var viewModel = scope.Resolve<ScreenShotViewModel>();
                                 viewModel.AttachmentImage = GetImageFromAttachment(CurrentAttachment);
                                 viewModel.Title = (CaptureName?.Length > 0) ? String.Format("{0} ({1})", CurrentAttachment.Name, CaptureName) : CurrentAttachment.Name;
+                                var screenShotView = scope.Resolve<IWindowManager>().ShowWindow(viewModel);
                             }
                         }
                     },
@@ -195,10 +195,8 @@ namespace Profiler.ViewModels
                       try
                       {
                           string defaultExt = Path.GetExtension(CurrentAttachment.Name);
-                          string filter = (CurrentAttachment.FileType == SummaryPack.Attachment.Type.BRO_IMAGE) ?
-                          "Image Files (*.png, *.jpeg, *.bmp, *.gif)|*.png;*.jpg;*.bmp;*.gif|All files (*.*)|*.*" :
-                          "Text Files (*.txt)|*.txt|Word Files (*.doc, *.docx)|*.doc; *.docx|XML Files (*.xml)|*.xml|All files(*.*)|*.*";
-                          
+                          string filter = String.Format("(*{0})|*{0}", defaultExt);
+
                           if (_dialogService.SaveFileDialog(CurrentAttachment.Name, defaultExt, filter) == true)
                           {
                               SaveAttachment(CurrentAttachment, _dialogService.FilePath);
@@ -253,9 +251,9 @@ namespace Profiler.ViewModels
         }
 
 
-        #endregion
+    #endregion
 
-        #region Private Methods
+    #region Private Methods
 
 
         private BitmapImage GetImageFromAttachment(SummaryPack.Attachment attachment)
@@ -287,6 +285,6 @@ namespace Profiler.ViewModels
             }
         }
 
-        #endregion
+    #endregion
     }
 }

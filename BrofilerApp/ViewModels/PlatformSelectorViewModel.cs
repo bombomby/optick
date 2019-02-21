@@ -18,7 +18,7 @@ namespace Profiler.ViewModels
 
         #endregion
 
-        #region propertyes
+        #region properties
 
         ObservableCollection<PlatformDescription> _platforms;
         public ObservableCollection<PlatformDescription>  Platforms
