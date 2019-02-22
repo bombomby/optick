@@ -2,6 +2,7 @@
 using Profiler.InfrastructureMvvm;
 using Profiler.ViewModels;
 using Profiler.Views;
+using Profiler.Controls;
 
 namespace Profiler
 {
@@ -15,9 +16,10 @@ namespace Profiler
             builder.RegisterType<MainView>().SingleInstance();
             builder.RegisterType<SummaryViewerModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
             builder.RegisterType<SummaryViewer>().SingleInstance();
-            builder.RegisterType<ScreenShotViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
-            builder.RegisterType<ScreenShotView>();
+            builder.RegisterType<ScreenShotViewModel>().AsSelf().AsImplementedInterfaces();
+            builder.RegisterType<ScreenShotView>().AsSelf();
             builder.RegisterType<FileDialogService>().As<IFileDialogService>();
+            builder.RegisterType<LocalSettings>().AsSelf().SingleInstance();
         }
     }
 }

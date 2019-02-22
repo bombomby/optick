@@ -53,8 +53,9 @@ namespace Profiler.Controls
 
         public FrameCapture()
 		{
-   
-            SummaryVM = BootStrapperBase.Container.Resolve<SummaryViewerModel>();
+
+            using (var scope = BootStrapperBase.Container.BeginLifetimeScope())
+                SummaryVM = scope.Resolve<SummaryViewerModel>();
 
             InitializeComponent();
 
@@ -199,7 +200,8 @@ namespace Profiler.Controls
 			FunctionHistoryControl.Clear();
 			ThreadView.Group = null;
 			FrameInfoControl.SetFrame(null, null);
-			//SummaryViewerControl.DataContext = null;
+            SummaryVM.Summary = null;
+            SummaryVM.CaptureName = null;
 		}
 
 		private void ClearSamplingButton_Click(object sender, System.Windows.RoutedEventArgs e)

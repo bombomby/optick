@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -27,11 +28,13 @@ namespace Profiler.Controls
 
 		public List<Platform.Connection> Connections { get; set; }
 
-		public LocalSettings()
+        public string TempDirectoryPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Brofiler\\Temp\\");
+
+        public LocalSettings()
 		{
 			Version = CURRENT_VERSION;
 		}
-	}
+    }
 
 	public class Settings
 	{

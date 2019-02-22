@@ -265,6 +265,7 @@
     <Compile Include="InfrastructureMvvm\WindowManager.cs" />
     <Compile Include="InfrastructureMvvm\BaseViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
+    <Compile Include="ViewModels\PlatformSelectorViewModel.cs" />
     <Compile Include="ViewModels\ScreenShotViewModel.cs" />
     <Compile Include="ViewModels\SummaryViewerModel.cs" />
     <Compile Include="InfrastructureMvvm\ViewModelLocator.cs" />

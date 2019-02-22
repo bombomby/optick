@@ -14,7 +14,6 @@ using Profiler.Data;
 using Profiler.InfrastructureMvvm;
 using Autofac;
 
-
 namespace Profiler.ViewModels
 {
     public class SummaryViewerModel: BaseViewModel
@@ -25,7 +24,7 @@ namespace Profiler.ViewModels
 
     #endregion
 
-        #region propertyes
+    #region properties
 
         SummaryPack _summary;
         public SummaryPack Summary
@@ -111,9 +110,9 @@ namespace Profiler.ViewModels
 
         public string CaptureName { get; set; }
 
-        #endregion
+    #endregion
 
-        #region Commands
+    #region Commands
 
         private ICommand _openScreenShotViewCommand;
         public ICommand OpenScreenShotViewCommand
@@ -125,10 +124,13 @@ namespace Profiler.ViewModels
                     {
                         if (IsEnableOpenScreenShotView && CurrentAttachment.FileType == SummaryPack.Attachment.Type.BRO_IMAGE)
                         {
-                            var viewModel = BootStrapperBase.Container.Resolve<ScreenShotViewModel>();
+                            ScreenShotViewModel viewModel = new ScreenShotViewModel();
                             viewModel.AttachmentImage = GetImageFromAttachment(CurrentAttachment);
-                            viewModel.Title = String.Format("{0} ({1})", CurrentAttachment.Name, CaptureName);
-                            var screenShotView = BootStrapperBase.Container.Resolve<IWindowManager>().ShowWindow(viewModel);
+                            viewModel.Title = (CaptureName?.Length > 0) ? String.Format("{0} ({1})", CurrentAttachment.Name, CaptureName) : CurrentAttachment.Name;
+                            using (var scope = BootStrapperBase.Container.BeginLifetimeScope())
+                            {
+                                var screenShotView = scope.Resolve<IWindowManager>().ShowWindow(viewModel);
+                            }                               
                         }
                     },
                   // Condition execute command
@@ -147,17 +149,25 @@ namespace Profiler.ViewModels
                   {
                       try
                       {
-                          string defaultPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Brofiler\\Temp\\");
+                          string defaultPath;
+
+                          using (var scope = BootStrapperBase.Container.BeginLifetimeScope())
+                          {
+                              defaultPath = scope.Resolve<Controls.LocalSettings>().TempDirectoryPath;
+                          }
+
+                          // Generate unique folder name
+                          string uniqueFolderName = Guid.NewGuid().ToString();
+                          defaultPath = Path.Combine(defaultPath, uniqueFolderName);
+
                           DirectoryInfo dirInfo = new DirectoryInfo(defaultPath);
                           if (!dirInfo.Exists)
                               dirInfo.Create();
 
-                          // Generate unique name
-                          string fileName = Guid.NewGuid().ToString() + CurrentAttachment.Name;
-                          defaultPath = defaultPath + fileName;
-
-                          SaveAttachment(CurrentAttachment, defaultPath);
-                          System.Diagnostics.Process.Start(defaultPath);
+                          string filePath = Path.Combine(defaultPath, CurrentAttachment.Name);
+                        
+                          SaveAttachment(CurrentAttachment, filePath);
+                          System.Diagnostics.Process.Start(filePath);
 
                           // System.Diagnostics.Process.Start doesn't block file,
                           // the file can be removed immediately
@@ -184,10 +194,10 @@ namespace Profiler.ViewModels
                   {
                       try
                       {
-                          string defaultExt =
-                            (CurrentAttachment.FileType == SummaryPack.Attachment.Type.BRO_IMAGE) ? "png" : "txt";
+                          string defaultExt = Path.GetExtension(CurrentAttachment.Name);
+                          string filter = String.Format("(*{0})|*{0}", defaultExt);
 
-                          if (_dialogService.SaveFileDialog(CurrentAttachment.Name, defaultExt) == true)
+                          if (_dialogService.SaveFileDialog(CurrentAttachment.Name, defaultExt, filter) == true)
                           {
                               SaveAttachment(CurrentAttachment, _dialogService.FilePath);
                           }
@@ -237,12 +247,13 @@ namespace Profiler.ViewModels
         public SummaryViewerModel(IFileDialogService dialogService)
         {
             _dialogService = dialogService;
+            Visible = Visibility.Collapsed;
         }
 
 
-        #endregion
+    #endregion
 
-        #region Private Methods
+    #region Private Methods
 
 
         private BitmapImage GetImageFromAttachment(SummaryPack.Attachment attachment)
@@ -274,6 +285,6 @@ namespace Profiler.ViewModels
             }
         }
 
-        #endregion
+    #endregion
     }
 }

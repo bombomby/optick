@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;            //CallerMemberName
 
 namespace Profiler.InfrastructureMvvm
 {
-    public abstract class BaseViewModel : INotifyPropertyChanged  // DependencyObject, 
+    public abstract class BaseViewModel : INotifyPropertyChanged // DependencyObject, 
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -22,7 +22,5 @@ namespace Profiler.InfrastructureMvvm
             OnPropertyChanged(propertyName);
             return true;
         }
-
-
     }
 }
