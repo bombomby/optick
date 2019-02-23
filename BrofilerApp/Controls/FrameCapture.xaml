@@ -22,7 +22,10 @@
          <DataTemplate DataType="{x:Type ControlsViewModel:SummaryViewerModel}">
             <ControlsView:SummaryViewer />
         </DataTemplate>
-                
+        <DataTemplate DataType="{x:Type ControlsViewModel:PlatformSelectorViewModel}">
+            <ControlsView:PlatformSelectorView/>
+        </DataTemplate>
+
     </UserControl.Resources>
 
     <UserControl.CommandBindings>
@@ -81,7 +84,10 @@
                     <Button x:Name="ClearButton" Click="ClearButton_Click" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Clear Active Session" Margin="1,0,0,0" Padding="-6">
                         <ContentControl Style="{StaticResource appbar_delete}" />
                     </Button>
-                    <Profiler:PlatformSelector x:Name="PlatformCombo" Margin="4,0,0,0" VerticalAlignment="Top" Height="{StaticResource DefaultButtonSize}"/>
+                    <ContentControl DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}"
+                                    Content="{Binding PlatformSelectorVM}" 
+                                     x:Name="PlatformCombo" Margin="4,0,0,0" VerticalAlignment="Top"
+                                    Height="{StaticResource DefaultButtonSize}"/>
                     <StackPanel x:Name="warningBlock"  Orientation="Horizontal">
                         <Image x:Name="warningIcon" Source="/Brofiler;component/TimeLine/Icons/Warning-icon.png" Margin="5,0,0,0" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" />
                         <TextBlock VerticalAlignment="Center" TextTrimming="WordEllipsis" Width="Auto"><Hyperlink x:Name="warningUrl" RequestNavigate="Hyperlink_RequestNavigate"><Run x:Name="warningText" Text="ClickMe"/></Hyperlink></TextBlock>

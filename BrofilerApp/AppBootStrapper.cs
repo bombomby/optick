@@ -18,6 +18,8 @@ namespace Profiler
             builder.RegisterType<SummaryViewer>().SingleInstance();
             builder.RegisterType<ScreenShotViewModel>().AsSelf().AsImplementedInterfaces();
             builder.RegisterType<ScreenShotView>().AsSelf();
+            builder.RegisterType<PlatformSelectorViewModel>().AsSelf().AsImplementedInterfaces().SingleInstance();
+            builder.RegisterType<PlatformSelectorView>().SingleInstance();
             builder.RegisterType<FileDialogService>().As<IFileDialogService>();
             builder.RegisterType<LocalSettings>().AsSelf().SingleInstance();
         }

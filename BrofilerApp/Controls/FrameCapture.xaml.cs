@@ -51,11 +51,27 @@ namespace Profiler.Controls
             }
         }
 
+        PlatformSelectorViewModel _platformSelectorVM;
+        public PlatformSelectorViewModel PlatformSelectorVM
+        {
+            get { return _platformSelectorVM; }
+            set
+            {
+                _platformSelectorVM = value;
+                OnPropertyChanged("PlatformSelectorVM");
+            }
+        }
+
+
         public FrameCapture()
 		{
 
             using (var scope = BootStrapperBase.Container.BeginLifetimeScope())
+            {
                 SummaryVM = scope.Resolve<SummaryViewerModel>();
+                PlatformSelectorVM = scope.Resolve<PlatformSelectorViewModel>();
+            }
+
 
             InitializeComponent();
 
@@ -216,7 +232,7 @@ namespace Profiler.Controls
 
 		private void StartButton_Checked(object sender, System.Windows.RoutedEventArgs e)
 		{
-			var platform = PlatformCombo.ActivePlatform;
+			var platform = PlatformSelectorVM.ActivePlatform;
 
 			if (platform == null)
 				return;

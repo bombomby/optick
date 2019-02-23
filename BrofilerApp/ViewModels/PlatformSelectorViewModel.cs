@@ -7,7 +7,6 @@ using System.Net;
 using System.Collections.ObjectModel;
 using Profiler.InfrastructureMvvm;
 
-
 namespace Profiler.ViewModels
 {
     public class PlatformSelectorViewModel : BaseViewModel
@@ -20,19 +19,54 @@ namespace Profiler.ViewModels
 
         #region properties
 
-        ObservableCollection<PlatformDescription> _platforms;
+        private ObservableCollection<PlatformDescription> _platforms;
         public ObservableCollection<PlatformDescription>  Platforms
         {
             get { return _platforms; }
             set { SetField(ref _platforms, value); }
         }
 
-        PlatformDescription _activePlatform;
+        private PlatformDescription _activePlatform;
         public PlatformDescription ActivePlatform
         {
             get { return _activePlatform; }
             set { SetField(ref _activePlatform, value); }
         }
+
+        private string _newIP;
+        public string NewIP
+        {
+            get { return _newIP; }
+            set { SetField(ref _newIP, value); }
+        }
+
+        private string _newPort;
+        public string NewPort
+        {
+            get { return _newPort; }
+            set { SetField(ref _newPort, value); }
+        }
+
+        #endregion
+
+        #region commands
+
+        private RelayCommandAsync _addConnection;
+        public RelayCommandAsync AddConnection
+        {
+            get
+            {
+                return _addConnection ??
+                    (_addConnection = new RelayCommandAsync(async() => 
+                    {
+                       // await Task.Run();
+                    },
+                  // Condition execute command
+                  () => NewPort != null && NewIP != null
+                  ));
+            }
+        }
+
 
         #endregion
 
@@ -42,35 +76,70 @@ namespace Profiler.ViewModels
         {
             Platforms = new ObservableCollection<PlatformDescription>();
 
-          //  IPAddress ip = Platform.GetPCAddress();
+            PlatformDescription description = new PlatformDescription();
 
-       //     _platforms.Add(new PlatformDescription() { Name = Environment.MachineName, IP = ip, Icon = "appbar_os_windows_8" });
+            foreach (var ip in Platform.GetPCAddresses().Distinct())
+                _platforms.Add(new PlatformDescription() { Name = Environment.MachineName, IP = ip, CoreType = true });
 
-            //_platforms.Add(new PlatformDescription() { Name = "PS4", IP = Platform.GetPS4Address(), Icon = "appbar_social_playstation" });
-            //_platforms.Add(new PlatformDescription() { Name = "Xbox", IP = Platform.GetXONEAddress(), Icon = "appbar_controller_xbox" });
-            _platforms.Add(new PlatformDescription() { Name = "Network", IP = IPAddress.Loopback, Icon = "appbar_network", Detailed = true });
+            _platforms.Add(new PlatformDescription() { Name = "Add Connection", IP = IPAddress.Loopback, Detailed = true, CoreType = true });
 
             ActivePlatform = Platforms[0];
+
+
         }
 
         #endregion
+
+        #region public methods
+
+        #endregion
+
+
+        #region private methods
+
+
+
+        #endregion
+
+       
+
 
     }
 
     public class PlatformDescription : BaseViewModel
     {
-        public const short DEFAULT_PORT = 31313;
+        private const short DEFAULT_PORT = 31313;
 
-        public string Name { get; set; }
         public short Port { get; set; }
+        public bool CoreType { get; set; }          // true for constant items
+        public bool Detailed { get; set; }          // true for Add Connection
         public string Icon { get; set; }
-        public bool Detailed { get; set; }
+
+        string _name;
+        public string Name
+        {
+            get { return _name; }
+            set {
+                    SetField(ref _name, value);
+                    Icon = GetIconByComputerName(_name);
+                }
+        }
 
         IPAddress _ip = IPAddress.None;
         public IPAddress IP
         {
             get { return _ip; }
             set { SetField(ref _ip, value); }
+        }
+
+        Platform.Type _platformType;
+        public Platform.Type PlatformType
+        {
+            get { return _platformType; }
+            set {
+                   SetField(ref _platformType, value);
+                   Icon = GetIconByPlatformType(_platformType);
+                }
         }
 
         public string Status
@@ -81,9 +150,56 @@ namespace Profiler.ViewModels
             }
         }
 
+
         public PlatformDescription()
         {
             Port = DEFAULT_PORT;
         }
+
+
+
+        #region private methods
+
+        private string GetIconByComputerName(string name)
+        {
+            string result = "appbar_os_windows_8";
+
+            if (name.IndexOf("xbox", StringComparison.OrdinalIgnoreCase) != -1)
+                result = "appbar_controller_xbox";
+            else if (name.IndexOf("ps4", StringComparison.OrdinalIgnoreCase) != -1)
+                result = "appbar_social_playstation";
+            else if (name.IndexOf("linux", StringComparison.OrdinalIgnoreCase) != -1)
+                result = "appbar_os_ubuntu";
+            else if (name.IndexOf("mac", StringComparison.OrdinalIgnoreCase) != -1)
+                result = "appbar_social_apple";
+
+            if (name == "Add Connection")
+                result = "appbar_network";
+
+            return result;
+        }
+
+        private string GetIconByPlatformType(Platform.Type type)
+        {
+            switch (type)
+            {
+                case Platform.Type.Unknown:
+                    return "appbar_network";
+                case Platform.Type.Windows:
+                    return "appbar_os_windows_8";
+                case Platform.Type.Linux:
+                    return "appbar_os_ubuntu";
+                case Platform.Type.MacOS:
+                    return "appbar_social_apple";
+                case Platform.Type.XBox:
+                    return "appbar_controller_xbox";
+                case Platform.Type.Playstation:
+                    return "appbar_social_playstation";
+                default:
+                    return "appbar_network";
+            }
+        }
+
+        #endregion
     }
 }

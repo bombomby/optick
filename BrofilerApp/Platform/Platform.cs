@@ -20,7 +20,7 @@ namespace Profiler
 		public class Connection
 		{
 			public Platform.Type Target { get; set; }
-			public String Name { get; set; }
+			public string Name { get; set; }
 			public IPAddress Address { get; set; }
 			public int Port { get; set; }
 		}

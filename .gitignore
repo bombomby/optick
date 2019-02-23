@@ -13,3 +13,7 @@ Publish/
 /.vs
 /Brofiler/.vs/Brofiler_vs2017/v15/Server/sqlite3
 /Brofiler/.vs
+/Brofiler/BrofilerCore/vulkan
+/BrofilerCore/vulkan/GLSL.std.450.h
+/BrofilerCore/vulkan/spirv.h
+/BrofilerCore/vulkan
