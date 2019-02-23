@@ -216,6 +216,10 @@
     <Compile Include="AppBootStrapper.cs" />
     <Compile Include="AutoEmbedLibs\EmbeddedAssembly.cs" />
     <Compile Include="ColorToBrushConverter.cs" />
+    <Compile Include="Controls\IPTextBox.xaml.cs">
+      <DependentUpon>IPTextBox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="InfrastructureMvvm\BoolToVisibilityConverter.cs" />
     <Compile Include="InfrastructureMvvm\BootStrapperBase.cs" />
     <Compile Include="InfrastructureMvvm\DialogManager.cs" />
     <Compile Include="InfrastructureMvvm\DialogViewModel.cs" />
@@ -368,6 +372,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\FunctionSearch.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\IPTextBox.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

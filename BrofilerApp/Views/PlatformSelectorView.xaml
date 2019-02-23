@@ -3,11 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:helper="clr-namespace:Profiler.InfrastructureMvvm"
+             xmlns:controls ="clr-namespace:Profiler.Controls"
              xmlns:local="clr-namespace:Profiler"
              mc:Ignorable="d" 
              d:DesignWidth="400" Height="Auto">
     <UserControl.Resources>
         <local:StringToResource x:Key="StringToResource" />
+        <helper:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </UserControl.Resources>
     <StackPanel Orientation="Horizontal">
         <ComboBox x:Name="comboBox" HorizontalAlignment="Left" VerticalAlignment="Top" Width="Auto" MinWidth="200" Height="Auto"
@@ -26,11 +29,18 @@
                 </DataTemplate>
             </ComboBox.ItemTemplate>
         </ComboBox>
-        <StackPanel x:Name="DetailedIP" Orientation="Horizontal" Visibility="Collapsed">
+        <StackPanel x:Name="DetailedIP" Orientation="Horizontal" Visibility="{Binding ActivePlatform.Detailed, Converter={StaticResource BoolToVisibilityConverter}}">
             <Label Content="IP:" Margin="4,0,0,0" />
-            <TextBox x:Name="IP"  VerticalContentAlignment="Center" Text="{Binding NewIP}" />
+            <controls:IPTextBox x:Name="IP"  VerticalContentAlignment="Center" MinWidth="80" Address="{Binding NewIP}" />
             <Label Content="Port:" Margin="4,0,0,0" />
-            <TextBox x:Name="Port" VerticalContentAlignment="Center" Text="{Binding NewPort}" />
+            <TextBox x:Name="Port" VerticalContentAlignment="Center" MinWidth="30" Text="{Binding NewPort}" />
+            <Button ToolTip="Add New Connection" Margin="6,0,0,0" Padding="-6" 
+                    HorizontalAlignment="Left" VerticalAlignment="Center"
+                    Width="{StaticResource DefaultButtonSize}" 
+                    Height="{StaticResource DefaultButtonSize}"
+                    Command="{Binding AddConnection}">
+                <ContentControl Style="{StaticResource appbar_add}" />
+            </Button>
         </StackPanel>
     </StackPanel>
 </UserControl>

@@ -40,8 +40,8 @@ namespace Profiler.ViewModels
             set { SetField(ref _newIP, value); }
         }
 
-        private string _newPort;
-        public string NewPort
+        private short _newPort;
+        public short NewPort
         {
             get { return _newPort; }
             set { SetField(ref _newPort, value); }
@@ -85,7 +85,7 @@ namespace Profiler.ViewModels
 
             ActivePlatform = Platforms[0];
 
-
+            NewPort = PlatformDescription.DEFAULT_PORT;
         }
 
         #endregion
@@ -108,7 +108,7 @@ namespace Profiler.ViewModels
 
     public class PlatformDescription : BaseViewModel
     {
-        private const short DEFAULT_PORT = 31313;
+        public  const short DEFAULT_PORT = 31313;
 
         public short Port { get; set; }
         public bool CoreType { get; set; }          // true for constant items
@@ -154,6 +154,7 @@ namespace Profiler.ViewModels
         public PlatformDescription()
         {
             Port = DEFAULT_PORT;
+            Detailed = false;
         }
 
 
