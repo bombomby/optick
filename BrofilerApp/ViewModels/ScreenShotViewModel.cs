@@ -9,6 +9,8 @@ namespace Profiler.ViewModels
 {
     public class ScreenShotViewModel: BaseViewModel
     {
+    #region properties
+
         ImageSource _attachmentImage;
         public ImageSource AttachmentImage
         {
@@ -18,8 +20,15 @@ namespace Profiler.ViewModels
 
         public string Title { get; set; }
 
+    #endregion
+
+    #region commands
+
         public ICommand CloseViewCommand { get; set; }
 
+    #endregion
+
+    #region constructor
         public ScreenShotViewModel(BitmapImage image =null, string title=null)
         {
             AttachmentImage = image;
@@ -29,7 +38,11 @@ namespace Profiler.ViewModels
             {
                 if (x != null)
                     x.Close();
+
+                    
             });
         }
+
+        #endregion
     }
 }

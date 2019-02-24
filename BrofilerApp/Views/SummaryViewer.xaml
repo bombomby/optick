@@ -13,7 +13,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <Grid HorizontalAlignment="Left" Width="300">
+        <Grid HorizontalAlignment="Stretch" Width="Auto">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="1*" />
@@ -26,7 +26,7 @@
             </Border>
             <ComboBox Grid.Column="1" Margin="1" x:Name="AttachmentsComboBox"
                       ItemsSource="{Binding Attachments}"
-                      SelectedValue="{Binding CurrentAttachment,Mode=TwoWay}"
+                      SelectedItem="{Binding CurrentAttachment,Mode=TwoWay}"
                       MinHeight="{StaticResource DefaultButtonSize}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
@@ -43,17 +43,23 @@
                 </ComboBox.Resources>-->
             </ComboBox>
             <StackPanel Grid.Column="2" Height="24" Orientation="Horizontal">
-                <Button  ToolTip="Export current attachment"
+                <Button  ToolTip="Export Current Attachment" Margin="1,0,0,0" Padding="-6" 
+                         HorizontalAlignment="Left" VerticalAlignment="Center"
+                          Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}"
                     Command="{Binding ExportCurrentAttachmentCommand}">
-                    <ContentControl Style="{StaticResource appbar_app}" Margin="-8" Padding="-6" />
+                    <ContentControl Style="{StaticResource appbar_app}" />
                 </Button>
-                <Button   ToolTip="Save current attachment"
+                <Button   ToolTip="Save Current Attachment" Margin="1,0,0,0" Padding="-4" 
+                         HorizontalAlignment="Left" VerticalAlignment="Center"
+                          Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}"
                     Command="{Binding SaveCurrentAttachmentCommand}">
-                    <ContentControl Style="{StaticResource appbar_save}" Margin="-5" Padding="-6" />
+                    <ContentControl Style="{StaticResource appbar_save}"/>
                 </Button>
-                <Button  ToolTip="Save all attachments"
+                <Button  ToolTip="Save All Attachments" Margin="1,0,0,0" Padding="-6" 
+                         HorizontalAlignment="Left" VerticalAlignment="Center"
+                          Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}"
                     Command="{Binding SaveAllAttachmentCommand}">
-                    <ContentControl Style="{StaticResource appbar_save}" Margin="-8" />
+                    <ContentControl Style="{StaticResource appbar_disk}"/>
                 </Button>
             </StackPanel>
 

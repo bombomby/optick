@@ -8,6 +8,6 @@ namespace Profiler.InfrastructureMvvm
         bool OpenFileDialog();
         bool OpenFolderDialog();
         bool SaveFileDialog();
-        bool SaveFileDialog(string defaultFileName, string defaultExt, string initialDirectory = null);
+        bool SaveFileDialog(string defaultFileName, string defaultExt, string filter = null, string initialDirectory = null);
     }
 }
