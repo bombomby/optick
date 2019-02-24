@@ -380,14 +380,16 @@ struct CaptureStatus
 		OK = 0,
 		ERR_TRACER_ALREADY_EXISTS = 1,
 		ERR_TRACER_ACCESS_DENIED = 2,
-		FAILED = 3,
-	};
+		ERR_TRACER_FAILED = 3,
+        ERR_TRACER_INVALID_PASSWORD = 4,
+    };
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class Core
 {
 	std::recursive_mutex coreLock;
+    std::recursive_mutex threadsLock;
 	ThreadID mainThreadID;
 
 	ThreadList threads;
@@ -503,7 +505,7 @@ public:
 	ThreadEntry* RegisterThread(const ThreadDescription& description, EventStorage** slot);
 
 	// UnRegisters thread
-	bool UnRegisterThread(ThreadID threadId);
+	bool UnRegisterThread(ThreadID threadId, bool keepAlive = false);
 
 	// Check is registered thread
 	bool IsRegistredThread(ThreadID id);

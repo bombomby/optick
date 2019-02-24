@@ -73,9 +73,13 @@
 #include <unistd.h>
 #endif
 
-#if defined (BRO_GCC_COMPILER_FAMILY)
+#if defined(BRO_GCC_COMPILER_FAMILY)
 #include <sys/types.h>
 #include <sys/syscall.h>
+#endif
+
+#if defined(BRO_PLATFORM_OSX)
+#import <mach/mach_time.h>
 #endif
 
 namespace Brofiler
@@ -131,10 +135,16 @@ namespace Brofiler
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	BRO_INLINE int64 GetFrequency()
 	{
-#if defined(BRO_MSVC_COMPILER_FAMILY)
+#if defined(BRO_PLATFORM_WINDOWS)
 		LARGE_INTEGER frequency;
 		QueryPerformanceFrequency(&frequency);
 		return frequency.QuadPart;
+//#elif defined(BRO_PLATFORM_OSX)
+//        mach_timebase_info_data_t info;
+//        if (mach_timebase_info(&info) != KERN_SUCCESS) {
+//            BRO_FAILED("mach_timebase_info failed");
+//        }
+//        return int64_t(1e9) * info.denom / info.numer;
 #elif defined(BRO_GCC_COMPILER_FAMILY)
 		return 1000000000;
 #else
@@ -143,12 +153,16 @@ namespace Brofiler
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	BRO_INLINE int64 GetTimeMicroSeconds()
+	BRO_INLINE int64 GetTimeNanoSeconds()
 	{
-#if defined(BRO_MSVC_COMPILER_FAMILY)
+#if defined(BRO_PLATFORM_WINDOWS)
 		LARGE_INTEGER largeInteger;
 		QueryPerformanceCounter(&largeInteger);
-		return (largeInteger.QuadPart * int64(1000000)) / GetFrequency();
+		return (largeInteger.QuadPart * 1000000000LL)) / GetFrequency();
+#elif defined(BRO_PLATFORM_OSX)
+        struct timespec ts;
+        clock_gettime(CLOCK_REALTIME, &ts);
+        return ts.tv_sec * 1000000000LL + ts.tv_nsec;
 #elif defined(BRO_GCC_COMPILER_FAMILY)
 		struct timespec ts;
 		clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -161,18 +175,18 @@ namespace Brofiler
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	BRO_INLINE int64 GetTimeMilliSeconds()
 	{
-		return GetTimeMicroSeconds() / 1000;
+		return GetTimeNanoSeconds() / 1000000;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	BRO_INLINE int64 GetTime()
 	{
-#if defined(BRO_MSVC_COMPILER_FAMILY)
+#if defined(BRO_PLATFORM_WINDOWS)
 		LARGE_INTEGER largeInteger;
 		QueryPerformanceCounter(&largeInteger);
 		return largeInteger.QuadPart;
 #elif defined(BRO_GCC_COMPILER_FAMILY)
-		return GetTimeMicroSeconds();
+        return GetTimeNanoSeconds();
 #else
 	#error Platform is not supported!
 #endif

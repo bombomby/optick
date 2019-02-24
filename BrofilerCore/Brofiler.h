@@ -261,7 +261,7 @@ struct EventStorage;
 BROFILER_API bool RegisterFiber(uint64_t fiberId, EventStorage** slot);
 BROFILER_API bool RegisterThread(const char* name);
 BROFILER_API bool RegisterThread(const wchar_t* name);
-BROFILER_API bool UnRegisterThread();
+BROFILER_API bool UnRegisterThread(bool keepAlive);
 BROFILER_API EventStorage** GetEventStorageSlotForCurrentThread();
 BROFILER_API bool IsFiberStorage(EventStorage* fiberStorage);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -461,7 +461,9 @@ struct BROFILER_API Category : public Event
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct ThreadScope
 {
-	ThreadScope(const char* name)
+    bool keepAlive;
+    
+    ThreadScope(const char* name, bool bKeepAlive = false) : keepAlive(bKeepAlive)
 	{
 		RegisterThread(name);
 	}
@@ -473,7 +475,7 @@ struct ThreadScope
 
 	~ThreadScope()
 	{
-		UnRegisterThread();
+		UnRegisterThread(keepAlive);
 	}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -628,7 +630,7 @@ BROFILER_API const EventDescription* GetFrameDescription(FrameType::Type frame);
 // Thread registration macros.
 // Useful for integration with custom job-managers.
 #define BROFILER_START_THREAD(FRAME_NAME) ::Brofiler::RegisterThread(FRAME_NAME);
-#define BROFILER_STOP_THREAD() ::Brofiler::UnRegisterThread();
+#define BROFILER_STOP_THREAD() ::Brofiler::UnRegisterThread(false);
 
 // Attaches a custom data-tag.
 // Supported types: int32, uint32, uint64, vec3, string (cut to 32 characters)

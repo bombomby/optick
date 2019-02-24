@@ -25,6 +25,7 @@ namespace Brofiler
 		};
 
 		std::unordered_set<uint64> activeThreadsIDs;
+        std::string password;
 
 		virtual CaptureStatus::Type Start(int mode, const ThreadList& threads);
 		virtual bool Stop();

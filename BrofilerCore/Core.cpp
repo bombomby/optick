@@ -708,6 +708,8 @@ EventTime CalculateRange(const ThreadEntry& entry, const EventDescription* rootD
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpFrames(uint32 mode)
 {
+    std::lock_guard<std::recursive_mutex> lock(threadsLock);
+    
 	if (frames.empty() || threads.empty())
 		return;
 
@@ -827,7 +829,7 @@ void Core::DumpSummary()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::CleanupThreadsAndFibers()
 {
-	std::lock_guard<std::recursive_mutex> lock(coreLock);
+	std::lock_guard<std::recursive_mutex> lock(threadsLock);
 
 	for (ThreadList::iterator it = threads.begin(); it != threads.end();)
 	{
@@ -979,18 +981,23 @@ void Core::Activate( bool active )
 	{
 		isActive = active;
 
-		for(auto it = threads.begin(); it != threads.end(); ++it)
-		{
-			ThreadEntry* entry = *it;
-			entry->Activate(active);
-		}
+        {
+            std::lock_guard<std::recursive_mutex> lock(threadsLock);
+            for(auto it = threads.begin(); it != threads.end(); ++it)
+            {
+                ThreadEntry* entry = *it;
+                entry->Activate(active);
+            }
+        }
+
 
 		if (active)
 		{
-			CaptureStatus::Type status = CaptureStatus::FAILED;
+			CaptureStatus::Type status = CaptureStatus::ERR_TRACER_FAILED;
 
 			if (schedulerTrace)
 			{
+                std::lock_guard<std::recursive_mutex> lock(threadsLock);
 				status = schedulerTrace->Start(Trace::ALL, threads);
 				// Let's retry with more narrow setup
 				if (status != CaptureStatus::OK)
@@ -1039,7 +1046,7 @@ void Core::SendHandshakeResponse(CaptureStatus::Type status)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::IsRegistredThread(ThreadID id)
 {
-	std::lock_guard<std::recursive_mutex> lock(coreLock);
+	std::lock_guard<std::recursive_mutex> lock(threadsLock);
 
 	for (ThreadList::iterator it = threads.begin(); it != threads.end(); ++it)
 	{
@@ -1056,7 +1063,7 @@ bool Core::IsRegistredThread(ThreadID id)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ThreadEntry* Core::RegisterThread(const ThreadDescription& description, EventStorage** slot)
 {
-	std::lock_guard<std::recursive_mutex> lock(coreLock);
+	std::lock_guard<std::recursive_mutex> lock(threadsLock);
 
 	ThreadEntry* entry = Memory::New<ThreadEntry>(description, slot);
 	threads.push_back(entry);
@@ -1067,16 +1074,16 @@ ThreadEntry* Core::RegisterThread(const ThreadDescription& description, EventSto
 	return entry;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Core::UnRegisterThread(ThreadID threadID)
+bool Core::UnRegisterThread(ThreadID threadID, bool keepAlive)
 {
-	std::lock_guard<std::recursive_mutex> lock(coreLock);
+	std::lock_guard<std::recursive_mutex> lock(threadsLock);
 
 	for (ThreadList::iterator it = threads.begin(); it != threads.end(); ++it)
 	{
 		ThreadEntry* entry = *it;
 		if (entry->description.threadID == threadID && entry->isAlive)
 		{
-			if (!isActive)
+			if (!isActive && !keepAlive)
 			{
 				Memory::Delete(entry);
 				threads.erase(it);
@@ -1185,7 +1192,7 @@ const EventDescription* Core::GetFrameDescription(FrameType::Type frame) const
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core::~Core()
 {
-	std::lock_guard<std::recursive_mutex> lock(coreLock);
+	std::lock_guard<std::recursive_mutex> lock(threadsLock);
 
 	for (ThreadList::iterator it = threads.begin(); it != threads.end(); ++it)
 	{
@@ -1315,9 +1322,9 @@ BROFILER_API bool RegisterThread(const wchar_t* name)
 	return Core::Get().RegisterThread(ThreadDescription(mbName, GetThreadID(), GetProcessID()), &Core::storage) != nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API bool UnRegisterThread()
+BROFILER_API bool UnRegisterThread(bool keepAlive)
 {
-	return Core::Get().UnRegisterThread(GetThreadID());
+	return Core::Get().UnRegisterThread(GetThreadID(), keepAlive);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 BROFILER_API bool RegisterFiber(uint64 fiberId, EventStorage** slot)
