@@ -158,7 +158,7 @@ namespace Brofiler
 #if defined(BRO_PLATFORM_WINDOWS)
 		LARGE_INTEGER largeInteger;
 		QueryPerformanceCounter(&largeInteger);
-		return (largeInteger.QuadPart * 1000000000LL)) / GetFrequency();
+		return (largeInteger.QuadPart * 1000000000LL) / GetFrequency();
 #elif defined(BRO_PLATFORM_OSX)
         struct timespec ts;
         clock_gettime(CLOCK_REALTIME, &ts);

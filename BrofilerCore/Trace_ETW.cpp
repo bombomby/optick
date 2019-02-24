@@ -1122,13 +1122,13 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads)
 				break;
 
 			default:
-				return CaptureStatus::FAILED;
+				return CaptureStatus::ERR_TRACER_FAILED;
 			}
 		}
 
 		if (status != ERROR_SUCCESS)
 		{
-			return CaptureStatus::FAILED;
+			return CaptureStatus::ERR_TRACER_FAILED;
 		}
 
 		CLASSIC_EVENT_ID callstackSamples[4];
@@ -1167,7 +1167,7 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads)
 			if (status != ERROR_SUCCESS)
 			{
 				BRO_FAILED("TraceSetInformation - failed");
-				return CaptureStatus::FAILED;
+				return CaptureStatus::ERR_TRACER_FAILED;
 			}
 		}
 
@@ -1190,7 +1190,7 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads)
 		if (openedHandle == INVALID_TRACEHANDLE)
 		{
 			BRO_FAILED("OpenTrace - failed");
-			return CaptureStatus::FAILED;
+			return CaptureStatus::ERR_TRACER_FAILED;
 		}
 
 		DWORD threadID;
