@@ -111,14 +111,7 @@
             </Expander>
 
             <Grid Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="350" />
-                    <ColumnDefinition Width="6"/>
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <Controls:FunctionHistory x:Name="FunctionHistoryControl" />
-                <GridSplitter ResizeDirection="Columns" Width="6" Grid.Column="1" HorizontalAlignment="Left" />
-                <Profiler:FrameInfo Grid.Column="2" x:Name="FrameInfoControl" />
+                <Controls:FunctionPanel x:Name="FunctionPanelControl" />
             </Grid>
 
        

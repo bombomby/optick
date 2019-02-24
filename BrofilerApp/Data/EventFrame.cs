@@ -87,6 +87,14 @@ namespace Profiler.Data
 			}
 		}
 
+        public Entry RootEntry
+        {
+            get
+            {
+                return Entries.Count > 0 ? Entries[0] : null;
+            }
+        }
+
 		private EventTree root = null;
 		public Profiler.Data.EventTree Root
 		{

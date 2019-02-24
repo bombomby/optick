@@ -304,7 +304,15 @@ namespace Profiler.Data
 			}
 		}
 
-		public override double Duration { get { return 130.0; } }
+        public string DeatiledDescription
+        {
+            get
+            {
+                return String.Format("Collected Callstacks: {0}", SampleCount);
+            }
+        }
+
+        public override double Duration { get { return 130.0; } }
 
 		public override void Load()
 		{

@@ -134,14 +134,14 @@ namespace Profiler.ViewModels
 
         public override void OnLoaded(FunctionStats frameStats)
         {
-            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-            {
-                double range = Math.Ceiling(frameStats.Samples.Max(s => s.Total));
+            //Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            //{
+            //    double range = Math.Ceiling(frameStats.Samples.Max(s => s.Total));
 
-                SeriesTotal = GenerateFunctionHistogram(frameStats, (s => s.Total), Colors.Gray, range);
-                SeriesWork = GenerateFunctionHistogram(frameStats, (s => s.Work), Colors.LimeGreen, range);
-                SeriesWait = GenerateFunctionHistogram(frameStats, (s => s.Wait), Colors.Tomato, range);
-            }));
+            //    SeriesTotal = GenerateFunctionHistogram(frameStats, (s => s.Total), Colors.Gray, range);
+            //    SeriesWork = GenerateFunctionHistogram(frameStats, (s => s.Work), Colors.LimeGreen, range);
+            //    SeriesWait = GenerateFunctionHistogram(frameStats, (s => s.Wait), Colors.Tomato, range);
+            //}));
 
             base.OnLoaded(frameStats);
         }

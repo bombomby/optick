@@ -19,6 +19,7 @@ using System.ComponentModel;
 using Profiler.DirectX;
 using System.Windows.Threading;
 using System.Diagnostics;
+using Profiler.Controls;
 
 namespace Profiler
 {
@@ -144,7 +145,10 @@ namespace Profiler
 			return threadID == 0 ? ProcessGroup.None : (group.IsCurrentProcess(threadID) ? ProcessGroup.CurrentProcess : ProcessGroup.OtherProcess);
 		}
 
-		ChartRow GenerateCoreChart(FrameGroup group)
+        public delegate void HighlightFrameEventHandler(object sender, HighlightFrameEventArgs e);
+        public static readonly RoutedEvent HighlightFrameEvent = EventManager.RegisterRoutedEvent("HighlightFrameEvent", RoutingStrategy.Bubble, typeof(HighlightFrameEventHandler), typeof(ThreadView));
+
+        ChartRow GenerateCoreChart(FrameGroup group)
 		{
 			group.Synchronization.Events.Sort();
 
@@ -336,35 +340,50 @@ namespace Profiler
 
 		const double DefaultFrameZoom = 1.10;
 
-		public void FocusOn(EventFrame frame, EventNode node)
-		{
-			Group = frame.Group;
-			SelectionList.Clear();
-			SelectionList.Add(new Selection() { Frame = frame, Node = node });
+        public void Highlight(EventFrame frame, IDurable focus)
+        {
+            Highlight(new Selection[] { new Selection() { Frame = frame, Focus = focus } });
+        }
 
-			Interval interval = scroll.TimeToUnit(node != null ? (IDurable)node.Entry : (IDurable)frame);
-			if (!scroll.ViewUnit.Contains(interval))
-			{
-				scroll.ViewUnit.Width = interval.Width * DefaultFrameZoom;
-				scroll.ViewUnit.Left = interval.Left - (scroll.ViewUnit.Width - interval.Width) * 0.5;
-				scroll.ViewUnit.Normalize();
-				UpdateBar();
-			}
+        public void Highlight(IEnumerable<Selection> items, bool focus = true)
+        {
+            foreach (Selection s in items)
+            {
+                Group = s.Frame.Group;
+                break;
+            }
+            SelectionList = new List<Selection>(items);
 
-			if (frame != null)
-			{
-				ThreadRow row = id2row[frame.Header.ThreadIndex];
-				if (row != null )
-				{
-					if (row.Offset < ScrollArea.VerticalOffset || row.Offset > (ScrollArea.VerticalOffset + ScrollArea.ActualHeight))
-						ScrollArea.ScrollToVerticalOffset(row.Offset);
-				}
-			}
+            if (focus)
+            {
+                foreach (Selection s in items)
+                {
+                    Interval interval = scroll.TimeToUnit(s.Focus != null ? s.Focus : (IDurable)s.Frame);
+                    if (!scroll.ViewUnit.Contains(interval) && !interval.Contains(scroll.ViewUnit))
+                    {
+                        scroll.ViewUnit.Width = interval.Width * DefaultFrameZoom;
+                        scroll.ViewUnit.Left = interval.Left - (scroll.ViewUnit.Width - interval.Width) * 0.5;
+                        scroll.ViewUnit.Normalize();
+                        UpdateBar();
+                    }
 
-			UpdateSurface();
-		}
+                    if (s.Frame != null)
+                    {
+                        ThreadRow row = id2row[s.Frame.Header.ThreadIndex];
+                        if (row != null)
+                        {
+                            if (row.Offset < ScrollArea.VerticalOffset || row.Offset > (ScrollArea.VerticalOffset + ScrollArea.ActualHeight))
+                                ScrollArea.ScrollToVerticalOffset(row.Offset);
+                        }
+                    }
+                }
+            }
 
-		class CallstackFilterItem : INotifyPropertyChanged
+            UpdateSurface();
+        }
+
+
+        class CallstackFilterItem : INotifyPropertyChanged
 		{
 			public bool IsChecked { get; set; }
 			public CallStackReason Reason { get; set; }
@@ -620,7 +639,7 @@ namespace Profiler
 				{
 					ThreadRow row = id2row[selection.Frame.Header.ThreadIndex];
 
-					Durable intervalTime = selection.Node == null ? (Durable)selection.Frame.Header : (Durable)selection.Node.Entry;
+					IDurable intervalTime = selection.Focus == null ? selection.Frame.Header : selection.Focus;
 					Interval intervalPx = scroll.TimeToPixel(intervalTime);
 
 					Rect rect = new Rect(intervalPx.Left, row.Offset /*+ 2.0 * RenderParams.BaseMargin*/, intervalPx.Width, row.Height /*- 4.0 * RenderParams.BaseMargin*/);
@@ -708,10 +727,10 @@ namespace Profiler
 			InitBackgroundMesh();
 		}
 
-		struct Selection
+		public struct Selection
 		{
 			public EventFrame Frame { get; set; }
-			public EventNode Node { get; set; }
+			public IDurable Focus { get; set; }
 		}
 
 		List<Selection> SelectionList = new List<Selection>();

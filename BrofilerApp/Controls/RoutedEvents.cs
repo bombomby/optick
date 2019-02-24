@@ -33,4 +33,15 @@ namespace Profiler.Controls
 		}
 	}
 
+
+    public class HighlightFrameEventArgs : RoutedEventArgs
+    {
+        public List<ThreadView.Selection> Items { get; set; }
+
+        public HighlightFrameEventArgs(IEnumerable<ThreadView.Selection> items, bool focus = true)
+            : base(ThreadView.HighlightFrameEvent)
+        {
+            Items = new List<ThreadView.Selection>(items);
+        }
+    }
 }

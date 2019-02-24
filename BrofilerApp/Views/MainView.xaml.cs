@@ -80,7 +80,8 @@ namespace Profiler.Views
 			UpdateTitle(e.Path);
 		}
 
-		private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
 		{
 			ParseCommandLine();
 		}

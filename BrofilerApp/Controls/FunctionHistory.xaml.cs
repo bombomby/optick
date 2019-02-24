@@ -22,37 +22,14 @@ namespace Profiler.Controls
 	/// </summary>
 	public partial class FunctionHistory : UserControl
 	{
-		public FrameGroup Group { get; set; }
-		public EventDescription Description { get; set; }
-		public FunctionStats Stats { get; set; }
-
-
         public FunctionHistory()
 		{
 			InitializeComponent();
-
-			DataContextChanged += FunctionHistory_DataContextChanged;
 
 			FrameChart.TooltipTimeout = new TimeSpan(0, 0, 0, 0, 100);
 			FrameChart.DataTooltip.Background = FindResource("BroBackground") as SolidColorBrush;
 			FrameChart.DataTooltip.BorderBrush = FindResource("AccentColorBrush") as SolidColorBrush;
 			FrameChart.DataTooltip.BorderThickness = new Thickness(0.5);
-		}
-
-		private void UpdateGroup(FrameGroup group)
-		{
-			if (group != Group)
-			{
-				Group = group;
-			}
-		}
-
-		private void FunctionHistory_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
-		{
-			if (e.NewValue is FrameGroup)
-			{
-				Group = e.NewValue as FrameGroup;
-			}
 		}
 
 		static Color WorkColor = Colors.LimeGreen;
@@ -88,89 +65,44 @@ namespace Profiler.Controls
 				};
 		}
 
-		public void LoadAsync(Data.Frame frame)
-		{
-			if (frame is EventFrame)
-			{
-				EventFrame eventFrame = frame as EventFrame;
-				if (eventFrame.Entries.Count > 0)
-				{
-					Entry entry = eventFrame.Entries[0];
-					UpdateGroup(frame.Group);
-					Task.Run(() => Load(entry.Description));
-				}
-			}
-		}
-
 		public void Clear()
 		{
-			UpdateGroup(null);
 			ClearCharts();
 		}
 
 		private void ClearCharts()
 		{
 			FrameChart.Series = null;
-			FunctionStatsSummary.DataContext = null;
 		}
 
-		public class FunctionSummary
-		{
-			public EventDescription Description { get; set; }
-			public double Total { get; set; }
-			public double Wait { get; set; }
-			public double Work { get { return Total - Wait; } }
-		}
-
-		public void Load(EventDescription desc)
-		{
-			if (desc != null && Description != desc)
-			{
-				// Frame Chart
-				FunctionStats frameStats = new FunctionStats(Group, desc);
-				frameStats.Load(FunctionStats.Origin.MainThread);
-
-				FunctionSummary summary = new FunctionSummary()
-				{
-					Description = desc,
-					Total = frameStats.Samples.Sum(s => s.Total) / frameStats.Samples.Count,
-					Wait = frameStats.Samples.Sum(s => s.Wait) / frameStats.Samples.Count
-				};
-
-				Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-				{
-					Stats = frameStats;
-					FunctionInstanceDataGrid.DataContext = Stats;
-					FunctionStatsSummary.DataContext = summary;
-					FrameChart.Series = BuildAreaChart(frameStats); ;
-				}));
+        //public void Load(FunctionStats frameStats)
+        //{
+        //    Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+        //    {
+        //        Stats = frameStats;
+        //        FunctionInstanceDataGrid.DataContext = Stats;
+        //        FrameChart.Series = BuildAreaChart(Stats);
+        //        HeaderGrid.DataContext = Stats;
+        //    }));
+        //}
 
 
-				// Function Chart
-				//FunctionStats functionStats = new FunctionStats(Group, desc);
-				//functionStats.Load(FunctionStats.Origin.IndividualCalls);
-				//Application.Current.Dispatcher.BeginInvoke(new Action(() => FunctionChart.Series = BuildAreaChart(functionStats)));
-			}
+		//private void FrameChart_DataClick(object sender, ChartPoint point)
+		//{
+		//	int index = (int)point.X;
+		//	if (Stats != null && 0 <= index && index < Stats.Samples.Count)
+		//	{
+		//		FunctionStats.Sample sample = Stats.Samples[index];
 
-			Description = desc;
-		}
+		//		Entry maxEntry = null;
+		//		double maxDuration = 0;
 
-		private void FrameChart_DataClick(object sender, ChartPoint point)
-		{
-			int index = (int)point.X;
-			if (Stats != null && 0 <= index && index < Stats.Samples.Count)
-			{
-				FunctionStats.Sample sample = Stats.Samples[index];
+		//		sample.Entries.ForEach(e => { if (maxDuration < e.Duration) { maxDuration = e.Duration; maxEntry = e; } });
 
-				Entry maxEntry = null;
-				double maxDuration = 0;
+		//		EventNode maxNode = maxEntry.Frame.Root.FindNode(maxEntry);
 
-				sample.Entries.ForEach(e => { if (maxDuration < e.Duration) { maxDuration = e.Duration; maxEntry = e; } });
-
-				EventNode maxNode = maxEntry.Frame.Root.FindNode(maxEntry);
-
-				RaiseEvent(new TimeLine.FocusFrameEventArgs(TimeLine.FocusFrameEvent, new EventFrame(maxEntry.Frame, maxNode), null));
-			}
-		}
+		//		RaiseEvent(new TimeLine.FocusFrameEventArgs(TimeLine.FocusFrameEvent, new EventFrame(maxEntry.Frame, maxNode), null));
+		//	}
+		//}
 	}
 }

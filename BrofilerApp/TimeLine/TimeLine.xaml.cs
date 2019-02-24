@@ -249,16 +249,16 @@ statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, st
 		public class FocusFrameEventArgs : RoutedEventArgs
 		{
 			public Data.Frame Frame { get; set; }
-			public Data.EventNode Node { get; set; }
+			public IDurable Focus { get; set; }
 
-			public FocusFrameEventArgs(RoutedEvent routedEvent, Data.Frame frame, Data.EventNode node = null) : base(routedEvent)
+			public FocusFrameEventArgs(RoutedEvent routedEvent, Data.Frame frame, IDurable focus = null) : base(routedEvent)
 			{
 				Frame = frame;
-				Node = node;
+				Focus = focus;
 			}
 		}
 
-		public class ShowWarningEventArgs : RoutedEventArgs
+        public class ShowWarningEventArgs : RoutedEventArgs
 		{
 			public String Message { get; set; }
 			public String URL { get; set; }

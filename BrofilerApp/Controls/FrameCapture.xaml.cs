@@ -60,12 +60,12 @@ namespace Profiler.Controls
             InitializeComponent();
 
 			this.AddHandler(TimeLine.FocusFrameEvent, new TimeLine.FocusFrameEventHandler(this.OpenFrame));
+            this.AddHandler(ThreadView.HighlightFrameEvent, new ThreadView.HighlightFrameEventHandler(this.ThreadView_HighlightEvent));
 
-			ProfilerClient.Get().ConnectionChanged += MainWindow_ConnectionChanged;
+            ProfilerClient.Get().ConnectionChanged += MainWindow_ConnectionChanged;
 
 			WarningTimer = new DispatcherTimer(TimeSpan.FromSeconds(12.0), DispatcherPriority.Background, OnWarningTimeout, Application.Current.Dispatcher);
 
-			FrameInfoControl.SelectedTreeNodeChanged += new SelectedTreeNodeChangedHandler(FrameInfo_OnSelectedTreeNodeChanged);
 
 			timeLine.NewConnection += TimeLine_NewConnection;
 			timeLine.ShowWarning += TimeLine_ShowWarning;
@@ -128,23 +128,22 @@ namespace Profiler.Controls
 
 		private void OpenFrame(object source, TimeLine.FocusFrameEventArgs args)
 		{
-			Durable focusRange = null;
-			if (args.Node != null)
-			{
-				focusRange = args.Node.Entry;
-			}
-			else if (args.Frame is EventFrame)
-			{
-				focusRange = (args.Frame as EventFrame).Header;
-			}
+			//Durable focusRange = null;
+			//if (args.Node != null)
+			//{
+			//	focusRange = args.Node.Entry;
+			//}
+			//else if (args.Frame is EventFrame)
+			//{
+			//	focusRange = (args.Frame as EventFrame).Header;
+			//}
 
 			Data.Frame frame = args.Frame;
 
-			if (FrameInfoControl.DataContext == null || !FrameInfoControl.DataContext.Equals(frame))
-			{
-				FrameInfoControl.SetFrame(frame, focusRange);
-				FunctionHistoryControl.LoadAsync(frame);
-			}
+            if (frame is EventFrame)
+                ThreadView.Highlight(frame as EventFrame, null);
+
+            FunctionPanelControl.SetFrame(frame);
 
 			if (frame != null && frame.Group != null)
 			{
@@ -153,13 +152,10 @@ namespace Profiler.Controls
             }
 		}
 
-		void FrameInfo_OnSelectedTreeNodeChanged(Data.Frame frame, BaseTreeNode node)
-		{
-			if (node is EventNode && frame is EventFrame)
-			{
-				ThreadView.FocusOn(frame as EventFrame, node as EventNode);
-			}
-		}
+        private void ThreadView_HighlightEvent(object sender, HighlightFrameEventArgs e)
+        {
+            ThreadView.Highlight(e.Items);
+        }
 
 		public void Close()
 		{
@@ -197,14 +193,13 @@ namespace Profiler.Controls
 		private void ClearButton_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
 			timeLine.Clear();
-			FunctionHistoryControl.Clear();
 			ThreadView.Group = null;
-			FrameInfoControl.SetFrame(null, null);
             SummaryVM.Summary = null;
             SummaryVM.CaptureName = null;
+			FunctionPanelControl.Clear();
 		}
 
-		private void ClearSamplingButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        private void ClearSamplingButton_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
 			ProfilerClient.Get().SendMessage(new TurnSamplingMessage(-1, false));
 		}

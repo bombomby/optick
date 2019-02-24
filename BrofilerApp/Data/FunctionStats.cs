@@ -47,7 +47,23 @@ namespace Profiler.Data
 		public FrameGroup Group { get; set; }
 		public EventDescription Description { get; set; }
 
-		public FunctionStats(FrameGroup group, EventDescription desc)
+        public double AvgTotal
+        {
+            get { return Samples.Average(s => s.Total); }
+        }
+
+        public double AvgWork
+        {
+            get { return Samples.Average(s => s.Work); }
+        }
+
+        public double AvgWait
+        {
+            get { return Samples.Average(s => s.Wait); }
+        }
+
+
+        public FunctionStats(FrameGroup group, EventDescription desc)
 		{
 			Group = group;
 			Description = desc;
@@ -98,7 +114,7 @@ namespace Profiler.Data
 						{
 							foreach (Entry e in shortEntries)
 							{
-								Samples.Add(new Sample(e) { Index = Samples.Count });
+								Samples.Add(new Sample(e) { Index = Samples.Count, Name = Description.Name });
 							}
 						}
 					}

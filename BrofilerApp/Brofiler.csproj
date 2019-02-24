@@ -237,6 +237,9 @@
     <Compile Include="Controls\FunctionHistory.xaml.cs">
       <DependentUpon>FunctionHistory.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controls\FunctionPanel.xaml.cs">
+      <DependentUpon>FunctionPanel.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\FunctionSearch.xaml.cs">
       <DependentUpon>FunctionSearch.xaml</DependentUpon>
     </Compile>
@@ -264,11 +267,21 @@
     <Compile Include="InfrastructureMvvm\ViewModelPresenter.cs" />
     <Compile Include="InfrastructureMvvm\WindowManager.cs" />
     <Compile Include="InfrastructureMvvm\BaseViewModel.cs" />
+    <Compile Include="ViewModels\FunctionSummaryViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\PlatformSelectorViewModel.cs" />
     <Compile Include="ViewModels\ScreenShotViewModel.cs" />
     <Compile Include="ViewModels\SummaryViewerModel.cs" />
     <Compile Include="InfrastructureMvvm\ViewModelLocator.cs" />
+    <Compile Include="Views\FunctionHistoryView.xaml.cs">
+      <DependentUpon>FunctionHistoryView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FunctionInstanceView.xaml.cs">
+      <DependentUpon>FunctionInstanceView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FunctionSummaryView.xaml.cs">
+      <DependentUpon>FunctionSummaryView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\ScreenShotView.xaml.cs">
       <DependentUpon>ScreenShotView.xaml</DependentUpon>
     </Compile>
@@ -364,6 +377,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Controls\FunctionPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\FunctionSearch.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -377,6 +394,18 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\TagsControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FunctionHistoryView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FunctionInstanceView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FunctionSummaryView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

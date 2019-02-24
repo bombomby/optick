@@ -53,6 +53,12 @@
         <Setter Property="MinHeight" Value="{StaticResource DefaultButtonSize}" />
         <Setter Property="BorderThickness" Value="0" />
     </Style>
+    <Style TargetType="GroupBox" BasedOn="{StaticResource MetroGroupBox}">
+        <Setter Property="Background" Value="{StaticResource BroContentBackground}" />
+        <Setter Property="BorderBrush" Value="{x:Null}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
 
     <ControlTemplate x:Key="SplitToggleButtonHorizontal" TargetType="{x:Type Controls:SplitButton}">
         <Grid UseLayoutRounding="True">
