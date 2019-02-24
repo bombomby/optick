@@ -22,7 +22,7 @@ namespace Brofiler
 		{
 			VkCommandBuffer commandBuffer;
 			VkFence fence;
-			Frame() : commandBuffer(nullptr), fence(nullptr) {}
+			Frame() : commandBuffer(VK_NULL_HANDLE), fence(VK_NULL_HANDLE) {}
 		};
 
 		struct NodePayload
@@ -35,7 +35,7 @@ namespace Brofiler
 
 			std::array<Frame, NUM_FRAMES_DELAY> frames;
 
-		//	NodePayload() : device(nullptr), physicalDevice(nullptr), queue(nullptr), queryPool(nullptr), commandPool(nullptr) {}
+			NodePayload() : device(VK_NULL_HANDLE), physicalDevice(VK_NULL_HANDLE), queue(VK_NULL_HANDLE), queryPool(VK_NULL_HANDLE), commandPool(VK_NULL_HANDLE) {}
 			~NodePayload();
 		};
 		std::vector<NodePayload*> nodePayloads;

@@ -1,2 +1,2 @@
-Tools\Windows\premake5.exe --DX12 --Vulkan --Fibers vs2017
+Tools\Windows\premake5.exe vs2017
 PAUSE
