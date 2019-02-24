@@ -108,10 +108,12 @@ namespace Brofiler
 	{
 #if defined(BRO_MSVC_COMPILER_FAMILY)
 		return GetCurrentThreadId();
-#elif defined(BRO_GCC_COMPILER_FAMILY)
-        uint64_t tid;
-        pthread_threadid_np(pthread_self(), &tid);
-        return tid;
+#elif defined(BRO_PLATFORM_OSX)
+		uint64_t tid;
+		pthread_threadid_np(pthread_self(), &tid);
+		return tid;
+#elif defined(BRO_PLATFORM_LINUX)
+		return syscall(SYS_gettid);
 #else
 		#error Platform is not supported!
 #endif
@@ -139,12 +141,6 @@ namespace Brofiler
 		LARGE_INTEGER frequency;
 		QueryPerformanceFrequency(&frequency);
 		return frequency.QuadPart;
-//#elif defined(BRO_PLATFORM_OSX)
-//        mach_timebase_info_data_t info;
-//        if (mach_timebase_info(&info) != KERN_SUCCESS) {
-//            BRO_FAILED("mach_timebase_info failed");
-//        }
-//        return int64_t(1e9) * info.denom / info.numer;
 #elif defined(BRO_GCC_COMPILER_FAMILY)
 		return 1000000000;
 #else
@@ -195,9 +191,7 @@ namespace Brofiler
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	BRO_INLINE Platform::ID GetPlatform()
 	{
-#if defined(BRO_PLATFORM_WINDOWS)
-		return Platform::Windows;
-#elif defined(BRO_PLATFORM_LINUX)
+#if defined(BRO_PLATFORM_LINUX)
 		return Platform::Linux;
 #elif defined(BRO_PLATFORM_OSX)
 		return Platform::MacOS;
@@ -205,6 +199,8 @@ namespace Brofiler
 		return Platform::XBox;
 #elif defined(BRO_PLATFORM_PS)
 		return Platform::Playstation;
+#elif defined(BRO_PLATFORM_WINDOWS)
+		return Platform::Windows;
 #else
 		#error Platform is not supported!
 #endif
