@@ -1,6 +1,8 @@
 Bin/
+Brofiler/.vs/
 Brofiler/obj/
 BrofilerApp/obj/
+BrofilerApp/packages/
 BrofilerApp/.vs/
 Build/
 *.suo
@@ -11,5 +13,3 @@ Publish/
 .DS_Store
 /Samples/UnrealEnginePlugin/Binaries
 /.vs
-/Brofiler/.vs/Brofiler_vs2017/v15/Server/sqlite3
-/Brofiler/.vs
