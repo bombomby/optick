@@ -138,8 +138,11 @@ namespace Profiler.Controls
 		private void TimeLine_NewConnection(object sender, RoutedEventArgs e)
 		{
 			TimeLine.NewConnectionEventArgs args = e as TimeLine.NewConnectionEventArgs;
-			// TODO: Implement new connection processing
-			Debug.Print("New Connection: [{0}] {1}:{2} {3}", args.Connection.Target, args.Connection.Address, args.Connection.Port, args.Connection.Name);
+            // TODO: Implement new connection processing
+            // Debug.Print("New Connection: [{0}] {1}:{2} {3}", args.Connection.Target, args.Connection.Address, args.Connection.Port, args.Connection.Name);
+            if (PlatformSelectorVM !=null)
+                PlatformSelectorVM.ActivePlatform = new PlatformDescription() { PlatformType = args.Connection.Target, IP = args.Connection.Address, Port = (short)args.Connection.Port, Name = args.Connection.Name };
+
 		}
 
 		private void OpenFrame(object source, TimeLine.FocusFrameEventArgs args)

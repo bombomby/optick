@@ -1,28 +1,37 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
 namespace Profiler.InfrastructureMvvm
 {
-    public class BoolToVisibilityConverter : IValueConverter
+    public sealed class BoolToVisibilityConverter : BoolToVisibilityConverterGeneric<Visibility>
     {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public BoolToVisibilityConverter() :
+            base(Visibility.Visible, Visibility.Collapsed)
+        { }
+    }
+
+    public class BoolToVisibilityConverterGeneric<T> : IValueConverter
+    {
+        public BoolToVisibilityConverterGeneric(T trueValue, T falseValue)
         {
-            try
-            {
-                var v = (bool)value;
-                return v ? Visibility.Visible : Visibility.Collapsed;
-            }
-            catch (InvalidCastException)
-            {
-                return Visibility.Collapsed;
-            }
+            True = trueValue;
+            False = falseValue;
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public T True { get; set; }
+        public T False { get; set; }
+
+        public virtual object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            return value is bool && ((bool)value) ? True : False;
+        }
+
+        public virtual object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value is T && EqualityComparer<T>.Default.Equals((T)value, True);
         }
     }
 }

@@ -11,6 +11,9 @@
     <UserControl.Resources>
         <local:StringToResource x:Key="StringToResource" />
         <helper:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+        <helper:BoolToVisibilityConverter x:Key="BoolToVisibilityConverterInvert"
+                                          True="Collapsed" 
+                                          False="Visible"/>
     </UserControl.Resources>
     <StackPanel Orientation="Horizontal">
         <ComboBox x:Name="comboBox" HorizontalAlignment="Left" VerticalAlignment="Top" Width="Auto" MinWidth="200" Height="Auto"
@@ -19,13 +22,29 @@
                   MinHeight="{StaticResource DefaultButtonSize}">
             <ComboBox.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Orientation="Horizontal" Margin="0,-4">
-                        <Border Width="16" Height="16" >
+                    <Grid HorizontalAlignment="Stretch" Margin="0,-4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="15"/>
+                            <ColumnDefinition Width="120"/>
+                            <ColumnDefinition Width="80"/>
+                            <ColumnDefinition Width="15"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Width="16" Height="16" Grid.Column="0" >
                             <ContentControl Style="{Binding Icon, Converter={StaticResource StringToResource}}" Margin="-6" />
                         </Border>
-                        <Label MinWidth="68" Content="{Binding Name}" Margin="0" FontWeight="Bold" />
-                        <Label Content="{Binding Status}" Margin="0" />
-                    </StackPanel>
+                        <Label Grid.Column="1" MinWidth="68" Content="{Binding Name}" Margin="0" FontWeight="Bold" />
+                        <Label Grid.Column="2" Content="{Binding Status}" Margin="0" />
+                        <Button Grid.Column="3" ToolTip="Remove Connection"
+                                 Margin="0,0,0,0" Padding="-6" 
+                                 HorizontalAlignment="Right" VerticalAlignment="Center"
+                                 Width="15" Height="15"
+                                 Visibility="{Binding  CoreType, Converter={StaticResource BoolToVisibilityConverter}}" 
+                                 Command="{Binding  DataContext.RemoveConnectionCommand,
+                                                    RelativeSource= {RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}">
+                            <ContentControl Style="{StaticResource appbar_add}" />
+                        </Button>
+                    </Grid>
                 </DataTemplate>
             </ComboBox.ItemTemplate>
         </ComboBox>
@@ -38,7 +57,7 @@
                     HorizontalAlignment="Left" VerticalAlignment="Center"
                     Width="{StaticResource DefaultButtonSize}" 
                     Height="{StaticResource DefaultButtonSize}"
-                    Command="{Binding AddConnection}">
+                    Command="{Binding AddConnectionCommand}">
                 <ContentControl Style="{StaticResource appbar_add}" />
             </Button>
         </StackPanel>

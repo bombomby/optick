@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Collections.ObjectModel;
 using Profiler.InfrastructureMvvm;
+using System.Net.NetworkInformation;
+using System.Net.Sockets;
+using Autofac;
+using Profiler.Controls;
 
 namespace Profiler.ViewModels
 {
@@ -13,7 +17,7 @@ namespace Profiler.ViewModels
     {
         #region private fields
 
-
+        Settings _config;
 
         #endregion
 
@@ -51,18 +55,43 @@ namespace Profiler.ViewModels
 
         #region commands
 
-        private RelayCommandAsync _addConnection;
-        public RelayCommandAsync AddConnection
+        private RelayCommandAsync _addConnectionCommand;
+        public RelayCommandAsync AddConnectionCommand
         {
             get
             {
-                return _addConnection ??
-                    (_addConnection = new RelayCommandAsync(async() => 
+                return _addConnectionCommand ??
+                    (_addConnectionCommand = new RelayCommandAsync(async () =>
                     {
-                       // await Task.Run();
+                        IPAddress address = null;
+                        IPAddress.TryParse(NewIP, out address);
+
+                        await AddPlatformAsync(address, NewPort, true);                      
                     },
                   // Condition execute command
-                  () => NewPort != null && NewIP != null
+                  () => NewPort > 0 && IsIpValid(NewIP)
+                  ));
+            }
+        }
+
+        private RelayCommand _removeConnectionCommand;
+        public RelayCommand RemoveConnectionCommand
+        {
+            get
+            {
+                return _removeConnectionCommand ??
+                    (_removeConnectionCommand = new RelayCommand(obj =>
+                    {
+                        PlatformDescription platform = obj as PlatformDescription;
+                        Platforms.Remove(platform);
+                        ActivePlatform = Platforms.FirstOrDefault();
+                    },
+                  // Condition execute command
+                  enable =>
+                  {
+                      PlatformDescription platform = enable as PlatformDescription;
+                      return platform != null ? !platform.CoreType : false;
+                  }
                   ));
             }
         }
@@ -78,14 +107,25 @@ namespace Profiler.ViewModels
 
             PlatformDescription description = new PlatformDescription();
 
+            using (var scope = BootStrapperBase.Container.BeginLifetimeScope())
+                _config = scope.Resolve<Settings>();
+
+            // Set core connections
             foreach (var ip in Platform.GetPCAddresses().Distinct())
                 _platforms.Add(new PlatformDescription() { Name = Environment.MachineName, IP = ip, CoreType = true });
 
             _platforms.Add(new PlatformDescription() { Name = "Add Connection", IP = IPAddress.Loopback, Detailed = true, CoreType = true });
 
+            // Get custom connections from Settings
+            if (_config?.LocalSettings?.Data?.Connections != null)
+                foreach (var item in _config.LocalSettings.Data.Connections)
+                    Platforms.Add(new PlatformDescription() { Name = item.Name, IP = item.Address, Port = (short)item.Port, PlatformType = item.Target });
+                                
             ActivePlatform = Platforms[0];
 
             NewPort = PlatformDescription.DEFAULT_PORT;
+
+            Platforms.CollectionChanged += Platforms_CollectionChanged;
         }
 
         #endregion
@@ -97,12 +137,81 @@ namespace Profiler.ViewModels
 
         #region private methods
 
+        // Save collection to settings
+        private void Platforms_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            var customConnectios = Platforms.Where(x => x.Detailed == true);
 
+            if (_config.LocalSettings.Data.Connections != null)
+                _config.LocalSettings.Data.Connections.Clear();
+            else
+                _config.LocalSettings.Data.Connections = new List<Platform.Connection>();
+
+            Task.Run(() =>
+            {
+                foreach (var item in customConnectios)
+                {
+                    _config.LocalSettings.Data.Connections.Add(new Platform.Connection() { Name = item.Name, Address = item.IP, Port = item.Port, Target = item.PlatformType });
+                }
+
+                _config.LocalSettings.Save();
+            } );
+        }
+
+
+        private bool IsIpValid(string ip)
+        {
+            if (ip?.Length > 0)
+            {
+                IPAddress address = null;
+                return IPAddress.TryParse(ip, out address);
+            }
+            else
+                return false;
+        }
+
+
+        private async Task AddPlatformAsync(IPAddress ip, short port, bool autofocus)
+        {
+            if (ip.Equals(IPAddress.None) || ip.Equals(IPAddress.Any) || ip.Equals(IPAddress.Loopback))
+                return;
+
+            PingReply reply = await new Ping().SendPingAsync(ip, 16);
+
+            if (reply.Status == IPStatus.Success)
+            {
+                string name = reply.Address.ToString();
+
+                try
+                {
+                    IPHostEntry entry = await Dns.GetHostEntryAsync(reply.Address);
+                    if (entry != null)
+                        name = entry.HostName;
+                }
+                catch (SocketException) { }
+
+                var newPlatform = new PlatformDescription() { Name = name, IP = reply.Address, Port = port };
+
+                bool needAdd = true;
+
+                foreach (PlatformDescription platform in Platforms)
+                    if (platform.IP.Equals(reply.Address) && platform.Port == port)
+                    {
+                        newPlatform = platform;
+                        needAdd = false;
+                        break;
+                    }
+                
+
+                if (needAdd)
+                    Platforms.Add(newPlatform);
+
+                if (autofocus)
+                    ActivePlatform = newPlatform;
+            }
+        }
 
         #endregion
-
-       
-
 
     }
 
@@ -121,7 +230,8 @@ namespace Profiler.ViewModels
             get { return _name; }
             set {
                     SetField(ref _name, value);
-                    Icon = GetIconByComputerName(_name);
+                    if (PlatformType == Platform.Type.Unknown)
+                        Icon = GetIconByComputerName(_name);
                 }
         }
 
@@ -138,7 +248,7 @@ namespace Profiler.ViewModels
             get { return _platformType; }
             set {
                    SetField(ref _platformType, value);
-                   Icon = GetIconByPlatformType(_platformType);
+                   Icon = GetIconByPlatformType(value);
                 }
         }
 

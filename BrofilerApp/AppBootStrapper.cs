@@ -22,6 +22,7 @@ namespace Profiler
             builder.RegisterType<PlatformSelectorView>().SingleInstance();
             builder.RegisterType<FileDialogService>().As<IFileDialogService>();
             builder.RegisterType<LocalSettings>().AsSelf().SingleInstance();
+            builder.RegisterType<Settings>().AsSelf().SingleInstance();
         }
     }
 }
