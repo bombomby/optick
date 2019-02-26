@@ -132,6 +132,14 @@ namespace Profiler.ViewModels
 
         #region public methods
 
+        public void PlatformUpdate(PlatformDescription platform)
+        {
+            int index = Platforms.IndexOf(ActivePlatform);
+            Platforms[index] = platform;
+
+            ActivePlatform = Platforms[index];
+        }
+
         #endregion
 
 
@@ -140,7 +148,7 @@ namespace Profiler.ViewModels
         // Save collection to settings
         private void Platforms_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            var customConnectios = Platforms.Where(x => x.Detailed == true);
+            var customConnectios = Platforms.Where(x => x.CoreType == false);
 
             if (_config.LocalSettings.Data.Connections != null)
                 _config.LocalSettings.Data.Connections.Clear();
@@ -150,10 +158,8 @@ namespace Profiler.ViewModels
             Task.Run(() =>
             {
                 foreach (var item in customConnectios)
-                {
                     _config.LocalSettings.Data.Connections.Add(new Platform.Connection() { Name = item.Name, Address = item.IP, Port = item.Port, Target = item.PlatformType });
-                }
-
+                
                 _config.LocalSettings.Save();
             } );
         }
