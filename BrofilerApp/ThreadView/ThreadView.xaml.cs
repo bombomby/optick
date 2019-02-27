@@ -261,6 +261,9 @@ namespace Profiler
 				offset += row.Height;
 			}
 
+			surface.Height = offset;
+			surface.MaxHeight = offset;
+
 			InitBackgroundMesh();
 		}
 

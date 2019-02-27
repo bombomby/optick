@@ -207,6 +207,12 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="WindowsFormsIntegration" />
+    <Reference Include="Xceed.Wpf.AvalonDock, Version=3.5.2.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>packages\Dirkster.AvalonDock.Themes.VS2013.3.5.0.2\lib\net4\Xceed.Wpf.AvalonDock.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.VS2013, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Dirkster.AvalonDock.Themes.VS2013.3.5.0.2\lib\net4\Xceed.Wpf.AvalonDock.Themes.VS2013.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -236,9 +242,6 @@
     </Compile>
     <Compile Include="Controls\FunctionHistory.xaml.cs">
       <DependentUpon>FunctionHistory.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\FunctionPanel.xaml.cs">
-      <DependentUpon>FunctionPanel.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\FunctionSearch.xaml.cs">
       <DependentUpon>FunctionSearch.xaml</DependentUpon>
@@ -374,10 +377,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\FunctionHistory.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\FunctionPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

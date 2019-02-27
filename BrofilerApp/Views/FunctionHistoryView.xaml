@@ -33,12 +33,12 @@
             </Grid.RowDefinitions>
             <lvc:CartesianChart Grid.Row="1" x:Name="FrameChart" DisableAnimations="True" AnimationsSpeed="0" Hoverable="True" Background="{StaticResource BroContentBackground}" MinHeight="100">
                 <lvc:CartesianChart.Series>
-                    <lvc:StackedColumnSeries Values="{Binding WorkValues}">
+                    <lvc:StackedColumnSeries Values="{Binding WorkValues}" ColumnPadding="0.5">
                         <lvc:StackedColumnSeries.Fill>
                             <SolidColorBrush Color="LimeGreen" Opacity="0.5" />
                         </lvc:StackedColumnSeries.Fill>
                     </lvc:StackedColumnSeries>
-                    <lvc:StackedColumnSeries Values="{Binding WaitValues}">
+                    <lvc:StackedColumnSeries Values="{Binding WaitValues}" ColumnPadding="0.5">
                         <lvc:StackedColumnSeries.Fill>
                             <SolidColorBrush Color="Tomato" Opacity="0.5" />
                         </lvc:StackedColumnSeries.Fill>
@@ -52,7 +52,7 @@
                     </lvc:Axis>
                 </lvc:CartesianChart.AxisX>
                 <lvc:CartesianChart.AxisY>
-                    <lvc:Axis Title="Function Frame Time (ms)" MinValue="0">
+                    <lvc:Axis Title="Duration Per Frame (ms)" MinValue="0">
                         <lvc:Axis.Separator>
                             <lvc:Separator StrokeThickness="0.33"/>
                         </lvc:Axis.Separator>

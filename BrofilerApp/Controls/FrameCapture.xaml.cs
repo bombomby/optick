@@ -71,32 +71,12 @@ namespace Profiler.Controls
 			timeLine.ShowWarning += TimeLine_ShowWarning;
 			warningBlock.Visibility = Visibility.Collapsed;
 
-			// Workaround for WPF bug with MaxHeight binding
-			SizeChanged += FrameCapture_SizeChanged;
-			this.ThreadView.ThreadList.SizeChanged += ThreadList_SizeChanged;
+			FunctionSummaryVM = (FunctionSummaryViewModel)FindResource("FunctionSummaryVM");
+			FunctionInstanceVM = (FunctionInstanceViewModel)FindResource("FunctionInstanceVM");
 		}
 
-		const double BOTTOM_GRID_MIN_HEIGHT = 350;
-
-		private void UpdateThreadViewLayout()
-		{
-			double maxHeight = Math.Max(ThreadView.MinHeight, BottomGrid.ActualHeight - BOTTOM_GRID_MIN_HEIGHT);
-			if (this.ThreadView.ThreadList.ActualHeight > maxHeight)
-				ThreadView.Height = maxHeight;
-			else
-				ThreadView.Height = double.NaN;
-		}
-
-		private void ThreadList_SizeChanged(object sender, SizeChangedEventArgs e)
-		{
-			UpdateThreadViewLayout();
-		}
-
-
-		private void FrameCapture_SizeChanged(object sender, SizeChangedEventArgs e)
-		{
-			UpdateThreadViewLayout();
-		}
+		FunctionSummaryViewModel FunctionSummaryVM { get; set; }
+		FunctionInstanceViewModel FunctionInstanceVM { get; set; }
 
 		public bool LoadFile(string path)
 		{
@@ -143,7 +123,16 @@ namespace Profiler.Controls
             if (frame is EventFrame)
                 ThreadView.Highlight(frame as EventFrame, null);
 
-            FunctionPanelControl.SetFrame(frame);
+			if (frame is EventFrame)
+			{
+				EventFrame eventFrame = frame as EventFrame;
+				FunctionSummaryVM.Load(eventFrame.Group, eventFrame.RootEntry.Description);
+				FunctionInstanceVM.Load(eventFrame.Group, eventFrame.RootEntry.Description);
+
+				FrameInfoControl.SetFrame(frame, null);
+				SampleInfoControl.SetFrame(frame, null);
+				SysCallInfoControl.SetFrame(frame, null);
+			}
 
 			if (frame != null && frame.Group != null)
 			{
@@ -196,7 +185,10 @@ namespace Profiler.Controls
 			ThreadView.Group = null;
             SummaryVM.Summary = null;
             SummaryVM.CaptureName = null;
-			FunctionPanelControl.Clear();
+
+			FrameInfoControl.DataContext = null;
+			SampleInfoControl.DataContext = null; 
+			SysCallInfoControl.DataContext = null;
 		}
 
         private void ClearSamplingButton_Click(object sender, System.Windows.RoutedEventArgs e)

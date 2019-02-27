@@ -22,7 +22,9 @@
          <DataTemplate DataType="{x:Type ControlsViewModel:SummaryViewerModel}">
             <ControlsView:SummaryViewer />
         </DataTemplate>
-                
+
+        <ControlsViewModel:FunctionSummaryViewModel x:Key="FunctionSummaryVM" Origin="MainThread" Title="Per Frame Statistics" AreaOpacity="0.5" />
+        <ControlsViewModel:FunctionInstanceViewModel x:Key="FunctionInstanceVM" Origin="IndividualCalls" Title="Per Call Statistics" />
     </UserControl.Resources>
 
     <UserControl.CommandBindings>
@@ -97,7 +99,65 @@
             </Border>
         </Grid>
         <Grid Grid.Row="1" x:Name="BottomGrid">
-            <Grid.RowDefinitions>
+            <Grid.Resources>
+                <SolidColorBrush x:Key="TabBackground">Red</SolidColorBrush>
+            </Grid.Resources>
+            <xcad:DockingManager AllowMixedOrientation="True" BorderBrush="Black" BorderThickness="1">
+                <xcad:DockingManager.Theme>
+                    <xcad:Vs2013DarkTheme />
+                </xcad:DockingManager.Theme>
+                <xcad:DockingManager.DocumentHeaderTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{Binding IconSource}" Margin="0,0,4,0"/>
+                            <TextBlock Text="{Binding Title}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </xcad:DockingManager.DocumentHeaderTemplate>
+                <xcad:LayoutRoot x:Name="_layoutRoot">
+                    <xcad:LayoutPanel Orientation="Vertical">
+                        <xcad:LayoutAnchorablePaneGroup DockHeight="2*">
+                            <xcad:LayoutAnchorablePane x:Name="LayoutDocumentPane">
+                                <xcad:LayoutAnchorable ContentId="document1" Title="Threads">
+                                    <Profiler:ThreadView x:Name="ThreadView" MinHeight="1" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" />
+                                </xcad:LayoutAnchorable>
+                            </xcad:LayoutAnchorablePane>
+                        </xcad:LayoutAnchorablePaneGroup>
+                        <xcad:LayoutPanel Orientation="Horizontal" DockHeight="1*">
+                            <xcad:LayoutAnchorablePaneGroup DockWidth="1*">
+                                <xcad:LayoutAnchorablePane>
+                                    <xcad:LayoutAnchorable ContentId="function_list" Title="Frame Statistics" CanClose="False">
+                                        <ControlsView:FunctionHistoryView x:Name="FunctionHistoryControl" DataContext="{StaticResource FunctionSummaryVM}" />
+                                    </xcad:LayoutAnchorable>
+                                    <xcad:LayoutAnchorable ContentId="properties" Title="Properties" CanHide="False" CanClose="False" AutoHideWidth="240">
+                                        <ControlsView:FunctionSummaryView x:Name="FunctionSummaryControl" DataContext="{StaticResource FunctionSummaryVM}" />
+                                    </xcad:LayoutAnchorable>
+                                </xcad:LayoutAnchorablePane>
+                            </xcad:LayoutAnchorablePaneGroup>
+                            <xcad:LayoutAnchorablePaneGroup DockWidth="5*">
+                                <xcad:LayoutAnchorablePane>
+                                    <xcad:LayoutAnchorable ContentId="function_tree" Title="Function Tree" CanClose="False">
+                                        <Profiler:FrameInfo x:Name="FrameInfoControl" />
+                                    </xcad:LayoutAnchorable>
+                                    <xcad:LayoutAnchorable ContentId="sampling_tree" Title="Function Callstacks" CanClose="False">
+                                        <Profiler:SampleInfo x:Name="SampleInfoControl" CallstackType="AutoSample" />
+                                    </xcad:LayoutAnchorable>
+                                    <xcad:LayoutAnchorable ContentId="syscalls_tree" Title="Function SysCalls" CanClose="False">
+                                        <Profiler:SampleInfo x:Name="SysCallInfoControl" CallstackType="SysCall" />
+                                    </xcad:LayoutAnchorable>
+                                    <xcad:LayoutAnchorable ContentId="instance_list" Title="Function Statistics" CanClose="False">
+                                        <ControlsView:FunctionInstanceView x:Name="InstanceHistoryControl" DataContext="{StaticResource FunctionInstanceVM}" Margin="0,0,1,0" />
+                                    </xcad:LayoutAnchorable>
+                                </xcad:LayoutAnchorablePane>
+                            </xcad:LayoutAnchorablePaneGroup>
+                        </xcad:LayoutPanel>
+                    </xcad:LayoutPanel>
+                </xcad:LayoutRoot>
+            </xcad:DockingManager>
+
+
+
+            <!--<Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="1*" />
             </Grid.RowDefinitions>
@@ -112,7 +172,7 @@
 
             <Grid Grid.Row="1">
                 <Controls:FunctionPanel x:Name="FunctionPanelControl" />
-            </Grid>
+            </Grid>-->
 
        
             <!--<local:FrameInfo x:Name="FrameInfoControl" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />-->

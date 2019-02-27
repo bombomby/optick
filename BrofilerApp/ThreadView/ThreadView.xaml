@@ -28,14 +28,15 @@
     </UserControl.Resources>
     <Grid Height="Auto" Name="panel">
         <Grid.RowDefinitions>
-            <RowDefinition Height="280*" />
-            <RowDefinition Height="20*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
-        <StackPanel Margin="0,-25,2,0" HorizontalAlignment="Right" x:Name="ThreadToolsPanel" Grid.Column="1" VerticalAlignment="Top" Orientation="Horizontal">
+        <StackPanel Margin="1" HorizontalAlignment="Right" x:Name="ThreadToolsPanel" Grid.Column="1" VerticalAlignment="Top" Orientation="Horizontal">
             <Controls:FunctionSearch x:Name="FunctionSearchControl" Margin="1,0" Width="230" />
             <ToggleButton x:Name="ShowSyncWorkButton" ToolTip="Show Work" Height="{StaticResource DefaultButtonSize}" Margin="0,0,1,0" Click="ShowSyncWorkButton_Click">
                 <TextBlock Text="SHOW CPU CORES" Margin="0,-3,0,0" Padding="0" />
@@ -73,13 +74,13 @@
                 </Border>
             </Popup>
         </StackPanel>
-        <ScrollViewer Grid.Row="0" Grid.Column="1" VerticalScrollBarVisibility="Auto" x:Name="ScrollArea">
+        <ScrollViewer Grid.Row="1" Grid.Column="1" VerticalScrollBarVisibility="Auto" x:Name="ScrollArea">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="1*" />
                 </Grid.ColumnDefinitions>
-                <Grid x:Name="ThreadList">
+                <Grid x:Name="ThreadList" VerticalAlignment="Center" Background="{StaticResource BroBackground}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
@@ -152,6 +153,6 @@
                 </ItemsControl>
             </Border>
         </Popup>
-        <ScrollBar Orientation="Horizontal" Width="Auto" x:Name="scrollBar" Grid.Column="1" Grid.Row="1" />
+        <ScrollBar Orientation="Horizontal" Width="Auto" x:Name="scrollBar" Grid.Column="1" Grid.Row="2" VerticalAlignment="Bottom" Margin="0,0,10,0" />
     </Grid>
 </UserControl>
