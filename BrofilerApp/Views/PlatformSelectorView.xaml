@@ -18,7 +18,7 @@
     <StackPanel Orientation="Horizontal">
         <ComboBox x:Name="comboBox" HorizontalAlignment="Left" VerticalAlignment="Top" Width="Auto" MinWidth="200" Height="Auto"
                   ItemsSource="{Binding Platforms}" 
-                  SelectedItem="{Binding ActivePlatform, Mode=TwoWay}"
+                  SelectedItem="{Binding ActivePlatform}"
                   MinHeight="{StaticResource DefaultButtonSize}">
             <ComboBox.ItemTemplate>
                 <DataTemplate>
@@ -38,11 +38,11 @@
                                  Margin="0,0,0,0" Padding="-6" 
                                  HorizontalAlignment="Right" VerticalAlignment="Center"
                                  Width="15" Height="15"
-                                 Visibility="{Binding  CoreType, Converter={StaticResource BoolToVisibilityConverter}}" 
+                                 Visibility="{Binding  CoreType, Converter={StaticResource BoolToVisibilityConverterInvert}}" 
                                  Command="{Binding  DataContext.RemoveConnectionCommand,
                                                     RelativeSource= {RelativeSource AncestorType=UserControl}}"
                                                     CommandParameter="{Binding}">
-                            <ContentControl Style="{StaticResource appbar_add}" />
+                            <ContentControl Style="{StaticResource appbar_close}" />
                         </Button>
                     </Grid>
                 </DataTemplate>

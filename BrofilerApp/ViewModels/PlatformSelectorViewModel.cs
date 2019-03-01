@@ -10,6 +10,7 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using Autofac;
 using Profiler.Controls;
+using System.Windows;
 
 namespace Profiler.ViewModels
 {
@@ -34,7 +35,12 @@ namespace Profiler.ViewModels
         public PlatformDescription ActivePlatform
         {
             get { return _activePlatform; }
-            set { SetField(ref _activePlatform, value); }
+            set {
+                    SetField(ref _activePlatform, value);
+
+                    NewIP = _activePlatform.IP.ToString();
+                    NewPort = _activePlatform.Port;
+                }
         }
 
         private string _newIP;
@@ -105,33 +111,28 @@ namespace Profiler.ViewModels
         {
             Platforms = new ObservableCollection<PlatformDescription>();
 
-            PlatformDescription description = new PlatformDescription();
-
             using (var scope = BootStrapperBase.Container.BeginLifetimeScope())
                 _config = scope.Resolve<Settings>();
 
             // Set core connections
-            foreach (var ip in Platform.GetPCAddresses().Distinct())
+            foreach (var ip in Platform.GetPCAddresses())
                 _platforms.Add(new PlatformDescription() { Name = Environment.MachineName, IP = ip, CoreType = true });
 
-            _platforms.Add(new PlatformDescription() { Name = "Add Connection", IP = IPAddress.Loopback, Detailed = true, CoreType = true });
+            _platforms.Add(new PlatformDescription() { Name = "Add Connection", IP = IPAddress.Loopback, Port = PlatformDescription.DEFAULT_PORT, Detailed = true, CoreType = true });
 
-            // Get custom connections from Settings
-            if (_config?.LocalSettings?.Data?.Connections != null)
-                foreach (var item in _config.LocalSettings.Data.Connections)
-                    Platforms.Add(new PlatformDescription() { Name = item.Name, IP = item.Address, Port = (short)item.Port, PlatformType = item.Target });
-                                
+            SetCustomPlatformsFromLocalSettings();
+
             ActivePlatform = Platforms[0];
 
-            NewPort = PlatformDescription.DEFAULT_PORT;
-
             Platforms.CollectionChanged += Platforms_CollectionChanged;
+            _config.LocalSettings.OnChanged += LocalSettings_OnChanged;
         }
 
         #endregion
 
         #region public methods
 
+        // Update type platform
         public void PlatformUpdate(PlatformDescription platform)
         {
             int index = Platforms.IndexOf(ActivePlatform);
@@ -145,25 +146,57 @@ namespace Profiler.ViewModels
 
         #region private methods
 
-        // Save collection to settings
+        // Get custom connections from Settings
+        private void SetCustomPlatformsFromLocalSettings()
+        {
+            foreach (var item in Platforms.ToList())
+                if (item.CoreType == false)
+                    Platforms.Remove(item);
+
+            // Get custom connections from Settings
+            if (_config?.LocalSettings?.Data?.Connections != null)
+                foreach (var item in _config.LocalSettings.Data.Connections)
+                    Platforms.Add(new PlatformDescription() { Name = item.Name, IP = item.Address, Port = (short)item.Port, PlatformType = item.Target });                                
+        }
+
+        // Save collection to settings on update collection platforms
         private void Platforms_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             var customConnectios = Platforms.Where(x => x.CoreType == false);
 
+            _config.LocalSettings.OnChanged -= LocalSettings_OnChanged;
+
+            Task.Run(() =>
+            {
             if (_config.LocalSettings.Data.Connections != null)
                 _config.LocalSettings.Data.Connections.Clear();
             else
                 _config.LocalSettings.Data.Connections = new List<Platform.Connection>();
 
-            Task.Run(() =>
-            {
+
+
                 foreach (var item in customConnectios)
                     _config.LocalSettings.Data.Connections.Add(new Platform.Connection() { Name = item.Name, Address = item.IP, Port = item.Port, Target = item.PlatformType });
                 
                 _config.LocalSettings.Save();
+
+               
             } );
+
+            _config.LocalSettings.OnChanged += LocalSettings_OnChanged;
         }
 
+        // Update collection if config changed
+        private void LocalSettings_OnChanged()
+        {
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                Platforms.CollectionChanged -= Platforms_CollectionChanged;
+                SetCustomPlatformsFromLocalSettings();
+                Platforms.CollectionChanged += Platforms_CollectionChanged;
+            }
+           ));
+        }
 
         private bool IsIpValid(string ip)
         {
@@ -279,7 +312,7 @@ namespace Profiler.ViewModels
 
         private string GetIconByComputerName(string name)
         {
-            string result = "appbar_os_windows_8";
+            string result = "appbar_network";
 
             if (name.IndexOf("xbox", StringComparison.OrdinalIgnoreCase) != -1)
                 result = "appbar_controller_xbox";
