@@ -20,6 +20,8 @@ namespace Profiler.ViewModels
 
         Settings _config;
 
+        bool _isSelfUpdateFlag = false;     // is true if the update to LocalSettings comes from this class
+
         #endregion
 
         #region properties
@@ -36,7 +38,10 @@ namespace Profiler.ViewModels
         {
             get { return _activePlatform; }
             set {
-                    SetField(ref _activePlatform, value);
+                    if(value !=null)
+                        SetField(ref _activePlatform, value);
+                    else
+                        SetField(ref _activePlatform, _activePlatform = Platforms[0]);
 
                     NewIP = _activePlatform.IP.ToString();
                     NewPort = _activePlatform.Port;
@@ -80,17 +85,21 @@ namespace Profiler.ViewModels
             }
         }
 
-        private RelayCommand _removeConnectionCommand;
-        public RelayCommand RemoveConnectionCommand
+        private RelayCommandGenericAsync<object> _removeConnectionCommand;
+        public RelayCommandGenericAsync<object> RemoveConnectionCommand
         {
             get
             {
                 return _removeConnectionCommand ??
-                    (_removeConnectionCommand = new RelayCommand(obj =>
+                    (_removeConnectionCommand = new RelayCommandGenericAsync<object>(async obj =>
                     {
                         PlatformDescription platform = obj as PlatformDescription;
+
+                        if(platform == ActivePlatform)
+                            ActivePlatform = Platforms.FirstOrDefault();
+
                         Platforms.Remove(platform);
-                        ActivePlatform = Platforms.FirstOrDefault();
+                        await RemoveCustomConnectionFromLocalSettingsAsync(platform);
                     },
                   // Condition execute command
                   enable =>
@@ -116,15 +125,12 @@ namespace Profiler.ViewModels
 
             // Set core connections
             foreach (var ip in Platform.GetPCAddresses())
-                _platforms.Add(new PlatformDescription() { Name = Environment.MachineName, IP = ip, CoreType = true });
+                _platforms.Add(new PlatformDescription() { Name = Environment.MachineName, IP = ip, CoreType = true, PlatformType = Platform.Type.Windows });
 
             _platforms.Add(new PlatformDescription() { Name = "Add Connection", IP = IPAddress.Loopback, Port = PlatformDescription.DEFAULT_PORT, Detailed = true, CoreType = true });
 
             SetCustomPlatformsFromLocalSettings();
 
-            ActivePlatform = Platforms[0];
-
-            Platforms.CollectionChanged += Platforms_CollectionChanged;
             _config.LocalSettings.OnChanged += LocalSettings_OnChanged;
         }
 
@@ -139,6 +145,8 @@ namespace Profiler.ViewModels
             Platforms[index] = platform;
 
             ActivePlatform = Platforms[index];
+
+            UpdateCustomConnectionFromLocalSettingsAsync(platform).Wait();
         }
 
         #endregion
@@ -146,9 +154,12 @@ namespace Profiler.ViewModels
 
         #region private methods
 
-        // Get custom connections from Settings
+        // Get custom connections from LocalSettings
         private void SetCustomPlatformsFromLocalSettings()
         {
+            PlatformDescription tempActivePlatform = ActivePlatform;
+            ActivePlatform = Platforms.FirstOrDefault();
+
             foreach (var item in Platforms.ToList())
                 if (item.CoreType == false)
                     Platforms.Remove(item);
@@ -156,46 +167,125 @@ namespace Profiler.ViewModels
             // Get custom connections from Settings
             if (_config?.LocalSettings?.Data?.Connections != null)
                 foreach (var item in _config.LocalSettings.Data.Connections)
-                    Platforms.Add(new PlatformDescription() { Name = item.Name, IP = item.Address, Port = (short)item.Port, PlatformType = item.Target });                                
+                    Platforms.Add(new PlatformDescription() { Name = item.Name, IP = item.Address, Port = (short)item.Port, PlatformType = item.Target });
+
+            if (Platforms.Contains(tempActivePlatform))
+                ActivePlatform = tempActivePlatform;
+
         }
 
-        // Save collection to settings on update collection platforms
-        private void Platforms_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        // Add new custom connection to LocalSettings
+        private async Task AddCustomConnectionToLocalSettingsAsync(PlatformDescription platform)
+        {
+            _isSelfUpdateFlag = true;
+
+            await Task.Run(() =>
+            {
+                try
+                {
+                    _config.LocalSettings.Data.Connections.Add(new Platform.Connection()
+                    { Name = platform.Name, Address = platform.IP, Port = platform.Port, Target = platform.PlatformType });
+
+                    _config.LocalSettings.Save();
+                }
+                catch (Exception)
+                {
+                }
+            });
+        }
+
+        // Remove custom connection from LocalSettings
+        private async Task RemoveCustomConnectionFromLocalSettingsAsync(PlatformDescription platform)
+        {
+            _isSelfUpdateFlag = true;
+
+            await Task.Run(() =>
+            {
+                try
+                {
+                   var connection = _config.LocalSettings.Data.Connections.FirstOrDefault(x => x.Address == platform.IP && x.Port == platform.Port);
+                    // in case many application get access to LocalSettings and is selected union platform
+                    // connection cant determine by IP and Port
+                    if (connection==null)
+                        connection = _config.LocalSettings.Data.Connections.FirstOrDefault(x => x.Name == platform.Name);
+
+                    bool count = _config.LocalSettings.Data.Connections.Remove(connection);
+
+                    if (count)
+                        _config.LocalSettings.Save();
+                }
+                catch (Exception)
+                {
+                }
+
+            });
+        }
+
+        // Update custom connection in LocalSettings
+        private async Task UpdateCustomConnectionFromLocalSettingsAsync(PlatformDescription platform)
+        {
+            _isSelfUpdateFlag = true;
+
+            await Task.Run(() =>
+            {
+                try
+                {
+                    var connection = _config.LocalSettings.Data.Connections.FirstOrDefault(x => x.Address == platform.IP && x.Port == platform.Port);
+
+                    if (connection == null)
+                        connection = _config.LocalSettings.Data.Connections.FirstOrDefault(x => x.Name == platform.Name);
+
+                    bool count = _config.LocalSettings.Data.Connections.Remove(connection);
+
+                    if (count)
+                        _config.LocalSettings.Data.Connections.Add(new Platform.Connection()
+                        { Name = platform.Name, Address = platform.IP, Port = platform.Port, Target = platform.PlatformType });
+
+                    _config.LocalSettings.Save();
+                }
+                catch (Exception)
+                {
+                }
+
+            });
+        }
+
+        // Save all custom collection to LocalSettings
+        private async Task SaveAllCustomConnectionsToLocalSettingsAsync()
         {
             var customConnectios = Platforms.Where(x => x.CoreType == false);
 
-            _config.LocalSettings.OnChanged -= LocalSettings_OnChanged;
+            _isSelfUpdateFlag = true;
 
-            Task.Run(() =>
+            await Task.Run(() =>
             {
-            if (_config.LocalSettings.Data.Connections != null)
-                _config.LocalSettings.Data.Connections.Clear();
-            else
-                _config.LocalSettings.Data.Connections = new List<Platform.Connection>();
+                try
+                {
+                    if (_config.LocalSettings.Data.Connections != null)
+                        _config.LocalSettings.Data.Connections.Clear();
+                    else
+                        _config.LocalSettings.Data.Connections = new List<Platform.Connection>();
 
+                    foreach (var item in customConnectios)
+                        _config.LocalSettings.Data.Connections.Add(new Platform.Connection() { Name = item.Name, Address = item.IP, Port = item.Port, Target = item.PlatformType });
 
-
-                foreach (var item in customConnectios)
-                    _config.LocalSettings.Data.Connections.Add(new Platform.Connection() { Name = item.Name, Address = item.IP, Port = item.Port, Target = item.PlatformType });
-                
-                _config.LocalSettings.Save();
-
-               
+                    _config.LocalSettings.Save();
+                }
+                catch (Exception)
+                {
+                }             
             } );
-
-            _config.LocalSettings.OnChanged += LocalSettings_OnChanged;
         }
 
-        // Update collection if config changed
+
+
+        // Update collection platforms if LocalSettings changed
         private void LocalSettings_OnChanged()
         {
-            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-            {
-                Platforms.CollectionChanged -= Platforms_CollectionChanged;
-                SetCustomPlatformsFromLocalSettings();
-                Platforms.CollectionChanged += Platforms_CollectionChanged;
-            }
-           ));
+            if  (!_isSelfUpdateFlag)
+                 Application.Current.Dispatcher.BeginInvoke(new Action(() =>SetCustomPlatformsFromLocalSettings() ));
+
+            _isSelfUpdateFlag = false;
         }
 
         private bool IsIpValid(string ip)
@@ -243,8 +333,11 @@ namespace Profiler.ViewModels
                 
 
                 if (needAdd)
+                {
                     Platforms.Add(newPlatform);
-
+                    await AddCustomConnectionToLocalSettingsAsync(newPlatform);
+                }
+                    
                 if (autofocus)
                     ActivePlatform = newPlatform;
             }
