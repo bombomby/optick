@@ -250,9 +250,6 @@
     <Compile Include="InfrastructureMvvm\RelayCommand.cs" />
     <Compile Include="InfrastructureMvvm\RelayCommandAsync.cs" />
     <Compile Include="InfrastructureMvvm\RelayCommandGeneric.cs" />
-    <Compile Include="Controls\PlatformSelector.xaml.cs">
-      <DependentUpon>PlatformSelector.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Controls\RoutedEvents.cs" />
     <Compile Include="Controls\SettingsControl.xaml.cs">
       <DependentUpon>SettingsControl.xaml</DependentUpon>
@@ -376,10 +373,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\IPTextBox.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\PlatformSelector.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

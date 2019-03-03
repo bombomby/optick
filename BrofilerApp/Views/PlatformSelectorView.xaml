@@ -6,6 +6,7 @@
              xmlns:helper="clr-namespace:Profiler.InfrastructureMvvm"
              xmlns:controls ="clr-namespace:Profiler.Controls"
              xmlns:local="clr-namespace:Profiler"
+             xmlns:view="clr-namespace:Profiler.Views"
              mc:Ignorable="d" 
              d:DesignWidth="400" Height="Auto">
     <UserControl.Resources>
@@ -20,21 +21,23 @@
                   ItemsSource="{Binding Platforms}" 
                   SelectedItem="{Binding ActivePlatform}"
                   MinHeight="{StaticResource DefaultButtonSize}">
-            <ComboBox.ItemTemplate>
-                <DataTemplate>
-                    <Grid HorizontalAlignment="Stretch" Margin="0,-4">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="15"/>
-                            <ColumnDefinition Width="120"/>
-                            <ColumnDefinition Width="80"/>
-                            <ColumnDefinition Width="15"/>
-                        </Grid.ColumnDefinitions>
-                        <Border Width="16" Height="16" Grid.Column="0" >
-                            <ContentControl Style="{Binding Icon, Converter={StaticResource StringToResource}}" Margin="-6" />
-                        </Border>
-                        <Label Grid.Column="1" MinWidth="68" Content="{Binding Name}" Margin="0" FontWeight="Bold" />
-                        <Label Grid.Column="2" Content="{Binding Status}" Margin="0" />
-                        <Button Grid.Column="3" ToolTip="Remove Connection"
+            <ComboBox.ItemTemplateSelector>
+                <view:ComboBoxItemTemplateSelector>
+                    <view:ComboBoxItemTemplateSelector.ItemTemplate>
+                        <DataTemplate>
+                            <Grid HorizontalAlignment="Stretch" Margin="0,-4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="15"/>
+                                    <ColumnDefinition Width="130"/>
+                                    <ColumnDefinition Width="90"/>
+                                    <ColumnDefinition Width="15"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Width="16" Height="16" Grid.Column="0" >
+                                    <ContentControl Style="{Binding Icon, Converter={StaticResource StringToResource}}" Margin="-6" />
+                                </Border>
+                                <Label Grid.Column="1" MinWidth="68" Content="{Binding Name}" Margin="0" FontWeight="Bold" />
+                                <Label Grid.Column="2" Content="{Binding Status}" Margin="0" />
+                                <Button Grid.Column="3" ToolTip="Remove Connection"
                                  Margin="0,0,0,0" Padding="-6" 
                                  HorizontalAlignment="Right" VerticalAlignment="Center"
                                  Width="15" Height="15"
@@ -42,11 +45,49 @@
                                  Command="{Binding  DataContext.RemoveConnectionCommand,
                                                     RelativeSource= {RelativeSource AncestorType=UserControl}}"
                                                     CommandParameter="{Binding}">
-                            <ContentControl Style="{StaticResource appbar_close}" />
-                        </Button>
-                    </Grid>
-                </DataTemplate>
-            </ComboBox.ItemTemplate>
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="buttonBorder" CornerRadius="25"
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    Background="{TemplateBinding Background}"
+                                                    Height="{TemplateBinding Height}"
+                                                    Width="{TemplateBinding Width}" >
+                                                <ContentControl Margin="{TemplateBinding Padding}"
+                                                    Style="{StaticResource appbar_close}"
+                                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                    Content="{TemplateBinding Content}" />
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="DarkRed" />
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                            </Grid>
+                        </DataTemplate>
+                    </view:ComboBoxItemTemplateSelector.ItemTemplate>
+                    <view:ComboBoxItemTemplateSelector.SelectedItemTemplate>
+                        <DataTemplate>
+                            <Grid HorizontalAlignment="Stretch" Margin="0,-4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="15"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Width="16" Height="16" Grid.Column="0" >
+                                    <ContentControl Style="{Binding Icon, Converter={StaticResource StringToResource}}" Margin="-6" />
+                                </Border>
+                                <Label Grid.Column="1" MinWidth="68" Content="{Binding Name}" Margin="0" FontWeight="Bold" />
+                                <Label Grid.Column="2" Content="{Binding Status}" Margin="0" />
+                            </Grid>
+                        </DataTemplate>
+                    </view:ComboBoxItemTemplateSelector.SelectedItemTemplate>
+                </view:ComboBoxItemTemplateSelector>
+            </ComboBox.ItemTemplateSelector>
         </ComboBox>
         <StackPanel x:Name="DetailedIP" Orientation="Horizontal" Visibility="{Binding ActivePlatform.Detailed, Converter={StaticResource BoolToVisibilityConverter}}">
             <Label Content="IP:" Margin="4,0,0,0" />
@@ -55,10 +96,31 @@
             <TextBox x:Name="Port" VerticalContentAlignment="Center" MinWidth="30" Text="{Binding NewPort}" />
             <Button ToolTip="Add New Connection" Margin="6,0,0,0" Padding="-6" 
                     HorizontalAlignment="Left" VerticalAlignment="Center"
-                    Width="{StaticResource DefaultButtonSize}" 
-                    Height="{StaticResource DefaultButtonSize}"
+                    Width="18" 
+                    Height="18"
                     Command="{Binding AddConnectionCommand}">
-                <ContentControl Style="{StaticResource appbar_add}" />
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="buttonBorder" CornerRadius="25"
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    Background="{TemplateBinding Background}"
+                                                    Height="{TemplateBinding Height}"
+                                                    Width="{TemplateBinding Width}" >
+                            <ContentControl Margin="{TemplateBinding Padding}"
+                                                    Style="{StaticResource appbar_add}"
+                                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                    Content="{TemplateBinding Content}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="DarkGreen" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+                <!-- <ContentControl Style="{StaticResource appbar_add}" /> -->
             </Button>
         </StackPanel>
     </StackPanel>

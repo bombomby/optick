@@ -20,7 +20,7 @@ namespace Profiler.ViewModels
 
         Settings _config;
 
-        bool _isSelfUpdateFlag = false;     // is true if the update to LocalSettings comes from this class
+        bool _isSelfUpdateFlag = false;     // is true if current application update the LocalSettings 
 
         #endregion
 
@@ -110,7 +110,6 @@ namespace Profiler.ViewModels
                   ));
             }
         }
-
 
         #endregion
 
@@ -277,9 +276,7 @@ namespace Profiler.ViewModels
             } );
         }
 
-
-
-        // Update collection platforms if LocalSettings changed
+        // Update collection platforms if LocalSettings changed by other application
         private void LocalSettings_OnChanged()
         {
             if  (!_isSelfUpdateFlag)
@@ -298,7 +295,6 @@ namespace Profiler.ViewModels
             else
                 return false;
         }
-
 
         private async Task AddPlatformAsync(IPAddress ip, short port, bool autofocus)
         {
