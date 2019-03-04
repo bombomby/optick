@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Xml.Serialization;
 
 namespace Profiler
 {
@@ -20,9 +21,16 @@ namespace Profiler
 		public class Connection
 		{
 			public Platform.Type Target { get; set; }
-			public String Name { get; set; }
-			public IPAddress Address { get; set; }
-			public int Port { get; set; }
+			public string Name { get; set; }
+            [XmlIgnore]
+            public IPAddress Address { get; set; }
+            [XmlElement("Address")]
+            public string AddressForXml
+            {
+                get { return Address.ToString(); }
+                set{ Address = string.IsNullOrEmpty(value) ? null : IPAddress.Parse(value);}
+            }
+            public int Port { get; set; }
 		}
 
 		public static IPAddress GetPS4Address()

@@ -4,7 +4,7 @@ using System.Windows.Input; //ICommand
 
 namespace Profiler.InfrastructureMvvm
 {
-    class RelayCommand : ICommand 
+    public class RelayCommand : ICommand 
     {
         public Predicate<object> CanExecuteDelegate { get; set; }
         public Action<object> ExecuteDelegate { get; set; }

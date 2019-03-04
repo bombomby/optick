@@ -51,11 +51,27 @@ namespace Profiler.Controls
             }
         }
 
+        PlatformSelectorViewModel _platformSelectorVM;
+        public PlatformSelectorViewModel PlatformSelectorVM
+        {
+            get { return _platformSelectorVM; }
+            set
+            {
+                _platformSelectorVM = value;
+                OnPropertyChanged("PlatformSelectorVM");
+            }
+        }
+
+
         public FrameCapture()
 		{
 
             using (var scope = BootStrapperBase.Container.BeginLifetimeScope())
+            {
                 SummaryVM = scope.Resolve<SummaryViewerModel>();
+                PlatformSelectorVM = scope.Resolve<PlatformSelectorViewModel>();
+            }
+
 
             InitializeComponent();
 
@@ -102,8 +118,12 @@ namespace Profiler.Controls
 		private void TimeLine_NewConnection(object sender, RoutedEventArgs e)
 		{
 			TimeLine.NewConnectionEventArgs args = e as TimeLine.NewConnectionEventArgs;
-			// TODO: Implement new connection processing
-			Debug.Print("New Connection: [{0}] {1}:{2} {3}", args.Connection.Target, args.Connection.Address, args.Connection.Port, args.Connection.Name);
+
+            if (PlatformSelectorVM !=null)
+                PlatformSelectorVM.PlatformUpdate (new PlatformDescription()
+                { PlatformType = args.Connection.Target, IP = args.Connection.Address,
+                    Port = (short)args.Connection.Port, Name = args.Connection.Name });
+
 		}
 
 		private void OpenFrame(object source, TimeLine.FocusFrameEventArgs args)
@@ -200,7 +220,7 @@ namespace Profiler.Controls
 
 		private void StartButton_Checked(object sender, System.Windows.RoutedEventArgs e)
 		{
-			var platform = PlatformCombo.ActivePlatform;
+			var platform = PlatformSelectorVM.ActivePlatform;
 
 			if (platform == null)
 				return;

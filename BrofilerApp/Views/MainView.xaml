@@ -23,7 +23,6 @@
     <MahApps:MetroWindow.RightWindowCommands>
         <MahApps:WindowCommands>
             <StackPanel Orientation="Horizontal">
-                <!--<local:PlatformSelector x:Name="PlatformCombo" Opacity="0.66" VerticalAlignment="Center" />-->
                 <Button Margin="-2" ToolTip="Navigate to the Wiki">
                     <ContentControl Style="{StaticResource appbar_book_perspective_help}" />
                 </Button>
