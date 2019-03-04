@@ -58,6 +58,7 @@ namespace Profiler.DirectX
 		private void SourceChangedEventHandler(Object sender, SourceChangedEventArgs e)
 		{
 			ParentScrollViewer = FindParentScrollViewer();
+			_presentationSource = null;
 		}
 
 		private ScrollViewer FindParentScrollViewer()

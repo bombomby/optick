@@ -19,8 +19,6 @@ using System.Globalization;
 
 namespace Profiler
 {
-	public delegate void SelectedTreeNodeChangedHandler(Data.Frame frame, BaseTreeNode node);
-
 	/// <summary>
 	/// Interaction logic for FrameInfo.xaml
 	/// </summary>
@@ -38,11 +36,18 @@ namespace Profiler
 
 		private Data.Frame frame;
 
-		public void SetFrame(Data.Frame frame, IDurable node)
+		public virtual void SetFrame(Data.Frame frame, IDurable node)
 		{
-			this.frame = frame;
-			Application.Current.Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => { frame?.Load(); this.DataContext = frame; FocusOnNode(node); }));
-		}
+            if (this.frame != frame)
+            {
+                this.frame = frame;
+                this.DataContext = frame;
+            }
+            else if (node != null)
+            {
+                FocusOnNode(node);
+            }
+        }
 
 		public void RefreshFilter(object sender, RoutedEventArgs e)
 		{
@@ -146,27 +151,24 @@ namespace Profiler
 			}
 		}
 
-		public event SelectedTreeNodeChangedHandler SelectedTreeNodeChanged;
-
 		void EventTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
 		{
-			if (e.NewValue is BaseTreeNode && DataContext is Data.Frame)
+			if (e.NewValue is EventNode && DataContext is Data.EventFrame)
 			{
-				SelectedTreeNodeChanged(DataContext as Data.Frame, e.NewValue as BaseTreeNode);
+                RaiseEvent(new Controls.HighlightFrameEventArgs(new ThreadView.Selection[] { new ThreadView.Selection() { Frame = DataContext as Data.EventFrame, Focus = (e.NewValue as EventNode).Entry } }));
 			}
 		}
 
 		public bool FocusOnNode(IDurable focusRange)
 		{
+            if (focusRange == null)
+                return false;
+
 			if (EventTreeView == null)
-			{
 				return false;
-			}
 
 			if (EventTreeView.ItemsSource == null)
-			{
 				return false;
-			}
 
 			List<BaseTreeNode> treePath = new List<BaseTreeNode>();
 
@@ -280,40 +282,19 @@ namespace Profiler
 			}
 		}
 
-		private void SampleFunction(EventFrame eventFrame, EventNode node, bool single)
+		private void SampleFunction(EventFrame eventFrame, CallStackReason callstackFilter, EventNode node)
 		{
 			List<Callstack> callstacks = new List<Callstack>();
 			FrameGroup group = eventFrame.Group;
 
-			if (single)
-			{
-				Utils.ForEachInsideIntervalStrict(group.Threads[eventFrame.Header.ThreadIndex].Callstacks, node.Entry, callstack => callstacks.Add(callstack));
-			}
-			else
-			{
-				EventDescription desc = node.Entry.Description;
-
-				callstacks = group.GetCallstacks(desc);
-			}
-
+			EventDescription desc = node.Entry.Description;
+			callstacks = group.GetCallstacks(desc);
 
 			if (callstacks.Count > 0)
 			{
 				SamplingFrame frame = new SamplingFrame(callstacks, group);
 				Profiler.TimeLine.FocusFrameEventArgs args = new Profiler.TimeLine.FocusFrameEventArgs(Profiler.TimeLine.FocusFrameEvent, frame);
 				RaiseEvent(args);
-			}
-		}
-
-		private void MenuSampleFunction(object sender, RoutedEventArgs e)
-		{
-			if (frame is EventFrame && e.Source is FrameworkElement)
-			{
-				FrameworkElement item = e.Source as FrameworkElement;
-				Application.Current.Dispatcher.Invoke(new Action(() =>
-				{
-					SampleFunction(frame as EventFrame, item.DataContext as EventNode, true);
-				}));
 			}
 		}
 
@@ -324,7 +305,7 @@ namespace Profiler
 				FrameworkElement item = e.Source as FrameworkElement;
 				Application.Current.Dispatcher.Invoke(new Action(() =>
 				{
-					SampleFunction(frame as EventFrame, item.DataContext as EventNode, false);
+					SampleFunction(frame as EventFrame, CallStackReason.AutoSample, item.DataContext as EventNode);
 				}));
 			}
 		}
@@ -335,4 +316,30 @@ namespace Profiler
 			Clipboard.SetText(tree.SelectedItem.ToString());
 		}
 	}
+
+
+    public class SampleInfo : FrameInfo
+    {
+        public CallStackReason CallstackType { get; set; }
+
+        public Data.Frame SourceFrame { get; set; }
+
+        public override void SetFrame(Data.Frame frame, IDurable node)
+        {
+            if (frame is EventFrame)
+            {
+                if (SourceFrame == frame)
+                    return;
+
+                SourceFrame = frame;
+
+                SamplingFrame samplingFrame = frame.Group.CreateSamplingFrame((frame as EventFrame).RootEntry.Description, CallstackType);
+                base.SetFrame(samplingFrame, null);
+            }
+            else
+            {
+                base.SetFrame(frame, null);
+            }
+        }
+    }
 }

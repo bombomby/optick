@@ -76,43 +76,23 @@ namespace Profiler.Controls
             InitializeComponent();
 
 			this.AddHandler(TimeLine.FocusFrameEvent, new TimeLine.FocusFrameEventHandler(this.OpenFrame));
+            this.AddHandler(ThreadView.HighlightFrameEvent, new ThreadView.HighlightFrameEventHandler(this.ThreadView_HighlightEvent));
 
-			ProfilerClient.Get().ConnectionChanged += MainWindow_ConnectionChanged;
+            ProfilerClient.Get().ConnectionChanged += MainWindow_ConnectionChanged;
 
 			WarningTimer = new DispatcherTimer(TimeSpan.FromSeconds(12.0), DispatcherPriority.Background, OnWarningTimeout, Application.Current.Dispatcher);
 
-			FrameInfoControl.SelectedTreeNodeChanged += new SelectedTreeNodeChangedHandler(FrameInfo_OnSelectedTreeNodeChanged);
 
 			timeLine.NewConnection += TimeLine_NewConnection;
 			timeLine.ShowWarning += TimeLine_ShowWarning;
 			warningBlock.Visibility = Visibility.Collapsed;
 
-			// Workaround for WPF bug with MaxHeight binding
-			SizeChanged += FrameCapture_SizeChanged;
-			this.ThreadView.ThreadList.SizeChanged += ThreadList_SizeChanged;
+			FunctionSummaryVM = (FunctionSummaryViewModel)FindResource("FunctionSummaryVM");
+			FunctionInstanceVM = (FunctionInstanceViewModel)FindResource("FunctionInstanceVM");
 		}
 
-		const double BOTTOM_GRID_MIN_HEIGHT = 350;
-
-		private void UpdateThreadViewLayout()
-		{
-			double maxHeight = Math.Max(ThreadView.MinHeight, BottomGrid.ActualHeight - BOTTOM_GRID_MIN_HEIGHT);
-			if (this.ThreadView.ThreadList.ActualHeight > maxHeight)
-				ThreadView.Height = maxHeight;
-			else
-				ThreadView.Height = double.NaN;
-		}
-
-		private void ThreadList_SizeChanged(object sender, SizeChangedEventArgs e)
-		{
-			UpdateThreadViewLayout();
-		}
-
-
-		private void FrameCapture_SizeChanged(object sender, SizeChangedEventArgs e)
-		{
-			UpdateThreadViewLayout();
-		}
+		FunctionSummaryViewModel FunctionSummaryVM { get; set; }
+		FunctionInstanceViewModel FunctionInstanceVM { get; set; }
 
 		public bool LoadFile(string path)
 		{
@@ -148,22 +128,22 @@ namespace Profiler.Controls
 
 		private void OpenFrame(object source, TimeLine.FocusFrameEventArgs args)
 		{
-			Durable focusRange = null;
-			if (args.Node != null)
-			{
-				focusRange = args.Node.Entry;
-			}
-			else if (args.Frame is EventFrame)
-			{
-				focusRange = (args.Frame as EventFrame).Header;
-			}
-
 			Data.Frame frame = args.Frame;
 
-			if (FrameInfoControl.DataContext == null || !FrameInfoControl.DataContext.Equals(frame))
+            if (frame is EventFrame)
+				EventThreadViewControl.Highlight(frame as EventFrame, null);
+
+			if (frame is EventFrame)
 			{
-				FrameInfoControl.SetFrame(frame, focusRange);
-				FunctionHistoryControl.LoadAsync(frame);
+				EventFrame eventFrame = frame as EventFrame;
+				FunctionSummaryVM.Load(eventFrame.Group, eventFrame.RootEntry.Description);
+				FunctionInstanceVM.Load(eventFrame.Group, eventFrame.RootEntry.Description);
+
+				FrameInfoControl.SetFrame(frame, null);
+				SampleInfoControl.SetFrame(frame, null);
+				SysCallInfoControl.SetFrame(frame, null);
+
+				SamplingTreeControl.SetDescription(frame.Group, eventFrame.RootEntry.Description);
 			}
 
 			if (frame != null && frame.Group != null)
@@ -173,13 +153,10 @@ namespace Profiler.Controls
             }
 		}
 
-		void FrameInfo_OnSelectedTreeNodeChanged(Data.Frame frame, BaseTreeNode node)
-		{
-			if (node is EventNode && frame is EventFrame)
-			{
-				ThreadView.FocusOn(frame as EventFrame, node as EventNode);
-			}
-		}
+        private void ThreadView_HighlightEvent(object sender, HighlightFrameEventArgs e)
+        {
+			EventThreadViewControl.Highlight(e.Items);
+        }
 
 		public void Close()
 		{
@@ -217,14 +194,21 @@ namespace Profiler.Controls
 		private void ClearButton_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
 			timeLine.Clear();
-			FunctionHistoryControl.Clear();
-			ThreadView.Group = null;
-			FrameInfoControl.SetFrame(null, null);
-            SummaryVM.Summary = null;
+			EventThreadViewControl.Group = null;
+			SummaryVM.Summary = null;
             SummaryVM.CaptureName = null;
+
+			FunctionSummaryVM.Load(null, null);
+
+			FrameInfoControl.DataContext = null;
+			SampleInfoControl.DataContext = null; 
+			SysCallInfoControl.DataContext = null;
+			InstanceHistoryControl.DataContext = null;
+
+			SamplingTreeControl.SetDescription(null, null);
 		}
 
-		private void ClearSamplingButton_Click(object sender, System.Windows.RoutedEventArgs e)
+        private void ClearSamplingButton_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
 			ProfilerClient.Get().SendMessage(new TurnSamplingMessage(-1, false));
 		}
@@ -279,7 +263,7 @@ namespace Profiler.Controls
 
 		private void OnSearchCommandExecuted(object sender, ExecutedRoutedEventArgs args)
 		{
-			ThreadView.FunctionSearchControl.Open();
+			EventThreadViewControl.FunctionSearchControl.Open();
 		}
 	}
 }

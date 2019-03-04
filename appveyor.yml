@@ -10,6 +10,9 @@ configuration:
 matrix:
   fast_finish: true
 
+before_build:
+  - nuget restore BrofilerApp/BrofilerApp_vs2015.sln
+  
 build_script:
   - Tools\Windows\premake5.exe vs2015
   - cd Build/vs2015

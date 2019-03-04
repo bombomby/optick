@@ -75,7 +75,6 @@ static const uint8_t PROCESS_STATE_REASON_START = 40;
 class FTrace : public Trace
 {
 	bool isActive;
-	std::string password;
 
 	bool Parse(const char* line);
 	bool ProcessEvent(const ft::base_event& ev);

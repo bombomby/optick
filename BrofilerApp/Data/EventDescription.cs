@@ -191,6 +191,7 @@ namespace Profiler.Data
 			GameAuto,
 			System,
 			Core,
+			Sampling,
 		}
 		public Source Origin { get; set; }
 

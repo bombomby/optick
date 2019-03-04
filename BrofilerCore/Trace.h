@@ -4,7 +4,7 @@
 
 // Enable\Disable low-level platform-specific tracing (Switch-contexts, Autosampling, etc.)
 #if !defined(BRO_ENABLE_TRACING)
-#define BRO_ENABLE_TRACING (USE_BROFILER && (BRO_PLATFORM_WINDOWS || BRO_PLATFORM_LINUX) /*&& 0*/)
+#define BRO_ENABLE_TRACING (USE_BROFILER && (BRO_PLATFORM_WINDOWS || BRO_PLATFORM_LINUX || BRO_PLATFORM_OSX) /*&& 0*/)
 #endif
 
 namespace Brofiler
@@ -25,6 +25,7 @@ namespace Brofiler
 		};
 
 		std::unordered_set<uint64> activeThreadsIDs;
+        std::string password;
 
 		virtual CaptureStatus::Type Start(int mode, const ThreadList& threads);
 		virtual bool Stop();

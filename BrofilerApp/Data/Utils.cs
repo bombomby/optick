@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Profiler.Data
 {
-	class Utils
+	public static class Utils
 	{
 		public static int BinarySearchClosestIndex<T>(List<T> frames, long value) where T : ITick
 		{
@@ -108,6 +108,16 @@ namespace Profiler.Data
 		public static String ReadBinaryWideString(BinaryReader reader)
 		{
 			return System.Text.Encoding.Unicode.GetString(reader.ReadBytes(reader.ReadInt32()));
+		}
+
+
+		public static bool IsSorted<T>(this List<T> list) where T : IComparable<T>
+		{
+			for (int i = 0; i < list.Count - 1; ++i)
+				if (list[i].CompareTo(list[i + 1]) > 0)
+					return false;
+
+			return true;
 		}
 	}
 }

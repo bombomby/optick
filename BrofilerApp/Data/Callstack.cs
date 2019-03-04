@@ -6,10 +6,15 @@ using System.Threading.Tasks;
 
 namespace Profiler.Data
 {
-	public class Callstack : List<SamplingDescription>, ITick
+	public class Callstack : List<SamplingDescription>, ITick, IComparable<Callstack>
 	{
 		public long Start { get; set; }
 		public CallStackReason Reason { get; set; }
+
+		public int CompareTo(Callstack other)
+		{
+			return Start.CompareTo(other.Start);
+		}
 	}
 
 	public class CallstackPack : IResponseHolder
@@ -58,6 +63,11 @@ namespace Profiler.Data
 				callstacks.Add(callstack);
 
 				i += (3 + count);
+			}
+
+			foreach (List<Callstack> cs in result.CallstackMap.Values)
+			{
+				cs.Sort();
 			}
 
 			return result;

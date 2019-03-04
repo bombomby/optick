@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows;
@@ -59,6 +59,7 @@ namespace Profiler
 			statusToError.Add(ETWStatus.ETW_ERROR_ACCESS_DENIED, new KeyValuePair<string, string>("ETW can't start: launch your game (or Visual Studio) as administrator to collect context switches", "https://github.com/bombomby/brofiler/wiki/Event-Tracing-for-Windows"));
 			statusToError.Add(ETWStatus.ETW_ERROR_ALREADY_EXISTS, new KeyValuePair<string, string>("ETW session already started (Reboot should help)", "https://github.com/bombomby/brofiler/wiki/Event-Tracing-for-Windows"));
 			statusToError.Add(ETWStatus.ETW_FAILED, new KeyValuePair<string, string>("ETW session failed", "https://github.com/bombomby/brofiler/wiki/Event-Tracing-for-Windows"));
+statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, string>("Tracing session failed: invalid root password. Run the game as a root or pass a valid password through Brofiler GUI", "https://github.com/bombomby/brofiler/wiki/Event-Tracing-for-Windows"));
 
 			ProfilerClient.Get().ConnectionChanged += TimeLine_ConnectionChanged;
 
@@ -150,6 +151,7 @@ namespace Profiler
 			ETW_ERROR_ALREADY_EXISTS = 1,
 			ETW_ERROR_ACCESS_DENIED = 2,
 			ETW_FAILED = 3,
+            TRACER_INVALID_PASSWORD = 4,
 		}
 
 		Dictionary<ETWStatus, KeyValuePair<String, String>> statusToError = new Dictionary<ETWStatus, KeyValuePair<String, String>>();
@@ -247,16 +249,16 @@ namespace Profiler
 		public class FocusFrameEventArgs : RoutedEventArgs
 		{
 			public Data.Frame Frame { get; set; }
-			public Data.EventNode Node { get; set; }
+			public IDurable Focus { get; set; }
 
-			public FocusFrameEventArgs(RoutedEvent routedEvent, Data.Frame frame, Data.EventNode node = null) : base(routedEvent)
+			public FocusFrameEventArgs(RoutedEvent routedEvent, Data.Frame frame, IDurable focus = null) : base(routedEvent)
 			{
 				Frame = frame;
-				Node = node;
+				Focus = focus;
 			}
 		}
 
-		public class ShowWarningEventArgs : RoutedEventArgs
+        public class ShowWarningEventArgs : RoutedEventArgs
 		{
 			public String Message { get; set; }
 			public String URL { get; set; }

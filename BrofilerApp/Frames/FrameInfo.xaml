@@ -130,14 +130,9 @@
                                     </MenuItem.Icon>
                                 </MenuItem>
                                 <Separator />
-                                <MenuItem Header="Sample Function" Click="MenuSampleFunction">
-                                    <MenuItem.Icon>
-                                        <ContentControl Style="{StaticResource appbar_camera_flash}" Margin="-10" Width="26" Height="26"/>
-                                    </MenuItem.Icon>
-                                </MenuItem>
                                 <MenuItem Header="Sample Function (All Frames)" Click="MenuSampleFunctions">
                                     <MenuItem.Icon>
-                                        <ContentControl Style="{StaticResource appbar_camera_flash_auto}" Margin="-10" Width="26" Height="26" />
+                                        <ContentControl Style="{StaticResource appbar_camera_flash}" Margin="-10" Width="26" Height="26" />
                                     </MenuItem.Icon>
                                 </MenuItem>
                             </ContextMenu>

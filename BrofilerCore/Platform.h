@@ -73,9 +73,13 @@
 #include <unistd.h>
 #endif
 
-#if defined (BRO_PLATFORM_LINUX)
+#if defined(BRO_GCC_COMPILER_FAMILY)
 #include <sys/types.h>
 #include <sys/syscall.h>
+#endif
+
+#if defined(BRO_PLATFORM_OSX)
+#import <mach/mach_time.h>
 #endif
 
 namespace Brofiler
@@ -102,10 +106,14 @@ namespace Brofiler
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	BRO_INLINE ThreadID GetThreadID()
 	{
-#if defined(BRO_PLATFORM_WINDOWS)
+#if defined(BRO_MSVC_COMPILER_FAMILY)
 		return GetCurrentThreadId();
-#elif defined(BRO_PLATFORM_LINUX) || defined(BRO_PLATFORM_OSX)
-		return syscall(SYS_gettid); // (uint64)pthread_self();
+#elif defined(BRO_PLATFORM_OSX)
+		uint64_t tid;
+		pthread_threadid_np(pthread_self(), &tid);
+		return tid;
+#elif defined(BRO_PLATFORM_LINUX)
+		return syscall(SYS_gettid);
 #else
 		#error Platform is not supported!
 #endif
@@ -115,9 +123,9 @@ namespace Brofiler
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	BRO_INLINE ProcessID GetProcessID()
 	{
-#if defined(BRO_PLATFORM_WINDOWS)
+#if defined(BRO_MSVC_COMPILER_FAMILY)
 		return GetCurrentProcessId();
-#elif defined(BRO_PLATFORM_LINUX) || defined(BRO_PLATFORM_OSX)
+#elif defined(BRO_GCC_COMPILER_FAMILY)
 		return (ProcessID)getpid();
 #else
 		#error Platform is not supported!
@@ -129,7 +137,7 @@ namespace Brofiler
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	BRO_INLINE int64 GetFrequency()
 	{
-#if defined(BRO_MSVC_COMPILER_FAMILY)
+#if defined(BRO_PLATFORM_WINDOWS)
 		LARGE_INTEGER frequency;
 		QueryPerformanceFrequency(&frequency);
 		return frequency.QuadPart;
@@ -141,12 +149,16 @@ namespace Brofiler
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	BRO_INLINE int64 GetTimeMicroSeconds()
+	BRO_INLINE int64 GetTimeNanoSeconds()
 	{
-#if defined(BRO_MSVC_COMPILER_FAMILY)
+#if defined(BRO_PLATFORM_WINDOWS)
 		LARGE_INTEGER largeInteger;
 		QueryPerformanceCounter(&largeInteger);
-		return (largeInteger.QuadPart * int64(1000000)) / GetFrequency();
+		return (largeInteger.QuadPart * 1000000000LL) / GetFrequency();
+#elif defined(BRO_PLATFORM_OSX)
+        struct timespec ts;
+        clock_gettime(CLOCK_REALTIME, &ts);
+        return ts.tv_sec * 1000000000LL + ts.tv_nsec;
 #elif defined(BRO_GCC_COMPILER_FAMILY)
 		struct timespec ts;
 		clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -159,18 +171,18 @@ namespace Brofiler
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	BRO_INLINE int64 GetTimeMilliSeconds()
 	{
-		return GetTimeMicroSeconds() / 1000;
+		return GetTimeNanoSeconds() / 1000000;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	BRO_INLINE int64 GetTime()
 	{
-#if defined(BRO_MSVC_COMPILER_FAMILY)
+#if defined(BRO_PLATFORM_WINDOWS)
 		LARGE_INTEGER largeInteger;
 		QueryPerformanceCounter(&largeInteger);
 		return largeInteger.QuadPart;
 #elif defined(BRO_GCC_COMPILER_FAMILY)
-		return GetTimeMicroSeconds();
+        return GetTimeNanoSeconds();
 #else
 	#error Platform is not supported!
 #endif
@@ -179,9 +191,7 @@ namespace Brofiler
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	BRO_INLINE Platform::ID GetPlatform()
 	{
-#if defined(BRO_PLATFORM_WINDOWS)
-		return Platform::Windows;
-#elif defined(BRO_PLATFORM_LINUX)
+#if defined(BRO_PLATFORM_LINUX)
 		return Platform::Linux;
 #elif defined(BRO_PLATFORM_OSX)
 		return Platform::MacOS;
@@ -189,6 +199,8 @@ namespace Brofiler
 		return Platform::XBox;
 #elif defined(BRO_PLATFORM_PS)
 		return Platform::Playstation;
+#elif defined(BRO_PLATFORM_WINDOWS)
+		return Platform::Windows;
 #else
 		#error Platform is not supported!
 #endif

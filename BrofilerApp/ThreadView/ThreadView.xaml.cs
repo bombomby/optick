@@ -19,6 +19,7 @@ using System.ComponentModel;
 using Profiler.DirectX;
 using System.Windows.Threading;
 using System.Diagnostics;
+using Profiler.Controls;
 
 namespace Profiler
 {
@@ -27,16 +28,13 @@ namespace Profiler
 	/// </summary>
 	public partial class ThreadView : UserControl
 	{
-		FrameGroup group;
+		public ThreadScroll Scroll { get; set; } = new ThreadScroll();
+		private List<ThreadRow> Rows = new List<ThreadRow>();
 
-		ThreadScroll scroll = new ThreadScroll();
-		List<ThreadRow> rows = new List<ThreadRow>();
-		Dictionary<int, ThreadRow> id2row = new Dictionary<int, ThreadRow>();
-
-		SolidColorBrush BroBackground;
-		SolidColorBrush BroAlternativeBackground;
-		SolidColorBrush FrameSelection;
-		SolidColorBrush FrameHover;
+		public SolidColorBrush BroBackground;
+		public SolidColorBrush BroAlternativeBackground;
+		public SolidColorBrush FrameSelection;
+		public SolidColorBrush FrameHover;
 		Color MeasureBackground;
 		Color HoverBackground;
 
@@ -51,213 +49,62 @@ namespace Profiler
 			HoverBackground = Color.FromArgb(170, 0, 0, 0);
 		}
 
-		class RowsDescription
-		{
-			public Durable Range { get; set; }
-		}
-
-		public FrameGroup Group
-		{
-			set
-			{
-				if (value != group)
-				{
-					group = value;
-
-					InitThreadList(group);
-
-					Visibility visibility = value == null ? Visibility.Collapsed : Visibility.Visible;
-
-					scrollBar.Visibility = visibility;
-					ThreadToolsPanel.Visibility = visibility;
-
-					surface.Height = value == null ? 0.0 : ThreadList.Height;
-
-					FunctionSearchControl.DataContext = group;
-				}
-			}
-
-			get
-			{
-				return group;
-			}
-		}
-
+		public bool ShowThreadHeaders { get; set; } = true;
 
 		Mesh BackgroundMesh { get; set; }
 
-		int ThreadNameSorter(EventsThreadRow a, EventsThreadRow b)
+        public delegate void HighlightFrameEventHandler(object sender, HighlightFrameEventArgs e);
+        public static readonly RoutedEvent HighlightFrameEvent = EventManager.RegisterRoutedEvent("HighlightFrameEvent", RoutingStrategy.Bubble, typeof(HighlightFrameEventHandler), typeof(ThreadView));
+
+ 		public void InitRows(List<ThreadRow> rows, IDurable timeslice)
 		{
-			if (a.Description.ThreadID == ThreadDescription.InvalidThreadID && b.Description.ThreadID != ThreadDescription.InvalidThreadID)
-				return -1;
-
-			if (a.Description.ThreadID != ThreadDescription.InvalidThreadID && b.Description.ThreadID == ThreadDescription.InvalidThreadID)
-				return 1;
-
-			int nameCompare = a.Name.CompareTo(b.Name);
-			return nameCompare != 0 ? nameCompare : a.Description.ThreadID.CompareTo(b.Description.ThreadID);
-		}
-
-		List<EventsThreadRow> GenerateThreadRows(FrameGroup group)
-		{
-			id2row.Clear();
-
-			List<EventsThreadRow> eventThreads = new List<EventsThreadRow>();
-
-			for (int i = 0; i < Math.Min(group.Board.Threads.Count, group.Threads.Count); ++i)
-			{
-				ThreadDescription thread = group.Board.Threads[i];
-				ThreadData data = group.Threads[i];
-
-				bool threadHasData = false;
-				if ((data.Callstacks != null && data.Callstacks.Count > 3) ||
-					(data.Events != null && data.Events.Count > 0))
-
-				{
-					threadHasData = true;
-				}
-
-				if (threadHasData)
-				{
-					EventsThreadRow row = new EventsThreadRow(group, thread, data);
-					eventThreads.Add(row);
-
-					id2row.Add(row.Description.ThreadIndex, row);
-					row.EventNodeHover += Row_EventNodeHover;
-					row.EventNodeSelected += Row_EventNodeSelected;
-				}
-			}
-
-			eventThreads.Sort(ThreadNameSorter);
-			return eventThreads;
-		}
-
-		enum ProcessGroup
-		{
-			None,
-			CurrentProcess,
-			OtherProcess,
-		}
-
-		ProcessGroup GetProcessGroup(FrameGroup group, UInt64 threadID)
-		{
-			return threadID == 0 ? ProcessGroup.None : (group.IsCurrentProcess(threadID) ? ProcessGroup.CurrentProcess : ProcessGroup.OtherProcess);
-		}
-
-		ChartRow GenerateCoreChart(FrameGroup group)
-		{
-			group.Synchronization.Events.Sort();
-
-			int eventsCount = group.Synchronization.Events.Count;
-
-			List<Tick> timestamps = new List<Tick>(eventsCount);
-			ChartRow.Entry currProcess = new ChartRow.Entry(eventsCount) { Fill = Colors.LimeGreen, Name = "Current Process" };
-			ChartRow.Entry otherProcess = new ChartRow.Entry(eventsCount) { Fill = Colors.Tomato, Name = "Other Process" };
-
-			List<bool> isCoreInUse = new List<bool>(group.Board.CPUCoreCount);
-			for (int i = 0; i < group.Board.CPUCoreCount; ++i)
-				isCoreInUse.Add(false);
-
-			int currCores = 0;
-			int otherCores = 0;
-
-			foreach (SyncEvent ev in group.Synchronization.Events)
-			{
-				ProcessGroup prevGroup = GetProcessGroup(group, ev.OldThreadID);
-				ProcessGroup currGroup = GetProcessGroup(group, ev.NewThreadID);
-
-				if ((prevGroup != currGroup) || !isCoreInUse[ev.CPUID])
-				{
-					timestamps.Add(ev.Timestamp);
-
-					if (isCoreInUse[ev.CPUID])
-					{
-						switch (prevGroup)
-						{
-							case ProcessGroup.CurrentProcess:
-								--currCores;
-								break;
-							case ProcessGroup.OtherProcess:
-								--otherCores;
-								break;
-						}
-					}
-
-					isCoreInUse[ev.CPUID] = true;
-					switch (currGroup)
-					{
-						case ProcessGroup.CurrentProcess:
-							++currCores;
-							break;
-						case ProcessGroup.OtherProcess:
-							++otherCores;
-							break;
-					}
-
-					currProcess.Values.Add((double)currCores);
-					otherProcess.Values.Add((double)otherCores);
-				}
-			}
-
-			ChartRow chart = new ChartRow("CPU", timestamps, new List<ChartRow.Entry>() { currProcess, otherProcess }, group.Board.CPUCoreCount);
-			chart.ChartHover += Row_ChartHover;
-			return chart;
-		}
-
-		void InitThreadList(FrameGroup group)
-		{
-			rows.Clear();
+			Rows = rows;
 
 			ThreadList.RowDefinitions.Clear();
 			ThreadList.Children.Clear();
 
-			if (group == null)
-				return;
-
-			rows.Add(new HeaderThreadRow(group)
-			{
-				GradientTop = (BroAlternativeBackground as SolidColorBrush).Color,
-				GradientBottom = (BroBackground as SolidColorBrush).Color,
-				SplitLines = (BroBackground as SolidColorBrush).Color,
-				TextColor = Colors.Gray
-			});
-
-			rows.Add(GenerateCoreChart(group));
-
-			rows.AddRange(GenerateThreadRows(group));
-
-			scroll.TimeSlice = group.Board.TimeSlice;
-			scroll.Height = 0.0;
-			scroll.Width = surface.ActualWidth * RenderSettings.dpiScaleX;
-			rows.ForEach(row => scroll.Height += row.Height);
-
-			rows.ForEach(row => row.BuildMesh(surface, scroll));
-
-			ThreadList.Margin = new Thickness(0, 0, 3, 0);
-
 			double offset = 0.0;
 
-			for (int threadIndex = 0; threadIndex < rows.Count; ++threadIndex)
+			if (rows.Count > 0)
 			{
-				ThreadRow row = rows[threadIndex];
-				row.Offset = offset;
+				Scroll.TimeSlice = new Durable(timeslice.Start, timeslice.Finish);
+				Scroll.Height = 0.0;
+				Scroll.Width = surface.ActualWidth * RenderSettings.dpiScaleX;
+				rows.ForEach(row => Scroll.Height += row.Height);
 
-				ThreadList.RowDefinitions.Add(new RowDefinition());
+				rows.ForEach(row => row.BuildMesh(surface, Scroll));
 
-				Thickness margin = new Thickness(0, 0, 0, 0);
+				ThreadList.Margin = new Thickness(0, 0, 3, 0);
 
-				Label labelName = new Label() { Content = row.Name, Margin = margin, Padding = new Thickness(), FontWeight = FontWeights.Bold, Height = row.Height / RenderSettings.dpiScaleY, VerticalContentAlignment = VerticalAlignment.Center };
+				for (int threadIndex = 0; threadIndex < rows.Count; ++threadIndex)
+				{
+					ThreadRow row = rows[threadIndex];
+					row.Offset = offset;
 
-				Grid.SetRow(labelName, threadIndex);
+					if (ShowThreadHeaders)
+					{
+						ThreadList.RowDefinitions.Add(new RowDefinition());
 
-				if (threadIndex % 2 == 1)
-					labelName.Background = BroAlternativeBackground;
+						Thickness margin = new Thickness(0, 0, 0, 0);
 
-				ThreadList.Children.Add(labelName);
-				offset += row.Height;
+						Label labelName = new Label() { Content = row.Name, Margin = margin, Padding = new Thickness(), FontWeight = FontWeights.Bold, Height = row.Height / RenderSettings.dpiScaleY, VerticalContentAlignment = VerticalAlignment.Center };
+
+						Grid.SetRow(labelName, threadIndex);
+
+						if (threadIndex % 2 == 1)
+							labelName.Background = BroAlternativeBackground;
+
+						ThreadList.Children.Add(labelName);
+					}
+
+					offset += row.Height;
+				}
+
+				InitBackgroundMesh();
 			}
 
-			InitBackgroundMesh();
+			surface.Height = offset;
+			surface.MaxHeight = offset;
 		}
 
 		private void InitBackgroundMesh()
@@ -270,13 +117,13 @@ namespace Profiler
 
 			double offset = 0.0;
 
-			for (int threadIndex = 0; threadIndex < rows.Count; ++threadIndex)
+			for (int threadIndex = 0; threadIndex < Rows.Count; ++threadIndex)
 			{
-				ThreadRow row = rows[threadIndex];
+				ThreadRow row = Rows[threadIndex];
 				row.Offset = offset;
 
 				if (threadIndex % 2 == 1)
-					backgroundBuilder.AddRect(new Rect(0.0, offset, scroll.Width, row.Height), BroAlternativeBackground.Color);
+					backgroundBuilder.AddRect(new Rect(0.0, offset, Scroll.Width, row.Height), BroAlternativeBackground.Color);
 
 				offset += row.Height;
 			}
@@ -284,45 +131,13 @@ namespace Profiler
 			BackgroundMesh = backgroundBuilder.Freeze(surface.RenderDevice);
 		}
 
-		private void Row_EventNodeSelected(ThreadRow row, EventFrame frame, EventNode node)
-		{
-			EventFrame focusFrame = frame;
-			if (node != null && node.Entry.CompareTo(frame.Header) != 0)
-				focusFrame = new EventFrame(frame, node);
-			RaiseEvent(new TimeLine.FocusFrameEventArgs(TimeLine.FocusFrameEvent, focusFrame, null));
-		}
-
-		private void Row_EventNodeHover(Point mousePos, Rect rect, ThreadRow row, EventNode node)
-		{
-			if (node != null)
-			{
-				ToolTip = new TooltipInfo { Text = String.Format("{0}   {1:0.000}ms", node.Name, node.Duration), Rect = rect };
-			}
-			else
-			{
-				ToolTip = new TooltipInfo();
-			}
-		}
-
-		private void Row_ChartHover(Point mousePos, Rect rect, String text)
-		{
-			if (text != null)
-			{
-				ToolTip = new TooltipInfo { Text = text, Rect = rect };
-			}
-			else
-			{
-				ToolTip = new TooltipInfo();
-			}
-		}
-
 		DynamicMesh SelectionMesh;
 		DynamicMesh HoverMesh;
 		DynamicMesh HoverLines;
 		DynamicMesh MeasureMesh;
-		TooltipInfo ToolTip;
+		public TooltipInfo ToolTipPanel { get; set; }
 
-		struct TooltipInfo
+		public class TooltipInfo
 		{
 			public String Text;
 			public Rect Rect;
@@ -336,48 +151,31 @@ namespace Profiler
 
 		const double DefaultFrameZoom = 1.10;
 
-		public void FocusOn(EventFrame frame, EventNode node)
-		{
-			Group = frame.Group;
-			SelectionList.Clear();
-			SelectionList.Add(new Selection() { Frame = frame, Node = node });
+        public void Highlight(IEnumerable<Selection> items, bool focus = true)
+        {
+            SelectionList = new List<Selection>(items);
 
-			Interval interval = scroll.TimeToUnit(node != null ? (IDurable)node.Entry : (IDurable)frame);
-			if (!scroll.ViewUnit.Contains(interval))
-			{
-				scroll.ViewUnit.Width = interval.Width * DefaultFrameZoom;
-				scroll.ViewUnit.Left = interval.Left - (scroll.ViewUnit.Width - interval.Width) * 0.5;
-				scroll.ViewUnit.Normalize();
-				UpdateBar();
-			}
+            if (focus)
+            {
+                foreach (Selection s in items)
+                {
+                    Interval interval = Scroll.TimeToUnit(s.Focus != null ? s.Focus : (IDurable)s.Frame);
+                    if (!Scroll.ViewUnit.Contains(interval) && !interval.Contains(Scroll.ViewUnit))
+                    {
+                        Scroll.ViewUnit.Width = interval.Width * DefaultFrameZoom;
+                        Scroll.ViewUnit.Left = interval.Left - (Scroll.ViewUnit.Width - interval.Width) * 0.5;
+                        Scroll.ViewUnit.Normalize();
+                        UpdateBar();
+                    }
+                }
+            }
 
-			if (frame != null)
-			{
-				ThreadRow row = id2row[frame.Header.ThreadIndex];
-				if (row != null )
-				{
-					if (row.Offset < ScrollArea.VerticalOffset || row.Offset > (ScrollArea.VerticalOffset + ScrollArea.ActualHeight))
-						ScrollArea.ScrollToVerticalOffset(row.Offset);
-				}
-			}
-
-			UpdateSurface();
-		}
-
-		class CallstackFilterItem : INotifyPropertyChanged
-		{
-			public bool IsChecked { get; set; }
-			public CallStackReason Reason { get; set; }
-			public event PropertyChangedEventHandler PropertyChanged;
-		}
-		List<CallstackFilterItem> CallstackFilter = new List<CallstackFilterItem>();
-
+            UpdateSurface();
+        }
 
 		public ThreadView()
 		{
 			InitializeComponent();
-			scrollBar.Visibility = Visibility.Collapsed;
-			ThreadToolsPanel.Visibility = Visibility.Collapsed;
 
 			surface.SizeChanged += new SizeChangedEventHandler(ThreadView_SizeChanged);
 			surface.OnDraw += OnDraw;
@@ -402,10 +200,6 @@ namespace Profiler
 			MeasureMesh = surface.CreateMesh();
 			MeasureMesh.Projection = Mesh.ProjectionType.Pixel;
 			MeasureMesh.UseAlpha = true;
-
-			foreach (CallStackReason reason in Enum.GetValues(typeof(CallStackReason)))
-				CallstackFilter.Add(new CallstackFilterItem() { IsChecked = true, Reason = reason });
-			CallstackFilterPopup.DataContext = CallstackFilter;
 		}
 
 		class InputState
@@ -442,41 +236,42 @@ namespace Profiler
 			Mouse.OverrideCursor = null;
 			Input.IsDrag = false;
 			Input.IsSelect = false;
-			ToolTip.Reset();
+			ToolTipPanel?.Reset();
 			UpdateSurface();
 		}
 
+		public delegate void OnShowPopupHandler(List<Object> dataContext);
+		public event OnShowPopupHandler OnShowPopup;
 
 		private void MouseShowPopup(System.Windows.Forms.MouseEventArgs args)
 		{
 			System.Drawing.Point e = new System.Drawing.Point(args.X, args.Y);
 			List<Object> dataContext = new List<object>();
-			foreach (ThreadRow row in rows)
+			foreach (ThreadRow row in Rows)
 			{
 				if (row.Offset <= e.Y && e.Y <= row.Offset + row.Height)
 				{
-					row.OnMouseHover(new Point(e.X, e.Y - row.Offset), scroll, dataContext);
+					row.OnMouseHover(new Point(e.X, e.Y - row.Offset), Scroll, dataContext);
 				}
 			}
-			SurfacePopup.DataContext = dataContext;
-			SurfacePopup.IsOpen = dataContext.Count > 0 ? true : false;
+			OnShowPopup?.Invoke(dataContext);
 		}
 
 		private void MouseClickLeft(System.Windows.Forms.MouseEventArgs args)
 		{
 			System.Drawing.Point e = new System.Drawing.Point(args.X, args.Y);
-			foreach (ThreadRow row in rows)
+			foreach (ThreadRow row in Rows)
 			{
 				if (row.Offset <= e.Y && e.Y <= row.Offset + row.Height)
 				{
-					row.OnMouseClick(new Point(e.X, e.Y - row.Offset), scroll);
+					row.OnMouseClick(new Point(e.X, e.Y - row.Offset), Scroll);
 				}
 			}
 		}
 
 		ThreadRow GetRow(double posY)
 		{
-			foreach (ThreadRow row in rows)
+			foreach (ThreadRow row in Rows)
 				if (row.Offset <= posY && posY <= row.Offset + row.Height)
 					return row;
 
@@ -492,9 +287,9 @@ namespace Profiler
 			{
 				double deltaPixel = e.X - Input.DragPosition.X;
 
-				double deltaUnit = scroll.PixelToUnitLength(deltaPixel);
-				scroll.ViewUnit.Left -= deltaUnit;
-				scroll.ViewUnit.Normalize();
+				double deltaUnit = Scroll.PixelToUnitLength(deltaPixel);
+				Scroll.ViewUnit.Left -= deltaUnit;
+				Scroll.ViewUnit.Normalize();
 
 				UpdateBar();
 				updateSurface = true;
@@ -503,7 +298,7 @@ namespace Profiler
 			}
 			else if (Input.IsMeasure)
 			{
-				Input.MeasureInterval.Finish = scroll.PixelToTime(e.X).Start;
+				Input.MeasureInterval.Finish = Scroll.PixelToTime(e.X).Start;
 				updateSurface = true;
 			}
 			else
@@ -511,7 +306,7 @@ namespace Profiler
 				ThreadRow row = GetRow(e.Y);
 				if (row != null)
 				{
-					row.OnMouseMove(new Point(e.X, e.Y - row.Offset), scroll);
+					row.OnMouseMove(new Point(e.X, e.Y - row.Offset), Scroll);
 				}
 
 				updateSurface = true;
@@ -552,7 +347,7 @@ namespace Profiler
 				else
 				{
 					Input.IsMeasure = true;
-					long time = scroll.PixelToTime(e.X).Start;
+					long time = Scroll.PixelToTime(e.X).Start;
 					Input.MeasureInterval.Start = time;
 					Input.MeasureInterval.Finish = time;
 
@@ -565,8 +360,8 @@ namespace Profiler
 
 		private void ScrollBar_Scroll(object sender, ScrollEventArgs e)
 		{
-			scroll.ViewUnit.Left = scrollBar.Value;
-			scroll.ViewUnit.Normalize();
+			Scroll.ViewUnit.Left = scrollBar.Value;
+			Scroll.ViewUnit.Normalize();
 			UpdateSurface();
 		}
 
@@ -581,15 +376,15 @@ namespace Profiler
 
 				double ratio = (double)e.X / surface.RenderCanvas.Width;
 
-				double prevWidth = scroll.ViewUnit.Width;
-				scroll.ViewUnit.Width *= scale;
-				scroll.ViewUnit.Left += (prevWidth - scroll.ViewUnit.Width) * ratio;
-				scroll.ViewUnit.Normalize();
+				double prevWidth = Scroll.ViewUnit.Width;
+				Scroll.ViewUnit.Width *= scale;
+				Scroll.ViewUnit.Left += (prevWidth - Scroll.ViewUnit.Width) * ratio;
+				Scroll.ViewUnit.Normalize();
 
 				ThreadRow row = GetRow(e.Y);
 				if (row != null)
 				{
-					row.OnMouseMove(new Point(e.X, e.Y - row.Offset), scroll);
+					row.OnMouseMove(new Point(e.X, e.Y - row.Offset), Scroll);
 				}
 
 				UpdateBar();
@@ -597,16 +392,16 @@ namespace Profiler
 			}
 		}
 
-		private void UpdateSurface()
+		public void UpdateSurface()
 		{
 			surface.Update();
 		}
 
 		private void UpdateBar()
 		{
-			scrollBar.Value = scroll.ViewUnit.Left;
-			scrollBar.Maximum = 1.0 - scroll.ViewUnit.Width;
-			scrollBar.ViewportSize = scroll.ViewUnit.Width;
+			scrollBar.Value = Scroll.ViewUnit.Left;
+			scrollBar.Maximum = 1.0 - Scroll.ViewUnit.Width;
+			scrollBar.ViewportSize = Scroll.ViewUnit.Width;
 		}
 
 		const int SelectionBorderCount = 3;
@@ -618,10 +413,10 @@ namespace Profiler
 			{
 				if (selection.Frame != null)
 				{
-					ThreadRow row = id2row[selection.Frame.Header.ThreadIndex];
+					ThreadRow row = selection.Row;
 
-					Durable intervalTime = selection.Node == null ? (Durable)selection.Frame.Header : (Durable)selection.Node.Entry;
-					Interval intervalPx = scroll.TimeToPixel(intervalTime);
+					IDurable intervalTime = selection.Focus == null ? selection.Frame.Header : selection.Focus;
+					Interval intervalPx = Scroll.TimeToPixel(intervalTime);
 
 					Rect rect = new Rect(intervalPx.Left, row.Offset /*+ 2.0 * RenderParams.BaseMargin*/, intervalPx.Width, row.Height /*- 4.0 * RenderParams.BaseMargin*/);
 
@@ -642,9 +437,9 @@ namespace Profiler
 			if (Input.MeasureInterval.Start != Input.MeasureInterval.Finish)
 			{
 				Durable activeInterval = Input.MeasureInterval.Normalize();
-				Interval pixelInterval = scroll.TimeToPixel(activeInterval);
-				MeasureMesh.AddRect(new Rect(pixelInterval.Left, 0, pixelInterval.Width, scroll.Height), MeasureBackground);
-				canvas.Text.Draw(new Point(pixelInterval.Left, scroll.Height * 0.5), activeInterval.DurationF3, Colors.White, TextAlignment.Center, pixelInterval.Width);
+				Interval pixelInterval = Scroll.TimeToPixel(activeInterval);
+				MeasureMesh.AddRect(new Rect(pixelInterval.Left, 0, pixelInterval.Width, Scroll.Height), MeasureBackground);
+				canvas.Text.Draw(new Point(pixelInterval.Left, Scroll.Height * 0.5), activeInterval.DurationF3, Colors.White, TextAlignment.Center, pixelInterval.Width);
 
 				MeasureMesh.Update(canvas.RenderDevice);
 				canvas.Draw(MeasureMesh);
@@ -656,20 +451,20 @@ namespace Profiler
 
 		void DrawHover(DirectXCanvas canvas)
 		{
-			if (!String.IsNullOrWhiteSpace(ToolTip.Text))
+			if (ToolTipPanel != null && !String.IsNullOrWhiteSpace(ToolTipPanel.Text))
 			{
-				Size size = surface.Text.Measure(ToolTip.Text);
+				Size size = surface.Text.Measure(ToolTipPanel.Text);
 
-				Rect textArea = new Rect(Input.MousePosition.X - size.Width * 0.5 + ToolTipOffset.X, ToolTip.Rect.Top - size.Height + ToolTipOffset.Y, size.Width, size.Height);
-				surface.Text.Draw(textArea.TopLeft, ToolTip.Text, Colors.White, TextAlignment.Left);
+				Rect textArea = new Rect(Input.MousePosition.X - size.Width * 0.5 + ToolTipOffset.X, ToolTipPanel.Rect.Top - size.Height + ToolTipOffset.Y, size.Width, size.Height);
+				surface.Text.Draw(textArea.TopLeft, ToolTipPanel.Text, Colors.White, TextAlignment.Left);
 
 				textArea.Inflate(ToolTipMargin);
 				HoverMesh.AddRect(textArea, HoverBackground);
 			}
 
-			if (!ToolTip.Rect.IsEmpty)
+			if (ToolTipPanel != null && !ToolTipPanel.Rect.IsEmpty)
 			{
-				HoverLines.AddRect(ToolTip.Rect, FrameHover.Color);
+				HoverLines.AddRect(ToolTipPanel.Rect, FrameHover.Color);
 			}
 
 			HoverLines.Update(canvas.RenderDevice);
@@ -686,11 +481,11 @@ namespace Profiler
 				canvas.Draw(BackgroundMesh);
 			}
 
-			Rect box = new Rect(0, 0, scroll.Width, scroll.Height);
-			foreach (ThreadRow row in rows)
+			Rect box = new Rect(0, 0, Scroll.Width, Scroll.Height);
+			foreach (ThreadRow row in Rows)
 			{
 				box.Height = row.Height;
-				row.Render(canvas, scroll, layer, box);
+				row.Render(canvas, Scroll, layer, box);
 				box.Y = box.Y + row.Height;
 			}
 
@@ -704,42 +499,17 @@ namespace Profiler
 
 		void ThreadView_SizeChanged(object sender, SizeChangedEventArgs e)
 		{
-			scroll.Width = surface.ActualWidth * RenderSettings.dpiScaleX;
+			Scroll.Width = surface.ActualWidth * RenderSettings.dpiScaleX;
 			InitBackgroundMesh();
 		}
 
-		struct Selection
+		public struct Selection
 		{
 			public EventFrame Frame { get; set; }
-			public EventNode Node { get; set; }
+			public IDurable Focus { get; set; }
+			public ThreadRow Row { get; set; }
 		}
 
 		List<Selection> SelectionList = new List<Selection>();
-
-		private void ShowSyncWorkButton_Click(object sender, RoutedEventArgs e)
-		{
-			scroll.SyncDraw = ShowSyncWorkButton.IsChecked.Value ? ThreadScroll.SyncDrawType.Work : ThreadScroll.SyncDrawType.Wait;
-			UpdateSurface();
-		}
-
-		private void CallstackFilterDrowpdown_Click(object sender, RoutedEventArgs e)
-		{
-			CallstackFilterPopup.IsOpen = true;
-		}
-
-		private void ShowCallstacksButton_Checked(object sender, RoutedEventArgs e)
-		{
-			CallStackReason reason = 0;
-			CallstackFilter.ForEach(filter => reason |= filter.IsChecked ? filter.Reason : 0);
-
-			scroll.DrawCallstacks = reason;
-			UpdateSurface();
-		}
-
-		private void ShowCallstacksButton_Unchecked(object sender, RoutedEventArgs e)
-		{
-			scroll.DrawCallstacks = 0;
-			UpdateSurface();
-		}
 	}
 }

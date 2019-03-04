@@ -207,6 +207,12 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="WindowsFormsIntegration" />
+    <Reference Include="Xceed.Wpf.AvalonDock, Version=3.5.2.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>packages\Dirkster.AvalonDock.Themes.VS2013.3.5.0.2\lib\net4\Xceed.Wpf.AvalonDock.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.VS2013, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Dirkster.AvalonDock.Themes.VS2013.3.5.0.2\lib\net4\Xceed.Wpf.AvalonDock.Themes.VS2013.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -265,11 +271,27 @@
     <Compile Include="InfrastructureMvvm\ViewModelPresenter.cs" />
     <Compile Include="InfrastructureMvvm\WindowManager.cs" />
     <Compile Include="InfrastructureMvvm\BaseViewModel.cs" />
+    <Compile Include="ThreadView\EventThreadView.xaml.cs">
+      <DependentUpon>EventThreadView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ThreadView\SamplingThreadView.xaml.cs">
+      <DependentUpon>SamplingThreadView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModels\FunctionSummaryViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\PlatformSelectorViewModel.cs" />
     <Compile Include="ViewModels\ScreenShotViewModel.cs" />
     <Compile Include="ViewModels\SummaryViewerModel.cs" />
     <Compile Include="InfrastructureMvvm\ViewModelLocator.cs" />
+    <Compile Include="Views\FunctionHistoryView.xaml.cs">
+      <DependentUpon>FunctionHistoryView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FunctionInstanceView.xaml.cs">
+      <DependentUpon>FunctionInstanceView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FunctionSummaryView.xaml.cs">
+      <DependentUpon>FunctionSummaryView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\PlatformSelectorView.xaml.cs">
       <DependentUpon>PlatformSelectorView.xaml</DependentUpon>
     </Compile>
@@ -381,6 +403,26 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\TagsControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ThreadView\EventThreadView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ThreadView\SamplingThreadView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FunctionHistoryView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FunctionInstanceView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FunctionSummaryView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -7,48 +7,49 @@
              xmlns:MahApps="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
              xmlns:system="clr-namespace:System;assembly=mscorlib"
+             x:Name="RootControl"
              mc:Ignorable="d" 
-             DataContext="{Binding RelativeSource={RelativeSource Self}}"
              d:DesignHeight="400" d:DesignWidth="600">
-    <Grid Background="{StaticResource BroBackground}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="23" />
-            <RowDefinition Height="200" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="1*" />
-        </Grid.RowDefinitions>
-        <Grid x:Name="FunctionStatsSummary" VerticalAlignment="Center" TextBlock.FontWeight="Bold">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="1*"/>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <Rectangle Grid.Column="0" Width="16" Height="16" VerticalAlignment="Center" StrokeThickness="2" Stroke="Black" Fill="{Binding Description.ForceBrush, RelativeSource={RelativeSource AncestorType=UserControl}}" Margin="2,0,6,0" />
-            <TextBlock Grid.Column="1" Text="{Binding Description.Name}" />
-            <StackPanel Grid.Column="2" Orientation="Horizontal">
-                <TextBlock Text="{Binding Total, StringFormat={}{0:0.###}}" Margin="6,0,0,0" />
-                <TextBlock Text="{Binding Work, StringFormat={}{0:0.###}}" Margin="6,0,0,0" Foreground="LimeGreen" />
-                <TextBlock Text="{Binding Wait, StringFormat={}{0:0.###}}" Margin="6,0,0,0" Foreground="Tomato" />
-            </StackPanel>
-        </Grid>
-        <lvc:CartesianChart Grid.Row="1" x:Name="FrameChart" DisableAnimations="True" Hoverable="True" Background="{StaticResource BroContentBackground}" Margin="2,2,0,0" MinHeight="100" DataClick="FrameChart_DataClick">
-            <lvc:CartesianChart.AxisX>
-                <lvc:Axis ShowLabels="False">
-                    <lvc:Axis.Separator>
-                        <lvc:Separator StrokeThickness="0.33"  />
-                    </lvc:Axis.Separator>
-                </lvc:Axis>
-            </lvc:CartesianChart.AxisX>
-            <lvc:CartesianChart.AxisY>
-                <lvc:Axis Title="Function Frame Time (ms)" MinValue="0">
-                    <lvc:Axis.Separator>
-                        <lvc:Separator StrokeThickness="0.33"/>
-                    </lvc:Axis.Separator>
-                </lvc:Axis>
-            </lvc:CartesianChart.AxisY>
-        </lvc:CartesianChart>
-        <DataGrid 
+    <GroupBox Grid.Column="2" MahApps:ButtonHelper.PreserveTextCase="True">
+        <GroupBox.Header>
+            <Grid x:Name="HeaderGrid">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <!--<TextBlock Text="{Binding Path=Header, ElementName=RootControl}"/>-->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" TextBlock.FontWeight="Bold">
+                    <TextBlock Text="{Binding Stats.AvgTotal, StringFormat={}{0:0.###}ms, Mode=OneTime}" Margin="6,0,0,0" ToolTip="Average Time" />
+                    <TextBlock Text="{Binding Stats.AvgWork, StringFormat={}{0:0.###}ms, Mode=OneTime}" Margin="6,0,0,0" Foreground="LimeGreen" ToolTip="Average Work Time" />
+                    <TextBlock Text="{Binding Stats.AvgWait, StringFormat={}{0:0.###}ms, Mode=OneTime}" Margin="6,0,0,0" Foreground="Tomato" ToolTip="Average Wait Time" />
+                </StackPanel>
+            </Grid>
+        </GroupBox.Header>
+
+        <Grid Background="{StaticResource BroBackground}" Margin="0,2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="0" />
+                <RowDefinition Height="1*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="1*" />
+            </Grid.RowDefinitions>
+            <lvc:CartesianChart Grid.Row="1" x:Name="FrameChart" DisableAnimations="True" AnimationsSpeed="0" Hoverable="True" Background="{StaticResource BroContentBackground}" MinHeight="100">
+                <lvc:CartesianChart.AxisX>
+                    <lvc:Axis ShowLabels="False">
+                        <lvc:Axis.Separator>
+                            <lvc:Separator StrokeThickness="0.33"  />
+                        </lvc:Axis.Separator>
+                    </lvc:Axis>
+                </lvc:CartesianChart.AxisX>
+                <lvc:CartesianChart.AxisY>
+                    <lvc:Axis Title="Function Frame Time (ms)" MinValue="0">
+                        <lvc:Axis.Separator>
+                            <lvc:Separator StrokeThickness="0.33"/>
+                        </lvc:Axis.Separator>
+                    </lvc:Axis>
+                </lvc:CartesianChart.AxisY>
+            </lvc:CartesianChart>
+            <DataGrid 
                     Grid.Row="3" 
                     x:Name="FunctionInstanceDataGrid" 
                     CanUserAddRows="False" 
@@ -58,22 +59,22 @@
                     AutoGenerateColumns="False" 
                     HeadersVisibility="Column" 
                     ClipboardCopyMode="ExcludeHeader"
-                    ItemsSource="{Binding Samples, Mode=OneTime}">
-            <DataGrid.Resources>
-                <Style TargetType="{x:Type TextBlock}" x:Key="RightCell">
-                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
-                    <Setter Property="TextAlignment" Value="Right"/>
-                </Style>
-            </DataGrid.Resources>
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="1*" />
-                <DataGridTextColumn Header="Count" Binding="{Binding Count}" Width="Auto" ElementStyle="{StaticResource RightCell}" />
-                <DataGridTextColumn Header="Total" Binding="{Binding Total, StringFormat={}{0:0.000}}" Width="Auto" ElementStyle="{StaticResource RightCell}" />
-                <DataGridTextColumn Header="Work" Binding="{Binding Work, StringFormat={}{0:0.000}}" Width="Auto" Foreground="LimeGreen" ElementStyle="{StaticResource RightCell}" />
-                <DataGridTextColumn Header="Wait" Binding="{Binding Wait, StringFormat={}{0:0.000}}" Width="Auto" Foreground="Tomato" ElementStyle="{StaticResource RightCell}" />
-            </DataGrid.Columns>
-        </DataGrid>
-        <!--<lvc:CartesianChart Grid.Row="2" x:Name="FunctionChart" DisableAnimations="True" Hoverable="False" DataTooltip="{x:Null}" Background="{StaticResource BroContentBackground}" Margin="0" MinHeight="100">
+                    ItemsSource="{Binding Stats.Samples, Mode=OneTime}">
+                <DataGrid.Resources>
+                    <Style TargetType="{x:Type TextBlock}" x:Key="RightCell">
+                        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                        <Setter Property="TextAlignment" Value="Right"/>
+                    </Style>
+                </DataGrid.Resources>
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="1*" />
+                    <DataGridTextColumn Header="Count" Binding="{Binding Count}" Width="Auto" ElementStyle="{StaticResource RightCell}" />
+                    <DataGridTextColumn Header="Total" Binding="{Binding Total, StringFormat={}{0:0.000}}" Width="Auto" ElementStyle="{StaticResource RightCell}" />
+                    <DataGridTextColumn Header="Work" Binding="{Binding Work, StringFormat={}{0:0.000}}" Width="Auto" Foreground="LimeGreen" ElementStyle="{StaticResource RightCell}" />
+                    <DataGridTextColumn Header="Wait" Binding="{Binding Wait, StringFormat={}{0:0.000}}" Width="Auto" Foreground="Tomato" ElementStyle="{StaticResource RightCell}" />
+                </DataGrid.Columns>
+            </DataGrid>
+            <!--<lvc:CartesianChart Grid.Row="2" x:Name="FunctionChart" DisableAnimations="True" Hoverable="False" DataTooltip="{x:Null}" Background="{StaticResource BroContentBackground}" Margin="0" MinHeight="100">
             <lvc:CartesianChart.AxisX>
                 <lvc:Axis>
                     <lvc:Axis.Separator>
@@ -89,5 +90,6 @@
                 </lvc:Axis>
             </lvc:CartesianChart.AxisY>
         </lvc:CartesianChart>-->
-    </Grid>
+        </Grid>
+    </GroupBox>
 </UserControl>

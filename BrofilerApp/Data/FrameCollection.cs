@@ -433,6 +433,11 @@ namespace Profiler.Data
 
 			return callstacks;
 		}
+
+        public SamplingFrame CreateSamplingFrame(EventDescription desc, CallStackReason type = CallStackReason.AutoSample)
+        {
+            return new SamplingFrame(GetCallstacks(desc, type), this);
+        }
 	}
 
 	public class FrameCollection : ObservableCollection<Frame>
