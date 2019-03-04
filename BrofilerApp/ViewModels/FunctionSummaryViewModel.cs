@@ -194,47 +194,50 @@ namespace Profiler.ViewModels
         {
             ObservableCollection<FunctionSummaryItem> items = new ObservableCollection<FunctionSummaryItem>();
 
-            items.Add(new MinMaxFunctionSummaryItem(frameStats.Samples.Select(s => s.Total))
-            {
-                Icon = (Style)Application.Current.FindResource("appbar_timer"),
-                Name = "Time\\Frame(ms)",
-                Description = "Total duration of the function per frame in milliseconds",
-                Foreground = Brushes.White,
+			if (frameStats != null)
+			{
+				items.Add(new MinMaxFunctionSummaryItem(frameStats.Samples.Select(s => s.Total))
+				{
+					Icon = (Style)Application.Current.FindResource("appbar_timer"),
+					Name = "Time\\Frame(ms)",
+					Description = "Total duration of the function per frame in milliseconds",
+					Foreground = Brushes.White,
 
-            });
+				});
 
-            items.Add(new MinMaxFunctionSummaryItem(frameStats.Samples.Select(s => s.Work))
-            {
-                Icon = (Style)Application.Current.FindResource("appbar_timer_play"),
-                Name = "Work\\Frame(ms)",
-                Description = "Total work time of the function per frame in milliseconds (excluding synchronization and pre-emption)",
-                Foreground = Brushes.LimeGreen,
-            });
+				items.Add(new MinMaxFunctionSummaryItem(frameStats.Samples.Select(s => s.Work))
+				{
+					Icon = (Style)Application.Current.FindResource("appbar_timer_play"),
+					Name = "Work\\Frame(ms)",
+					Description = "Total work time of the function per frame in milliseconds (excluding synchronization and pre-emption)",
+					Foreground = Brushes.LimeGreen,
+				});
 
 
-            items.Add(new MinMaxFunctionSummaryItem(frameStats.Samples.Select(s => s.Wait))
-            {
-                Icon = (Style)Application.Current.FindResource("appbar_timer_pause"),
-                Name = "Wait\\Frame(ms)",
-                Description = "Total wait time of the function per frame in milliseconds (synchronization and pre-emption)",
-                Foreground = Brushes.Tomato,
-            });
+				items.Add(new MinMaxFunctionSummaryItem(frameStats.Samples.Select(s => s.Wait))
+				{
+					Icon = (Style)Application.Current.FindResource("appbar_timer_pause"),
+					Name = "Wait\\Frame(ms)",
+					Description = "Total wait time of the function per frame in milliseconds (synchronization and pre-emption)",
+					Foreground = Brushes.Tomato,
+				});
 
-            items.Add(new MinMaxFunctionSummaryItem(frameStats.Samples.Select(s => (double)s.Count))
-            {
-                Icon = (Style)Application.Current.FindResource("appbar_cell_function"),
-                Name = "Calls\\Frame",
-                Description = "Average number of calls per frame",
-                Foreground = Brushes.Wheat,
-            });
+				items.Add(new MinMaxFunctionSummaryItem(frameStats.Samples.Select(s => (double)s.Count))
+				{
+					Icon = (Style)Application.Current.FindResource("appbar_cell_function"),
+					Name = "Calls\\Frame",
+					Description = "Average number of calls per frame",
+					Foreground = Brushes.Wheat,
+				});
 
-            items.Add(new HyperlinkFunctionSummaryItem()
-            {
-                Icon = (Style)Application.Current.FindResource("appbar_page_code"),
-                Name = "File",
-                Description = "Open Source Code",
-                Path = frameStats.Description.Path,
-            });
+				items.Add(new HyperlinkFunctionSummaryItem()
+				{
+					Icon = (Style)Application.Current.FindResource("appbar_page_code"),
+					Name = "File",
+					Description = "Open Source Code",
+					Path = frameStats.Description.Path,
+				});
+			}
 
             return items;
         }
@@ -245,8 +248,8 @@ namespace Profiler.ViewModels
 
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
-                WorkValues = new ChartValues<double>(frameStats.Samples.Select(sample => sample.Work));
-                WaitValues = new ChartValues<double>(frameStats.Samples.Select(sample => sample.Wait));
+                WorkValues = frameStats != null ? new ChartValues<double>(frameStats.Samples.Select(sample => sample.Work)) : null;
+                WaitValues = frameStats != null ? new ChartValues<double>(frameStats.Samples.Select(sample => sample.Wait)) : null;
                 SummaryItems = items;
             }));
 

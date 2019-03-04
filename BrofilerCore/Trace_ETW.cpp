@@ -1061,6 +1061,10 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads)
 		traceProperties->LoggerNameOffset = sizeof(EVENT_TRACE_PROPERTIES);
 		traceProperties->EnableFlags = 0;
 
+
+		traceProperties->BufferSize = 256 << 10; // 512 Kb
+		traceProperties->MinimumBuffers = 4;
+
 		if (mode & SWITCH_CONTEXTS)
 		{
 			traceProperties->EnableFlags |= EVENT_TRACE_FLAG_CSWITCH;
@@ -1177,7 +1181,8 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads)
 			TRACE_PROFILE_INTERVAL itnerval = { 0 };
 			memset(&itnerval, 0, sizeof(TRACE_PROFILE_INTERVAL));
 			itnerval.Interval = highFrequencySampling ? 1221 : 10000;
-			status = TraceSetInformation(traceSessionHandle, TraceSampledProfileIntervalInfo, &itnerval, sizeof(TRACE_PROFILE_INTERVAL));
+			// The SessionHandle is irrelevant for this information class and must be zero, else the function returns ERROR_INVALID_PARAMETER.
+			status = TraceSetInformation(NULL /*traceSessionHandle*/, TraceSampledProfileIntervalInfo, &itnerval, sizeof(TRACE_PROFILE_INTERVAL));
 			BRO_ASSERT(status == ERROR_SUCCESS, "TraceSetInformation - failed");
 		}
 

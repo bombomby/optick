@@ -270,6 +270,12 @@
     <Compile Include="InfrastructureMvvm\ViewModelPresenter.cs" />
     <Compile Include="InfrastructureMvvm\WindowManager.cs" />
     <Compile Include="InfrastructureMvvm\BaseViewModel.cs" />
+    <Compile Include="ThreadView\EventThreadView.xaml.cs">
+      <DependentUpon>EventThreadView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ThreadView\SamplingThreadView.xaml.cs">
+      <DependentUpon>SamplingThreadView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModels\FunctionSummaryViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\PlatformSelectorViewModel.cs" />
@@ -393,6 +399,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\TagsControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ThreadView\EventThreadView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ThreadView\SamplingThreadView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

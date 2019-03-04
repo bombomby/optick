@@ -108,20 +108,10 @@ namespace Profiler.Controls
 
 		private void OpenFrame(object source, TimeLine.FocusFrameEventArgs args)
 		{
-			//Durable focusRange = null;
-			//if (args.Node != null)
-			//{
-			//	focusRange = args.Node.Entry;
-			//}
-			//else if (args.Frame is EventFrame)
-			//{
-			//	focusRange = (args.Frame as EventFrame).Header;
-			//}
-
 			Data.Frame frame = args.Frame;
 
             if (frame is EventFrame)
-                ThreadView.Highlight(frame as EventFrame, null);
+				EventThreadViewControl.Highlight(frame as EventFrame, null);
 
 			if (frame is EventFrame)
 			{
@@ -132,6 +122,8 @@ namespace Profiler.Controls
 				FrameInfoControl.SetFrame(frame, null);
 				SampleInfoControl.SetFrame(frame, null);
 				SysCallInfoControl.SetFrame(frame, null);
+
+				SamplingTreeControl.SetDescription(frame.Group, eventFrame.RootEntry.Description);
 			}
 
 			if (frame != null && frame.Group != null)
@@ -143,7 +135,7 @@ namespace Profiler.Controls
 
         private void ThreadView_HighlightEvent(object sender, HighlightFrameEventArgs e)
         {
-            ThreadView.Highlight(e.Items);
+			EventThreadViewControl.Highlight(e.Items);
         }
 
 		public void Close()
@@ -182,13 +174,18 @@ namespace Profiler.Controls
 		private void ClearButton_Click(object sender, System.Windows.RoutedEventArgs e)
 		{
 			timeLine.Clear();
-			ThreadView.Group = null;
-            SummaryVM.Summary = null;
+			EventThreadViewControl.Group = null;
+			SummaryVM.Summary = null;
             SummaryVM.CaptureName = null;
+
+			FunctionSummaryVM.Load(null, null);
 
 			FrameInfoControl.DataContext = null;
 			SampleInfoControl.DataContext = null; 
 			SysCallInfoControl.DataContext = null;
+			InstanceHistoryControl.DataContext = null;
+
+			SamplingTreeControl.SetDescription(null, null);
 		}
 
         private void ClearSamplingButton_Click(object sender, System.Windows.RoutedEventArgs e)
@@ -246,7 +243,7 @@ namespace Profiler.Controls
 
 		private void OnSearchCommandExecuted(object sender, ExecutedRoutedEventArgs args)
 		{
-			ThreadView.FunctionSearchControl.Open();
+			EventThreadViewControl.FunctionSearchControl.Open();
 		}
 	}
 }

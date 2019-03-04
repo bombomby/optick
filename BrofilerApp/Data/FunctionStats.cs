@@ -49,17 +49,17 @@ namespace Profiler.Data
 
         public double AvgTotal
         {
-            get { return Samples.Average(s => s.Total); }
+            get { return Samples.Count > 0 ? Samples.Average(s => s.Total) : 0.0; }
         }
 
         public double AvgWork
         {
-            get { return Samples.Average(s => s.Work); }
+            get { return Samples.Count > 0 ? Samples.Average(s => s.Work) : 0.0; }
         }
 
         public double AvgWait
         {
-            get { return Samples.Average(s => s.Wait); }
+            get { return Samples.Count > 0 ? Samples.Average(s => s.Wait) : 0.0; }
         }
 
 
