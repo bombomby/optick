@@ -148,8 +148,11 @@ namespace Profiler.Controls
 
 			if (frame != null && frame.Group != null)
 			{
-                SummaryVM.Summary = frame.Group.Summary;
-                SummaryVM.CaptureName = _captureName;
+                if (!ReferenceEquals(SummaryVM.Summary, frame.Group.Summary))
+                {
+                    SummaryVM.Summary = frame.Group.Summary;
+                    SummaryVM.CaptureName = _captureName;
+                }
             }
 		}
 
@@ -220,7 +223,7 @@ namespace Profiler.Controls
 
 		private void StartButton_Checked(object sender, System.Windows.RoutedEventArgs e)
 		{
-			var platform = PlatformSelectorVM.ActivePlatform;
+            var platform = PlatformSelectorVM.ActivePlatform;
 
 			if (platform == null)
 				return;

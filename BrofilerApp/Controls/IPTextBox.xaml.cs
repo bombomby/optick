@@ -202,7 +202,7 @@ namespace Profiler.Controls
         {
             if (!ReferenceEquals(currentTextBox, LastSegment))
             {
-                currentTextBox.SelectionLength = 0;
+                currentTextBox.SelectionLength = 4;
                 currentTextBox.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
             }
         }

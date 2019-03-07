@@ -43,47 +43,62 @@ namespace Profiler.ViewModels
                     else
                         SetField(ref _activePlatform, _activePlatform = Platforms[0]);
 
-                    NewIP = _activePlatform.IP.ToString();
-                    NewPort = _activePlatform.Port;
-                }
+                if (!ActivePlatform.CoreType)
+                 //   Application.Current.Dispatcher.BeginInvoke(new Action(async() => ActivePlatform.IsDisconnect = !(await CheckHostEnable(ActivePlatform.IP))));
+                  Task.Run(async()=> ActivePlatform.IsDisconnect = !( await CheckHostEnable(ActivePlatform.IP)) );
+
+                //NewIP = _activePlatform.IP.ToString();
+                //NewPort = _activePlatform.Port;
+            }
         }
 
-        private string _newIP;
-        public string NewIP
-        {
-            get { return _newIP; }
-            set { SetField(ref _newIP, value); }
-        }
+        //private string _newIP;
+        //public string NewIP
+        //{
+        //    get { return _newIP; }
+        //    set
+        //    {
+        //        IPAddress address = null;
+        //        IPAddress.TryParse(value, out address);
+        //        ActivePlatform.IP = address;
 
-        private short _newPort;
-        public short NewPort
-        {
-            get { return _newPort; }
-            set { SetField(ref _newPort, value); }
-        }
+        //        SetField(ref _newIP, value);
+        //    }
+        //}
+
+        //private short _newPort;
+        //public short NewPort
+        //{
+        //    get { return _newPort; }
+        //    set
+        //    {
+        //        ActivePlatform.Port = value;
+        //        SetField(ref _newPort, value);
+        //    }
+        //}
 
         #endregion
 
         #region commands
 
-        private RelayCommandAsync _addConnectionCommand;
-        public RelayCommandAsync AddConnectionCommand
-        {
-            get
-            {
-                return _addConnectionCommand ??
-                    (_addConnectionCommand = new RelayCommandAsync(async () =>
-                    {
-                        IPAddress address = null;
-                        IPAddress.TryParse(NewIP, out address);
+        //private RelayCommandAsync _addConnectionCommand;
+        //public RelayCommandAsync AddConnectionCommand
+        //{
+        //    get
+        //    {
+        //        return _addConnectionCommand ??
+        //            (_addConnectionCommand = new RelayCommandAsync(async () =>
+        //            {
+        //                IPAddress address = null;
+        //                IPAddress.TryParse(NewIP, out address);
 
-                        await AddPlatformAsync(address, NewPort, true);                      
-                    },
-                  // Condition execute command
-                  () => NewPort > 0 && IsIpValid(NewIP)
-                  ));
-            }
-        }
+        //                await AddPlatformAsync(address, NewPort, true);                      
+        //            },
+        //          // Condition execute command
+        //          () => NewPort > 0 && IsIpValid(NewIP)
+        //          ));
+        //    }
+        //}
 
         private RelayCommandGenericAsync<object> _removeConnectionCommand;
         public RelayCommandGenericAsync<object> RemoveConnectionCommand
@@ -126,7 +141,7 @@ namespace Profiler.ViewModels
             foreach (var ip in Platform.GetPCAddresses())
                 _platforms.Add(new PlatformDescription() { Name = Environment.MachineName, IP = ip, CoreType = true, PlatformType = Platform.Type.Windows });
 
-            _platforms.Add(new PlatformDescription() { Name = "Add Connection", IP = IPAddress.Loopback, Port = PlatformDescription.DEFAULT_PORT, Detailed = true, CoreType = true });
+            _platforms.Add(new PlatformDescription() { Name = "Network", IP = IPAddress.Loopback, Port = PlatformDescription.DEFAULT_PORT, Detailed = true, CoreType = true });
 
             SetCustomPlatformsFromLocalSettings();
 
@@ -140,12 +155,20 @@ namespace Profiler.ViewModels
         // Update type platform
         public void PlatformUpdate(PlatformDescription platform)
         {
-            int index = Platforms.IndexOf(ActivePlatform);
-            Platforms[index] = platform;
+            // Restore Network platform
+            Platforms[1].IP = IPAddress.Loopback;
+            Platforms[1].Port = PlatformDescription.DEFAULT_PORT;
 
-            ActivePlatform = Platforms[index];
+            try
+            {
+                // Add new platform
+                Task.Run(() => AddPlatformAsync(platform));
+                //  Task.Run(() => AddCustomConnectionToLocalSettingsAsync(platform));
+            }
+            catch (Exception e)
+            {
+            }
 
-            UpdateCustomConnectionFromLocalSettingsAsync(platform).Wait();
         }
 
         #endregion
@@ -221,7 +244,7 @@ namespace Profiler.ViewModels
         }
 
         // Update custom connection in LocalSettings
-        private async Task UpdateCustomConnectionFromLocalSettingsAsync(PlatformDescription platform)
+        private async Task UpdateCustomConnectionToLocalSettingsAsync(PlatformDescription platform)
         {
             _isSelfUpdateFlag = true;
 
@@ -296,48 +319,80 @@ namespace Profiler.ViewModels
                 return false;
         }
 
-        private async Task AddPlatformAsync(IPAddress ip, short port, bool autofocus)
+
+        private async Task AddPlatformAsync(PlatformDescription platform)
         {
-            if (ip.Equals(IPAddress.None) || ip.Equals(IPAddress.Any) || ip.Equals(IPAddress.Loopback))
+            if (platform.IP.Equals(IPAddress.None) || platform.IP.Equals(IPAddress.Any) || platform.IP.Equals(IPAddress.Loopback))
                 return;
 
-            PingReply reply = await new Ping().SendPingAsync(ip, 16);
-
-            if (reply.Status == IPStatus.Success)
+            try
             {
-                string name = reply.Address.ToString();
-
-                try
+                if (Platforms.Where(x => x.IP.Equals(platform.IP) && x.Port == platform.Port).Count() == 0)
                 {
-                    IPHostEntry entry = await Dns.GetHostEntryAsync(reply.Address);
-                    if (entry != null)
-                        name = entry.HostName;
+                    await Application.Current.Dispatcher.BeginInvoke(new Action(()=>Platforms.Add(platform)));
+                    await AddCustomConnectionToLocalSettingsAsync(platform);
                 }
-                catch (SocketException) { }
-
-                var newPlatform = new PlatformDescription() { Name = name, IP = reply.Address, Port = port };
-
-                bool needAdd = true;
-
-                foreach (PlatformDescription platform in Platforms)
-                    if (platform.IP.Equals(reply.Address) && platform.Port == port)
-                    {
-                        newPlatform = platform;
-                        needAdd = false;
-                        break;
-                    }
-                
-
-                if (needAdd)
-                {
-                    Platforms.Add(newPlatform);
-                    await AddCustomConnectionToLocalSettingsAsync(newPlatform);
-                }
-                    
-                if (autofocus)
-                    ActivePlatform = newPlatform;
+                ActivePlatform = Platforms.FirstOrDefault(x => x.IP.Equals(platform.IP) && x.Port == platform.Port);
             }
+            catch (Exception e)
+            {
+                throw e;
+            }
+
         }
+
+        private async Task<bool> CheckHostEnable(IPAddress ip)
+        {
+            if (ip.Equals(IPAddress.None) || ip.Equals(IPAddress.Any) || ip.Equals(IPAddress.Loopback))
+               return false;
+
+            PingReply reply = await new Ping().SendPingAsync(ip, 1000);
+
+            return reply.Status == IPStatus.Success ? true : false;
+        }
+
+        //private async Task AddPlatformAsync(IPAddress ip, short port, bool autofocus)
+        //{
+        //    if (ip.Equals(IPAddress.None) || ip.Equals(IPAddress.Any) || ip.Equals(IPAddress.Loopback))
+        //        return;
+
+        //    PingReply reply = await new Ping().SendPingAsync(ip, 1000);
+
+        //    if (reply.Status == IPStatus.Success)
+        //    {
+        //        string name = reply.Address.ToString();
+
+        //        try
+        //        {
+        //            IPHostEntry entry = await Dns.GetHostEntryAsync(reply.Address);
+        //            if (entry != null)
+        //                name = entry.HostName;
+        //        }
+        //        catch (SocketException) { }
+
+        //        var newPlatform = new PlatformDescription() { Name = name, IP = reply.Address, Port = port };
+
+        //        bool needAdd = true;
+
+        //        foreach (PlatformDescription platform in Platforms)
+        //            if (platform.IP.Equals(reply.Address) && platform.Port == port)
+        //            {
+        //                newPlatform = platform;
+        //                needAdd = false;
+        //                break;
+        //            }
+
+
+        //        if (needAdd)
+        //        {
+        //            Platforms.Add(newPlatform);
+        //            await AddCustomConnectionToLocalSettingsAsync(newPlatform);
+        //        }
+
+        //        if (autofocus)
+        //            ActivePlatform = newPlatform;
+        //    }
+        //}
 
         #endregion
 
@@ -347,7 +402,6 @@ namespace Profiler.ViewModels
     {
         public  const short DEFAULT_PORT = 31313;
 
-        public short Port { get; set; }
         public bool CoreType { get; set; }          // true for constant items
         public bool Detailed { get; set; }          // true for Add Connection
         public string Icon { get; set; }
@@ -367,7 +421,23 @@ namespace Profiler.ViewModels
         public IPAddress IP
         {
             get { return _ip; }
-            set { SetField(ref _ip, value); }
+            set
+            {
+                SetField(ref _ip, value);
+                OnPropertyChanged("Status");
+            }
+        }
+
+
+        private short _port;
+        public short Port
+        {
+            get { return _port; }
+            set
+            {
+                SetField(ref _port, value);
+                OnPropertyChanged("Status");
+            }
         }
 
         Platform.Type _platformType;
@@ -380,11 +450,18 @@ namespace Profiler.ViewModels
                 }
         }
 
+        private bool _isDisconnect;
+        public bool IsDisconnect
+        {
+            get { return _isDisconnect; }
+            set { SetField(ref _isDisconnect, value);}
+        }
+
         public string Status
         {
             get
             {
-                return IP.Equals(IPAddress.None) ? "Disconnected" : IP.ToString();
+                return IP.Equals(IPAddress.None) ? "Disconnected" : String.Format("{0} : {1}",IP.ToString(),Port);
             }
         }
 

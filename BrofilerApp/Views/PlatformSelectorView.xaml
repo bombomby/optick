@@ -15,6 +15,7 @@
         <helper:BoolToVisibilityConverter x:Key="BoolToVisibilityConverterInvert"
                                           True="Collapsed" 
                                           False="Visible"/>
+        <local:IpToStringConverter x:Key="IpToStringConverter"/>
     </UserControl.Resources>
     <StackPanel Orientation="Horizontal">
         <ComboBox x:Name="comboBox" HorizontalAlignment="Left" VerticalAlignment="Top" Width="Auto" MinWidth="200" Height="Auto"
@@ -28,15 +29,15 @@
                             <Grid HorizontalAlignment="Stretch" Margin="0,-4">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="15"/>
-                                    <ColumnDefinition Width="130"/>
-                                    <ColumnDefinition Width="90"/>
+                                    <ColumnDefinition MinWidth="150"/>
+                                    <ColumnDefinition MinWidth="120"/>
                                     <ColumnDefinition Width="15"/>
                                 </Grid.ColumnDefinitions>
                                 <Border Width="16" Height="16" Grid.Column="0" >
                                     <ContentControl Style="{Binding Icon, Converter={StaticResource StringToResource}}" Margin="-6" />
                                 </Border>
                                 <Label Grid.Column="1" MinWidth="68" Content="{Binding Name}" Margin="0" FontWeight="Bold" />
-                                <Label Grid.Column="2" Content="{Binding Status}" Margin="0" />
+                                <Label Grid.Column="2" Content="{Binding Status}" Margin="0" Opacity="0.75" />
                                 <Button Grid.Column="3" ToolTip="Remove Connection"
                                  Margin="0,0,0,0" Padding="-6" 
                                  HorizontalAlignment="Right" VerticalAlignment="Center"
@@ -77,12 +78,16 @@
                                     <ColumnDefinition Width="15"/>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="15"/>
                                 </Grid.ColumnDefinitions>
                                 <Border Width="16" Height="16" Grid.Column="0" >
                                     <ContentControl Style="{Binding Icon, Converter={StaticResource StringToResource}}" Margin="-6" />
                                 </Border>
                                 <Label Grid.Column="1" MinWidth="68" Content="{Binding Name}" Margin="0" FontWeight="Bold" />
-                                <Label Grid.Column="2" Content="{Binding Status}" Margin="0" />
+                                <Label Grid.Column="2" Content="{Binding Status}" Opacity="0.75" Margin="0" />
+                                <Border Width="16" Height="16" Grid.Column="3" >
+                                    <ContentControl Style="{StaticResource appbar_connect}" Visibility="{Binding IsDisconnect, Converter={StaticResource BoolToVisibilityConverter}}" Margin="-6" />
+                                </Border>
                             </Grid>
                         </DataTemplate>
                     </view:ComboBoxItemTemplateSelector.SelectedItemTemplate>
@@ -91,37 +96,9 @@
         </ComboBox>
         <StackPanel x:Name="DetailedIP" Orientation="Horizontal" Visibility="{Binding ActivePlatform.Detailed, Converter={StaticResource BoolToVisibilityConverter}}">
             <Label Content="IP:" Margin="4,0,0,0" />
-            <controls:IPTextBox x:Name="IP"  VerticalContentAlignment="Center" MinWidth="80" Address="{Binding NewIP}" />
+            <controls:IPTextBox x:Name="IP"  VerticalContentAlignment="Center" MinWidth="80" Address="{Binding ActivePlatform.IP, Converter={StaticResource IpToStringConverter},Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" MinHeight="{StaticResource DefaultButtonSize}" />
             <Label Content="Port:" Margin="4,0,0,0" />
-            <TextBox x:Name="Port" VerticalContentAlignment="Center" MinWidth="30" Text="{Binding NewPort}" />
-            <Button ToolTip="Add New Connection" Margin="6,0,0,0" Padding="-6" 
-                    HorizontalAlignment="Left" VerticalAlignment="Center"
-                    Width="18" 
-                    Height="18"
-                    Command="{Binding AddConnectionCommand}">
-                <Button.Template>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="buttonBorder" CornerRadius="25"
-                                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                                    Background="{TemplateBinding Background}"
-                                                    Height="{TemplateBinding Height}"
-                                                    Width="{TemplateBinding Width}" >
-                            <ContentControl Margin="{TemplateBinding Padding}"
-                                                    Style="{StaticResource appbar_add}"
-                                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                    VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                    Content="{TemplateBinding Content}" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="DarkGreen" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Button.Template>
-                <!-- <ContentControl Style="{StaticResource appbar_add}" /> -->
-            </Button>
+            <TextBox x:Name="Port" VerticalContentAlignment="Center" MinWidth="30" Text="{Binding ActivePlatform.Port,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" MinHeight="{StaticResource DefaultButtonSize}" />
         </StackPanel>
     </StackPanel>
 </UserControl>
