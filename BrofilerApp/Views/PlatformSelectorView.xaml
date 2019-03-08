@@ -96,7 +96,7 @@
         </ComboBox>
         <StackPanel x:Name="DetailedIP" Orientation="Horizontal" Visibility="{Binding ActivePlatform.Detailed, Converter={StaticResource BoolToVisibilityConverter}}">
             <Label Content="IP:" Margin="4,0,0,0" />
-            <controls:IPTextBox x:Name="IP"  VerticalContentAlignment="Center" MinWidth="80" Address="{Binding ActivePlatform.IP, Converter={StaticResource IpToStringConverter},Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" MinHeight="{StaticResource DefaultButtonSize}" />
+            <controls:IPTextBox x:Name="IP"  MinWidth="80" Address="{Binding ActivePlatform.IP, Converter={StaticResource IpToStringConverter},Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" />
             <Label Content="Port:" Margin="4,0,0,0" />
             <TextBox x:Name="Port" VerticalContentAlignment="Center" MinWidth="30" Text="{Binding ActivePlatform.Port,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" MinHeight="{StaticResource DefaultButtonSize}" />
         </StackPanel>
