@@ -117,7 +117,6 @@ namespace Profiler.ViewModels
             catch (Exception)
             {
             }
-
         }
 
         #endregion

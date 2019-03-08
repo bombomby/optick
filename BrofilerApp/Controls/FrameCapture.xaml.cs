@@ -229,11 +229,11 @@ namespace Profiler.Controls
 				return;
 
 			Properties.Settings.Default.DefaultIP = platform.IP.ToString();
-			Properties.Settings.Default.DefaultPort = platform.Port;
+			Properties.Settings.Default.DefaultPort = (short)platform.Port;
 			Properties.Settings.Default.Save();
 
 			ProfilerClient.Get().IpAddress = platform.IP;
-			ProfilerClient.Get().Port = platform.Port;
+			ProfilerClient.Get().Port = (short)platform.Port;
 
 			timeLine.StartCapture();
 		}

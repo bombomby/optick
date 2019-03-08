@@ -16,6 +16,7 @@
                                           True="Collapsed" 
                                           False="Visible"/>
         <local:IpToStringConverter x:Key="IpToStringConverter"/>
+        <local:NullValueConverter x:Key="NullValueConverter"/>
     </UserControl.Resources>
     <StackPanel Orientation="Horizontal">
         <ComboBox x:Name="comboBox" HorizontalAlignment="Left" VerticalAlignment="Top" Width="Auto" MinWidth="200" Height="Auto"
@@ -96,9 +97,9 @@
         </ComboBox>
         <StackPanel x:Name="DetailedIP" Orientation="Horizontal" Visibility="{Binding ActivePlatform.Detailed, Converter={StaticResource BoolToVisibilityConverter}}">
             <Label Content="IP:" Margin="4,0,0,0" />
-            <controls:IPTextBox x:Name="IP"  MinWidth="80" Address="{Binding ActivePlatform.IP, Converter={StaticResource IpToStringConverter},Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" />
+            <controls:IPTextBox x:Name="IP"  MinWidth="80" Address="{Binding ActivePlatform.IP, Converter={StaticResource IpToStringConverter},Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Opacity="0.75"/>
             <Label Content="Port:" Margin="4,0,0,0" />
-            <TextBox x:Name="Port" VerticalContentAlignment="Center" MinWidth="30" Text="{Binding ActivePlatform.Port,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" MinHeight="{StaticResource DefaultButtonSize}" />
+            <TextBox x:Name="Port" VerticalContentAlignment="Center" MinWidth="30" Text="{Binding ActivePlatform.Port,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged, NotifyOnSourceUpdated=True, Converter={StaticResource NullValueConverter}}" MinHeight="{StaticResource DefaultButtonSize}" Opacity="0.75" />
         </StackPanel>
     </StackPanel>
 </UserControl>

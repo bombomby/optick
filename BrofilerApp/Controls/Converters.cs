@@ -75,7 +75,6 @@ namespace Profiler
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            // return value != null? value.ToString():"0.0.0.0";
             return value?.ToString();
         }
 
@@ -84,6 +83,26 @@ namespace Profiler
             IPAddress address = null;
             IPAddress.TryParse((string)value, out address);
             return address;
+        }
+    }
+
+    public class NullValueConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return value.ToString();
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if((string)value == "")
+                return 0;
+
+            if (int.Parse(value.ToString()) > (int)short.MaxValue)
+                return short.MaxValue;
+
+                return short.Parse(value.ToString());
+
         }
     }
 }
