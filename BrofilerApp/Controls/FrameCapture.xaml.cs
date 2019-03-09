@@ -148,8 +148,11 @@ namespace Profiler.Controls
 
 			if (frame != null && frame.Group != null)
 			{
-                SummaryVM.Summary = frame.Group.Summary;
-                SummaryVM.CaptureName = _captureName;
+                if (!ReferenceEquals(SummaryVM.Summary, frame.Group.Summary))
+                {
+                    SummaryVM.Summary = frame.Group.Summary;
+                    SummaryVM.CaptureName = _captureName;
+                }
             }
 		}
 
@@ -220,17 +223,17 @@ namespace Profiler.Controls
 
 		private void StartButton_Checked(object sender, System.Windows.RoutedEventArgs e)
 		{
-			var platform = PlatformSelectorVM.ActivePlatform;
+            var platform = PlatformSelectorVM.ActivePlatform;
 
 			if (platform == null)
 				return;
 
 			Properties.Settings.Default.DefaultIP = platform.IP.ToString();
-			Properties.Settings.Default.DefaultPort = platform.Port;
+			Properties.Settings.Default.DefaultPort = (short)platform.Port;
 			Properties.Settings.Default.Save();
 
 			ProfilerClient.Get().IpAddress = platform.IP;
-			ProfilerClient.Get().Port = platform.Port;
+			ProfilerClient.Get().Port = (short)platform.Port;
 
 			timeLine.StartCapture();
 		}

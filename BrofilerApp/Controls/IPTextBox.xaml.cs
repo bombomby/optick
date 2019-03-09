@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Net;
 
 
 namespace Profiler.Controls
@@ -85,6 +86,10 @@ namespace Profiler.Controls
                 e.Handled = true;
                 HandlePeriodKeyPress();
             }
+            else if (e.Key == Key.C && ((e.KeyboardDevice.Modifiers & ModifierKeys.Control) != 0))
+            {
+                DataObject_OnCopying(this, new DataObjectCopyingEventArgs(new DataObject(Address), false));
+            }
             else
             {
                 e.Handled = !AreOtherAllowedKeysPressed(e);
@@ -135,7 +140,15 @@ namespace Profiler.Controls
             }
         }
 
-        private bool ShouldCancelBackwardKeyPress()
+        
+
+        private void TextBoxBase_OnGotFocus(object sender, RoutedEventArgs e)
+        {
+            var currentTextBox = FocusManager.GetFocusedElement(this) as TextBox;
+            currentTextBox.SelectAll();
+        }
+
+            private bool ShouldCancelBackwardKeyPress()
         {
             var currentTextBox = FocusManager.GetFocusedElement(this) as TextBox;
             return currentTextBox != null && currentTextBox.CaretIndex == 0;
@@ -164,7 +177,7 @@ namespace Profiler.Controls
         private bool ShouldCancelForwardKeyPress()
         {
             var currentTextBox = FocusManager.GetFocusedElement(this) as TextBox;
-            return currentTextBox != null && currentTextBox.CaretIndex == 3;
+            return currentTextBox != null && currentTextBox.CaretIndex == currentTextBox.Text.Length;// == 3;
         }
 
         private void HandleForwardKeyPress()
@@ -194,7 +207,6 @@ namespace Profiler.Controls
                 var previousSegmentIndex = _segments.FindIndex(box => ReferenceEquals(box, currentTextBox)) - 1;
                 currentTextBox.SelectionLength = 0;
                 currentTextBox.MoveFocus(new TraversalRequest(FocusNavigationDirection.Previous));
-                _segments[previousSegmentIndex].CaretIndex = _segments[previousSegmentIndex].Text.Length;
             }
         }
 
@@ -202,8 +214,9 @@ namespace Profiler.Controls
         {
             if (!ReferenceEquals(currentTextBox, LastSegment))
             {
+                var nextSegmentIndex = _segments.FindIndex(box => ReferenceEquals(box, currentTextBox)) + 1;
                 currentTextBox.SelectionLength = 0;
-                currentTextBox.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+                _segments[nextSegmentIndex].Focus();
             }
         }
 
@@ -221,10 +234,20 @@ namespace Profiler.Controls
             int num;
 
             if (!int.TryParse(text, out num))
-            {
                 e.CancelCommand();
-            }
 
+
+            IPAddress ipAddress = null;
+
+            if (IPAddress.TryParse(text, out ipAddress))
+                Address = text;
+        }
+
+        private void DataObject_OnCopying(object sender, DataObjectCopyingEventArgs e)
+        {
+            Clipboard.Clear();
+            Clipboard.SetText(Address);
+            e.CancelCommand();
         }
     }
 }
