@@ -92,7 +92,7 @@ namespace Profiler.Data
 
 	public class FrameGroup
 	{
-
+		public String Name { get; set; }
 		public SysCallBoard SysCallsBoard { get; protected set; }
 		public EventDescriptionBoard Board { get; set; }
 		public ISamplingBoard SamplingBoard { get; set; }
@@ -231,6 +231,12 @@ namespace Profiler.Data
 			}
 
 		}
+
+		public void Save(Stream stream)
+		{
+			Responses.ForEach(response => response.Serialize(stream));
+		}
+
 		public void AddSynchronization(SynchronizationMap syncMap)
 		{
 			Responses.Add(syncMap.Response);
@@ -452,6 +458,13 @@ namespace Profiler.Data
 
 			groups.Clear();
 			summaries.Clear();
+		}
+
+		public void UpdateName(String name, bool force = false)
+		{
+			foreach (FrameGroup group in groups.Values)
+				if (String.IsNullOrEmpty(group.Name) || force)
+					group.Name = name;
 		}
 
 		public void Add(DataResponse response)

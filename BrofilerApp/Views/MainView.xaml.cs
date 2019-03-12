@@ -21,6 +21,10 @@ using Autofac;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 using Profiler.TaskManager;
+using Profiler.ViewModels;
+using System.Drawing;
+using System.Drawing.Imaging;
+using MahApps.Metro.Controls.Dialogs;
 
 namespace Profiler.Views
 {
@@ -216,11 +220,7 @@ namespace Profiler.Views
 
         private void DeleteTempFiles()
         {
-            string defaultPath;
-            using (var scope = BootStrapperBase.Container.BeginLifetimeScope())
-            {
-                defaultPath = scope.Resolve<Controls.LocalSettings>().TempDirectoryPath;
-            }
+            string defaultPath = Settings.LocalSettings.Data.TempDirectoryPath;
             
             DirectoryInfo dirInfo = new DirectoryInfo(defaultPath);
 
@@ -239,7 +239,22 @@ namespace Profiler.Views
             }
         }
 
-    }
+		private void ReportBugIcon_Click(object sender, RoutedEventArgs e)
+		{
+			TaskTrackerViewModel viewModel = new TaskTrackerViewModel(DialogCoordinator.Instance);
+
+			Stream screenshot = ControlUtils.CaptureScreenshot(this, ImageFormat.Png);
+			if (screenshot != null)
+				viewModel.AttachScreenshot("BrofilerApp.png", screenshot);
+
+			viewModel.SetGroup(FrameCaptureControl.EventThreadViewControl.Group);
+
+			using (var scope = BootStrapperBase.Container.BeginLifetimeScope())
+			{
+				var screenShotView = scope.Resolve<IWindowManager>().ShowWindow(viewModel);
+			}
+		}
+	}
 
 
 	public static class Extensions

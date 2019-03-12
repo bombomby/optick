@@ -94,7 +94,7 @@ statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, st
 				{
 					using (Stream stream = Data.Capture.Open(file))
 					{
-						Open(stream);
+						Open(file, stream);
 						return true;
 					}
 				}
@@ -102,7 +102,7 @@ statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, st
 			return false;
 		}
 
-		private bool Open(Stream stream)
+		private bool Open(String name, Stream stream)
 		{
 			DataResponse response = DataResponse.Create(stream);
 			while (response != null)
@@ -113,6 +113,7 @@ statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, st
 				response = DataResponse.Create(stream);
 			}
 
+			frames.UpdateName(name);
 			frames.Flush();
 			ScrollToEnd();
 
@@ -315,6 +316,45 @@ statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, st
 			}
 		}
 
+		public void Save(Stream stream)
+		{
+			HashSet<EventDescriptionBoard> boards = new HashSet<EventDescriptionBoard>();
+			HashSet<FrameGroup> groups = new HashSet<FrameGroup>();
+
+			FrameGroup currentGroup = null;
+
+			foreach (Frame frame in frames)
+			{
+				if (frame is EventFrame)
+				{
+					EventFrame eventFrame = frame as EventFrame;
+					if (eventFrame.Group != currentGroup && currentGroup != null)
+					{
+						currentGroup.Responses.ForEach(response => response.Serialize(stream));
+					}
+					currentGroup = eventFrame.Group;
+				}
+				else if (frame is SamplingFrame)
+				{
+					if (currentGroup != null)
+					{
+						currentGroup.Responses.ForEach(response => response.Serialize(stream));
+						currentGroup = null;
+					}
+
+					(frame as SamplingFrame).Response.Serialize(stream);
+				}
+			}
+
+			if (currentGroup != null)
+			{
+				currentGroup.Responses.ForEach(response =>
+				{
+					response.Serialize(stream);
+				});
+			}
+		}
+
 		public String Save()
 		{
 			SaveFileDialog dlg = new SaveFileDialog();
@@ -325,45 +365,10 @@ statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, st
 			{
 				lock (frames)
 				{
-					Stream stream = Capture.Create(dlg.FileName);
+					using (Stream stream = new FileStream(dlg.FileName, FileMode.Create))
+						Save(stream);
 
-					HashSet<EventDescriptionBoard> boards = new HashSet<EventDescriptionBoard>();
-					HashSet<FrameGroup> groups = new HashSet<FrameGroup>();
-
-					FrameGroup currentGroup = null;
-
-					foreach (Frame frame in frames)
-					{
-						if (frame is EventFrame)
-						{
-							EventFrame eventFrame = frame as EventFrame;
-							if (eventFrame.Group != currentGroup && currentGroup != null)
-							{
-								currentGroup.Responses.ForEach(response => response.Serialize(stream));
-							}
-							currentGroup = eventFrame.Group;
-						}
-						else if (frame is SamplingFrame)
-						{
-							if (currentGroup != null)
-							{
-								currentGroup.Responses.ForEach(response => response.Serialize(stream));
-								currentGroup = null;
-							}
-
-							(frame as SamplingFrame).Response.Serialize(stream);
-						}
-					}
-
-					if (currentGroup != null)
-					{
-						currentGroup.Responses.ForEach(response =>
-						{
-							response.Serialize(stream);
-						});
-					}
-
-					stream.Close();
+					frames.UpdateName(dlg.FileName, true);
 				}
 				return dlg.FileName;
 			}

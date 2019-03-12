@@ -20,21 +20,21 @@ namespace Profiler.ViewModels
         public String Title
         {
             get { return _title; }
-            set { SetField(ref _title, value); }
+            set { SetProperty(ref _title, value); }
         }
 
         private bool _isLoading = false;
         public bool IsLoading
         {
             get { return _isLoading; }
-            set { SetField(ref _isLoading, value); }
+            set { SetProperty(ref _isLoading, value); }
         }
 
         private FunctionStats _stats;
         public FunctionStats Stats
         {
             get { return _stats; }
-            set { SetField(ref _stats, value); }
+            set { SetProperty(ref _stats, value); }
         }
 
         public FunctionStats.Origin Origin { get; set; }
@@ -77,21 +77,21 @@ namespace Profiler.ViewModels
         public SeriesCollection SeriesTotal
         {
             get { return _seriesTotal; }
-            set { SetField(ref _seriesTotal, value); }
+            set { SetProperty(ref _seriesTotal, value); }
         }
 
         private SeriesCollection _seriesWork = new SeriesCollection();
         public SeriesCollection SeriesWork
         {
             get { return _seriesWork; }
-            set { SetField(ref _seriesWork, value); }
+            set { SetProperty(ref _seriesWork, value); }
         }
 
         private SeriesCollection _seriesWait = new SeriesCollection();
         public SeriesCollection SeriesWait
         {
             get { return _seriesWait; }
-            set { SetField(ref _seriesWait, value); }
+            set { SetProperty(ref _seriesWait, value); }
         }
 
         const double AreaOpacity = 0.33;
@@ -187,7 +187,7 @@ namespace Profiler.ViewModels
         public ObservableCollection<FunctionSummaryItem> SummaryItems
         {
             get { return _summaryItems; }
-            set { SetField(ref _summaryItems, value); }
+            set { SetProperty(ref _summaryItems, value); }
         }
 
         private ObservableCollection<FunctionSummaryItem> GenerateSummaryItems(FunctionStats frameStats)
@@ -261,14 +261,14 @@ namespace Profiler.ViewModels
         public ChartValues<double> WorkValues
         {
             get { return _workValues; }
-            set { SetField(ref _workValues, value); }
+            set { SetProperty(ref _workValues, value); }
         }
 
         ChartValues<double> _waitValues;
         public ChartValues<double> WaitValues
         {
             get { return _waitValues; }
-            set { SetField(ref _waitValues, value); }
+            set { SetProperty(ref _waitValues, value); }
         }
 
         public double AreaOpacity { get; set; } = 0.66;

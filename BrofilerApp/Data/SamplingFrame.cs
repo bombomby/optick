@@ -196,7 +196,7 @@ namespace Profiler.Data
 
 		bool IsSimilar(SamplingDescription a, SamplingDescription b)
 		{
-			return a.Address == b.Address || (a.Path.Line == b.Path.Line && a.Name == b.Name);
+			return a.Name == b.Name; //(a.Address == b.Address || (a.Path.Line == b.Path.Line && a.Name == b.Name);
 		}
 
 		void AppendMerge(Callstack callstack, int index, SamplingNode root)
@@ -242,6 +242,7 @@ namespace Profiler.Data
 			SamplingNode node = new SamplingNode(null, null, 0, (uint)callstacks.Count);
 			callstacks.ForEach(c => node.AppendMerge(c, 0, node));
 			node.Update();
+			node.Sort();
 			return node;
 		}
 	}

@@ -1,0 +1,37 @@
+﻿<UserControl x:Class="Profiler.Controls.AttachmentViewControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Profiler.Controls"
+             xmlns:Profiler="clr-namespace:Profiler"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <Profiler:StreamToImagetConverter x:Key="StreamToImageConverter" />
+        <Profiler:StreamToTextConverter x:Key="StreamToTextConverter" />
+
+        <DataTemplate x:Key="ImageTemplate">
+            <Grid>
+                <Image Stretch="Uniform" Source="{Binding Data, Converter={StaticResource StreamToImageConverter}}" />
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="TextTemplate">
+            <Grid>
+                <TextBox Text="{Binding Data, Converter={StaticResource StreamToTextConverter}}" IsReadOnly="True" />
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="OtherTemplate">
+            <Grid>
+                <ContentControl Style="{StaticResource appbar_image_beach}" />
+            </Grid>
+        </DataTemplate>
+
+        <local:AttachmnetTemplateSelector x:Key="TemplateSelector" ImageTemplate="{StaticResource ImageTemplate}" TextTemplate="{StaticResource TextTemplate}" OtherTemplate="{StaticResource OtherTemplate}" />
+    </UserControl.Resources>
+    <Grid>
+        <ContentControl ContentTemplateSelector="{StaticResource TemplateSelector}" Content="{Binding}" />
+    </Grid>
+</UserControl>

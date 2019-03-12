@@ -159,6 +159,13 @@ namespace Profiler.Data
 		{
 			return Name;
 		}
+
+		public void Sort()
+		{
+			Children.Sort((a, b) => (b.Duration.CompareTo(a.Duration)));
+			foreach (BaseTreeNode child in Children)
+				child.Sort();
+		}
 	}
 
 	public abstract class TreeNode<TDescription> : BaseTreeNode

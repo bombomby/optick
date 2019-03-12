@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Profiler.Data
@@ -118,6 +120,26 @@ namespace Profiler.Data
 					return false;
 
 			return true;
+		}
+
+		public static String GenerateShortGUID()
+		{
+			return Regex.Replace(Convert.ToBase64String(Guid.NewGuid().ToByteArray()), "[/+=]", "");
+		}
+
+		public static void CopyStream(Stream from, Stream to, Action<double> onProgress, int bufferSize = 64 << 10)
+		{
+			byte[] buffer = new byte[bufferSize];
+
+			int read = 0;
+			int totalRead = 0;
+
+			while ((read = from.Read(buffer, 0, bufferSize)) > 0)
+			{
+				to.Write(buffer, 0, read);
+				totalRead += read;
+				onProgress((double)totalRead / from.Length);
+			}
 		}
 	}
 }

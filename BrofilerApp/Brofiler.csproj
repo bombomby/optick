@@ -222,6 +222,16 @@
     <Compile Include="AppBootStrapper.cs" />
     <Compile Include="AutoEmbedLibs\EmbeddedAssembly.cs" />
     <Compile Include="ColorToBrushConverter.cs" />
+    <Compile Include="Controls\AttachmentViewControl.xaml.cs">
+      <DependentUpon>AttachmentViewControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ControlUtils.cs" />
+    <Compile Include="Controls\EditStorageListDialog.xaml.cs">
+      <DependentUpon>EditStorageListDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\EditTaskTrackerListDialog.xaml.cs">
+      <DependentUpon>EditTaskTrackerListDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controls\IPTextBox.xaml.cs">
       <DependentUpon>IPTextBox.xaml</DependentUpon>
     </Compile>
@@ -283,6 +293,7 @@
     <Compile Include="ViewModels\ScreenShotViewModel.cs" />
     <Compile Include="ViewModels\SummaryViewerModel.cs" />
     <Compile Include="InfrastructureMvvm\ViewModelLocator.cs" />
+    <Compile Include="ViewModels\TaskTrackerViewModel.cs" />
     <Compile Include="Views\FunctionHistoryView.xaml.cs">
       <DependentUpon>FunctionHistoryView.xaml</DependentUpon>
     </Compile>
@@ -336,7 +347,6 @@
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="TaskManager\AttachmentStorage.cs" />
-    <Compile Include="TaskManager\GithubTaskTracker.cs" />
     <Compile Include="TaskManager\TaskTracker.cs" />
     <Compile Include="ThreadView\ChartRow.cs" />
     <Compile Include="ThreadView\EventsThreadRow.cs" />
@@ -370,11 +380,26 @@
     <Compile Include="TimeLine\TimeLineItem.xaml.cs">
       <DependentUpon>TimeLineItem.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\TaskTrackerView.xaml.cs">
+      <DependentUpon>TaskTrackerView.xaml</DependentUpon>
+    </Compile>
+    <Page Include="Controls\AttachmentViewControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\CaptureStats.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\CaptureThumbnail.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\EditStorageListDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\EditTaskTrackerListDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -483,6 +508,10 @@
     <Page Include="SourceWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\TaskTrackerView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Resource Include="themes\Brushes.xaml">
       <SubType>Designer</SubType>
@@ -648,6 +677,7 @@
     <Content Include="D3DCompiler_43.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Resource Include="Resources\Bug.ico" />
   </ItemGroup>
   <ItemGroup />
 </Project>

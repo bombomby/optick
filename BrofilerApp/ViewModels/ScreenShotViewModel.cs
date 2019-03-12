@@ -15,7 +15,7 @@ namespace Profiler.ViewModels
         public ImageSource AttachmentImage
         {
             get { return _attachmentImage; }
-            set { SetField(ref _attachmentImage, value); }
+            set { SetProperty(ref _attachmentImage, value); }
         }
 
         public string Title { get; set; }

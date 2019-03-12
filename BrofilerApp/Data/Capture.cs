@@ -77,7 +77,11 @@ namespace Profiler.Data
 
 		public static Stream Create(string fileName)
 		{
-			FileStream stream = new FileStream(fileName, FileMode.Create);
+			return Create(new FileStream(fileName, FileMode.Create));
+		}
+
+		public static Stream Create(Stream stream)
+		{
 			RockyHeader header = new RockyHeader();
 			header.Write(stream);
 			if (header.IsZip)

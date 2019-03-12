@@ -29,7 +29,7 @@
                 <Button Margin="-2" ToolTip="Ask a question">
                     <ContentControl Style="{StaticResource appbar_message_profanity}" />
                 </Button>
-                <Button Margin="-2" ToolTip="Report a bug">
+                <Button Margin="-2" ToolTip="Report a bug" x:Name="ReportBugIcon" Click="ReportBugIcon_Click">
                     <ContentControl Style="{StaticResource appbar_bug}" />
                 </Button>
             </StackPanel>
@@ -37,56 +37,5 @@
     </MahApps:MetroWindow.RightWindowCommands>
     <MahApps:MetroWindow.Resources>
     </MahApps:MetroWindow.Resources>
-
     <Controls:FrameCapture x:Name="FrameCaptureControl" />
-    
-    <!--<MahApps:HamburgerMenu x:Name="HamburgerMenuControl" Foreground="White" PaneBackground="#FF444444" IsPaneOpen="False" DisplayMode="CompactInline" OptionsItemTemplate="{StaticResource HamburgerMenuItem}" ItemTemplate="{StaticResource HamburgerMenuItem}" ItemClick="HamburgerMenuControl_ItemClick">
-        <MahApps:HamburgerMenu.ItemsSource>
-            <MahApps:HamburgerMenuItemCollection>
-                <Controls:HamburgerMenuContentItem Label="Home" Tag="HomeMenu" x:Name="HomeMenuItem">
-                    <Controls:HamburgerMenuContentItem.Icon>
-                        <ContentControl Style="{StaticResource appbar_home}" />
-                    </Controls:HamburgerMenuContentItem.Icon>
-                    <Controls:HamburgerMenuContentItem.Content>
-                        <Controls:FileHistory x:Name="FileHistory" />
-                    </Controls:HamburgerMenuContentItem.Content>
-                </Controls:HamburgerMenuContentItem>
-                <Controls:HamburgerMenuContentItem Label="Live Session" Tag="LiveMenu" x:Name="LiveMenuItem">
-                    <Controls:HamburgerMenuContentItem.Icon>
-                        <ContentControl Style="{StaticResource appbar_control_play_live}" />
-                    </Controls:HamburgerMenuContentItem.Icon>
-                    <Controls:HamburgerMenuContentItem.Content>
-                        <ContentControl Style="{StaticResource appbar_control_play_live}" />
-                    </Controls:HamburgerMenuContentItem.Content>
-                </Controls:HamburgerMenuContentItem>
-                <Controls:HamburgerMenuContentItem Label="Take a Capture" Tag="CaptureMenu" x:Name="CaptureMenuItem">
-                    <Controls:HamburgerMenuContentItem.Icon>
-                        <ContentControl Style="{StaticResource appbar_camera}" />
-                    </Controls:HamburgerMenuContentItem.Icon>
-                    <Controls:HamburgerMenuContentItem.Content>
-                        <Controls:FrameCapture x:Name="FrameCaptureControl" />
-                    </Controls:HamburgerMenuContentItem.Content>
-                </Controls:HamburgerMenuContentItem>
-            </MahApps:HamburgerMenuItemCollection>
-        </MahApps:HamburgerMenu.ItemsSource>
-        <MahApps:HamburgerMenu.OptionsItemsSource>
-            <MahApps:HamburgerMenuItemCollection>
-                <Controls:HamburgerMenuContentItem Label="Settings" Tag="SettingsMenu">
-                    <Controls:HamburgerMenuContentItem.Icon>
-                        <ContentControl Style="{StaticResource appbar_settings}" />
-                    </Controls:HamburgerMenuContentItem.Icon>
-                    <Controls:HamburgerMenuContentItem.Content>
-                        <ContentControl Style="{StaticResource appbar_settings}" />
-                    </Controls:HamburgerMenuContentItem.Content>
-                </Controls:HamburgerMenuContentItem>
-            </MahApps:HamburgerMenuItemCollection>
-        </MahApps:HamburgerMenu.OptionsItemsSource>
-        <MahApps:HamburgerMenu.ContentTemplate>
-            <DataTemplate>
-                <Grid x:Name="ContentGrid">
-                    <ContentControl Content="{Binding Content}" />
-                </Grid>
-            </DataTemplate>
-        </MahApps:HamburgerMenu.ContentTemplate>
-    </MahApps:HamburgerMenu>-->
 </MahApps:MetroWindow>

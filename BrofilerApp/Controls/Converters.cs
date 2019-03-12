@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Globalization;
+using System.IO;
 using System.Net;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Media.Imaging;
 
 namespace Profiler
 {
@@ -105,4 +107,47 @@ namespace Profiler
 
         }
     }
+
+	public class StreamToImagetConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			if (value is Stream)
+			{
+				Stream stream = value as Stream;
+				stream.Position = 0;
+				var imageSource = new BitmapImage();
+				imageSource.BeginInit();
+				imageSource.StreamSource = stream;
+				imageSource.EndInit();
+				return imageSource;
+			}
+			return null;
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			return null;
+		}
+	}
+
+	public class StreamToTextConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			if (value is Stream)
+			{
+				Stream stream = value as Stream;
+				stream.Position = 0;
+				StreamReader reader = new StreamReader(stream);
+				return reader.ReadToEnd();
+			}
+			return null;
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			return null;
+		}
+	}
 }

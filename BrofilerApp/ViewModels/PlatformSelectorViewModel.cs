@@ -16,8 +16,6 @@ namespace Profiler.ViewModels
     {
         #region private fields
 
-        Settings _config;
-
         bool _isSelfUpdateFlag = false;     // is true if current application update the LocalSettings 
 
         #endregion
@@ -28,7 +26,7 @@ namespace Profiler.ViewModels
         public ObservableCollection<PlatformDescription>  Platforms
         {
             get { return _platforms; }
-            set { SetField(ref _platforms, value); }
+            set { SetProperty(ref _platforms, value); }
         }
 
         private PlatformDescription _activePlatform;
@@ -37,9 +35,9 @@ namespace Profiler.ViewModels
             get { return _activePlatform; }
             set {
                     if(value !=null)
-                        SetField(ref _activePlatform, value);
+                        SetProperty(ref _activePlatform, value);
                     else
-                        SetField(ref _activePlatform, _activePlatform = Platforms[0]);
+                        SetProperty(ref _activePlatform, _activePlatform = Platforms[0]);
 
                 if (!ActivePlatform.CoreType)
                   Task.Run(async()=> ActivePlatform.IsDisconnect = !( await CheckHostEnable(ActivePlatform.IP)) );
@@ -84,9 +82,6 @@ namespace Profiler.ViewModels
         {
             Platforms = new ObservableCollection<PlatformDescription>();
 
-            using (var scope = BootStrapperBase.Container.BeginLifetimeScope())
-                _config = scope.Resolve<Settings>();
-
             // Set core connections
             foreach (var ip in Platform.GetPCAddresses())
                 _platforms.Add(new PlatformDescription() { Name = Environment.MachineName, IP = ip, CoreType = true, PlatformType = Platform.Type.Windows });
@@ -95,7 +90,7 @@ namespace Profiler.ViewModels
 
             SetCustomPlatformsFromLocalSettings();
 
-            _config.LocalSettings.OnChanged += LocalSettings_OnChanged;
+            Settings.LocalSettings.OnChanged += LocalSettings_OnChanged;
         }
 
         #endregion
@@ -135,8 +130,8 @@ namespace Profiler.ViewModels
                     Platforms.Remove(item);
 
             // Get custom connections from Settings
-            if (_config?.LocalSettings?.Data?.Connections != null)
-                foreach (var item in _config.LocalSettings.Data.Connections)
+            if (Settings.LocalSettings.Data.Connections != null)
+                foreach (var item in Settings.LocalSettings.Data.Connections)
                     Platforms.Add(new PlatformDescription() { Name = item.Name, IP = item.Address, Port = (short)item.Port, PlatformType = item.Target });
 
             if (Platforms.Contains(tempActivePlatform))
@@ -152,10 +147,10 @@ namespace Profiler.ViewModels
             {
                 try
                 {
-                    _config.LocalSettings.Data.Connections.Add(new Platform.Connection()
+					Settings.LocalSettings.Data.Connections.Add(new Platform.Connection()
                     { Name = platform.Name, Address = platform.IP, Port = platform.Port, Target = platform.PlatformType });
 
-                    _config.LocalSettings.Save();
+					Settings.LocalSettings.Save();
                 }
                 catch (Exception)
                 {
@@ -172,16 +167,16 @@ namespace Profiler.ViewModels
             {
                 try
                 {
-                   var connection = _config.LocalSettings.Data.Connections.FirstOrDefault(x => x.Address == platform.IP && x.Port == platform.Port);
+                   var connection = Settings.LocalSettings.Data.Connections.FirstOrDefault(x => x.Address == platform.IP && x.Port == platform.Port);
                     // in case many application get access to LocalSettings and is selected union platform
                     // connection cant determine by IP and Port
                     if (connection==null)
-                        connection = _config.LocalSettings.Data.Connections.FirstOrDefault(x => x.Name == platform.Name);
+                        connection = Settings.LocalSettings.Data.Connections.FirstOrDefault(x => x.Name == platform.Name);
 
-                    bool count = _config.LocalSettings.Data.Connections.Remove(connection);
+                    bool count = Settings.LocalSettings.Data.Connections.Remove(connection);
 
                     if (count)
-                        _config.LocalSettings.Save();
+						Settings.LocalSettings.Save();
                 }
                 catch (Exception)
                 {
@@ -199,18 +194,18 @@ namespace Profiler.ViewModels
             {
                 try
                 {
-                    var connection = _config.LocalSettings.Data.Connections.FirstOrDefault(x => x.Address == platform.IP && x.Port == platform.Port);
+                    var connection = Settings.LocalSettings.Data.Connections.FirstOrDefault(x => x.Address == platform.IP && x.Port == platform.Port);
 
                     if (connection == null)
-                        connection = _config.LocalSettings.Data.Connections.FirstOrDefault(x => x.Name == platform.Name);
+                        connection = Settings.LocalSettings.Data.Connections.FirstOrDefault(x => x.Name == platform.Name);
 
-                    bool count = _config.LocalSettings.Data.Connections.Remove(connection);
+                    bool count = Settings.LocalSettings.Data.Connections.Remove(connection);
 
                     if (count)
-                        _config.LocalSettings.Data.Connections.Add(new Platform.Connection()
+						Settings.LocalSettings.Data.Connections.Add(new Platform.Connection()
                         { Name = platform.Name, Address = platform.IP, Port = platform.Port, Target = platform.PlatformType });
 
-                    _config.LocalSettings.Save();
+					Settings.LocalSettings.Save();
                 }
                 catch (Exception)
                 {
@@ -230,15 +225,15 @@ namespace Profiler.ViewModels
             {
                 try
                 {
-                    if (_config.LocalSettings.Data.Connections != null)
-                        _config.LocalSettings.Data.Connections.Clear();
+                    if (Settings.LocalSettings.Data.Connections != null)
+						Settings.LocalSettings.Data.Connections.Clear();
                     else
-                        _config.LocalSettings.Data.Connections = new List<Platform.Connection>();
+						Settings.LocalSettings.Data.Connections = new List<Platform.Connection>();
 
                     foreach (var item in customConnectios)
-                        _config.LocalSettings.Data.Connections.Add(new Platform.Connection() { Name = item.Name, Address = item.IP, Port = item.Port, Target = item.PlatformType });
+						Settings.LocalSettings.Data.Connections.Add(new Platform.Connection() { Name = item.Name, Address = item.IP, Port = item.Port, Target = item.PlatformType });
 
-                    _config.LocalSettings.Save();
+					Settings.LocalSettings.Save();
                 }
                 catch (Exception)
                 {
@@ -312,7 +307,7 @@ namespace Profiler.ViewModels
         {
             get { return _name; }
             set {
-                    SetField(ref _name, value);
+                    SetProperty(ref _name, value);
                     if (PlatformType == Platform.Type.Unknown)
                         Icon = GetIconByComputerName(_name);
                 }
@@ -324,7 +319,7 @@ namespace Profiler.ViewModels
             get { return _ip; }
             set
             {
-                SetField(ref _ip, value);
+                SetProperty(ref _ip, value);
                 OnPropertyChanged("Status");
             }
         }
@@ -335,7 +330,7 @@ namespace Profiler.ViewModels
             get { return _port; }
             set
             {
-                SetField(ref _port, value);
+                SetProperty(ref _port, value);
                 OnPropertyChanged("Status");
             }
         }
@@ -345,7 +340,7 @@ namespace Profiler.ViewModels
         {
             get { return _platformType; }
             set {
-                   SetField(ref _platformType, value);
+                   SetProperty(ref _platformType, value);
                    Icon = GetIconByPlatformType(value);
                 }
         }
@@ -354,7 +349,7 @@ namespace Profiler.ViewModels
         public bool IsDisconnect
         {
             get { return _isDisconnect; }
-            set { SetField(ref _isDisconnect, value);}
+            set { SetProperty(ref _isDisconnect, value);}
         }
 
         public string Status

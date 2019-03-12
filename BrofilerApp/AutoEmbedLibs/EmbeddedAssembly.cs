@@ -20,7 +20,8 @@ namespace Profiler.AutoEmbedLibs
 
 			try
 			{
-				string resource = String.Format("Profiler.AutoEmbedLibs.{0}.dll", name.Substring(0, name.IndexOf(",")));
+				int index = name.IndexOf(",");
+				string resource = String.Format("Profiler.AutoEmbedLibs.{0}.dll", index < 0 ? name : name.Substring(0, index));
 				Assembly curAsm = Assembly.GetExecutingAssembly();
 				using (Stream stream = curAsm.GetManifestResourceStream(resource))
 				{

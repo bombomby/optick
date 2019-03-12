@@ -64,9 +64,9 @@ namespace Profiler.Controls
 			Summary = summary;
 
 			// Image
-			foreach (SummaryPack.Attachment attachment in summary.Attachments)
+			foreach (FileAttachment attachment in summary.Attachments)
 			{
-				if (attachment.FileType == SummaryPack.Attachment.Type.BRO_IMAGE)
+				if (attachment.FileType == FileAttachment.Type.BRO_IMAGE)
 				{
 					attachment.Data.Position = 0;
 

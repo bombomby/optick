@@ -34,41 +34,41 @@ namespace Profiler.ViewModels
                 if (value != null && value.Attachments.Count > 0)
                 {
                     Visible = Visibility.Visible;
-                    Attachments = new ObservableCollection<SummaryPack.Attachment>(value.Attachments);
+                    Attachments = new ObservableCollection<FileAttachment>(value.Attachments);
                 }
                 else
                     Visible = Visibility.Collapsed;
 
 
-                SetField(ref _summary, value);
+                SetProperty(ref _summary, value);
             }
         }
 
-        ObservableCollection<SummaryPack.Attachment> _attachments;
-        public ObservableCollection<SummaryPack.Attachment> Attachments
+        ObservableCollection<FileAttachment> _attachments;
+        public ObservableCollection<FileAttachment> Attachments
         {
             get { return _attachments; }
             set {
-                CurrentAttachment = value?.FirstOrDefault(x => x.FileType == SummaryPack.Attachment.Type.BRO_IMAGE);
-                SetField(ref _attachments, value);
+                CurrentAttachment = value?.FirstOrDefault(x => x.FileType == FileAttachment.Type.BRO_IMAGE);
+                SetProperty(ref _attachments, value);
             }
         } 
 
-        SummaryPack.Attachment _currentAttachment;
-        public SummaryPack.Attachment CurrentAttachment
+        FileAttachment _currentAttachment;
+        public FileAttachment CurrentAttachment
         {
             get { return _currentAttachment; }
             set
             {
                 if (value != null)
                 {
-                    if (value.FileType == SummaryPack.Attachment.Type.BRO_IMAGE)
+                    if (value.FileType == FileAttachment.Type.BRO_IMAGE)
                     {
                         AttachmentContent = new Image() { Source = GetImageFromAttachment(value), Stretch = Stretch.UniformToFill };
                         IsEnableOpenScreenShotView = true;
                     }
 
-                    if (value.FileType == SummaryPack.Attachment.Type.BRO_TEXT)
+                    if (value.FileType == FileAttachment.Type.BRO_TEXT)
                     {
                         value.Data.Position = 0;
 
@@ -83,7 +83,7 @@ namespace Profiler.ViewModels
                         IsEnableOpenScreenShotView = false;
                     }
                 }
-                SetField(ref _currentAttachment, value);
+                SetProperty(ref _currentAttachment, value);
             }
         }
 
@@ -91,21 +91,21 @@ namespace Profiler.ViewModels
         public Visibility Visible
         {
             get { return _visible; }
-            set{SetField(ref _visible, value);}
+            set{SetProperty(ref _visible, value);}
         }
 
         bool _isEnableOpenScreenShotView;
         public bool IsEnableOpenScreenShotView
         {
             get { return _isEnableOpenScreenShotView; }
-            set { SetField(ref _isEnableOpenScreenShotView, value); }
+            set { SetProperty(ref _isEnableOpenScreenShotView, value); }
         }
 
         UIElement _attachmentContent;
         public UIElement AttachmentContent
         {
             get { return _attachmentContent; }
-            set { SetField(ref _attachmentContent, value); }
+            set { SetProperty(ref _attachmentContent, value); }
         }
 
         public string CaptureName { get; set; }
@@ -122,7 +122,7 @@ namespace Profiler.ViewModels
                 return _openScreenShotViewCommand ??
                     (_openScreenShotViewCommand = new RelayCommand(obj =>
                     {
-                        if (IsEnableOpenScreenShotView && CurrentAttachment.FileType == SummaryPack.Attachment.Type.BRO_IMAGE)
+                        if (IsEnableOpenScreenShotView && CurrentAttachment.FileType == FileAttachment.Type.BRO_IMAGE)
                         {
                             ScreenShotViewModel viewModel = new ScreenShotViewModel();
                             viewModel.AttachmentImage = GetImageFromAttachment(CurrentAttachment);
@@ -149,12 +149,7 @@ namespace Profiler.ViewModels
                   {
                       try
                       {
-                          string defaultPath;
-
-                          using (var scope = BootStrapperBase.Container.BeginLifetimeScope())
-                          {
-                              defaultPath = scope.Resolve<Controls.LocalSettings>().TempDirectoryPath;
-                          }
+                          string defaultPath = Controls.Settings.LocalSettings.Data.TempDirectoryPath;
 
                           // Generate unique folder name
                           string uniqueFolderName = Guid.NewGuid().ToString();
@@ -255,8 +250,7 @@ namespace Profiler.ViewModels
 
     #region Private Methods
 
-
-        private BitmapImage GetImageFromAttachment(SummaryPack.Attachment attachment)
+        private static BitmapImage GetImageFromAttachment(FileAttachment attachment)
         {
             attachment.Data.Position = 0;
             var imageSource = new BitmapImage();
@@ -267,7 +261,7 @@ namespace Profiler.ViewModels
             return imageSource;
         }
 
-        private void SaveAttachment(SummaryPack.Attachment attachment, string filePath)
+        private void SaveAttachment(FileAttachment attachment, string filePath)
         {
             attachment.Data.Position = 0;
             

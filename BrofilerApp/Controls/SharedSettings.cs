@@ -63,37 +63,50 @@ namespace Profiler.Controls
 			Data = new T();
 		}
 
-		public bool Save()
+		object cs = new object();
+
+		public void Save()
 		{
-			try
+			Task.Run(() =>
 			{
-				XmlSerializer serializer = new XmlSerializer(typeof(T));
-				using (TextWriter writer = new StreamWriter(FilePath))
+				lock (cs)
 				{
-					serializer.Serialize(writer, Data);
+					try
+					{
+						XmlSerializer serializer = new XmlSerializer(typeof(T));
+						using (TextWriter writer = new StreamWriter(FilePath))
+						{
+							serializer.Serialize(writer, Data);
+						}
+					}
+					catch (Exception) { }
 				}
-				return true;
-			}
-			catch (Exception)
-			{
-				return false;
-			}
+			});
 		}
 
 		public bool Load()
 		{
-			try
-			{
-				XmlSerializer serializer = new XmlSerializer(typeof(T));
-				using (TextReader reader = new StreamReader(FilePath))
-				{
-					Data = (T)serializer.Deserialize(reader);
-				}
-			}
-			catch (Exception)
+			if (!File.Exists(FilePath))
 			{
 				Data = new T();
 				return false;
+			}
+
+			lock (cs)
+			{
+				try
+				{
+					XmlSerializer serializer = new XmlSerializer(typeof(T));
+					using (TextReader reader = new StreamReader(FilePath))
+					{
+						Data = (T)serializer.Deserialize(reader);
+					}
+				}
+				catch (Exception)
+				{
+					Data = new T();
+					return false;
+				}
 			}
 
 			OnChanged?.Invoke();
