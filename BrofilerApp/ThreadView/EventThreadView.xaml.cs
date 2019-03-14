@@ -53,6 +53,7 @@ namespace Profiler
 					ThreadToolsPanel.Visibility = visibility;
 
 					FunctionSearchControl.DataContext = group;
+					SummaryView.ItemsSource = group?.Summary?.SummaryTable;
 				}
 			}
 

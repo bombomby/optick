@@ -43,6 +43,8 @@ namespace Profiler
 			if (node.Description != null)
 				entries.Add(new Entry(new EventDescription(node.Name), Durable.MsToTick(offset), Durable.MsToTick(offset + node.Duration)));
 
+			offset += node.SelfDuration * 0.5;
+
 			foreach (SamplingNode child in node.Children)
 			{
 				BuildEntryList(entries, child, offset);

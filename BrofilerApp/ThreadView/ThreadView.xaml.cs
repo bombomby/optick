@@ -411,7 +411,7 @@ namespace Profiler
 		{
 			foreach (Selection selection in SelectionList)
 			{
-				if (selection.Frame != null)
+				if (selection.Frame != null && selection.Row != null)
 				{
 					ThreadRow row = selection.Row;
 

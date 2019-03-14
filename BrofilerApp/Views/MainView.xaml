@@ -23,6 +23,9 @@
     <MahApps:MetroWindow.RightWindowCommands>
         <MahApps:WindowCommands>
             <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding Version, Mode=OneTime, StringFormat={}v{0}}" FontWeight="Bold" FontSize="14" Opacity="0.3" VerticalAlignment="Center" Margin="10,0" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
                 <Button Margin="-2" ToolTip="Navigate to the Wiki">
                     <ContentControl Style="{StaticResource appbar_book_perspective_help}" />
                 </Button>

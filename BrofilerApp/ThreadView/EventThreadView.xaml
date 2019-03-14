@@ -29,44 +29,66 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
-        <StackPanel Margin="1" HorizontalAlignment="Right" x:Name="ThreadToolsPanel" Grid.Column="1" VerticalAlignment="Top" Orientation="Horizontal">
-            <Controls:FunctionSearch x:Name="FunctionSearchControl" Margin="1,0" Width="230" />
-            <ToggleButton x:Name="ShowSyncWorkButton" ToolTip="Show Work" Height="{StaticResource DefaultButtonSize}" Margin="0,0,1,0" Click="ShowSyncWorkButton_Click">
-                <TextBlock Text="SHOW CPU CORES" Margin="0,-3,0,0" Padding="0" />
-            </ToggleButton>
-            <ToggleButton x:Name="ShowCallstacksButton" Height="{StaticResource DefaultButtonSize}" MinHeight="{StaticResource DefaultButtonSize}" Margin="0" Checked="ShowCallstacksButton_Checked" Unchecked="ShowCallstacksButton_Unchecked">
-                <ToggleButton.Content>
-                    <StackPanel Orientation="Horizontal" Margin="-4">
-                        <TextBlock Margin="3,1,3,1" Text="SHOW CALLSTACKS" />
-                        <Button x:Name="CallstackFilterDrowpdown" Margin="0" BorderThickness="0" Background="Transparent" Click="CallstackFilterDrowpdown_Click">
-                            <ContentControl Margin="-4,0,-2,0"
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <ItemsControl Grid.Column="1" x:Name="SummaryView">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" TextBlock.FontSize="12" TextBlock.FontWeight="Bold" Opacity="0.5" VerticalAlignment="Center">
+                            <Rectangle Width="1" Height="15" Stroke="Gray" Margin="0,0,5,0" />
+                            <TextBlock Text="{Binding Value}" ToolTip="{Binding Name}" Margin="0,0,5,0" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <StackPanel Margin="1" HorizontalAlignment="Right" x:Name="ThreadToolsPanel" Grid.Column="2" VerticalAlignment="Top" Orientation="Horizontal">
+                <Controls:FunctionSearch x:Name="FunctionSearchControl" Margin="1,0" Width="230" />
+                <ToggleButton x:Name="ShowSyncWorkButton" ToolTip="Show Work" Height="{StaticResource DefaultButtonSize}" Margin="0,0,1,0" Click="ShowSyncWorkButton_Click">
+                    <TextBlock Text="SHOW CPU CORES" Margin="0,-3,0,0" Padding="0" />
+                </ToggleButton>
+                <ToggleButton x:Name="ShowCallstacksButton" Height="{StaticResource DefaultButtonSize}" MinHeight="{StaticResource DefaultButtonSize}" Margin="0" Checked="ShowCallstacksButton_Checked" Unchecked="ShowCallstacksButton_Unchecked">
+                    <ToggleButton.Content>
+                        <StackPanel Orientation="Horizontal" Margin="-4">
+                            <TextBlock Margin="3,1,3,1" Text="SHOW CALLSTACKS" />
+                            <Button x:Name="CallstackFilterDrowpdown" Margin="0" BorderThickness="0" Background="Transparent" Click="CallstackFilterDrowpdown_Click">
+                                <ContentControl Margin="-4,0,-2,0"
                                             Width="9"
                                             Height="9"
                                             Content="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z"
                                             Style="{DynamicResource PathIconContentControlStyle}" />
-                        </Button>
-                    </StackPanel>
-                </ToggleButton.Content>
-            </ToggleButton>
-            <Popup x:Name="CallstackFilterPopup" Placement="Bottom" IsOpen="{Binding IsChecked, ElementName=CallstackFilterDrowpdown}" PlacementTarget="{Binding ElementName=ShowCallstacksButton}" StaysOpen="False" >
-                <Border Background="{StaticResource BroContentBackground}" BorderBrush="{StaticResource BroBorder}" BorderThickness="1" Width="{Binding ActualWidth, ElementName=ShowCallstacksButton}">
-                    <ItemsControl ItemsSource="{Binding}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Grid Margin="1">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <CheckBox IsChecked="{Binding IsChecked}" />
-                                    <TextBlock Text="{Binding Reason}" Grid.Column="1" />
-                                </Grid>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </Border>
-            </Popup>
-        </StackPanel>
+                            </Button>
+                        </StackPanel>
+                    </ToggleButton.Content>
+                </ToggleButton>
+                <Popup x:Name="CallstackFilterPopup" Placement="Bottom" IsOpen="{Binding IsChecked, ElementName=CallstackFilterDrowpdown}" PlacementTarget="{Binding ElementName=ShowCallstacksButton}" StaysOpen="False" >
+                    <Border Background="{StaticResource BroContentBackground}" BorderBrush="{StaticResource BroBorder}" BorderThickness="1" Width="{Binding ActualWidth, ElementName=ShowCallstacksButton}">
+                        <ItemsControl ItemsSource="{Binding}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="1">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <CheckBox IsChecked="{Binding IsChecked}" />
+                                        <TextBlock Text="{Binding Reason}" Grid.Column="1" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+                </Popup>
+            </StackPanel>
+        </Grid>
         <Profiler:ThreadView Grid.Row="1" x:Name="ThreadViewControl" />
         <Popup x:Name="SurfacePopup" StaysOpen="False" Placement="Mouse" PopupAnimation="Fade" IsEnabled="False" Focusable="False" IsHitTestVisible="False" AllowsTransparency="True">
             <Border BorderThickness="1" Background="{StaticResource BroContentBackground}" BorderBrush="{StaticResource AccentColorBrush}">
