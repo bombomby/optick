@@ -1,5 +1,6 @@
 #include "ProfilerServer.h"
 #include "Common.h"
+#include "Platform.h"
 
 
 #if defined(BRO_MSVC)
@@ -32,7 +33,11 @@ typedef UINT_PTR TcpSocket;
 namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#if defined(BRO_PC)
 static const short DEFAULT_PORT = 31313;
+#else
+static const short DEFAULT_PORT = 4601;
+#endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #if USE_WINDOWS_SOCKETS
 class Wsa
@@ -249,7 +254,7 @@ Server::Server(short port) : socket(Memory::New<Socket>())
 {
 	if (!socket->Bind(port, 4))
 	{
-		BRO_FAILED("Failed to bind a socket! Most probably the port is blocked by anti-virus! Change the port and verify that your game has enough permissions communicate over the TCP\IP.");
+		BRO_FAILED("Failed to bind a socket! Most probably the port is blocked by anti-virus! Change the port and verify that your game has enough permissions to communicate over the TCP\IP.");
 	}
 	else
 	{
@@ -300,11 +305,9 @@ std::string Server::GetHostName() const
     
 #if defined(USE_BERKELEY_SOCKETS)
 	gethostname(hostname, HOST_NAME_LENGTH);
-#elif defined(USE_WINDOWS_SOCKETS)
+#elif defined(BRO_PC)
     DWORD length = HOST_NAME_LENGTH;
 	GetComputerNameA(hostname, &length);
-#else
-	#error Platform is not supported yet!
 #endif
 
     return hostname;

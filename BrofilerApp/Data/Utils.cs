@@ -11,6 +11,33 @@ namespace Profiler.Data
 {
 	public static class Utils
 	{
+		public static int BinarySearchIndex<T, U>(List<T> frames, U value, Func<T, U> mapping) where U : IComparable
+		{
+			if (frames == null || frames.Count == 0)
+				return -1;
+
+			int left = 0;
+			int right = frames.Count - 1;
+
+			if (value.CompareTo(mapping(frames[0])) <= 0)
+				return left;
+
+			if (value.CompareTo(mapping(frames[frames.Count - 1])) >= 0)
+				return right;
+
+			while (left != right)
+			{
+				int index = (left + right + 1) / 2;
+
+				if (value.CompareTo(mapping(frames[index])) < 0)
+					right = index - 1;
+				else
+					left = index;
+			}
+
+			return left;
+		}
+
 		public static int BinarySearchClosestIndex<T>(List<T> frames, long value) where T : ITick
 		{
 			if (frames == null || frames.Count == 0)

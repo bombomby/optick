@@ -4,7 +4,7 @@
 
 // Enable\Disable low-level platform-specific tracing (Switch-contexts, Autosampling, etc.)
 #if !defined(BRO_ENABLE_TRACING)
-#define BRO_ENABLE_TRACING (USE_BROFILER && (BRO_PLATFORM_WINDOWS || BRO_PLATFORM_LINUX || BRO_PLATFORM_OSX) /*&& 0*/)
+#define BRO_ENABLE_TRACING (USE_BROFILER && (BRO_MSVC || BRO_LINUX || BRO_OSX) /*&& 0*/)
 #endif
 
 namespace Brofiler

@@ -36,21 +36,21 @@ namespace Profiler.Data
 	public class SamplingDescription : Description
 	{
 		public UInt64 Address { get; private set; }
-		public String Module { get; private set; }
+		public Module Module { get; set; }
 
-		static char[] slashDelimetr = { '\\', '/' };
 		public String ModuleShortName
 		{
-			get
-			{
-				int index = Module.LastIndexOfAny(slashDelimetr);
-				return index != -1 ? Module.Substring(index + 1) : Module;
-			}
+			get { return Module != null ? Module.Name : "Unresolved"; }
 		}
 
 		static HashSet<String> IgnoreList = new HashSet<string>(new String[] {
 			"setjmpex",
-
+			"RtlUserThreadStart",
+			"BaseThreadInitThunk",
+			"__scrt_common_main_seh",
+			"invoke_main",
+			"wmainCRTStartup",
+			"__scrt_common_main"
 		});
 		private bool? isIgnore = null;
 		public bool IsIgnore
@@ -64,13 +64,14 @@ namespace Profiler.Data
 			}
 		}
 
-		public static SamplingDescription UnresolvedDescription = new SamplingDescription() { Module = "Unresolved", FullName = "Unresolved", Address = 0, Path = FileLine.Empty };
+		public static SamplingDescription UnresolvedDescription = new SamplingDescription() { FullName = "Unresolved", Address = 0, Path = FileLine.Empty };
 
-		public static SamplingDescription Create(BinaryReader reader)
+		public static SamplingDescription Create(BinaryReader reader, uint version)
 		{
 			SamplingDescription description = new SamplingDescription();
 			description.Address = reader.ReadUInt64();
-			description.Module = Utils.ReadBinaryWideString(reader);
+			if (version <= NetworkProtocol.NETWORK_PROTOCOL_VERSION_23)
+				Utils.ReadBinaryString(reader);
 			description.FullName = Utils.ReadBinaryWideString(reader);
 			description.Path = new FileLine(Utils.ReadBinaryWideString(reader), reader.ReadInt32());
 
@@ -79,7 +80,7 @@ namespace Profiler.Data
 
 		public static SamplingDescription Create(UInt64 address)
 		{
-			return new SamplingDescription() { Module = "Unresolved", FullName = String.Format("0x{0:x}", address), Address = address, Path = FileLine.Empty };
+			return new SamplingDescription() { FullName = String.Format("0x{0:x}", address), Address = address, Path = FileLine.Empty };
 		}
 
 		public override Object GetSharedKey()
@@ -93,26 +94,70 @@ namespace Profiler.Data
 		public abstract SamplingDescription GetDescription(UInt64 address);
 	}
 
+
+	public class Module : IComparable<Module>
+	{
+		private String path = String.Empty;
+		public String Path
+		{
+			get { return path; }
+			set { path = value; Name = System.IO.Path.GetFileName(value); }
+		}
+		public String Name { get; private set; }
+		public UInt64 Address { get; set; }
+		public UInt64 Size { get; set; }
+
+		public int CompareTo(Module other)
+		{
+			return Address.CompareTo(other.Address);
+		}
+
+		public bool Contains(UInt64 addr)
+		{
+			return (Address <= addr) && (addr < Address + Size);
+		}
+	}
+
 	public class SamplingDescriptionBoard : ISamplingBoard
 	{
+		public List<Module> Modules { get; private set; }
 		public Dictionary<UInt64, SamplingDescription> Descriptions { get; private set; }
 
-		protected void Read(BinaryReader reader)
+		protected void Read(DataResponse response)
 		{
-			Descriptions = new Dictionary<UInt64, SamplingDescription>();
+			int count = 0;
 
-			uint count = reader.ReadUInt32();
+			BinaryReader reader = response.Reader;
+
+			if (response.Version >= NetworkProtocol.NETWORK_PROTOCOL_VERSION_24)
+			{
+				count = reader.ReadInt32();
+				Modules = new List<Module>(count);
+				for (uint i = 0; i < count; ++i)
+				{
+					Module module = new Module();
+					module.Path = Utils.ReadBinaryString(reader);
+					module.Address = reader.ReadUInt64();
+					module.Size = reader.ReadUInt64();
+					Modules.Add(module);
+				}
+				Modules.Sort();
+			}
+
+			count = reader.ReadInt32();
+			Descriptions = new Dictionary<UInt64, SamplingDescription>(count);
 			for (uint i = 0; i < count; ++i)
 			{
-				SamplingDescription desc = SamplingDescription.Create(reader);
+				SamplingDescription desc = SamplingDescription.Create(reader, response.Version);
+				desc.Module = GetModule(desc.Address);
 				Descriptions[desc.Address] = desc;
 			}
 		}
 
-		public static SamplingDescriptionBoard Create(BinaryReader reader)
+		public static SamplingDescriptionBoard Create(DataResponse response)
 		{
 			SamplingDescriptionBoard board = new SamplingDescriptionBoard();
-			board.Read(reader);
+			board.Read(response);
 			return board;
 		}
 
@@ -120,6 +165,14 @@ namespace Profiler.Data
 		{
 			SamplingDescription result = null;
 			return Descriptions.TryGetValue(address, out result) ? result : SamplingDescription.UnresolvedDescription;
+		}
+
+		Module GetModule(UInt64 address)
+		{
+			int index = Utils.BinarySearchIndex(Modules, address, m => m.Address);
+			if (index >= 0 && Modules[index].Contains(address))
+				return Modules[index];
+			return null;
 		}
 	}
 
@@ -139,7 +192,7 @@ namespace Profiler.Data
 		public static SamplingDescriptionPack Create(DataResponse response)
 		{
 			SamplingDescriptionPack pack = new SamplingDescriptionPack() { Response = response };
-			pack.Read(response.Reader);
+			pack.Read(response);
 			return pack;
 		}
 	}
@@ -252,7 +305,6 @@ namespace Profiler.Data
 		public override DataResponse.Type ResponseType { get { return DataResponse.Type.SamplingFrame; } }
 
 		public SamplingDescriptionBoard DescriptionBoard { get; private set; }
-		public BinaryReader Reader { get; private set; }
 
 		private Board<SamplingBoardItem, SamplingDescription, SamplingNode> board;
 		public Board<SamplingBoardItem, SamplingDescription, SamplingNode> Board
@@ -319,15 +371,14 @@ namespace Profiler.Data
 		{
 			if (!IsLoaded)
 			{
-				DescriptionBoard = SamplingDescriptionBoard.Create(Reader);
-				Root = SamplingNode.Create(Reader, DescriptionBoard, null);
+				DescriptionBoard = SamplingDescriptionBoard.Create(Response);
+				Root = SamplingNode.Create(Response.Reader, DescriptionBoard, null);
 			}
 		}
 
 		public SamplingFrame(DataResponse response, FrameGroup group) : base(response, group)
 		{
-			Reader = response.Reader;
-			SampleCount = Reader.ReadInt32();
+			SampleCount = response.Reader.ReadInt32();
 		}
 
 		public SamplingFrame(List<Callstack> callstacks, FrameGroup group) : base(null, group)

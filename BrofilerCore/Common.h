@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#if BRO_MSVC
+#if defined(BRO_MSVC)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
@@ -114,7 +114,7 @@ inline int wcstombs_s(char(&buffer)[sizeOfBuffer], const wchar_t* src, size_t ma
 }
 #endif
 
-#if BRO_MSVC
+#if defined(BRO_MSVC)
 template<size_t sizeOfBuffer>
 inline int wcstombs_s(char(&buffer)[sizeOfBuffer], const wchar_t* src, size_t maxCount)
 {

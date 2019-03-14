@@ -50,7 +50,7 @@ namespace Brofiler
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct Trace;
-struct SymbolEngine;
+class SymbolEngine;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct ScopeHeader
 {
@@ -89,7 +89,7 @@ struct ScopeData
 	void Clear();
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if BRO_MSVC
+#if defined(BRO_MSVC)
 #pragma warning( push )
 #pragma warning( disable : 4996 )
 #endif //BRO_MSVC
@@ -101,7 +101,7 @@ struct BroString
 	BroString<N>& operator=(const char* text) { strncpy(data, text, N-1); return *this; }
 	BroString(const char* text) { *this = text; }
 };
-#if BRO_MSVC
+#if defined(BRO_MSVC)
 #pragma warning( pop )
 #endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -341,6 +341,7 @@ public:
 	void Add(const CallstackDesc& desc);
 	void Clear();
 
+	bool SerializeModules(OutputDataStream& stream);
 	bool SerializeSymbols(OutputDataStream& stream);
 	bool SerializeCallstacks(OutputDataStream& stream);
 

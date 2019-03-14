@@ -2,10 +2,40 @@
 #include "SymbolEngine.h"
 
 #if BRO_ENABLE_SYMENGINE
+
+#define USE_DBG_HELP (BRO_PC)
+
+#if USE_DBG_HELP
 #include <DbgHelp.h>
 #pragma comment( lib, "DbgHelp.Lib" )
+#endif
 
 #include "Serialization.h"
+
+
+// Forward declare kernel functions
+#pragma pack(push,8)
+typedef struct _MODULEINFO {
+	LPVOID lpBaseOfDll;
+	DWORD SizeOfImage;
+	LPVOID EntryPoint;
+} MODULEINFO, *LPMODULEINFO;
+#pragma pack(pop)
+#ifndef EnumProcessModulesEx
+#define EnumProcessModulesEx        K32EnumProcessModulesEx
+EXTERN_C DWORD WINAPI K32EnumProcessModulesEx(HANDLE hProcess, HMODULE *lphModule, DWORD cb, LPDWORD lpcbNeeded, DWORD dwFilterFlag);
+#endif
+#ifndef GetModuleInformation
+#define GetModuleInformation        K32GetModuleInformation
+EXTERN_C DWORD WINAPI K32GetModuleInformation(HANDLE hProcess, HMODULE hModule, LPMODULEINFO lpmodinfo, DWORD cb);
+#endif
+
+#ifndef GetModuleFileNameExA
+#define GetModuleFileNameExA        K32GetModuleFileNameExA
+EXTERN_C DWORD WINAPI K32GetModuleFileNameExA(HANDLE hProcess, HMODULE hModule, LPSTR lpFilename, DWORD nSize);
+#endif
+
+
 
 namespace Brofiler
 {
@@ -28,7 +58,7 @@ namespace Brofiler
 typedef std::array<uintptr_t, 512> CallStackBuffer;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-class SymEngine : public SymbolEngine
+class WinSymbolEngine : public SymbolEngine
 {
 	HANDLE hProcess;
 
@@ -40,29 +70,32 @@ class SymEngine : public SymbolEngine
 	char previousSearchPath[MAX_SEARCH_PATH_LENGTH];
 
 	void InitSystemModules();
+	void InitApplicationModules();
 public:
-	SymEngine();
-	~SymEngine();
+	WinSymbolEngine();
+	~WinSymbolEngine();
 
 	void Init();
 	void Close();
 
 	// Get Symbol from PDB file
 	virtual const Symbol * const GetSymbol(uint64 dwAddress) override;
+
+	virtual const std::vector<Module>& GetModules() override;
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-SymEngine::SymEngine() : isInitialized(false), hProcess(GetCurrentProcess()), needRestorePreviousSettings(false), previousOptions(0)
+WinSymbolEngine::WinSymbolEngine() : isInitialized(false), hProcess(GetCurrentProcess()), needRestorePreviousSettings(false), previousOptions(0)
 {
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-SymEngine::~SymEngine()
+WinSymbolEngine::~WinSymbolEngine()
 {
 	Close();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-const Symbol * const SymEngine::GetSymbol(uint64 address)
+const Symbol * const WinSymbolEngine::GetSymbol(uint64 address)
 {
 	if (address == 0)
 		return nullptr;
@@ -79,17 +112,8 @@ const Symbol * const SymEngine::GetSymbol(uint64 address)
 
 	symbol.address = address;
 
+#if USE_DBG_HELP
 	DWORD64 dwAddress = static_cast<DWORD64>(address);
-
-	// Module Name
-	IMAGEHLP_MODULEW64 moduleInfo;
-	memset(&moduleInfo, 0, sizeof(IMAGEHLP_MODULEW64));
-	moduleInfo.SizeOfStruct = sizeof(moduleInfo);
-	if (SymGetModuleInfoW64(hProcess, dwAddress, &moduleInfo))
-	{
-		symbol.module = moduleInfo.ImageName;
-	}
-
 
 	// FileName and Line
 	IMAGEHLP_LINEW64 lineInfo;
@@ -119,16 +143,29 @@ const Symbol * const SymEngine::GetSymbol(uint64 address)
 	}
 
 	symbol.offset = static_cast<uintptr_t>(offset);
+#endif
 
 	return &symbol;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+const std::vector<Module>& WinSymbolEngine::GetModules()
+{
+	if (modules.empty())
+	{
+		InitSystemModules();
+		InitApplicationModules();
+	}
+
+	return SymbolEngine::GetModules();
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // const char* USER_SYMBOL_SEARCH_PATH = "http://msdl.microsoft.com/download/symbols";
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void SymEngine::Init()
+void WinSymbolEngine::Init()
 {
 	if (!isInitialized)
 	{
+#if USE_DBG_HELP
 		previousOptions = SymGetOptions();
 
 		memset(previousSearchPath, 0, MAX_SEARCH_PATH_LENGTH);
@@ -145,10 +182,15 @@ void SymEngine::Init()
 		}
 		else
 		{
-			InitSystemModules();
-
 			isInitialized = true;
 		}
+
+		const std::vector<Module>& loadedModules = GetModules();
+			for each (const Module& module in loadedModules)
+				SymLoadModule64(hProcess, NULL, module.path.c_str(), NULL, (DWORD64)module.address, (DWORD)module.size);
+#else
+		isInitialized = true;
+#endif
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -180,7 +222,7 @@ struct MODULE_LIST
 };
 #pragma warning (pop)
 
-void SymEngine::InitSystemModules()
+void WinSymbolEngine::InitSystemModules()
 {
 	ULONG returnLength = 0;
 	ULONG systemInformationLength = 0;
@@ -198,25 +240,33 @@ void SymEngine::InitSystemModules()
 	if (status == ERROR_SUCCESS)
 	{
 		char systemRootPath[MAXIMUM_FILENAME_LENGTH] = { 0 };
+#if BRO_PC
 		ExpandEnvironmentStringsA("%SystemRoot%", systemRootPath, MAXIMUM_FILENAME_LENGTH);
+#else
+		strcpy_s(systemRootPath, "C:\\Windows");
+#endif
 
 		const char* systemRootPattern = "\\SystemRoot";
+
+		modules.reserve(modules.size() + pModuleList->dwModules);
 
 		for (uint32_t i = 0; i < pModuleList->dwModules; ++i)
 		{
 			SYSTEM_MODULE_INFORMATION& module = pModuleList->pModulesInfo[i];
 
+			char path[MAXIMUM_FILENAME_LENGTH] = { 0 };
+
 			if (strstr(module.imageName, systemRootPattern) == module.imageName)
 			{
-				char expandedPath[MAXIMUM_FILENAME_LENGTH] = { 0 };
-				strcpy_s(expandedPath, systemRootPath);
-				strcat_s(expandedPath, module.imageName + strlen(systemRootPattern));
-				SymLoadModule64(hProcess, NULL, expandedPath, NULL, (DWORD64)module.imageBase, module.imageSize);
+				strcpy_s(path, systemRootPath);
+				strcat_s(path, module.imageName + strlen(systemRootPattern));
 			}
 			else
 			{
-				SymLoadModule64(hProcess, NULL, module.imageName, NULL, (DWORD64)module.imageBase, module.imageSize);
+				strcpy_s(path, module.imageName);
 			}
+
+			modules.push_back(Module(path, (void*)module.imageBase, module.imageSize));
 		}
 	}
 	else
@@ -230,23 +280,49 @@ void SymEngine::InitSystemModules()
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void SymEngine::Close()
+void WinSymbolEngine::InitApplicationModules()
+{
+	HANDLE processHandle = GetCurrentProcess();
+	HMODULE hModules[256];
+	DWORD modulesSize = 0;
+	EnumProcessModulesEx(processHandle, hModules, sizeof(hModules), &modulesSize, 0);
+
+	int moduleCount = modulesSize / sizeof(HMODULE);
+	
+	modules.reserve(modules.size() + moduleCount);
+
+	for (int i = 0; i < moduleCount; ++i)
+	{
+		MODULEINFO info = { 0 };
+		if (GetModuleInformation(processHandle, hModules[i], &info, sizeof(MODULEINFO)))
+		{
+			char name[MAX_PATH] = "UnknownModule";
+			GetModuleFileNameExA(processHandle, hModules[i], name, MAX_PATH);
+
+			modules.push_back(Module(name, info.lpBaseOfDll, info.SizeOfImage));
+		}
+	}
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void WinSymbolEngine::Close()
 {
 	if (isInitialized)
 	{
+#if USE_DBG_HELP
 		SymCleanup(hProcess);
+		if (needRestorePreviousSettings)
+		{
+			HANDLE currentProcess = GetCurrentProcess();
+
+			SymSetOptions(previousOptions);
+			SymSetSearchPath(currentProcess, previousSearchPath);
+			SymInitialize(currentProcess, NULL, TRUE);
+
+			needRestorePreviousSettings = false;
+		}
+#endif
+
 		isInitialized = false;
-	}
-
-	if (needRestorePreviousSettings)
-	{
-		HANDLE currentProcess = GetCurrentProcess();
-
-		SymSetOptions(previousOptions);
-		SymSetSearchPath(currentProcess, previousSearchPath);
-		SymInitialize(currentProcess, NULL, TRUE);
-
-		needRestorePreviousSettings = false;
 	}
 }
 
@@ -254,7 +330,7 @@ void SymEngine::Close()
 //////////////////////////////////////////////////////////////////////////
 SymbolEngine* SymbolEngine::Get()
 {
-	static SymEngine pdbSymbolEngine;
+	static WinSymbolEngine pdbSymbolEngine;
 	return &pdbSymbolEngine;
 }
 

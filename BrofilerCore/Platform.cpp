@@ -1,0 +1,49 @@
+#include "Platform.h"
+
+namespace Brofiler
+{
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ThreadID GetThreadID()
+{
+#if defined(BRO_MSVC)
+	return GetCurrentThreadId();
+#elif defined(BRO_OSX)
+	uint64_t tid;
+	pthread_threadid_np(pthread_self(), &tid);
+	return tid;
+#elif defined(BRO_LINUX)
+	return syscall(SYS_gettid);
+#else
+#error Platform is not supported!
+#endif
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+ProcessID GetProcessID()
+{
+#if defined(BRO_MSVC)
+	return GetCurrentProcessId();
+#elif defined(BRO_GCC)
+	return (ProcessID)getpid();
+#else
+#error Platform is not supported!
+#endif
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Platform::ID Platform::Get()
+{
+#if defined(BRO_LINUX)
+	return Platform::Linux;
+#elif defined(BRO_OSX)
+	return Platform::MacOS;
+#elif defined(BRO_XBOX)
+	return Platform::XBox;
+#elif defined(BRO_PS)
+	return Platform::Playstation;
+#elif defined(BRO_PC)
+	return Platform::Windows;
+#else
+	return Platform::Unknown;
+#endif
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+}

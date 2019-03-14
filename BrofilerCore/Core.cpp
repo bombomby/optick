@@ -420,6 +420,16 @@ void CallstackCollector::Clear()
 	callstacksPool.Clear(false);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool CallstackCollector::SerializeModules(OutputDataStream& stream)
+{
+	if (SymbolEngine* symEngine = Core::Get().symbolEngine)
+	{
+		stream << symEngine->GetModules();
+		return true;
+	}
+	return false;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CallstackCollector::SerializeSymbols(OutputDataStream& stream)
 {
 	typedef std::unordered_set<uint64> SymbolSet;
@@ -538,10 +548,10 @@ bool SwitchContextCollector::Serialize(OutputDataStream& stream)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if defined(BRO_PLATFORM_WINDOWS)
+#if defined(BRO_MSVC)
 #define CPUID(INFO, ID) __cpuid(INFO, ID)
 #include <intrin.h> 
-#elif defined(BRO_PLATFORM_LINUX) || defined(BRO_PLATFORM_OSX)
+#elif defined(BRO_GCC)
 #include <cpuid.h>
 #define CPUID(INFO, ID) __cpuid(ID, INFO[0], INFO[1], INFO[2], INFO[3])
 #else
@@ -782,6 +792,7 @@ void Core::DumpFrames(uint32 mode)
 		DumpProgress("Resolving callstacks");
 		OutputDataStream symbolsStream;
 		symbolsStream << boardNumber;
+		callstackCollector.SerializeModules(symbolsStream);
 		callstackCollector.SerializeSymbols(symbolsStream);
 		Server::Get().Send(DataResponse::CallstackDescriptionBoard, symbolsStream);
 
@@ -1039,7 +1050,7 @@ void Core::SendHandshakeResponse(CaptureStatus::Type status)
 {
 	OutputDataStream stream;
 	stream << (uint32)status;
-	stream << (uint32)GetPlatform();
+	stream << (uint32)Platform::Get();
 	stream << Server::Get().GetHostName();
 	Server::Get().Send(DataResponse::Handshake, stream);
 }
@@ -1168,8 +1179,9 @@ bool Core::AttachFile(BroFile::Type type, const char* name, const char* path)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::AttachFile(BroFile::Type type, const char* name, const wchar_t* path)
 {
-#if BRO_MSVC
-	return AttachFile(type, name, std::ifstream(path, std::ios::binary));
+#if defined(BRO_MSVC)
+	std::ifstream stream(path, std::ios::binary);
+	return AttachFile(type, name, stream);
 #else
 	char p[256] = { 0 };
 	wcstombs(p, path, sizeof(p));

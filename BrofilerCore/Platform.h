@@ -25,29 +25,6 @@
 #include "Common.h"
 
 ////////////////////////////////////////////////////////////////////////
-// Target Platform
-////////////////////////////////////////////////////////////////////////
-#if   _WIN32
-#define BRO_PLATFORM_WINDOWS (1)
-#elif __APPLE_CC__
-#define BRO_PLATFORM_OSX (1)
-#elif defined(__linux__)
-#define BRO_PLATFORM_LINUX (1)
-#endif
-
-////////////////////////////////////////////////////////////////////////
-// Compiler family
-////////////////////////////////////////////////////////////////////////
-#if defined(__clang__)
-#define BRO_CLANG_COMPILER_FAMILY (1)
-#define BRO_GCC_COMPILER_FAMILY (1)
-#elif defined(__GNUC__)
-#define BRO_GCC_COMPILER_FAMILY (1)
-#elif defined(_MSC_VER)
-#define BRO_MSVC_COMPILER_FAMILY (1)
-#endif
-
-////////////////////////////////////////////////////////////////////////
 // Compiler support for C++11
 ////////////////////////////////////////////////////////////////////////
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
@@ -59,26 +36,23 @@
 ////////////////////////////////////////////////////////////////////////
 #if defined(BRO_CPP11_SUPPORTED)
 #define BRO_THREAD_LOCAL _Thread_local
-#elif defined(BRO_GCC_COMPILER_FAMILY)
+#elif defined(BRO_GCC)
 #define BRO_THREAD_LOCAL __thread
-#elif defined(BRO_MSVC_COMPILER_FAMILY)
+#elif defined(BRO_MSVC)
 #define BRO_THREAD_LOCAL __declspec(thread)
 #else
 #error Can not define BRO_THREAD_LOCAL. Unknown platform.
 #endif
 
-#if defined(BRO_GCC_COMPILER_FAMILY)
+#if defined(BRO_GCC)
+#include <sys/syscall.h>
 #include <sys/time.h>
+#include <sys/types.h>
 #include <pthread.h>
 #include <unistd.h>
 #endif
 
-#if defined(BRO_GCC_COMPILER_FAMILY)
-#include <sys/types.h>
-#include <sys/syscall.h>
-#endif
-
-#if defined(BRO_PLATFORM_OSX)
+#if defined(BRO_OSX)
 #import <mach/mach_time.h>
 #endif
 
@@ -89,6 +63,9 @@ namespace Brofiler
 
 	typedef uint32 ProcessID;
 	static const ProcessID INVALID_PROCESS_ID = (ProcessID)-1;
+
+	ThreadID GetThreadID();
+	ProcessID GetProcessID();
 
 	struct Platform
 	{
@@ -101,47 +78,18 @@ namespace Brofiler
 			XBox,
 			Playstation,
 		};
+
+		static ID Get();
 	};
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	BRO_INLINE ThreadID GetThreadID()
-	{
-#if defined(BRO_MSVC_COMPILER_FAMILY)
-		return GetCurrentThreadId();
-#elif defined(BRO_PLATFORM_OSX)
-		uint64_t tid;
-		pthread_threadid_np(pthread_self(), &tid);
-		return tid;
-#elif defined(BRO_PLATFORM_LINUX)
-		return syscall(SYS_gettid);
-#else
-		#error Platform is not supported!
-#endif
-	}
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	BRO_INLINE ProcessID GetProcessID()
-	{
-#if defined(BRO_MSVC_COMPILER_FAMILY)
-		return GetCurrentProcessId();
-#elif defined(BRO_GCC_COMPILER_FAMILY)
-		return (ProcessID)getpid();
-#else
-		#error Platform is not supported!
-#endif
-	}
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	BRO_INLINE int64 GetFrequency()
 	{
-#if defined(BRO_PLATFORM_WINDOWS)
+#if defined(BRO_MSVC)
 		LARGE_INTEGER frequency;
 		QueryPerformanceFrequency(&frequency);
 		return frequency.QuadPart;
-#elif defined(BRO_GCC_COMPILER_FAMILY)
+#elif defined(BRO_GCC)
 		return 1000000000;
 #else
 	#error Platform is not supported!
@@ -151,15 +99,15 @@ namespace Brofiler
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	BRO_INLINE int64 GetTimeNanoSeconds()
 	{
-#if defined(BRO_PLATFORM_WINDOWS)
+#if defined(BRO_MSVC)
 		LARGE_INTEGER largeInteger;
 		QueryPerformanceCounter(&largeInteger);
 		return (largeInteger.QuadPart * 1000000000LL) / GetFrequency();
-#elif defined(BRO_PLATFORM_OSX)
+#elif defined(BRO_OSX)
         struct timespec ts;
         clock_gettime(CLOCK_REALTIME, &ts);
         return ts.tv_sec * 1000000000LL + ts.tv_nsec;
-#elif defined(BRO_GCC_COMPILER_FAMILY)
+#elif defined(BRO_GCC)
 		struct timespec ts;
 		clock_gettime(CLOCK_MONOTONIC, &ts);
 		return ts.tv_sec * 1000000000LL + ts.tv_nsec;
@@ -177,32 +125,15 @@ namespace Brofiler
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	BRO_INLINE int64 GetTime()
 	{
-#if defined(BRO_PLATFORM_WINDOWS)
+#if defined(BRO_MSVC)
 		LARGE_INTEGER largeInteger;
 		QueryPerformanceCounter(&largeInteger);
 		return largeInteger.QuadPart;
-#elif defined(BRO_GCC_COMPILER_FAMILY)
+#elif defined(BRO_GCC)
         return GetTimeNanoSeconds();
 #else
 	#error Platform is not supported!
 #endif
 	}
-
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	BRO_INLINE Platform::ID GetPlatform()
-	{
-#if defined(BRO_PLATFORM_LINUX)
-		return Platform::Linux;
-#elif defined(BRO_PLATFORM_OSX)
-		return Platform::MacOS;
-#elif defined(BRO_PLATFORM_XBOX)
-		return Platform::XBox;
-#elif defined(BRO_PLATFORM_PS)
-		return Platform::Playstation;
-#elif defined(BRO_PLATFORM_WINDOWS)
-		return Platform::Windows;
-#else
-		#error Platform is not supported!
-#endif
-	}
 }

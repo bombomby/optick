@@ -1,9 +1,8 @@
-#if _WIN32
+#if defined(_MSC_VER)
 
 #include "Trace.h"
 
 #if BRO_ENABLE_TRACING
-
 #include <array>
 #include <vector>
 #include "Core.h"
@@ -29,6 +28,7 @@ https://msdn.microsoft.com/en-us/library/windows/desktop/aa363795(v=vs.85).aspx
 #endif // _WMI_SOURCE
 #endif // MIDL_PASS
 #endif // WMIAPI
+#define INITGUID
 #include <guiddef.h>
 #if defined(_NTDDK_) || defined(_NTIFS_) || defined(_WMIKM_)
 #define _EVNTRACE_KERNEL_MODE
@@ -378,6 +378,31 @@ typedef struct _TRACE_LOGFILE_HEADER {
 	ULONG           ReservedFlags;      // ClockType
 	ULONG           BuffersLost;
 } TRACE_LOGFILE_HEADER, *PTRACE_LOGFILE_HEADER;
+
+typedef enum _TRACE_QUERY_INFO_CLASS {
+	TraceGuidQueryList,
+	TraceGuidQueryInfo,
+	TraceGuidQueryProcess,
+	TraceStackTracingInfo,   // Win7
+	TraceSystemTraceEnableFlagsInfo,
+	TraceSampledProfileIntervalInfo,
+	TraceProfileSourceConfigInfo,
+	TraceProfileSourceListInfo,
+	TracePmcEventListInfo,
+	TracePmcCounterListInfo,
+	MaxTraceSetInfoClass
+} TRACE_QUERY_INFO_CLASS, TRACE_INFO_CLASS;
+
+typedef struct _CLASSIC_EVENT_ID {
+	GUID  EventGuid;
+	UCHAR Type;
+	UCHAR Reserved[7];
+} CLASSIC_EVENT_ID, *PCLASSIC_EVENT_ID;
+
+typedef struct _TRACE_PROFILE_INTERVAL {
+	ULONG Source;
+	ULONG Interval;
+} TRACE_PROFILE_INTERVAL, *PTRACE_PROFILE_INTERVAL;
 
 typedef struct _EVENT_TRACE_LOGFILEW
 EVENT_TRACE_LOGFILEW, *PEVENT_TRACE_LOGFILEW;
@@ -1253,4 +1278,4 @@ Trace* Trace::Get()
 }
 
 #endif //BRO_ENABLE_TRACING
-#endif //_WIN32
+#endif //_MSC_VER

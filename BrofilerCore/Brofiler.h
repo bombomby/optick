@@ -3,21 +3,30 @@
 #include <stdint.h>
 
 #if defined(__clang__) || defined(__GNUC__)
-#define BRO_GCC (1)
+#	define BRO_GCC (1)
+#	if defined(__APPLE_CC__)
+#		define BRO_OSX (1)
+#	elif defined(__linux__)
+#		define BRO_LINUX (1)
+#	endif
 #elif defined(_MSC_VER)
-#define BRO_MSVC (1)
-#if defined(_DURANGO)
-#define BRO_DURANGO (1)
-#else
-#define BRO_PC (1)
+#	define BRO_MSVC (1)
+#	if defined(_DURANGO)
+#		define BRO_XBOX (1)
+#	else
+#		define BRO_PC (1)
 #endif
 #else
 #error Compiler not supported
 #endif
 
+////////////////////////////////////////////////////////////////////////
+// Target Platform
+////////////////////////////////////////////////////////////////////////
+
 #if defined(BRO_GCC)
 #define BRO_FUNC __PRETTY_FUNCTION__
-#elif BRO_MSVC
+#elif defined(BRO_MSVC)
 #define BRO_FUNC __FUNCSIG__
 #else
 #error Compiler not supported
