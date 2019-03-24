@@ -15,7 +15,7 @@ Event Tracing Functions - API
 https://msdn.microsoft.com/en-us/library/windows/desktop/aa363795(v=vs.85).aspx
 */
 
-#define DECLARE_ETW (!WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP))
+#define DECLARE_ETW (!BRO_PC)
 
 #if DECLARE_ETW
 // Copied from Windows SDK

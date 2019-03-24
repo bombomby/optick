@@ -12,7 +12,9 @@
 
 #include "Serialization.h"
 
-
+#if BRO_PC
+#include <psapi.h>
+#else
 // Forward declare kernel functions
 #pragma pack(push,8)
 typedef struct _MODULEINFO {
@@ -33,6 +35,7 @@ EXTERN_C DWORD WINAPI K32GetModuleInformation(HANDLE hProcess, HMODULE hModule, 
 #ifndef GetModuleFileNameExA
 #define GetModuleFileNameExA        K32GetModuleFileNameExA
 EXTERN_C DWORD WINAPI K32GetModuleFileNameExA(HANDLE hProcess, HMODULE hModule, LPSTR lpFilename, DWORD nSize);
+#endif
 #endif
 
 
@@ -186,8 +189,12 @@ void WinSymbolEngine::Init()
 		}
 
 		const std::vector<Module>& loadedModules = GetModules();
-			for each (const Module& module in loadedModules)
-				SymLoadModule64(hProcess, NULL, module.path.c_str(), NULL, (DWORD64)module.address, (DWORD)module.size);
+		for (size_t i = 0; i < loadedModules.size(); ++i)
+		{
+			const Module& module = loadedModules[i];
+			SymLoadModule64(hProcess, NULL, module.path.c_str(), NULL, (DWORD64)module.address, (DWORD)module.size);
+		}
+			
 #else
 		isInitialized = true;
 #endif

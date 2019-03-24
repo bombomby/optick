@@ -97,6 +97,7 @@ void BRO_INLINE PushEvent(EventStorage* pStorage, const EventDescription* descri
 		EventData& result = storage->NextEvent();
 		result.description = description;
 		result.start = timestampStart;
+		result.finish = EventTime::INVALID_TIMESTAMP;
 		storage->pushPopEventStack[storage->pushPopEventStackIndex++] = &result;
 	}
 }

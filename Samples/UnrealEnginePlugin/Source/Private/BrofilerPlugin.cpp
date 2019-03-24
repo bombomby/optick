@@ -4,8 +4,10 @@
 #include "CoreMinimal.h"
 #include "Containers/Ticker.h"
 #include "HAL/PlatformFilemanager.h"
+#include "Misc/EngineVersion.h"
 #include "Modules/ModuleManager.h"
 #include "Stats/StatsData.h"
+#include "DesktopPlatformModule.h"
 #include "IBrofilerPlugin.h"
 
 // Engine
@@ -107,8 +109,10 @@ bool OnBrofilerStateChanged(Brofiler::BroState state)
 		if (!plugin.IsReadyToDumpCapture())
 			return false;
 
-		Brofiler::AttachSummary("Version", "v2.0");
+		Brofiler::AttachSummary("Platform", FPlatformProperties::PlatformName());
 		Brofiler::AttachSummary("Build", __DATE__ " " __TIME__);
+		Brofiler::AttachSummary("UnrealVersion", TCHAR_TO_ANSI(*FEngineVersion::Current().ToString(EVersionComponent::Changelist)));
+		Brofiler::AttachSummary("GPU", TCHAR_TO_ANSI(*FPlatformMisc::GetPrimaryGPUBrand()));
 
 		FString FullName = BROFILER_SCREENSHOT_NAME;
 		FScreenshotRequest::CreateViewportScreenShotFilename(FullName);
@@ -300,7 +304,7 @@ void FBrofilerPlugin::GetDataFromStatsThread(int64 CurrentFrame)
 							if (NAME_Wait[i] == shortName)
 								color = Brofiler::Color::White;
 
-						Description = Brofiler::EventDescription::CreateShared(TCHAR_TO_ANSI(*shortName.ToString()), TCHAR_TO_ANSI(*name.ToString()), 0, color);
+						Description = Brofiler::EventDescription::CreateShared(TCHAR_TO_ANSI(*shortName.ToString()), nullptr, 0, color);
 
 						DescriptionMap.Add(name, Description);
 					}

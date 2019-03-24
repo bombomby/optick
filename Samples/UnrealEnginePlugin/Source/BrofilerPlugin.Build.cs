@@ -27,6 +27,7 @@ namespace UnrealBuildTool.Rules
 					"CoreUObject",
 					"Engine",
 					"EngineSettings",
+					"DesktopPlatform",
 					// ... add other public dependencies that you statically link with here ...
 				}
 				);

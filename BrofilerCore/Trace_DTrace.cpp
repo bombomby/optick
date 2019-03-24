@@ -1,4 +1,4 @@
-#if __APPLE_CC__
+#if defined(__APPLE_CC__)
 
 #include "Trace.h"
 
