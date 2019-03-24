@@ -20,7 +20,7 @@
         ".git",
         "Bin",
         "Build",
-        "BrofilerApp",
+        "OptickApp",
         "Tools",
         "Samples/DurangoUWP",
         "Samples/UnrealEnginePlugin",

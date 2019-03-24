@@ -17,5 +17,5 @@ build_script:
   - Tools\Windows\premake5.exe vs2015
   - cd Build/vs2015
   - MsBuild Brofiler.sln /t:Rebuild /p:Configuration=%CONFIGURATION%
-  - cd ../../BrofilerApp
-  - MsBuild BrofilerApp_vs2015.sln /t:Rebuild /p:Configuration=%CONFIGURATION%
+  - cd ../../OptickApp
+  - MsBuild OptickApp_vs2017.sln /t:Rebuild /p:Configuration=%CONFIGURATION%

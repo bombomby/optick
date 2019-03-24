@@ -1,9 +1,9 @@
 Bin/
-Brofiler/.vs/
-Brofiler/obj/
-BrofilerApp/obj/
-BrofilerApp/packages/
-BrofilerApp/.vs/
+Optick/.vs/
+Optick/obj/
+OptickApp/obj/
+OptickApp/packages/
+OptickApp/.vs/
 Build/
 *.suo
 *.user

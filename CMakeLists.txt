@@ -1,4 +1,4 @@
-project (Brofiler)
+project (Optick)
 cmake_minimum_required (VERSION 3.0)
 
 # Options: GAPI
@@ -15,11 +15,11 @@ set (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Build)
 
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
 
-#BrofilerCore
-file(GLOB BROFILER_SOURCE ${PROJECT_SOURCE_DIR}/BrofilerCore/*.*)
-SET(BROFILER_SRC ${BROFILER_SOURCE})  
-source_group("BrofilerCore" FILES ${BROFILER_SOURCE})
-include_directories ("${PROJECT_SOURCE_DIR}/BrofilerCore")
+#OptickCore
+file(GLOB OPTICK_SOURCE ${PROJECT_SOURCE_DIR}/OptickCore/*.*)
+SET(OPTICK_SRC ${OPTICK_SOURCE})  
+source_group("OptickCore" FILES ${OPTICK_SOURCE})
+include_directories ("${PROJECT_SOURCE_DIR}/OptickCore")
 
 if(BUILD_VULKAN)
 	include_directories("$(VULKAN_SDK)/Include")
@@ -32,9 +32,9 @@ if(!BUILD_D3D12)
 	add_definitions(-DBRO_ENABLE_GPU_D3D12=0)
 endif()	
 
-add_library(BrofilerCore ${BROFILER_SRC})
+add_library(OptickCore ${OPTICK_SRC})
 
-set (EXTRA_LIBS ${EXTRA_LIBS} BrofilerCore pthread)
+set (EXTRA_LIBS ${EXTRA_LIBS} OptickCore pthread)
 
 #ConsoleApp
 file(GLOB TEST_ENGINE_SOURCE ${PROJECT_SOURCE_DIR}/Samples/Common/TestEngine/*.*)

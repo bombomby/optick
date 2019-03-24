@@ -60,7 +60,7 @@ if isUWP then
 	outputFolder = outputFolder .. "_UWP"
 end
 
-solution "Brofiler"
+solution "Optick"
 	language "C++"
 if _ACTION == "vs2017" then
 	systemversion "latest"
@@ -84,7 +84,7 @@ if isUWP then
 	defines { "BRO_UWP=1" }
 end
 
-	defines { "USE_BROFILER=1"}
+	defines { "USE_OPTICK=1"}
 	defines { "BRO_FIBERS=1"}
 
 	local config_list = {
@@ -138,23 +138,23 @@ os.mkdir("./" .. outFolderRoot)
 
 -- SUBPROJECTS
 
-project "BrofilerCore"
+project "OptickCore"
 	uuid "830934D9-6F6C-C37D-18F2-FB3304348F00"
-	defines { "_CRT_SECURE_NO_WARNINGS", "BROFILER_LIB=1" }
+	defines { "_CRT_SECURE_NO_WARNINGS", "OPTICK_LIB=1" }
 if _ACTION == "vs2017" then
 	systemversion "10.0.15063.0"
 end
 
 -- if _OPTIONS['platform'] ~= "orbis" then
 -- 	kind "SharedLib"
--- 	defines { "BROFILER_EXPORTS" }
+-- 	defines { "OPTICK_EXPORTS" }
 -- else
 	kind "StaticLib"
 -- end
 
 	includedirs
 	{
-		"BrofilerCore"
+		"OptickCore"
 	}
 	
 	if isDX12 then
@@ -180,52 +180,52 @@ end
 	end
 	
 	files {
-		"BrofilerCore/**.cpp",
-        "BrofilerCore/**.h", 
+		"OptickCore/**.cpp",
+        "OptickCore/**.h", 
 	}
 	vpaths {
 		["API"] = { 
-			"BrofilerCore/Brofiler.h",
+			"OptickCore/Optick.h",
 		},
 		["Core"] = {
-			"BrofilerCore/Core.h",
-			"BrofilerCore/Core.cpp",
-			"BrofilerCore/ETW.h",
-			"BrofilerCore/Event.h",
-			"BrofilerCore/Event.cpp",
-			"BrofilerCore/EventDescription.h",
-			"BrofilerCore/EventDescription.cpp",
-			"BrofilerCore/EventDescriptionBoard.h",
-			"BrofilerCore/EventDescriptionBoard.cpp",
-			"BrofilerCore/Sampler.h",
-			"BrofilerCore/Sampler.cpp",
-			"BrofilerCore/SymEngine.h",
-			"BrofilerCore/SymEngine.cpp",
+			"OptickCore/Core.h",
+			"OptickCore/Core.cpp",
+			"OptickCore/ETW.h",
+			"OptickCore/Event.h",
+			"OptickCore/Event.cpp",
+			"OptickCore/EventDescription.h",
+			"OptickCore/EventDescription.cpp",
+			"OptickCore/EventDescriptionBoard.h",
+			"OptickCore/EventDescriptionBoard.cpp",
+			"OptickCore/Sampler.h",
+			"OptickCore/Sampler.cpp",
+			"OptickCore/SymEngine.h",
+			"OptickCore/SymEngine.cpp",
 		},
 		["Network"] = {
-			"BrofilerCore/Message.h", 
-			"BrofilerCore/Message.cpp",
-			"BrofilerCore/ProfilerServer.h", 
-			"BrofilerCore/ProfilerServer.cpp", 
-			"BrofilerCore/Socket.h", 
-			"BrofilerCore/Serialization.h", 
-			"BrofilerCore/Serialization.cpp", 
+			"OptickCore/Message.h", 
+			"OptickCore/Message.cpp",
+			"OptickCore/ProfilerServer.h", 
+			"OptickCore/ProfilerServer.cpp", 
+			"OptickCore/Socket.h", 
+			"OptickCore/Serialization.h", 
+			"OptickCore/Serialization.cpp", 
 		},
 		["System"] = {
-			"BrofilerCore/Common.h",
-			"BrofilerCore/Concurrency.h",
-			"BrofilerCore/CityHash.h",
-			"BrofilerCore/CityHash.cpp",
-			"BrofilerCore/HPTimer.h",
-			"BrofilerCore/HPTimer.cpp",
-			"BrofilerCore/Memory.h",
-			"BrofilerCore/Memory.cpp",
-			"BrofilerCore/MemoryPool.h",
-			"BrofilerCore/StringHash.h",
-			"BrofilerCore/Platform.h",
-			"BrofilerCore/Timer.h",
-			"BrofilerCore/ThreadID.h",
-			"BrofilerCore/Types.h",
+			"OptickCore/Common.h",
+			"OptickCore/Concurrency.h",
+			"OptickCore/CityHash.h",
+			"OptickCore/CityHash.cpp",
+			"OptickCore/HPTimer.h",
+			"OptickCore/HPTimer.cpp",
+			"OptickCore/Memory.h",
+			"OptickCore/Memory.cpp",
+			"OptickCore/MemoryPool.h",
+			"OptickCore/StringHash.h",
+			"OptickCore/Platform.h",
+			"OptickCore/Timer.h",
+			"OptickCore/ThreadID.h",
+			"OptickCore/Types.h",
 		},
 	}
 	
@@ -235,7 +235,7 @@ if isFibersEnabled then
 		excludes { "Samples/Common/TaskScheduler/Scheduler/Source/MTDefaultAppInterop.cpp", }
 		kind "StaticLib"
 		flags {"NoPCH"}
-		defines {"USE_BROFILER=1"}
+		defines {"USE_OPTICK=1"}
 		files {
 			"Samples/Common/TaskScheduler/Scheduler/**.*", 
 		}
@@ -243,13 +243,13 @@ if isFibersEnabled then
 		includedirs
 		{
 			"Samples/Common/TaskScheduler/Scheduler/Include",
-			"BrofilerCore"
+			"OptickCore"
 		}
 
 		excludes { "Src/Platform/Posix/**.*" }
 		
 		links {
-			"BrofilerCore",
+			"OptickCore",
 		}
 end
 
@@ -274,13 +274,13 @@ else
 		}
 		
 		includedirs {
-			"BrofilerCore",
+			"OptickCore",
 			"Samples/Common/TestEngine",
 			"Samples/Common/TaskScheduler/Scheduler/Include"
 		}
 		
 		links {
-			"BrofilerCore"
+			"OptickCore"
 		}
 
 		vpaths { 
@@ -325,11 +325,11 @@ if isDX12 then
 		}
 		
 		includedirs {
-			"BrofilerCore",
+			"OptickCore",
 		}
 		
 		links {
-			"BrofilerCore",
+			"OptickCore",
 		}
 		
 		vpaths { 
@@ -373,7 +373,7 @@ if isVulkan then
 			"$(VULKAN_SDK)/Include",
 			"Samples/WindowsVulkan",
 			"Samples/WindowsVulkan/base",
-			"BrofilerCore",
+			"OptickCore",
 		}
 		
 		libdirs {
@@ -387,7 +387,7 @@ if isVulkan then
 		}
 		
 		links {
-			"BrofilerCore",
+			"OptickCore",
 		}
 		
 		vpaths { 
