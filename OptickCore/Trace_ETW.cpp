@@ -2,7 +2,7 @@
 
 #include "Trace.h"
 
-#if BRO_ENABLE_TRACING
+#if OPTICK_ENABLE_TRACING
 #include <array>
 #include <vector>
 #include "Core.h"
@@ -15,7 +15,7 @@ Event Tracing Functions - API
 https://msdn.microsoft.com/en-us/library/windows/desktop/aa363795(v=vs.85).aspx
 */
 
-#define DECLARE_ETW (!BRO_PC)
+#define DECLARE_ETW (!OPTICK_PC)
 
 #if DECLARE_ETW
 // Copied from Windows SDK
@@ -548,7 +548,7 @@ TraceQueryInformation(
 
 #endif //DECLARE_ETW
 
-namespace Brofiler
+namespace Optick
 {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -787,7 +787,7 @@ struct Process_TypeGroup1
 	
 	const char* GetProcessName(PEVENT_RECORD pEvent) const
 	{
-		BRO_ASSERT((pEvent->EventHeader.Flags & EVENT_HEADER_FLAG_64_BIT_HEADER) != 0, "32-bit is not supported! Disable BRO_ENABLE_TRACING on 32-bit platform if needed!");
+		OPTICK_ASSERT((pEvent->EventHeader.Flags & EVENT_HEADER_FLAG_64_BIT_HEADER) != 0, "32-bit is not supported! Disable OPTICK_ENABLE_TRACING on 32-bit platform if needed!");
 		size_t sidOffset = GetSIDOffset(pEvent);
 		size_t sidSize = GetSIDSize((uint8*)this + sidOffset);
 		return (char*)this + sidOffset + sidSize;
@@ -877,7 +877,7 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 		{
 			CSwitch* pSwitchEvent = (CSwitch*)eventRecord->UserData;
 
-			Brofiler::SwitchContextDesc desc;
+			Optick::SwitchContextDesc desc;
 			desc.reason = pSwitchEvent->OldThreadWaitReason;
 			desc.cpuId = eventRecord->BufferContext.ProcessorNumber;
 			desc.oldThreadId = (uint64)pSwitchEvent->OldThreadId;
@@ -926,7 +926,7 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 	else if (opcode == SampledProfile::OPCODE)
 	{
 		SampledProfile* pEvent = (SampledProfile*)eventRecord->UserData;
-		BRO_UNUSED(pEvent);
+		OPTICK_UNUSED(pEvent);
 	} 
 	else if (opcode == SysCallEnter::OPCODE)
 	{
@@ -995,7 +995,7 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static ULONG WINAPI OnBufferRecord(_In_ PEVENT_TRACE_LOGFILE Buffer)
 {
-	BRO_UNUSED(Buffer);
+	OPTICK_UNUSED(Buffer);
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1004,17 +1004,17 @@ const TRACEHANDLE INVALID_TRACEHANDLE = (TRACEHANDLE)-1;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 DWORD WINAPI ETW::RunProcessTraceThreadFunction( LPVOID parameter )
 {
-	Core::Get().RegisterThreadDescription(ThreadDescription("[Brofiler] ETW", GetCurrentThreadId(), GetCurrentProcessId()));
+	Core::Get().RegisterThreadDescription(ThreadDescription("[Optick] ETW", GetCurrentThreadId(), GetCurrentProcessId()));
 	ETW* etw = (ETW*)parameter;
 	ULONG status = ProcessTrace(&etw->openedHandle, 1, 0, 0);
-	BRO_UNUSED(status);
+	OPTICK_UNUSED(status);
 	return 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ETW::AdjustPrivileges()
 {
-#if BRO_PC
+#if OPTICK_PC
 	HANDLE token = 0;
 	if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &token))
 	{
@@ -1044,7 +1044,7 @@ void ETW::ResolveSysCalls()
 				std::string name(symbol->function.begin(), symbol->function.end());
 				
 				data.description = EventDescription::CreateShared(name.c_str(), "SysCall", (long)data.id);
-				syscallDescriptions.insert(std::pair<const uint64_t, const Brofiler::EventDescription *>(data.id, data.description));
+				syscallDescriptions.insert(std::pair<const uint64_t, const Optick::EventDescription *>(data.id, data.description));
 			}
 		}
 		else
@@ -1195,7 +1195,7 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads)
 			status = TraceSetInformation(traceSessionHandle, TraceStackTracingInfo, &callstackSamples[0], sizeof(CLASSIC_EVENT_ID) * callstackCountSamplesCount);
 			if (status != ERROR_SUCCESS)
 			{
-				BRO_FAILED("TraceSetInformation - failed");
+				OPTICK_FAILED("TraceSetInformation - failed");
 				return CaptureStatus::ERR_TRACER_FAILED;
 			}
 		}
@@ -1208,7 +1208,7 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads)
 			itnerval.Interval = highFrequencySampling ? 1221 : 10000;
 			// The SessionHandle is irrelevant for this information class and must be zero, else the function returns ERROR_INVALID_PARAMETER.
 			status = TraceSetInformation(NULL /*traceSessionHandle*/, TraceSampledProfileIntervalInfo, &itnerval, sizeof(TRACE_PROFILE_INTERVAL));
-			BRO_ASSERT(status == ERROR_SUCCESS, "TraceSetInformation - failed");
+			OPTICK_ASSERT(status == ERROR_SUCCESS, "TraceSetInformation - failed");
 		}
 
 		ZeroMemory(&logFile, sizeof(EVENT_TRACE_LOGFILE));
@@ -1219,7 +1219,7 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads)
 		openedHandle = OpenTrace(&logFile);
 		if (openedHandle == INVALID_TRACEHANDLE)
 		{
-			BRO_FAILED("OpenTrace - failed");
+			OPTICK_FAILED("OpenTrace - failed");
 			return CaptureStatus::ERR_TRACER_FAILED;
 		}
 
@@ -1277,5 +1277,5 @@ Trace* Trace::Get()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
-#endif //BRO_ENABLE_TRACING
+#endif //OPTICK_ENABLE_TRACING
 #endif //_MSC_VER

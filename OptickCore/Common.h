@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Brofiler.h"
+#include "Optick.h"
 
 #include <cstdio>
 #include <stdarg.h>
@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#if defined(BRO_MSVC)
+#if defined(OPTICK_MSVC)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
@@ -26,10 +26,10 @@ typedef short int16;
 typedef unsigned short uint16;
 typedef int int32;
 typedef unsigned int uint32;
-#if defined(BRO_MSVC)
+#if defined(OPTICK_MSVC)
 typedef __int64 int64;
 typedef unsigned __int64 uint64;
-#elif defined(BRO_GCC)
+#elif defined(OPTICK_GCC)
 typedef int64_t int64;
 typedef uint64_t uint64;
 #else
@@ -49,16 +49,16 @@ static_assert(sizeof(uint64) == 8, "Invalid type size, uint64");
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Memory
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if defined(BRO_MSVC)
-#define BRO_ALIGN(N) __declspec( align( N ) )
-#elif defined(BRO_GCC)
-#define BRO_ALIGN(N) __attribute__((aligned(N)))
+#if defined(OPTICK_MSVC)
+#define OPTICK_ALIGN(N) __declspec( align( N ) )
+#elif defined(OPTICK_GCC)
+#define OPTICK_ALIGN(N) __attribute__((aligned(N)))
 #else
-#error Can not define BRO_ALIGN. Unknown platform.
+#error Can not define OPTICK_ALIGN. Unknown platform.
 #endif
-#define BRO_CACHE_LINE_SIZE 64
-#define BRO_ALIGN_CACHE BRO_ALIGN(BRO_CACHE_LINE_SIZE)
-#define BRO_ARRAY_SIZE(ARR) (sizeof(ARR)/sizeof((ARR)[0]))
+#define OPTICK_CACHE_LINE_SIZE 64
+#define OPTICK_ALIGN_CACHE OPTICK_ALIGN(OPTICK_CACHE_LINE_SIZE)
+#define OPTICK_ARRAY_SIZE(ARR) (sizeof(ARR)/sizeof((ARR)[0]))
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -74,29 +74,29 @@ static_assert(sizeof(uint64) == 8, "Invalid type size, uint64");
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Asserts
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if defined(BRO_MSVC)
-#define BRO_DEBUG_BREAK __debugbreak()
-#elif defined(BRO_GCC)
-#define BRO_DEBUG_BREAK __builtin_trap()
+#if defined(OPTICK_MSVC)
+#define OPTICK_DEBUG_BREAK __debugbreak()
+#elif defined(OPTICK_GCC)
+#define OPTICK_DEBUG_BREAK __builtin_trap()
 #else
-	#error Can not define BRO_DEBUG_BREAK. Unknown platform.
+	#error Can not define OPTICK_DEBUG_BREAK. Unknown platform.
 #endif
-#define BRO_UNUSED(x) (void)(x)
+#define OPTICK_UNUSED(x) (void)(x)
 #ifdef _DEBUG
-	#define BRO_ASSERT(arg, description) if (!(arg)) { BRO_DEBUG_BREAK; }
-	#define BRO_VERIFY(arg, description, operation) if (!(arg)) { BRO_DEBUG_BREAK; operation; }
-	#define BRO_FAILED(description) { BRO_DEBUG_BREAK; }
+	#define OPTICK_ASSERT(arg, description) if (!(arg)) { OPTICK_DEBUG_BREAK; }
+	#define OPTICK_VERIFY(arg, description, operation) if (!(arg)) { OPTICK_DEBUG_BREAK; operation; }
+	#define OPTICK_FAILED(description) { OPTICK_DEBUG_BREAK; }
 #else
-	#define BRO_ASSERT(arg, description)
-	#define BRO_VERIFY(arg, description, operation)
-	#define BRO_FAILED(description)
+	#define OPTICK_ASSERT(arg, description)
+	#define OPTICK_VERIFY(arg, description, operation)
+	#define OPTICK_FAILED(description)
 #endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Safe functions
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if defined(BRO_GCC)
+#if defined(OPTICK_GCC)
 template<size_t sizeOfBuffer>
 inline int sprintf_s(char(&buffer)[sizeOfBuffer], const char* format, ...)
 {
@@ -114,7 +114,7 @@ inline int wcstombs_s(char(&buffer)[sizeOfBuffer], const wchar_t* src, size_t ma
 }
 #endif
 
-#if defined(BRO_MSVC)
+#if defined(OPTICK_MSVC)
 template<size_t sizeOfBuffer>
 inline int wcstombs_s(char(&buffer)[sizeOfBuffer], const wchar_t* src, size_t maxCount)
 {

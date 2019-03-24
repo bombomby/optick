@@ -6,7 +6,7 @@
 * This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
 */
 
-#include <Brofiler.h>
+#include <Optick.h>
 #include "vulkanexamplebase.h"
 
 std::vector<const char*> VulkanExampleBase::args;
@@ -225,7 +225,7 @@ VkPipelineShaderStageCreateInfo VulkanExampleBase::loadShader(std::string fileNa
 
 void VulkanExampleBase::renderFrame()
 {
-	BROFILER_FRAME("MainThread");
+	OPTICK_FRAME("MainThread");
 
 	auto tStart = std::chrono::high_resolution_clock::now();
 	if (viewUpdated)
@@ -940,7 +940,7 @@ bool VulkanExampleBase::initVulkan()
 	// Get a graphics queue from the device
 	vkGetDeviceQueue(device, vulkanDevice->queueFamilyIndices.graphics, 0, &queue);
 
-	BROFILER_GPU_INIT_VULKAN(&device, &physicalDevice, &queue, &vulkanDevice->queueFamilyIndices.graphics, 1);
+	OPTICK_GPU_INIT_VULKAN(&device, &physicalDevice, &queue, &vulkanDevice->queueFamilyIndices.graphics, 1);
 
 	// Find a suitable depth format
 	VkBool32 validDepthFormat = vks::tools::getSupportedDepthFormat(physicalDevice, &depthFormat);

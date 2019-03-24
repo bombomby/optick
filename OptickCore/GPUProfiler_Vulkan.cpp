@@ -1,12 +1,12 @@
 #include "GPUProfiler_Vulkan.h"
 
-#if BRO_ENABLE_GPU_VULKAN
+#if OPTICK_ENABLE_GPU_VULKAN
 
 #include "Core.h"
 
-#define BRO_VK_CHECK(args) do { VkResult __hr = args; BRO_ASSERT(__hr == VK_SUCCESS, "Failed check"); (void)__hr; } while(false);
+#define OPTICK_VK_CHECK(args) do { VkResult __hr = args; OPTICK_ASSERT(__hr == VK_SUCCESS, "Failed check"); (void)__hr; } while(false);
 
-namespace Brofiler
+namespace Optick
 {
 	void InitGpuVulkan(VkDevice* devices, VkPhysicalDevice* physicalDevices, VkQueue* cmdQueues, uint32_t* cmdQueuesFamily, uint32_t numQueues)
 	{
@@ -50,11 +50,11 @@ namespace Brofiler
 			nodePayload->queue = cmdQueues[i];
 			
 			r = vkCreateQueryPool(devices[i], &queryPoolCreateInfo, 0, &nodePayload->queryPool);
-			BRO_ASSERT(r == VK_SUCCESS, "Failed");
+			OPTICK_ASSERT(r == VK_SUCCESS, "Failed");
 
 			commandPoolCreateInfo.queueFamilyIndex = cmdQueuesFamily[i];
 			r = vkCreateCommandPool(nodePayload->device, &commandPoolCreateInfo, 0, &nodePayload->commandPool);
-			BRO_ASSERT(r == VK_SUCCESS, "Failed");
+			OPTICK_ASSERT(r == VK_SUCCESS, "Failed");
 
 			for (uint32_t j = 0; j < nodePayload->frames.size(); ++j)
 			{
@@ -67,14 +67,14 @@ namespace Brofiler
 				allocInfo.commandPool = nodePayload->commandPool;
 				allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 				r = vkAllocateCommandBuffers(nodePayload->device, &allocInfo, &frame.commandBuffer);
-				BRO_ASSERT(r == VK_SUCCESS, "Failed");
+				OPTICK_ASSERT(r == VK_SUCCESS, "Failed");
 
 				VkFenceCreateInfo fenceCreateInfo;
 				fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 				fenceCreateInfo.pNext = 0;
 				fenceCreateInfo.flags = j == 0 ? 0 : VK_FENCE_CREATE_SIGNALED_BIT;
 				r = vkCreateFence(nodePayload->device, &fenceCreateInfo, 0, &frame.fence);
-				BRO_ASSERT(r == VK_SUCCESS, "Failed");
+				OPTICK_ASSERT(r == VK_SUCCESS, "Failed");
 				if (j == 0)
 				{
 					VkCommandBufferBeginInfo commandBufferBeginInfo;
@@ -120,7 +120,7 @@ namespace Brofiler
 
 			NodePayload* payload = nodePayloads[currentNode];
 
-			BRO_VK_CHECK(vkGetQueryPoolResults(payload->device, payload->queryPool, startIndex, count, 8 * count, &nodes[currentNode]->queryGpuTimestamps[startIndex], 8, VK_QUERY_RESULT_64_BIT));
+			OPTICK_VK_CHECK(vkGetQueryPoolResults(payload->device, payload->queryPool, startIndex, count, 8 * count, &nodes[currentNode]->queryGpuTimestamps[startIndex], 8, VK_QUERY_RESULT_64_BIT));
 			vkCmdResetQueryPool(commandBuffer, payload->queryPool, startIndex, count);
 
 			// Convert GPU timestamps => CPU Timestamps
@@ -131,7 +131,7 @@ namespace Brofiler
 
 	void GPUProfilerVulkan::WaitForFrame(uint64_t frameNumberToWait)
 	{
-		BROFILE;
+		PROFILE;
 		int r = VK_SUCCESS;
 		do
 		{
@@ -142,7 +142,7 @@ namespace Brofiler
 
 	void GPUProfilerVulkan::Flip(void* /*swapChain*/)
 	{
-		BROFILE;
+		PROFILE;
 
 		std::lock_guard<std::recursive_mutex> lock(updateLock);
 
@@ -172,7 +172,7 @@ namespace Brofiler
 			commandBufferBeginInfo.pNext = 0;
 			commandBufferBeginInfo.pInheritanceInfo = 0;
 			commandBufferBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-			BRO_VK_CHECK(vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo));
+			OPTICK_VK_CHECK(vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo));
 			vkResetFences(device, 1, &fence);
 
 			if (EventData* frameEvent = currentFrame.frameEvent)
@@ -184,7 +184,7 @@ namespace Brofiler
 			QueryTimestamp(commandBuffer, &AddFrameTag().timestamp);
 			nextFrame.frameEvent = &event;
 
-			BRO_VK_CHECK(vkEndCommandBuffer(commandBuffer));
+			OPTICK_VK_CHECK(vkEndCommandBuffer(commandBuffer));
 			VkSubmitInfo submitInfo = {};
 			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 			submitInfo.pNext = nullptr;
@@ -194,7 +194,7 @@ namespace Brofiler
 			submitInfo.pCommandBuffers = &commandBuffer;
 			submitInfo.signalSemaphoreCount = 0;
 			submitInfo.pSignalSemaphores = nullptr;
-			BRO_VK_CHECK(vkQueueSubmit(queue, 1, &submitInfo, fence));
+			OPTICK_VK_CHECK(vkQueueSubmit(queue, 1, &submitInfo, fence));
 
 			uint32_t queryBegin = currentFrame.queryIndexStart;
 			uint32_t queryEnd = node.queryIndex;
@@ -305,7 +305,7 @@ namespace Brofiler
 
 void InitGpuVulkan(VkDevice* /*devices*/, VkPhysicalDevice* /*physicalDevices*/, VkQueue* /*cmdQueues*/, uint32_t* /*cmdQueuesFamily*/, uint32_t /*numQueues*/)
 {
-	BRO_FAILED("BRO_ENABLE_GPU_VULKAN is disabled! Can't initialize GPU Profiler!");
+	OPTICK_FAILED("OPTICK_ENABLE_GPU_VULKAN is disabled! Can't initialize GPU Profiler!");
 }
 
-#endif //BRO_ENABLE_GPU_D3D12
+#endif //OPTICK_ENABLE_GPU_D3D12

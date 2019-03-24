@@ -4,11 +4,11 @@
 
 #include <unordered_map>
 
-#if !defined(BRO_ENABLE_SYMENGINE)
-#define BRO_ENABLE_SYMENGINE (USE_BROFILER && BRO_MSVC)
+#if !defined(OPTICK_ENABLE_SYMENGINE)
+#define OPTICK_ENABLE_SYMENGINE (USE_OPTICK && OPTICK_MSVC)
 #endif
 
-namespace Brofiler
+namespace Optick
 {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	struct Module

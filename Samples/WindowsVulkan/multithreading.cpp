@@ -34,24 +34,24 @@
 std::wstring g_ScreenshotRequest;
 bool g_TakingScreenshot = false;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool OnBrofilerStateChanged(Brofiler::BroState state)
+bool OnOptickStateChanged(Optick::State::Type state)
 {
-	if (state == Brofiler::BRO_STOP_CAPTURE)
+	if (state == Optick::State::STOP_CAPTURE)
 	{
 		wchar_t tempPath[MAX_PATH] = { 0 };
 		GetTempPath(MAX_PATH, tempPath);
 		std::wstring fullPath(tempPath);
-		g_ScreenshotRequest = fullPath + L"BrofilerScreenshot.bmp";
+		g_ScreenshotRequest = fullPath + L"OptickScreenshot.bmp";
 		g_TakingScreenshot = true;
 	}
 
-	if (state == Brofiler::BRO_DUMP_CAPTURE)
+	if (state == Optick::State::DUMP_CAPTURE)
 	{
 		if (g_TakingScreenshot)
 			return false;
 
 		// Attach screenshot
-		Brofiler::AttachFile(Brofiler::BroFile::BRO_IMAGE, "Screenshot.bmp", g_ScreenshotRequest.c_str());
+		Optick::AttachFile(Optick::File::OPTICK_IMAGE, "Screenshot.bmp", g_ScreenshotRequest.c_str());
 
 		// Remove temp file
 		_wremove(g_ScreenshotRequest.c_str());
@@ -172,7 +172,7 @@ public:
 		numObjectsPerThread = 512 / numThreads;
 		rndEngine.seed(benchmark.active ? 0 : (unsigned)time(nullptr));
 		
-		BROFILER_SET_STATE_CHANGED_CALLBACK(OnBrofilerStateChanged);
+		OPTICK_SET_STATE_CHANGED_CALLBACK(OnOptickStateChanged);
 	}
 
 	~VulkanExample()
@@ -267,7 +267,7 @@ public:
 	// Builds the secondary command buffer for each thread
 	void threadRenderCode(uint32_t threadIndex, uint32_t cmdBufferIndex, VkCommandBufferInheritanceInfo inheritanceInfo)
 	{
-		BROFILER_CATEGORY("Render", Brofiler::Color::BurlyWood);
+		OPTICK_CATEGORY("Render", Optick::Color::BurlyWood);
 
 		ThreadData *thread = &threadData[threadIndex];
 		ObjectData *objectData = &thread->objectData[cmdBufferIndex];
@@ -288,8 +288,8 @@ public:
 
 		VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &commandBufferBeginInfo));
 		{
-			BROFILER_GPU_CONTEXT(cmdBuffer);
-			BROFILER_GPU_EVENT("DrawUFO");
+			OPTICK_GPU_CONTEXT(cmdBuffer);
+			OPTICK_GPU_EVENT("DrawUFO");
 			VkViewport viewport = vks::initializers::viewport((float)width, (float)height, 0.0f, 1.0f);
 			vkCmdSetViewport(cmdBuffer, 0, 1, &viewport);
 

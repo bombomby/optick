@@ -3,18 +3,18 @@
 #include <stdint.h>
 
 #if defined(__clang__) || defined(__GNUC__)
-#	define BRO_GCC (1)
+#	define OPTICK_GCC (1)
 #	if defined(__APPLE_CC__)
-#		define BRO_OSX (1)
+#		define OPTICK_OSX (1)
 #	elif defined(__linux__)
-#		define BRO_LINUX (1)
+#		define OPTICK_LINUX (1)
 #	endif
 #elif defined(_MSC_VER)
-#	define BRO_MSVC (1)
+#	define OPTICK_MSVC (1)
 #	if defined(_DURANGO)
-#		define BRO_XBOX (1)
+#		define OPTICK_XBOX (1)
 #	else
-#		define BRO_PC (1)
+#		define OPTICK_PC (1)
 #endif
 #else
 #error Compiler not supported
@@ -24,10 +24,10 @@
 // Target Platform
 ////////////////////////////////////////////////////////////////////////
 
-#if defined(BRO_GCC)
-#define BRO_FUNC __PRETTY_FUNCTION__
-#elif defined(BRO_MSVC)
-#define BRO_FUNC __FUNCSIG__
+#if defined(OPTICK_GCC)
+#define OPTICK_FUNC __PRETTY_FUNCTION__
+#elif defined(OPTICK_MSVC)
+#define OPTICK_FUNC __FUNCSIG__
 #else
 #error Compiler not supported
 #endif
@@ -36,46 +36,46 @@
 // SETTINGS
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Enable\Disable Brofiler
-#if !defined(USE_BROFILER)
-#define USE_BROFILER 1
+// Enable\Disable Optick
+#if !defined(USE_OPTICK)
+#define USE_OPTICK 1
 #endif
 
 
-#if USE_BROFILER
+#if USE_OPTICK
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // EXPORTS 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#ifdef BROFILER_EXPORTS
-#define BROFILER_API __declspec(dllexport)
+#ifdef OPTICK_EXPORTS
+#define OPTICK_API __declspec(dllexport)
 #else
-#define BROFILER_API //__declspec(dllimport)
+#define OPTICK_API //__declspec(dllimport)
 #endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define BRO_CONCAT_IMPL(x, y) x##y
-#define BRO_CONCAT(x, y) BRO_CONCAT_IMPL(x, y)
+#define OPTICK_CONCAT_IMPL(x, y) x##y
+#define OPTICK_CONCAT(x, y) OPTICK_CONCAT_IMPL(x, y)
 
-#if defined(BRO_MSVC)
-#define BRO_INLINE __forceinline
-#elif defined(BRO_GCC)
-#define BRO_INLINE __attribute__((always_inline)) inline
+#if defined(OPTICK_MSVC)
+#define OPTICK_INLINE __forceinline
+#elif defined(OPTICK_GCC)
+#define OPTICK_INLINE __attribute__((always_inline)) inline
 #else
 #error Compiler is not supported
 #endif
 
 
 // Vulkan Forward Declarations
-#define BRO_DEFINE_HANDLE(object) typedef struct object##_T* object;
-BRO_DEFINE_HANDLE(VkDevice);
-BRO_DEFINE_HANDLE(VkPhysicalDevice);
-BRO_DEFINE_HANDLE(VkQueue);
-BRO_DEFINE_HANDLE(VkCommandBuffer);
+#define OPTICK_DEFINE_HANDLE(object) typedef struct object##_T* object;
+OPTICK_DEFINE_HANDLE(VkDevice);
+OPTICK_DEFINE_HANDLE(VkPhysicalDevice);
+OPTICK_DEFINE_HANDLE(VkQueue);
+OPTICK_DEFINE_HANDLE(VkCommandBuffer);
 
 // D3D12 Forward Declarations
 struct ID3D12CommandList;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-namespace Brofiler
+namespace Optick
 {
 	// Source: http://msdn.microsoft.com/en-us/library/system.windows.media.colors(v=vs.110).aspx
 	// Image:  http://i.msdn.microsoft.com/dynimg/IC24340.png
@@ -230,7 +230,7 @@ namespace Brofiler
 }
 
 
-namespace Brofiler
+namespace Optick
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct Mode
@@ -260,38 +260,41 @@ struct Mode
 	};
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API int64_t GetHighPrecisionTime();
-BROFILER_API int64_t GetHighPrecisionFrequency();
-BROFILER_API uint32_t NextFrame();
-BROFILER_API bool IsActive();
+OPTICK_API int64_t GetHighPrecisionTime();
+OPTICK_API int64_t GetHighPrecisionFrequency();
+OPTICK_API uint32_t NextFrame();
+OPTICK_API bool IsActive();
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct EventStorage;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API bool RegisterFiber(uint64_t fiberId, EventStorage** slot);
-BROFILER_API bool RegisterThread(const char* name);
-BROFILER_API bool RegisterThread(const wchar_t* name);
-BROFILER_API bool UnRegisterThread(bool keepAlive);
-BROFILER_API EventStorage** GetEventStorageSlotForCurrentThread();
-BROFILER_API bool IsFiberStorage(EventStorage* fiberStorage);
+OPTICK_API bool RegisterFiber(uint64_t fiberId, EventStorage** slot);
+OPTICK_API bool RegisterThread(const char* name);
+OPTICK_API bool RegisterThread(const wchar_t* name);
+OPTICK_API bool UnRegisterThread(bool keepAlive);
+OPTICK_API EventStorage** GetEventStorageSlotForCurrentThread();
+OPTICK_API bool IsFiberStorage(EventStorage* fiberStorage);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API EventStorage* RegisterStorage(const char* name, uint64_t threadID = uint64_t(-1));
+OPTICK_API EventStorage* RegisterStorage(const char* name, uint64_t threadID = uint64_t(-1));
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-enum BroState
+struct State
 {
-	// Starting a new capture
-	BRO_START_CAPTURE,
+	enum Type
+	{
+		// Starting a new capture
+		START_CAPTURE,
 
-	// Stopping current capture
-	BRO_STOP_CAPTURE,
+		// Stopping current capture
+		STOP_CAPTURE,
 
-	// Dumping capture to the GUI
-	// Useful for attaching summary and screenshot to the capture
-	BRO_DUMP_CAPTURE,
+		// Dumping capture to the GUI
+		// Useful for attaching summary and screenshot to the capture
+		DUMP_CAPTURE,
+	};
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Sets a state change callback
-typedef bool (*BroStateCallback)(BroState state);
-BROFILER_API bool SetStateChangedCallback(BroStateCallback cb);
+typedef bool (*StateCallback)(State::Type state);
+OPTICK_API bool SetStateChangedCallback(StateCallback cb);
 
 // Attaches a key-value pair to the capture's summary
 // Example: AttachSummary("Version", "v12.0.1");
@@ -302,26 +305,26 @@ BROFILER_API bool SetStateChangedCallback(BroStateCallback cb);
 //			AttachSummary("Position", "123.0,120.0,41.1");
 //			AttachSummary("CPU", "Intel(R) Xeon(R) CPU E5410@2.33GHz");
 //			AttachSummary("GPU", "NVIDIA GeForce GTX 980 Ti");
-BROFILER_API bool AttachSummary(const char* key, const char* value);
+OPTICK_API bool AttachSummary(const char* key, const char* value);
 
-struct BroFile
+struct File
 {
 	enum Type
 	{
 		// Supported formats: PNG, JPEG, BMP, TIFF
-		BRO_IMAGE,
+		OPTICK_IMAGE,
 		
 		// Text file
-		BRO_TEXT,
+		OPTICK_TEXT,
 
 		// Any other type
-		BRO_OTHER,
+		OPTICK_OTHER,
 	};
 };
 // Attaches a file to the current capture
-BROFILER_API bool AttachFile(BroFile::Type type, const char* name, const uint8_t* data, uint32_t size);
-BROFILER_API bool AttachFile(BroFile::Type type, const char* name, const char* path);
-BROFILER_API bool AttachFile(BroFile::Type type, const char* name, const wchar_t* path);
+OPTICK_API bool AttachFile(File::Type type, const char* name, const uint8_t* data, uint32_t size);
+OPTICK_API bool AttachFile(File::Type type, const char* name, const char* path);
+OPTICK_API bool AttachFile(File::Type type, const char* name, const wchar_t* path);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct EventDescription;
 struct Frame;
@@ -333,8 +336,8 @@ struct EventTime
 	int64_t start;
 	int64_t finish;
 
-	BRO_INLINE void Start() { start  = Brofiler::GetHighPrecisionTime(); }
-	BRO_INLINE void Stop() 	{ finish = Brofiler::GetHighPrecisionTime(); }
+	OPTICK_INLINE void Start() { start  = Optick::GetHighPrecisionTime(); }
+	OPTICK_INLINE void Stop() 	{ finish = Optick::GetHighPrecisionTime(); }
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct EventData : public EventTime
@@ -351,7 +354,7 @@ struct EventData : public EventTime
 	}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct BROFILER_API SyncData : public EventTime
+struct OPTICK_API SyncData : public EventTime
 {
 	uint64_t newThreadId;
 	uint64_t oldThreadId;
@@ -359,7 +362,7 @@ struct BROFILER_API SyncData : public EventTime
 	int8_t reason;
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct BROFILER_API FiberSyncData : public EventTime
+struct OPTICK_API FiberSyncData : public EventTime
 {
 	uint64_t threadId;
 
@@ -374,10 +377,10 @@ struct TagData
 	int64_t timestamp;
 	T data;
 	TagData() {}
-	TagData(const EventDescription& desc, T d) : description(&desc), timestamp(Brofiler::GetHighPrecisionTime()), data(d) {}
+	TagData(const EventDescription& desc, T d) : description(&desc), timestamp(Optick::GetHighPrecisionTime()), data(d) {}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct BROFILER_API EventDescription
+struct OPTICK_API EventDescription
 {
 	// HOT  \\
 	// Have to place "hot" variables at the beginning of the class (here will be some padding)
@@ -400,7 +403,7 @@ private:
 	EventDescription& operator=(const EventDescription&);
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct BROFILER_API Event
+struct OPTICK_API Event
 {
 	EventData* data;
 
@@ -428,7 +431,7 @@ struct BROFILER_API Event
 	}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct BROFILER_API GPUEvent
+struct OPTICK_API GPUEvent
 {
 	EventData* data;
 
@@ -447,7 +450,7 @@ struct BROFILER_API GPUEvent
 	}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct BROFILER_API Tag
+struct OPTICK_API Tag
 {
 	static void Attach(const EventDescription& description, float val);
 	static void Attach(const EventDescription& description, int32_t val);
@@ -463,7 +466,7 @@ struct BROFILER_API Tag
 	}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct BROFILER_API Category : public Event
+struct OPTICK_API Category : public Event
 {
 	Category( const EventDescription& description );
 };
@@ -488,7 +491,7 @@ struct ThreadScope
 	}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-enum BROFILER_API GPUQueueType
+enum OPTICK_API GPUQueueType
 {
 	GPU_QUEUE_GRAPHICS,
 	GPU_QUEUE_COMPUTE,
@@ -498,7 +501,7 @@ enum BROFILER_API GPUQueueType
 	GPU_QUEUE_COUNT,
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct BROFILER_API GPUContext
+struct OPTICK_API GPUContext
 {
 	void* cmdBuffer;
 	GPUQueueType queue;
@@ -506,12 +509,12 @@ struct BROFILER_API GPUContext
 	GPUContext(void* c = nullptr, GPUQueueType q = GPU_QUEUE_GRAPHICS, int n = 0) : cmdBuffer(c), queue(q), node(n) {}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API void InitGpuD3D12(void* device, void** cmdQueues, uint32_t numQueues);
-BROFILER_API void InitGpuVulkan(VkDevice* devices, VkPhysicalDevice* physicalDevices, VkQueue* cmdQueues, uint32_t* cmdQueuesFamily, uint32_t numQueues);
-BROFILER_API void GpuFlip(void* swapChain);
-BROFILER_API GPUContext SetGpuContext(GPUContext context);
+OPTICK_API void InitGpuD3D12(void* device, void** cmdQueues, uint32_t numQueues);
+OPTICK_API void InitGpuVulkan(VkDevice* devices, VkPhysicalDevice* physicalDevices, VkQueue* cmdQueues, uint32_t* cmdQueuesFamily, uint32_t numQueues);
+OPTICK_API void GpuFlip(void* swapChain);
+OPTICK_API GPUContext SetGpuContext(GPUContext context);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct BROFILER_API GPUContextScope
+struct OPTICK_API GPUContextScope
 {
 	GPUContext prevContext;
 
@@ -542,11 +545,11 @@ struct FrameType
 	};
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API const EventDescription* GetFrameDescription(FrameType::Type frame);
+OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
-#define BRO_UNUSED(x) (void)(x)
+#define OPTICK_UNUSED(x) (void)(x)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -555,215 +558,215 @@ BROFILER_API const EventDescription* GetFrameDescription(FrameType::Type frame);
 // Useful for measuring multiple code blocks within a function call.
 // Example:
 //		{
-//			BROFILER_EVENT("ScopeName");
+//			OPTICK_EVENT("ScopeName");
 //			... code ...
 //		}
 // Notes:
-//		Brofiler holds a pointer to the name, so please keep this pointer alive. 
-#define BROFILER_EVENT(NAME) static ::Brofiler::EventDescription* BRO_CONCAT(autogenerated_description_, __LINE__) = nullptr; \
-							 if (BRO_CONCAT(autogenerated_description_, __LINE__) == nullptr) BRO_CONCAT(autogenerated_description_, __LINE__) = ::Brofiler::EventDescription::Create( NAME, __FILE__, __LINE__ ); \
-							 ::Brofiler::Event BRO_CONCAT(autogenerated_event_, __LINE__)( *(BRO_CONCAT(autogenerated_description_, __LINE__)) ); \
+//		Optick holds a pointer to the name, so please keep this pointer alive. 
+#define OPTICK_EVENT(NAME) static ::Optick::EventDescription* OPTICK_CONCAT(autogenerated_description_, __LINE__) = nullptr; \
+							 if (OPTICK_CONCAT(autogenerated_description_, __LINE__) == nullptr) OPTICK_CONCAT(autogenerated_description_, __LINE__) = ::Optick::EventDescription::Create( NAME, __FILE__, __LINE__ ); \
+							 ::Optick::Event OPTICK_CONCAT(autogenerated_event_, __LINE__)( *(OPTICK_CONCAT(autogenerated_description_, __LINE__)) ); \
 
 // Scoped profiling event which automatically grabs current function name.
 // Use tis macro 95% of the time.
 // Example:
 //		void Function()
 //		{
-//			BROFILE;
+//			OPTICK_SCOPE;
 //			... code ...
 //		}
 // Notes:
-//		Brofiler captures full name of the function including name space and arguments.
-//		Full name is usually shortened in the Brofiler GUI in order to highlight the most important bits.
-#define BROFILE BROFILER_EVENT( BRO_FUNC )
+//		Optick captures full name of the function including name space and arguments.
+//		Full name is usually shortened in the Optick GUI in order to highlight the most important bits.
+#define OPTICK_SCOPE OPTICK_EVENT( OPTICK_FUNC )
 
-// Backward compatibility with previous versions of Brofiler
+// Backward compatibility with previous versions of Optick
 #if !defined(PROFILE)
-#define PROFILE BROFILE
+#define PROFILE OPTICK_SCOPE
 #endif
 
 // Inlined profiling event.
 // Useful for wrapping one-line call into with a profiling macro.
 // Example:
-//		BROFILER_INLINE_EVENT("ScopeName", FunctionCall());
-#define BROFILER_INLINE_EVENT(NAME, CODE) { BROFILER_EVENT(NAME) CODE; }
+//		OPTICK_INLINE_EVENT("ScopeName", FunctionCall());
+#define OPTICK_INLINE_EVENT(NAME, CODE) { OPTICK_EVENT(NAME) CODE; }
 
 // Scoped profiling macro with predefined color.
 // Use this macro for high-level function calls (e.g. AI, Physics, Audio, Render etc.).
 // Example:
 //		void UpdateAI()
 //		{
-//			BROFILER_CATEGORY("UpdateAI", Brofiler::Color::LimeGreen);
+//			OPTICK_CATEGORY("UpdateAI", Optick::Color::LimeGreen);
 //			... code ...
 //		}
 //	
-//		You could also use BRO_FUNC to capture current function name:
+//		You could also use OPTICK_FUNC to capture current function name:
 //		void UpdateAI()
 //		{
-//			BROFILER_CATEGORY(BRO_FUNC, Brofiler::Color::LimeGreen);
+//			OPTICK_CATEGORY(OPTICK_FUNC, Optick::Color::LimeGreen);
 //			... code ...
 //		}
-#define BROFILER_CATEGORY(NAME, COLOR)		  static ::Brofiler::EventDescription* BRO_CONCAT(autogenerated_description_, __LINE__) = nullptr; \
-											  if (BRO_CONCAT(autogenerated_description_, __LINE__) == nullptr) BRO_CONCAT(autogenerated_description_, __LINE__) = ::Brofiler::EventDescription::Create( NAME, __FILE__, __LINE__, (unsigned long)COLOR ); \
-											  ::Brofiler::Category BRO_CONCAT(autogenerated_event_, __LINE__)( *(BRO_CONCAT(autogenerated_description_, __LINE__)) ); \
+#define OPTICK_CATEGORY(NAME, COLOR)		  static ::Optick::EventDescription* OPTICK_CONCAT(autogenerated_description_, __LINE__) = nullptr; \
+											  if (OPTICK_CONCAT(autogenerated_description_, __LINE__) == nullptr) OPTICK_CONCAT(autogenerated_description_, __LINE__) = ::Optick::EventDescription::Create( NAME, __FILE__, __LINE__, (unsigned long)COLOR ); \
+											  ::Optick::Category OPTICK_CONCAT(autogenerated_event_, __LINE__)( *(OPTICK_CONCAT(autogenerated_description_, __LINE__)) ); \
 
 // Profiling event for Main Loop update.
 // You need to call this function in the beginning of the each new frame.
 // Example:
 //		while (true)
 //		{
-//			BROFILER_FRAME("MainThread");
+//			OPTICK_FRAME("MainThread");
 //			... code ...
 //		}
-#define BROFILER_FRAME(FRAME_NAME)  static ::Brofiler::ThreadScope mainThreadScope(FRAME_NAME);		\
-									BRO_UNUSED(mainThreadScope);									\
-									uint32_t frameNumber = ::Brofiler::NextFrame();					\
-									::Brofiler::Category BRO_CONCAT(autogenerated_event_, __LINE__)(*::Brofiler::GetFrameDescription(::Brofiler::FrameType::CPU)); \
-									BROFILER_TAG("Frame", frameNumber);
+#define OPTICK_FRAME(FRAME_NAME)  static ::Optick::ThreadScope mainThreadScope(FRAME_NAME);		\
+									OPTICK_UNUSED(mainThreadScope);									\
+									uint32_t frameNumber = ::Optick::NextFrame();					\
+									::Optick::Category OPTICK_CONCAT(autogenerated_event_, __LINE__)(*::Optick::GetFrameDescription(::Optick::FrameType::CPU)); \
+									OPTICK_TAG("Frame", frameNumber);
 
 
 // Thread registration macro.
 // Example:
 //		void WorkerThread(...)
 //		{
-//			BROFILER_THREAD("Worker");
+//			OPTICK_THREAD("Worker");
 //			while (isRunning)
 //			{
 //				...
 //			}
 //		}
-#define BROFILER_THREAD(THREAD_NAME) ::Brofiler::ThreadScope brofilerThreadScope(THREAD_NAME);	\
-									 BRO_UNUSED(brofilerThreadScope);							\
+#define OPTICK_THREAD(THREAD_NAME) ::Optick::ThreadScope brofilerThreadScope(THREAD_NAME);	\
+									 OPTICK_UNUSED(brofilerThreadScope);							\
 
 
 // Thread registration macros.
 // Useful for integration with custom job-managers.
-#define BROFILER_START_THREAD(FRAME_NAME) ::Brofiler::RegisterThread(FRAME_NAME);
-#define BROFILER_STOP_THREAD() ::Brofiler::UnRegisterThread(false);
+#define OPTICK_START_THREAD(FRAME_NAME) ::Optick::RegisterThread(FRAME_NAME);
+#define OPTICK_STOP_THREAD() ::Optick::UnRegisterThread(false);
 
 // Attaches a custom data-tag.
 // Supported types: int32, uint32, uint64, vec3, string (cut to 32 characters)
 // Example:
-//		BROFILER_TAG("PlayerName", name[index]);
-//		BROFILER_TAG("Health", 100);
-//		BROFILER_TAG("Score", 0x80000000u);
-//		BROFILER_TAG("Height(cm)", 176.3f);
-//		BROFILER_TAG("Address", (uint64)*this);
-//		BROFILER_TAG("Position", 123.0f, 456.0f, 789.0f);
-#define BROFILER_TAG(NAME, ...)		static ::Brofiler::EventDescription* BRO_CONCAT(autogenerated_tag_, __LINE__) = nullptr; \
-									if (BRO_CONCAT(autogenerated_tag_, __LINE__) == nullptr) BRO_CONCAT(autogenerated_tag_, __LINE__) = ::Brofiler::EventDescription::Create( NAME, __FILE__, __LINE__ ); \
-									::Brofiler::Tag::Attach(*BRO_CONCAT(autogenerated_tag_, __LINE__), __VA_ARGS__); \
+//		OPTICK_TAG("PlayerName", name[index]);
+//		OPTICK_TAG("Health", 100);
+//		OPTICK_TAG("Score", 0x80000000u);
+//		OPTICK_TAG("Height(cm)", 176.3f);
+//		OPTICK_TAG("Address", (uint64)*this);
+//		OPTICK_TAG("Position", 123.0f, 456.0f, 789.0f);
+#define OPTICK_TAG(NAME, ...)		static ::Optick::EventDescription* OPTICK_CONCAT(autogenerated_tag_, __LINE__) = nullptr; \
+									if (OPTICK_CONCAT(autogenerated_tag_, __LINE__) == nullptr) OPTICK_CONCAT(autogenerated_tag_, __LINE__) = ::Optick::EventDescription::Create( NAME, __FILE__, __LINE__ ); \
+									::Optick::Tag::Attach(*OPTICK_CONCAT(autogenerated_tag_, __LINE__), __VA_ARGS__); \
 
 // Scoped macro with DYNAMIC name.
-// Brofiler holds a copy of the provided name.
+// Optick holds a copy of the provided name.
 // Each scope does a search in hashmap for the name.
 // Please use variations with STATIC names where it's possible.
 // Use this macro for quick prototyping or intergratoin with other profiling systems (e.g. UE4)
 // Example:
 //		const char* name = ... ;
-//		BROFILER_EVENT_DYNAMIC(name);
-#define BROFILER_EVENT_DYNAMIC(NAME)	BROFILER_CUSTOM_EVENT(::Brofiler::EventDescription::CreateShared(NAME, __FILE__, __LINE__));
+//		OPTICK_EVENT_DYNAMIC(name);
+#define OPTICK_EVENT_DYNAMIC(NAME)	OPTICK_CUSTOM_EVENT(::Optick::EventDescription::CreateShared(NAME, __FILE__, __LINE__));
 // Push\Pop profiling macro with DYNAMIC name.
-#define BROFILER_PUSH_DYNAMIC(NAME)		::Brofiler::Event::Push(NAME);		
+#define OPTICK_PUSH_DYNAMIC(NAME)		::Optick::Event::Push(NAME);		
 
 // Push\Pop profiling macro with STATIC name.
 // Please avoid using Push\Pop approach in favor for scoped macros.
 // For backward compatibility with some engines.
 // Example:
-//		BROFILER_PUSH("ScopeName");
+//		OPTICK_PUSH("ScopeName");
 //		...
-//		BROFILER_POP();
-#define BROFILER_PUSH(NAME)				static ::Brofiler::EventDescription* BRO_CONCAT(autogenerated_description_, __LINE__) = nullptr; \
-										if (BRO_CONCAT(autogenerated_description_, __LINE__) == nullptr) BRO_CONCAT(autogenerated_description_, __LINE__) = ::Brofiler::EventDescription::Create( NAME, __FILE__, __LINE__ ); \
-										::Brofiler::Event::Push(*BRO_CONCAT(autogenerated_description_, __LINE__));		
-#define BROFILER_POP()					::Brofiler::Event::Pop();
+//		OPTICK_POP();
+#define OPTICK_PUSH(NAME)				static ::Optick::EventDescription* OPTICK_CONCAT(autogenerated_description_, __LINE__) = nullptr; \
+										if (OPTICK_CONCAT(autogenerated_description_, __LINE__) == nullptr) OPTICK_CONCAT(autogenerated_description_, __LINE__) = ::Optick::EventDescription::Create( NAME, __FILE__, __LINE__ ); \
+										::Optick::Event::Push(*OPTICK_CONCAT(autogenerated_description_, __LINE__));		
+#define OPTICK_POP()					::Optick::Event::Pop();
 
 
-// Scoped macro with predefined Brofiler::EventDescription.
+// Scoped macro with predefined Optick::EventDescription.
 // Use these events instead of DYNAMIC macros to minimize overhead.
-// Common use-case: integrating Brofiler with internal script languages (e.g. Lua, Actionscript(Scaleform), etc.).
+// Common use-case: integrating Optick with internal script languages (e.g. Lua, Actionscript(Scaleform), etc.).
 // Example:
 //		Generating EventDescription once during initialization:
-//		Brofiler::EventDescription* description = Brofiler::EventDescription::CreateShared("FunctionName");
+//		Optick::EventDescription* description = Optick::EventDescription::CreateShared("FunctionName");
 //
 //		Then we could just use a pointer to cached description later for profiling:
-//		BROFILER_CUSTOM_EVENT(description);
-#define BROFILER_CUSTOM_EVENT(DESCRIPTION) 							::Brofiler::Event						  BRO_CONCAT(autogenerated_event_, __LINE__)( *DESCRIPTION ); \
+//		OPTICK_CUSTOM_EVENT(description);
+#define OPTICK_CUSTOM_EVENT(DESCRIPTION) 							::Optick::Event						  OPTICK_CONCAT(autogenerated_event_, __LINE__)( *DESCRIPTION ); \
 
 // Registration of a custom EventStorage (e.g. GPU, IO, etc.)
 // Use it to present any extra information on the timeline.
 // Example:
-//		Brofiler::EventStorage* IOStorage = Brofiler::RegisterStorage("I/O");
+//		Optick::EventStorage* IOStorage = Optick::RegisterStorage("I/O");
 // Notes:
 //		Registration of a new storage is thread-safe.
-#define BROFILER_STORAGE_REGISTER(STORAGE_NAME)														::Brofiler::RegisterStorage(STORAGE_NAME);
+#define OPTICK_STORAGE_REGISTER(STORAGE_NAME)														::Optick::RegisterStorage(STORAGE_NAME);
 
 // Adding events to the custom storage.
-// Helps to integrate Brofiler into already existing profiling systems (e.g. GPU Profiler, I/O profiler, etc.).
+// Helps to integrate Optick into already existing profiling systems (e.g. GPU Profiler, I/O profiler, etc.).
 // Example:
 //			//Registering a storage - should be done once during initialization
-//			static Brofiler::EventStorage* IOStorage = Brofiler::RegisterStorage("I/O");
+//			static Optick::EventStorage* IOStorage = Optick::RegisterStorage("I/O");
 //
-//			int64_t cpuTimestampStart = Brofiler::GetHighPrecisionTime();
+//			int64_t cpuTimestampStart = Optick::GetHighPrecisionTime();
 //			...
-//			int64_t cpuTimestampFinish = Brofiler::GetHighPrecisionTime();
+//			int64_t cpuTimestampFinish = Optick::GetHighPrecisionTime();
 //
 //			//Creating a shared event-description
-//			static Brofiler::EventDescription* IORead = Brofiler::EventDescription::CreateShared("IO Read");
+//			static Optick::EventDescription* IORead = Optick::EventDescription::CreateShared("IO Read");
 // 
-//			BROFILER_STORAGE_EVENT(IOStorage, IORead, cpuTimestampStart, cpuTimestampFinish);
+//			OPTICK_STORAGE_EVENT(IOStorage, IORead, cpuTimestampStart, cpuTimestampFinish);
 // Notes:
 //		It's not thread-safe to add events to the same storage from multiple threads.
 //		Please guarantee thread-safety on the higher level if access from multiple threads to the same storage is required.
-#define BROFILER_STORAGE_EVENT(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START, CPU_TIMESTAMP_FINISH)		if (::Brofiler::IsActive()) { ::Brofiler::Event::Add(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START, CPU_TIMESTAMP_FINISH); }
-#define BROFILER_STORAGE_PUSH(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START)							if (::Brofiler::IsActive()) { ::Brofiler::Event::Push(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START); }
-#define BROFILER_STORAGE_POP(STORAGE, CPU_TIMESTAMP_FINISH)											if (::Brofiler::IsActive()) { ::Brofiler::Event::Pop(STORAGE, CPU_TIMESTAMP_FINISH); }
+#define OPTICK_STORAGE_EVENT(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START, CPU_TIMESTAMP_FINISH)		if (::Optick::IsActive()) { ::Optick::Event::Add(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START, CPU_TIMESTAMP_FINISH); }
+#define OPTICK_STORAGE_PUSH(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START)							if (::Optick::IsActive()) { ::Optick::Event::Push(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START); }
+#define OPTICK_STORAGE_POP(STORAGE, CPU_TIMESTAMP_FINISH)											if (::Optick::IsActive()) { ::Optick::Event::Pop(STORAGE, CPU_TIMESTAMP_FINISH); }
 
 
 // Registers state change callback
 // If callback returns false - the call is repeated the next frame
-#define BROFILER_SET_STATE_CHANGED_CALLBACK(CALLBACK)			::Brofiler::SetStateChangedCallback(CALLBACK);
+#define OPTICK_SET_STATE_CHANGED_CALLBACK(CALLBACK)			::Optick::SetStateChangedCallback(CALLBACK);
 
 
 // GPU events
-#define BROFILER_GPU_INIT_D3D12(DEVICE, CMD_QUEUES, NUM_CMD_QUEUS)			::Brofiler::InitGpuD3D12(DEVICE, CMD_QUEUES, NUM_CMD_QUEUS);
-#define BROFILER_GPU_INIT_VULKAN(DEVICES, PHYSICAL_DEVICES, CMD_QUEUES, CMD_QUEUES_FAMILY, NUM_CMD_QUEUS)			::Brofiler::InitGpuVulkan(DEVICES, PHYSICAL_DEVICES, CMD_QUEUES, CMD_QUEUES_FAMILY, NUM_CMD_QUEUS);
+#define OPTICK_GPU_INIT_D3D12(DEVICE, CMD_QUEUES, NUM_CMD_QUEUS)			::Optick::InitGpuD3D12(DEVICE, CMD_QUEUES, NUM_CMD_QUEUS);
+#define OPTICK_GPU_INIT_VULKAN(DEVICES, PHYSICAL_DEVICES, CMD_QUEUES, CMD_QUEUES_FAMILY, NUM_CMD_QUEUS)			::Optick::InitGpuVulkan(DEVICES, PHYSICAL_DEVICES, CMD_QUEUES, CMD_QUEUES_FAMILY, NUM_CMD_QUEUS);
 
 // Setup GPU context:
 // Params:
-//		(CommandBuffer\CommandList, [Optional] Brofiler::GPUQueue queue, [Optional] int NodeIndex)
+//		(CommandBuffer\CommandList, [Optional] Optick::GPUQueue queue, [Optional] int NodeIndex)
 // Examples:
-//		BROFILER_GPU_CONTEXT(cmdBuffer); - all BROFILER_GPU_EVENT will use the same command buffer within the scope
-//		BROFILER_GPU_CONTEXT(cmdBuffer, Brofiler::GPU_QUEUE_COMPUTE); - all events will use the same command buffer and queue for the scope 
-//		BROFILER_GPU_CONTEXT(cmdBuffer, Brofiler::GPU_QUEUE_COMPUTE, gpuIndex); - all events will use the same command buffer and queue for the scope 
-#define BROFILER_GPU_CONTEXT(...)	 ::Brofiler::GPUContextScope BRO_CONCAT(gpu_autogenerated_context_, __LINE__)(__VA_ARGS__); \
-									 (void)BRO_CONCAT(gpu_autogenerated_context_, __LINE__);
+//		OPTICK_GPU_CONTEXT(cmdBuffer); - all OPTICK_GPU_EVENT will use the same command buffer within the scope
+//		OPTICK_GPU_CONTEXT(cmdBuffer, Optick::GPU_QUEUE_COMPUTE); - all events will use the same command buffer and queue for the scope 
+//		OPTICK_GPU_CONTEXT(cmdBuffer, Optick::GPU_QUEUE_COMPUTE, gpuIndex); - all events will use the same command buffer and queue for the scope 
+#define OPTICK_GPU_CONTEXT(...)	 ::Optick::GPUContextScope OPTICK_CONCAT(gpu_autogenerated_context_, __LINE__)(__VA_ARGS__); \
+									 (void)OPTICK_CONCAT(gpu_autogenerated_context_, __LINE__);
 
-#define BROFILER_GPU_EVENT(NAME)	 BROFILER_EVENT(NAME); \
-									 static ::Brofiler::EventDescription* BRO_CONCAT(gpu_autogenerated_description_, __LINE__) = nullptr; \
-									 if (BRO_CONCAT(gpu_autogenerated_description_, __LINE__) == nullptr) BRO_CONCAT(gpu_autogenerated_description_, __LINE__) = ::Brofiler::EventDescription::Create( NAME, __FILE__, __LINE__ ); \
-									 ::Brofiler::GPUEvent BRO_CONCAT(gpu_autogenerated_event_, __LINE__)( *(BRO_CONCAT(gpu_autogenerated_description_, __LINE__)) ); \
+#define OPTICK_GPU_EVENT(NAME)	 OPTICK_EVENT(NAME); \
+									 static ::Optick::EventDescription* OPTICK_CONCAT(gpu_autogenerated_description_, __LINE__) = nullptr; \
+									 if (OPTICK_CONCAT(gpu_autogenerated_description_, __LINE__) == nullptr) OPTICK_CONCAT(gpu_autogenerated_description_, __LINE__) = ::Optick::EventDescription::Create( NAME, __FILE__, __LINE__ ); \
+									 ::Optick::GPUEvent OPTICK_CONCAT(gpu_autogenerated_event_, __LINE__)( *(OPTICK_CONCAT(gpu_autogenerated_description_, __LINE__)) ); \
 
-#define BROFILER_GPU_FLIP(SWAP_CHAIN)		::Brofiler::GpuFlip(SWAP_CHAIN);
+#define OPTICK_GPU_FLIP(SWAP_CHAIN)		::Optick::GpuFlip(SWAP_CHAIN);
 
 #else
-#define BROFILER_EVENT(NAME)
-#define BROFILE
-#define BROFILER_INLINE_EVENT(NAME, CODE) { CODE; }
-#define BROFILER_CATEGORY(NAME, COLOR)
-#define BROFILER_FRAME(NAME)
-#define BROFILER_THREAD(FRAME_NAME)
-#define BROFILER_START_THREAD(FRAME_NAME)
-#define BROFILER_STOP_THREAD()
-#define BROFILER_TAG(NAME, DATA)
-#define BROFILER_EVENT_DYNAMIC(NAME)	
-#define BROFILER_PUSH_DYNAMIC(NAME)		
-#define BROFILER_PUSH(NAME)				
-#define BROFILER_POP()		
-#define BROFILER_CUSTOM_EVENT(DESCRIPTION)
-#define BROFILER_STORAGE_REGISTER(STORAGE_NAME)
-#define BROFILER_STORAGE_EVENT(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START, CPU_TIMESTAMP_FINISH)
-#define BROFILER_STORAGE_PUSH(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START)
-#define BROFILER_STORAGE_POP(STORAGE, CPU_TIMESTAMP_FINISH)				
-#define BROFILER_SET_STATE_CHANGED_CALLBACK(CALLBACK)
+#define OPTICK_EVENT(NAME)
+#define OPTICK_SCOPE
+#define OPTICK_INLINE_EVENT(NAME, CODE) { CODE; }
+#define OPTICK_CATEGORY(NAME, COLOR)
+#define OPTICK_FRAME(NAME)
+#define OPTICK_THREAD(FRAME_NAME)
+#define OPTICK_START_THREAD(FRAME_NAME)
+#define OPTICK_STOP_THREAD()
+#define OPTICK_TAG(NAME, DATA)
+#define OPTICK_EVENT_DYNAMIC(NAME)	
+#define OPTICK_PUSH_DYNAMIC(NAME)		
+#define OPTICK_PUSH(NAME)				
+#define OPTICK_POP()		
+#define OPTICK_CUSTOM_EVENT(DESCRIPTION)
+#define OPTICK_STORAGE_REGISTER(STORAGE_NAME)
+#define OPTICK_STORAGE_EVENT(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START, CPU_TIMESTAMP_FINISH)
+#define OPTICK_STORAGE_PUSH(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START)
+#define OPTICK_STORAGE_POP(STORAGE, CPU_TIMESTAMP_FINISH)				
+#define OPTICK_SET_STATE_CHANGED_CALLBACK(CALLBACK)
 #endif

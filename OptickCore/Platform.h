@@ -28,23 +28,23 @@
 // Compiler support for C++11
 ////////////////////////////////////////////////////////////////////////
 #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
-#define BRO_CPP11_SUPPORTED (1)
+#define OPTICK_CPP11_SUPPORTED (1)
 #endif
 
 ////////////////////////////////////////////////////////////////////////
-// BRO_THREAD_LOCAL
+// OPTICK_THREAD_LOCAL
 ////////////////////////////////////////////////////////////////////////
-#if defined(BRO_CPP11_SUPPORTED)
-#define BRO_THREAD_LOCAL _Thread_local
-#elif defined(BRO_GCC)
-#define BRO_THREAD_LOCAL __thread
-#elif defined(BRO_MSVC)
-#define BRO_THREAD_LOCAL __declspec(thread)
+#if defined(OPTICK_CPP11_SUPPORTED)
+#define OPTICK_THREAD_LOCAL _Thread_local
+#elif defined(OPTICK_GCC)
+#define OPTICK_THREAD_LOCAL __thread
+#elif defined(OPTICK_MSVC)
+#define OPTICK_THREAD_LOCAL __declspec(thread)
 #else
-#error Can not define BRO_THREAD_LOCAL. Unknown platform.
+#error Can not define OPTICK_THREAD_LOCAL. Unknown platform.
 #endif
 
-#if defined(BRO_GCC)
+#if defined(OPTICK_GCC)
 #include <sys/syscall.h>
 #include <sys/time.h>
 #include <sys/types.h>
@@ -52,11 +52,11 @@
 #include <unistd.h>
 #endif
 
-#if defined(BRO_OSX)
+#if defined(OPTICK_OSX)
 #import <mach/mach_time.h>
 #endif
 
-namespace Brofiler
+namespace Optick
 {
 	typedef uint64 ThreadID;
 	static const ThreadID INVALID_THREAD_ID = (ThreadID)-1;
@@ -83,13 +83,13 @@ namespace Brofiler
 	};
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	BRO_INLINE int64 GetFrequency()
+	OPTICK_INLINE int64 GetFrequency()
 	{
-#if defined(BRO_MSVC)
+#if defined(OPTICK_MSVC)
 		LARGE_INTEGER frequency;
 		QueryPerformanceFrequency(&frequency);
 		return frequency.QuadPart;
-#elif defined(BRO_GCC)
+#elif defined(OPTICK_GCC)
 		return 1000000000;
 #else
 	#error Platform is not supported!
@@ -97,17 +97,17 @@ namespace Brofiler
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	BRO_INLINE int64 GetTimeNanoSeconds()
+	OPTICK_INLINE int64 GetTimeNanoSeconds()
 	{
-#if defined(BRO_MSVC)
+#if defined(OPTICK_MSVC)
 		LARGE_INTEGER largeInteger;
 		QueryPerformanceCounter(&largeInteger);
 		return (largeInteger.QuadPart * 1000000000LL) / GetFrequency();
-#elif defined(BRO_OSX)
+#elif defined(OPTICK_OSX)
         struct timespec ts;
         clock_gettime(CLOCK_REALTIME, &ts);
         return ts.tv_sec * 1000000000LL + ts.tv_nsec;
-#elif defined(BRO_GCC)
+#elif defined(OPTICK_GCC)
 		struct timespec ts;
 		clock_gettime(CLOCK_MONOTONIC, &ts);
 		return ts.tv_sec * 1000000000LL + ts.tv_nsec;
@@ -117,19 +117,19 @@ namespace Brofiler
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	BRO_INLINE int64 GetTimeMilliSeconds()
+	OPTICK_INLINE int64 GetTimeMilliSeconds()
 	{
 		return GetTimeNanoSeconds() / 1000000;
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	BRO_INLINE int64 GetTime()
+	OPTICK_INLINE int64 GetTime()
 	{
-#if defined(BRO_MSVC)
+#if defined(OPTICK_MSVC)
 		LARGE_INTEGER largeInteger;
 		QueryPerformanceCounter(&largeInteger);
 		return largeInteger.QuadPart;
-#elif defined(BRO_GCC)
+#elif defined(OPTICK_GCC)
         return GetTimeNanoSeconds();
 #else
 	#error Platform is not supported!

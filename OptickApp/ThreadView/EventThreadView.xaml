@@ -70,7 +70,7 @@
                     </ToggleButton.Content>
                 </ToggleButton>
                 <Popup x:Name="CallstackFilterPopup" Placement="Bottom" IsOpen="{Binding IsChecked, ElementName=CallstackFilterDrowpdown}" PlacementTarget="{Binding ElementName=ShowCallstacksButton}" StaysOpen="False" >
-                    <Border Background="{StaticResource BroContentBackground}" BorderBrush="{StaticResource BroBorder}" BorderThickness="1" Width="{Binding ActualWidth, ElementName=ShowCallstacksButton}">
+                    <Border Background="{StaticResource OptickContentBackground}" BorderBrush="{StaticResource OptickBorder}" BorderThickness="1" Width="{Binding ActualWidth, ElementName=ShowCallstacksButton}">
                         <ItemsControl ItemsSource="{Binding}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
@@ -91,7 +91,7 @@
         </Grid>
         <Profiler:ThreadView Grid.Row="1" x:Name="ThreadViewControl" />
         <Popup x:Name="SurfacePopup" StaysOpen="False" Placement="Mouse" PopupAnimation="Fade" IsEnabled="False" Focusable="False" IsHitTestVisible="False" AllowsTransparency="True">
-            <Border BorderThickness="1" Background="{StaticResource BroContentBackground}" BorderBrush="{StaticResource AccentColorBrush}">
+            <Border BorderThickness="1" Background="{StaticResource OptickContentBackground}" BorderBrush="{StaticResource AccentColorBrush}">
                 <ItemsControl ItemsSource="{Binding}" Margin="0">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>

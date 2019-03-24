@@ -3,7 +3,7 @@
 #include "Core.h"
 #include "ProfilerServer.h"
 
-namespace Brofiler
+namespace Optick
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct MessageHeader
@@ -39,7 +39,7 @@ class MessageFactory
 
 		for (uint32 msg = 0; msg < IMessage::COUNT; ++msg)
 		{
-			BRO_ASSERT(factory[msg] != nullptr, "Message is not registered to factory");
+			OPTICK_ASSERT(factory[msg] != nullptr, "Message is not registered to factory");
 		}
 	}
 public:
@@ -62,13 +62,13 @@ public:
 		str >> applicationID;
 		str >> messageType;
 
-		BRO_VERIFY( 0 <= messageType && messageType < IMessage::COUNT && factory[messageType] != nullptr, "Unknown message type!", return nullptr )
+		OPTICK_VERIFY( 0 <= messageType && messageType < IMessage::COUNT && factory[messageType] != nullptr, "Unknown message type!", return nullptr )
 
 		IMessage* result = factory[messageType](str);
 
 		if (header.length + str.Length() != length)
 		{
-			BRO_FAILED("Message Stream is corrupted! Invalid Protocol?")
+			OPTICK_FAILED("Message Stream is corrupted! Invalid Protocol?")
 			return nullptr;
 		}
 

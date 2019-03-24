@@ -1,11 +1,11 @@
 #include "SymbolEngine.h"
 
-namespace Brofiler
+namespace Optick
 {
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	OutputDataStream& operator<<(OutputDataStream& os, const Symbol * const symbol)
 	{
-		BRO_VERIFY(symbol, "Can't serialize NULL symbol!", return os);
+		OPTICK_VERIFY(symbol, "Can't serialize NULL symbol!", return os);
 		return os << symbol->address << symbol->function << symbol->file << symbol->line;
 	}
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -20,7 +20,7 @@ namespace Brofiler
 	}
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#if !BRO_ENABLE_SYMENGINE
+#if !OPTICK_ENABLE_SYMENGINE
     SymbolEngine* SymbolEngine::Get()
     {
 		static SymbolEngine pdbSymbolEngine;

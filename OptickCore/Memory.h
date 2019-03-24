@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <xmmintrin.h>
 
-namespace Brofiler
+namespace Optick
 {
 	class Memory
 	{
@@ -56,7 +56,7 @@ namespace Brofiler
 	template<class T, uint32 SIZE>
 	struct MemoryChunk
 	{
-		BRO_ALIGN_CACHE T data[SIZE];
+		OPTICK_ALIGN_CACHE T data[SIZE];
 		MemoryChunk* next;
 		MemoryChunk* prev;
 
@@ -81,7 +81,7 @@ namespace Brofiler
 		Chunk* chunk;
 		uint32 index;
 
-		BRO_INLINE void AddChunk()
+		OPTICK_INLINE void AddChunk()
 		{
 			index = 0;
 			if (!chunk || !chunk->next)
@@ -106,7 +106,7 @@ namespace Brofiler
 	public:
 		MemoryPool() : root(nullptr), chunk(nullptr), index(SIZE) {}
 
-		BRO_INLINE T& Add()
+		OPTICK_INLINE T& Add()
 		{
 			if (index >= SIZE)
 				AddChunk();
@@ -114,12 +114,12 @@ namespace Brofiler
 			return chunk->data[index++];
 		}
 
-		BRO_INLINE T& Add(const T& item)
+		OPTICK_INLINE T& Add(const T& item)
 		{
 			return Add() = item;
 		}
 
-		BRO_INLINE T* AddRange(const T* items, size_t count, bool allowOverlap = true)
+		OPTICK_INLINE T* AddRange(const T* items, size_t count, bool allowOverlap = true)
 		{
 			if (count == 0 || (count > SIZE && !allowOverlap))
 				return nullptr;
@@ -149,7 +149,7 @@ namespace Brofiler
 		}
 
 
-		BRO_INLINE T* TryAdd(int count)
+		OPTICK_INLINE T* TryAdd(int count)
 		{
 			if (index + count <= SIZE)
 			{
@@ -161,7 +161,7 @@ namespace Brofiler
 			return nullptr;
 		}
 
-		BRO_INLINE T* Back()
+		OPTICK_INLINE T* Back()
 		{
 			if (chunk && index > 0)
 				return &chunk->data[index - 1];
@@ -172,7 +172,7 @@ namespace Brofiler
 			return nullptr;
 		}
 
-		BRO_INLINE size_t Size() const
+		OPTICK_INLINE size_t Size() const
 		{
 			if (root == nullptr)
 				return 0;
@@ -185,12 +185,12 @@ namespace Brofiler
 			return count + index;
 		}
 
-		BRO_INLINE bool IsEmpty() const
+		OPTICK_INLINE bool IsEmpty() const
 		{
 			return (chunk == nullptr) || (chunk == root && index == 0);
 		}
 
-		BRO_INLINE void Clear(bool preserveMemory = true)
+		OPTICK_INLINE void Clear(bool preserveMemory = true)
 		{
 			if (!preserveMemory)
 			{

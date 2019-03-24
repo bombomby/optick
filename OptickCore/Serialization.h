@@ -5,7 +5,7 @@
 #include <vector>
 #include <sstream>
 
-#if defined(BRO_MSVC)
+#if defined(OPTICK_MSVC)
 #pragma warning( push )
 
 //C4250. inherits 'std::basic_ostream'
@@ -15,7 +15,7 @@
 #pragma warning( disable : 4127 )
 #endif
 
-namespace Brofiler
+namespace Optick
 {
 	class OutputDataStream : private std::ostringstream 
 	{
@@ -111,6 +111,6 @@ namespace Brofiler
 
 }
 
-#if defined(BRO_MSVC)
+#if defined(OPTICK_MSVC)
 #pragma warning( pop )
 #endif

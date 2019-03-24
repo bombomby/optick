@@ -2,7 +2,7 @@
 
 #include "Trace.h"
 
-#if BRO_ENABLE_TRACING
+#if OPTICK_ENABLE_TRACING
 
 #include <array>
 #include <vector>
@@ -61,7 +61,7 @@ struct sched_switch : public event<305>
 } // namespace ft
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-namespace Brofiler
+namespace Optick
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static const char* KERNEL_TRACING_PATH = "/sys/kernel/debug/tracing";
@@ -247,7 +247,7 @@ bool FTrace::Parse(const char * line)
 		if (!p.Skip("prev_comm="))
 			return false;
 
-		if (!p.Skip(" prev_pid=", ev.prev_comm, BRO_ARRAY_SIZE(ev.prev_comm)))
+		if (!p.Skip(" prev_pid=", ev.prev_comm, OPTICK_ARRAY_SIZE(ev.prev_comm)))
 			return false;
 
 		ev.prev_pid = p.GetInt();
@@ -294,7 +294,7 @@ bool FTrace::Parse(const char * line)
 		if (!p.Skip("==> next_comm="))
 			return false;
 
-		if (!p.Skip(" next_pid=", ev.next_comm, BRO_ARRAY_SIZE(ev.prev_comm)))
+		if (!p.Skip(" next_pid=", ev.next_comm, OPTICK_ARRAY_SIZE(ev.prev_comm)))
 			return false;
 
 		ev.next_pid = p.GetInt();
@@ -316,7 +316,7 @@ bool FTrace::ProcessEvent(const ft::base_event& ev)
 	case ft::sched_switch::type:
 		{
 			const ft::sched_switch& switchEv = (const ft::sched_switch&)ev;
-			Brofiler::SwitchContextDesc desc;
+			Optick::SwitchContextDesc desc;
 			desc.reason = switchEv.prev_state + PROCESS_STATE_REASON_START;
 			desc.cpuId = switchEv.cpu_id;
 			desc.oldThreadId = (uint64)switchEv.prev_pid;
@@ -365,5 +365,5 @@ Trace* Trace::Get()
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
-#endif //BRO_ENABLE_TRACING
+#endif //OPTICK_ENABLE_TRACING
 #endif //__linux__

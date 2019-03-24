@@ -2,14 +2,14 @@
 
 #include "Trace.h"
 
-#if BRO_ENABLE_TRACING
+#if OPTICK_ENABLE_TRACING
 
 
 #include <array>
 #include <vector>
 #include "Core.h"
 
-namespace Brofiler
+namespace Optick
 {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -187,7 +187,7 @@ void DTrace::Process()
     }
     else
     {
-        BRO_FAILED("Failed to open communication pipe!");
+        OPTICK_FAILED("Failed to open communication pipe!");
     }
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -217,7 +217,7 @@ DTrace::ParseResult DTrace::Parse(const char* line)
         
         if (prevState.IsValid())
         {
-            Brofiler::SwitchContextDesc desc;
+            Optick::SwitchContextDesc desc;
             desc.reason = 0;
             desc.cpuId = cpu;
             desc.oldThreadId = prevState.tid;
@@ -231,7 +231,7 @@ DTrace::ParseResult DTrace::Parse(const char* line)
     return PARSE_FAILED;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void DTrace::AsyncProcess(Brofiler::DTrace *trace) {
+void DTrace::AsyncProcess(Optick::DTrace *trace) {
     trace->Process();
 }
 
@@ -243,5 +243,5 @@ Trace* Trace::Get()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
-#endif //BRO_ENABLE_TRACING
+#endif //OPTICK_ENABLE_TRACING
 #endif //__APPLE_CC__

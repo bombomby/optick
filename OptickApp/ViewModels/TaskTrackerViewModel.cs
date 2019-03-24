@@ -185,7 +185,7 @@ namespace Profiler.ViewModels
 												});
 											}, token);
 										}
-										catch (Exception ex)
+										catch (Exception /*ex*/)
 										{
 											att.Status = "Failed to upload!";
 										}
@@ -420,7 +420,7 @@ namespace Profiler.ViewModels
 		public void SetGroup(FrameGroup group)
 		{
 			// Attaching capture
-			AttachmentVM capture = new AttachmentVM(new FileAttachment() { FileType = FileAttachment.Type.BRO_CAPTURE });
+			AttachmentVM capture = new AttachmentVM(new FileAttachment() { FileType = FileAttachment.Type.CAPTURE });
 			if (!String.IsNullOrEmpty(group.Name) && File.Exists(group.Name) && false)
 			{
 				capture.Attachment.Name = Path.GetFileName(group.Name);
@@ -448,7 +448,7 @@ namespace Profiler.ViewModels
 
 		internal void AttachScreenshot(String name, Stream screenshot)
 		{
-			Attachments.Add(new AttachmentVM(new FileAttachment() { Data = screenshot, FileType = FileAttachment.Type.BRO_IMAGE, Name = name })
+			Attachments.Add(new AttachmentVM(new FileAttachment() { Data = screenshot, FileType = FileAttachment.Type.IMAGE, Name = name })
 			{
 				IsExpanded = true,
 			});

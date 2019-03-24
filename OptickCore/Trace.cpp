@@ -1,13 +1,13 @@
 #include "Trace.h"
 
-namespace Brofiler
+namespace Optick
 {
 //////////////////////////////////////////////////////////////////////////
 CaptureStatus::Type Trace::Start(int mode, const ThreadList& threads)
 {
 	Core::Get().DumpProgress("Starting");
 
-	BRO_UNUSED(mode);
+	OPTICK_UNUSED(mode);
 	activeThreadsIDs.clear();
 	for(auto it = threads.begin(); it != threads.end(); ++it)
 	{
@@ -27,10 +27,10 @@ bool Trace::Stop()
 	return true;
 }
 //////////////////////////////////////////////////////////////////////////
-#if !BRO_ENABLE_TRACING
+#if !OPTICK_ENABLE_TRACING
 Trace* Trace::Get()
 {
     return nullptr;
 }
-#endif //!BRO_ENABLE_TRACING
+#endif //!OPTICK_ENABLE_TRACING
 }

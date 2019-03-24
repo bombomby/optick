@@ -12,49 +12,49 @@
 
     <Style TargetType="ToggleButton" BasedOn="{StaticResource SquareButtonStyle}">
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="BorderBrush" Value="{StaticResource BroBorder}" />
+        <Setter Property="BorderBrush" Value="{StaticResource OptickBorder}" />
         <Setter Property="MinHeight" Value="16" />
         <Style.Triggers>
             <Trigger Property="IsChecked" Value="True">
                 <Setter Property="BorderBrush" Value="{StaticResource AccentBaseColorBrush}" />
-                <Setter Property="Background" Value="{StaticResource BroAlternative}" />
+                <Setter Property="Background" Value="{StaticResource OptickAlternative}" />
             </Trigger>
         </Style.Triggers>
     </Style>
     <Style TargetType="Button" BasedOn="{StaticResource SquareButtonStyle}">
         <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="BorderBrush" Value="{StaticResource BroBorder}" />
+        <Setter Property="BorderBrush" Value="{StaticResource OptickBorder}" />
         <Setter Property="MinHeight" Value="16" />
     </Style>
     <Style TargetType="{x:Type GridSplitter}">
-        <Setter Property="Background" Value="{StaticResource BroBackground}" />
+        <Setter Property="Background" Value="{StaticResource OptickBackground}" />
     </Style>
     <Style TargetType="ListBox" BasedOn="{StaticResource MetroListBox}">
-        <Setter Property="Background" Value="{StaticResource BroContentBackground}" />
+        <Setter Property="Background" Value="{StaticResource OptickContentBackground}" />
     </Style>
     <Style TargetType="ListView" BasedOn="{StaticResource MetroListView}">
-        <Setter Property="Background" Value="{StaticResource BroContentBackground}" />
+        <Setter Property="Background" Value="{StaticResource OptickContentBackground}" />
     </Style>
     <Style TargetType="TreeView" BasedOn="{StaticResource MetroTreeView}">
-        <Setter Property="Background" Value="{StaticResource BroContentBackground}" />
+        <Setter Property="Background" Value="{StaticResource OptickContentBackground}" />
     </Style>
     <Style TargetType="DataGrid" BasedOn="{StaticResource MetroDataGrid}">
-        <Setter Property="Background" Value="{StaticResource BroContentBackground}" />
-        <Setter Property="RowBackground" Value="{StaticResource BroBackground}" />
-        <Setter Property="AlternatingRowBackground" Value="{StaticResource BroContentBackground}" />
+        <Setter Property="Background" Value="{StaticResource OptickContentBackground}" />
+        <Setter Property="RowBackground" Value="{StaticResource OptickBackground}" />
+        <Setter Property="AlternatingRowBackground" Value="{StaticResource OptickContentBackground}" />
         <Setter Property="MinRowHeight" Value="18" />
     </Style>
     <Style TargetType="TextBox" BasedOn="{StaticResource MetroTextBox}">
         <Setter Property="MinHeight" Value="16" />
-        <Setter Property="Background" Value="{StaticResource BroContentBackground}" />
+        <Setter Property="Background" Value="{StaticResource OptickContentBackground}" />
     </Style>
     <Style TargetType="Expander" BasedOn="{StaticResource MetroExpander}">
-        <Setter Property="Background" Value="{StaticResource BroContentBackground}" />
+        <Setter Property="Background" Value="{StaticResource OptickContentBackground}" />
         <Setter Property="MinHeight" Value="{StaticResource DefaultButtonSize}" />
         <Setter Property="BorderThickness" Value="0" />
     </Style>
     <Style TargetType="GroupBox" BasedOn="{StaticResource MetroGroupBox}">
-        <Setter Property="Background" Value="{StaticResource BroContentBackground}" />
+        <Setter Property="Background" Value="{StaticResource OptickContentBackground}" />
         <Setter Property="BorderBrush" Value="{x:Null}" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Padding" Value="0" />

@@ -49,7 +49,7 @@ namespace Profiler.ViewModels
         {
             get { return _attachments; }
             set {
-                CurrentAttachment = value?.FirstOrDefault(x => x.FileType == FileAttachment.Type.BRO_IMAGE);
+                CurrentAttachment = value?.FirstOrDefault(x => x.FileType == FileAttachment.Type.IMAGE);
                 SetProperty(ref _attachments, value);
             }
         } 
@@ -62,13 +62,13 @@ namespace Profiler.ViewModels
             {
                 if (value != null)
                 {
-                    if (value.FileType == FileAttachment.Type.BRO_IMAGE)
+                    if (value.FileType == FileAttachment.Type.IMAGE)
                     {
                         AttachmentContent = new Image() { Source = GetImageFromAttachment(value), Stretch = Stretch.UniformToFill };
                         IsEnableOpenScreenShotView = true;
                     }
 
-                    if (value.FileType == FileAttachment.Type.BRO_TEXT)
+                    if (value.FileType == FileAttachment.Type.TEXT)
                     {
                         value.Data.Position = 0;
 
@@ -122,7 +122,7 @@ namespace Profiler.ViewModels
                 return _openScreenShotViewCommand ??
                     (_openScreenShotViewCommand = new RelayCommand(obj =>
                     {
-                        if (IsEnableOpenScreenShotView && CurrentAttachment.FileType == FileAttachment.Type.BRO_IMAGE)
+                        if (IsEnableOpenScreenShotView && CurrentAttachment.FileType == FileAttachment.Type.IMAGE)
                         {
                             ScreenShotViewModel viewModel = new ScreenShotViewModel();
                             viewModel.AttachmentImage = GetImageFromAttachment(CurrentAttachment);

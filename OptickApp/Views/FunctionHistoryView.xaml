@@ -24,14 +24,14 @@
             </Grid>
         </GroupBox.Header>
 
-        <Grid Background="{StaticResource BroBackground}" Margin="0,2">
+        <Grid Background="{StaticResource OptickBackground}" Margin="0,2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="0" />
                 <RowDefinition Height="1*" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="1*" />
             </Grid.RowDefinitions>
-            <lvc:CartesianChart Grid.Row="1" x:Name="FrameChart" DisableAnimations="True" AnimationsSpeed="0" Hoverable="True" Background="{StaticResource BroContentBackground}" MinHeight="100">
+            <lvc:CartesianChart Grid.Row="1" x:Name="FrameChart" DisableAnimations="True" AnimationsSpeed="0" Hoverable="True" Background="{StaticResource OptickContentBackground}" MinHeight="100">
                 <lvc:CartesianChart.Series>
                     <lvc:StackedColumnSeries Values="{Binding WorkValues}" ColumnPadding="0.5">
                         <lvc:StackedColumnSeries.Fill>
@@ -84,7 +84,7 @@
                     <DataGridTextColumn Header="Wait" Binding="{Binding Wait, StringFormat={}{0:0.000}}" Width="Auto" Foreground="Tomato" ElementStyle="{StaticResource RightCell}" />
                 </DataGrid.Columns>
             </DataGrid>
-            <!--<lvc:CartesianChart Grid.Row="2" x:Name="FunctionChart" DisableAnimations="True" Hoverable="False" DataTooltip="{x:Null}" Background="{StaticResource BroContentBackground}" Margin="0" MinHeight="100">
+            <!--<lvc:CartesianChart Grid.Row="2" x:Name="FunctionChart" DisableAnimations="True" Hoverable="False" DataTooltip="{x:Null}" Background="{StaticResource OptickContentBackground}" Margin="0" MinHeight="100">
             <lvc:CartesianChart.AxisX>
                 <lvc:Axis>
                     <lvc:Axis.Separator>

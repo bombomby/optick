@@ -1,7 +1,7 @@
 #include "Serialization.h"
 #include "Common.h"
 
-namespace Brofiler
+namespace Optick
 {
 	std::string OutputDataStream::GetData()
 	{
@@ -9,7 +9,7 @@ namespace Brofiler
 		return str();
 	}
 
-	Brofiler::OutputDataStream OutputDataStream::Empty;
+	Optick::OutputDataStream OutputDataStream::Empty;
 
 	OutputDataStream &operator << ( OutputDataStream &stream, const char* val )
 	{

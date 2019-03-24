@@ -10,7 +10,7 @@
         <ListView x:Name="HistoryViewControl" FocusVisualStyle="{x:Null}" SelectionChanged="HistoryViewControl_SelectionChanged">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <local:CaptureThumbnail Background="{StaticResource BroBackground}" />
+                    <local:CaptureThumbnail Background="{StaticResource OptickBackground}" />
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

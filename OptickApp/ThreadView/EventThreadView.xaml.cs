@@ -233,6 +233,9 @@ namespace Profiler
 
 		ChartRow GenerateCoreChart(FrameGroup group)
 		{
+			if (group.Synchronization.Events.Count == 0)
+				return null;
+
 			group.Synchronization.Events.Sort();
 
 			int eventsCount = group.Synchronization.Events.Count;
@@ -369,14 +372,16 @@ namespace Profiler
 			{
 				rows.Add(new HeaderThreadRow(group)
 				{
-					GradientTop = (ThreadViewControl.BroAlternativeBackground as SolidColorBrush).Color,
-					GradientBottom = (ThreadViewControl.BroBackground as SolidColorBrush).Color,
-					SplitLines = (ThreadViewControl.BroBackground as SolidColorBrush).Color,
+					GradientTop = (ThreadViewControl.OptickAlternativeBackground as SolidColorBrush).Color,
+					GradientBottom = (ThreadViewControl.OptickBackground as SolidColorBrush).Color,
+					SplitLines = (ThreadViewControl.OptickBackground as SolidColorBrush).Color,
 					TextColor = Colors.Gray,
 					Header = new ThreadFilterView(),
 				});
 
-				rows.Add(GenerateCoreChart(group));
+				ThreadRow cpuCoreChart = GenerateCoreChart(group);
+				if (cpuCoreChart != null)
+					rows.Add(cpuCoreChart);
 				rows.AddRange(GenerateThreadRows(group));
 			}
 

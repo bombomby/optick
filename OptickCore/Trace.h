@@ -3,11 +3,11 @@
 #include <unordered_set>
 
 // Enable\Disable low-level platform-specific tracing (Switch-contexts, Autosampling, etc.)
-#if !defined(BRO_ENABLE_TRACING)
-#define BRO_ENABLE_TRACING (USE_BROFILER && (BRO_MSVC || BRO_LINUX || BRO_OSX) /*&& 0*/)
+#if !defined(OPTICK_ENABLE_TRACING)
+#define OPTICK_ENABLE_TRACING (USE_OPTICK && (OPTICK_MSVC || OPTICK_LINUX || OPTICK_OSX) /*&& 0*/)
 #endif
 
-namespace Brofiler
+namespace Optick
 {
 	struct Trace
 	{

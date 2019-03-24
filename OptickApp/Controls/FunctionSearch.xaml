@@ -26,7 +26,7 @@
                         MahApps:TextBoxHelper.ClearTextButton="True"
                         Height="{StaticResource DefaultButtonSize}"
                         MinHeight="{StaticResource DefaultButtonSize}"
-                        Background="{StaticResource BroContentBackground}"
+                        Background="{StaticResource OptickContentBackground}"
                         TextBoxBase.TextChanged="FunctionSearchBox_TextChanged"
                         PreviewKeyDown="FunctionSearchBox_KeyDown">
         </TextBox>

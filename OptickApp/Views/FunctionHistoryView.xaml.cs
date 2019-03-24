@@ -25,7 +25,7 @@ namespace Profiler.Views
             InitializeComponent();
 
             FrameChart.TooltipTimeout = new TimeSpan(0, 0, 0, 0, 100);
-            FrameChart.DataTooltip.Background = FindResource("BroBackground") as SolidColorBrush;
+            FrameChart.DataTooltip.Background = FindResource("OptickBackground") as SolidColorBrush;
             FrameChart.DataTooltip.BorderBrush = FindResource("AccentColorBrush") as SolidColorBrush;
             FrameChart.DataTooltip.BorderThickness = new Thickness(0.5);
         }

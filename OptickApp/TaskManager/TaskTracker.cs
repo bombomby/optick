@@ -48,7 +48,7 @@ namespace Profiler.TaskManager
 
 			if (issue.Attachments.Count > 0)
 			{
-				Attachment image = issue.Attachments.Find(i => i.Type == FileAttachment.Type.BRO_IMAGE);
+				Attachment image = issue.Attachments.Find(i => i.Type == FileAttachment.Type.IMAGE);
 				if (image != null)
 				{
 					bodyBuilder.AppendFormat(tracker.ImageTemplate, image.Name, image.URL);
@@ -58,7 +58,7 @@ namespace Profiler.TaskManager
 				bodyBuilder.Append("Attachments: ");
 				foreach (Attachment att in issue.Attachments)
 				{
-					if (att.Type != FileAttachment.Type.BRO_CAPTURE)
+					if (att.Type != FileAttachment.Type.CAPTURE)
 					{
 						bodyBuilder.AppendFormat(tracker.LinkTemplate, att.Name, att.URL);
 						bodyBuilder.Append(" ");
@@ -66,7 +66,7 @@ namespace Profiler.TaskManager
 				}
 				bodyBuilder.AppendLine();
 
-				Attachment capture = issue.Attachments.Find(i => i.Type == FileAttachment.Type.BRO_CAPTURE);
+				Attachment capture = issue.Attachments.Find(i => i.Type == FileAttachment.Type.CAPTURE);
 				if (capture != null)
 				{
 					bodyBuilder.AppendFormat("Capture: " + tracker.LinkTemplate, capture.Name, capture.URL);

@@ -29,10 +29,10 @@ namespace Profiler.Controls
 			{
 				switch (attachment.FileType)
 				{
-					case FileAttachment.Type.BRO_IMAGE:
+					case FileAttachment.Type.IMAGE:
 						return ImageTemplate;
 
-					case FileAttachment.Type.BRO_TEXT:
+					case FileAttachment.Type.TEXT:
 						return TextTemplate;
 				}
 			}

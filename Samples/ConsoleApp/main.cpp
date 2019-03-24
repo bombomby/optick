@@ -1,8 +1,8 @@
 #include <iostream>
-#include "Brofiler.h"
+#include "Optick.h"
 #include "TestEngine.h"
 
-#if BRO_MSVC
+#if OPTICK_MSVC
 #pragma warning( push )
 
 //C4250. inherits 'std::basic_ostream'
@@ -14,7 +14,7 @@
 
 using namespace std;
 
-#if BRO_MSVC
+#if OPTICK_MSVC
 int wmain()
 #else
 int main()
@@ -29,7 +29,7 @@ int main()
 
 	while( true ) 
 	{
-		BROFILER_FRAME("MainThread");
+		OPTICK_FRAME("MainThread");
 		
 		if (!engine.Update())
 			break;
@@ -40,6 +40,6 @@ int main()
 	return 0;
 }
 
-#if BRO_MSVC
+#if OPTICK_MSVC
 #pragma warning( pop )
 #endif

@@ -26,7 +26,7 @@
                     MahApps:TextBoxHelper.ClearTextButton="True"
                     Height="{Binding Source={x:Static Profiler:HeaderThreadRow.DefaultHeaderHeight}}"
                     MinHeight="{Binding Source={x:Static Profiler:HeaderThreadRow.DefaultHeaderHeight}}"
-                    Background="{StaticResource BroContentBackground}"
+                    Background="{StaticResource OptickContentBackground}"
                     FontSize="10">
         </TextBox>
     </Grid>

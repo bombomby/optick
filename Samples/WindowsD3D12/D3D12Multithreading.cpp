@@ -17,31 +17,31 @@
 #include <cstdio>
 #include <string>
 #include <wincodec.h>
-#include <Brofiler.h>
+#include <Optick.h>
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 std::wstring g_ScreenshotRequest;
 bool g_TakingScreenshot = false;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool OnBrofilerStateChanged(Brofiler::BroState state)
+bool OnOptickStateChanged(Optick::State::Type state)
 {
-	if (state == Brofiler::BRO_STOP_CAPTURE)
+	if (state == Optick::State::STOP_CAPTURE)
 	{
 		wchar_t tempPath[MAX_PATH] = { 0 };
 		GetTempPath(MAX_PATH, tempPath);
 		std::wstring fullPath(tempPath);
-		g_ScreenshotRequest = fullPath + L"BrofilerScreenshot.jpg";
+		g_ScreenshotRequest = fullPath + L"OptickScreenshot.jpg";
 		g_TakingScreenshot = true;
 	}
 
-	if (state == Brofiler::BRO_DUMP_CAPTURE)
+	if (state == Optick::State::DUMP_CAPTURE)
 	{
 		if (g_TakingScreenshot)
 			return false;
 
 		// Attach screenshot
-		Brofiler::AttachFile(Brofiler::BroFile::BRO_IMAGE, "Screenshot.jpg", g_ScreenshotRequest.c_str());
+		Optick::AttachFile(Optick::File::OPTICK_IMAGE, "Screenshot.jpg", g_ScreenshotRequest.c_str());
 
 		// Remove temp file
 		_wremove(g_ScreenshotRequest.c_str());
@@ -84,8 +84,8 @@ void D3D12Multithreading::OnInit()
 	
 	ID3D12Device* pDevice = m_device.Get();
 	ID3D12CommandQueue* pCommandQueue = m_commandQueue.Get();
-	BROFILER_GPU_INIT_D3D12((void*)pDevice, (void**)&pCommandQueue, 1);
-	BROFILER_SET_STATE_CHANGED_CALLBACK(OnBrofilerStateChanged);
+	OPTICK_GPU_INIT_D3D12((void*)pDevice, (void**)&pCommandQueue, 1);
+	OPTICK_SET_STATE_CHANGED_CALLBACK(OnOptickStateChanged);
 
 }
 
@@ -697,7 +697,7 @@ void D3D12Multithreading::LoadContexts()
 // Update frame-based values.
 void D3D12Multithreading::OnUpdate()
 {
-	BROFILER_CATEGORY(BRO_FUNC, Brofiler::Color::SkyBlue);
+	OPTICK_CATEGORY(OPTICK_FUNC, Optick::Color::SkyBlue);
 
 	m_timer.Tick(NULL);
 
@@ -761,7 +761,7 @@ void D3D12Multithreading::OnUpdate()
 // Render the scene.
 void D3D12Multithreading::OnRender()
 {
-	BROFILER_CATEGORY(BRO_FUNC, Brofiler::Color::BurlyWood);
+	OPTICK_CATEGORY(OPTICK_FUNC, Optick::Color::BurlyWood);
 
 	BeginFrame();
 
@@ -825,8 +825,8 @@ void D3D12Multithreading::OnRender()
 	// Present and update the frame index for the next frame.
 	//PIXBeginEvent(m_commandQueue.Get(), 0, L"Presenting to screen");
 	{
-		BROFILER_CATEGORY("Present", Brofiler::Color::Tomato);
-		BROFILER_GPU_FLIP(m_swapChain.Get());
+		OPTICK_CATEGORY("Present", Optick::Color::Tomato);
+		OPTICK_GPU_FLIP(m_swapChain.Get());
 		ThrowIfFailed(m_swapChain->Present(1, 0));
 	}
 
@@ -960,7 +960,7 @@ void D3D12Multithreading::EndFrame()
 // describing the worker's thread index.
 void D3D12Multithreading::WorkerThread(int threadIndex)
 {
-	BROFILER_THREAD("RenderThread");
+	OPTICK_THREAD("RenderThread");
 
 	assert(threadIndex >= 0);
 	assert(threadIndex < NumContexts);
@@ -972,7 +972,7 @@ void D3D12Multithreading::WorkerThread(int threadIndex)
 
 		WaitForSingleObject(m_workerBeginRenderFrame[threadIndex], INFINITE);
 
-		BROFILER_CATEGORY("Render", Brofiler::Color::BurlyWood);
+		OPTICK_CATEGORY("Render", Optick::Color::BurlyWood);
 
 #endif
 		ID3D12GraphicsCommandList* pShadowCommandList = m_pCurrentFrameResource->m_shadowCommandLists[threadIndex].Get();
@@ -995,8 +995,8 @@ void D3D12Multithreading::WorkerThread(int threadIndex)
 		//PIXBeginEvent(pShadowCommandList, 0, L"Worker drawing shadow pass...");
 
 		{
-			BROFILER_GPU_CONTEXT(pShadowCommandList);
-			BROFILER_GPU_EVENT("DrawShadows");
+			OPTICK_GPU_CONTEXT(pShadowCommandList);
+			OPTICK_GPU_EVENT("DrawShadows");
 			for (int j = threadIndex; j < _countof(SampleAssets::Draws); j += NumContexts)
 			{
 				SampleAssets::DrawParameters drawArgs = SampleAssets::Draws[j];
@@ -1028,8 +1028,8 @@ void D3D12Multithreading::WorkerThread(int threadIndex)
 		//PIXBeginEvent(pSceneCommandList, 0, L"Worker drawing scene pass...");
 
 		{
-			BROFILER_GPU_CONTEXT(pSceneCommandList);
-			BROFILER_GPU_EVENT("DrawScene");
+			OPTICK_GPU_CONTEXT(pSceneCommandList);
+			OPTICK_GPU_EVENT("DrawScene");
 			D3D12_GPU_DESCRIPTOR_HANDLE cbvSrvHeapStart = m_cbvSrvHeap->GetGPUDescriptorHandleForHeapStart();
 			const UINT cbvSrvDescriptorSize = m_device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 			const UINT nullSrvCount = 2;

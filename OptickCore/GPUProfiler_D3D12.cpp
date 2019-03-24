@@ -1,15 +1,15 @@
 #include "GPUProfiler_D3D12.h"
 
-#if BRO_ENABLE_GPU_D3D12
+#if OPTICK_ENABLE_GPU_D3D12
 
 #include <thread>
 
 #include "Memory.h"
 #include "Core.h"
 
-#define BRO_CHECK(args) do { HRESULT __hr = args; BRO_ASSERT(__hr == S_OK, "Failed check"); } while(false);
+#define OPTICK_CHECK(args) do { HRESULT __hr = args; OPTICK_ASSERT(__hr == S_OK, "Failed check"); } while(false);
 
-namespace Brofiler
+namespace Optick
 {
 	template <class T> void SafeRelease(T **ppT)
 	{
@@ -76,7 +76,7 @@ namespace Brofiler
 		resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 		resourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-		BRO_CHECK(device->CreateCommittedResource(
+		OPTICK_CHECK(device->CreateCommittedResource(
 			&heapDesc,
 			D3D12_HEAP_FLAG_NONE,
 			&resourceDesc,
@@ -86,12 +86,12 @@ namespace Brofiler
 
 		for (Frame& frame : frames)
 		{
-			BRO_CHECK(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&frame.commandAllocator)));
+			OPTICK_CHECK(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&frame.commandAllocator)));
 			
 			for (uint32_t nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
 			{
-				BRO_CHECK(device->CreateCommandList(1u << nodeIndex, D3D12_COMMAND_LIST_TYPE_DIRECT, frame.commandAllocator, nullptr, IID_PPV_ARGS(&frame.commandList[nodeIndex])));
-				BRO_CHECK(frame.commandList[nodeIndex]->Close());
+				OPTICK_CHECK(device->CreateCommandList(1u << nodeIndex, D3D12_COMMAND_LIST_TYPE_DIRECT, frame.commandAllocator, nullptr, IID_PPV_ARGS(&frame.commandList[nodeIndex])));
+				OPTICK_CHECK(frame.commandList[nodeIndex]->Close());
 			}
 		}
 
@@ -99,7 +99,7 @@ namespace Brofiler
 		LUID adapterLUID = pDevice->GetAdapterLuid();
 
 		IDXGIFactory4* factory;
-		BRO_CHECK(CreateDXGIFactory2(0, IID_PPV_ARGS(&factory)));
+		OPTICK_CHECK(CreateDXGIFactory2(0, IID_PPV_ARGS(&factory)));
 
 		IDXGIAdapter1* adapter;
 		factory->EnumAdapterByLuid(adapterLUID, IID_PPV_ARGS(&adapter));
@@ -111,7 +111,7 @@ namespace Brofiler
 		factory->Release();
 
 		char deviceName[128] = { 0 };
-		wcstombs_s(deviceName, desc.Description, BRO_ARRAY_SIZE(deviceName) - 1);
+		wcstombs_s(deviceName, desc.Description, OPTICK_ARRAY_SIZE(deviceName) - 1);
 
 		for (uint32_t nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
 			InitNode(deviceName, nodeIndex, pCommandQueues[nodeIndex]);
@@ -129,9 +129,9 @@ namespace Brofiler
 		queryHeapDesc.Count = MAX_QUERIES_COUNT;
 		queryHeapDesc.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
 		queryHeapDesc.NodeMask = 1u << nodeIndex;
-		BRO_CHECK(device->CreateQueryHeap(&queryHeapDesc, IID_PPV_ARGS(&node->queryHeap)));
+		OPTICK_CHECK(device->CreateQueryHeap(&queryHeapDesc, IID_PPV_ARGS(&node->queryHeap)));
 
-		BRO_CHECK(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&node->syncFence)));
+		OPTICK_CHECK(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&node->syncFence)));
 	}
 
 	void GPUProfilerD3D12::QueryTimestamp(ID3D12GraphicsCommandList* context, int64_t* outCpuTimestamp)
@@ -163,7 +163,7 @@ namespace Brofiler
 
 	void GPUProfilerD3D12::WaitForFrame(uint64_t frameNumberToWait)
 	{
-		BROFILE;
+		PROFILE;
 
 		NodePayload* payload = nodePayloads[currentNode];
 		while (frameNumberToWait > payload->syncFence->GetCompletedValue())
@@ -174,7 +174,7 @@ namespace Brofiler
 
 	void GPUProfilerD3D12::Flip(IDXGISwapChain* swapChain)
 	{
-		BROFILE;
+		PROFILE;
 
 		std::lock_guard<std::recursive_mutex> lock(updateLock);
 
@@ -209,7 +209,7 @@ namespace Brofiler
 
 			if (queryBegin != (uint32_t)-1)
 			{
-				BRO_ASSERT(queryEnd - queryBegin <= MAX_QUERIES_COUNT, "Too many queries in one frame? Increase GPUProfiler::MAX_QUERIES_COUNT to fix the problem!");
+				OPTICK_ASSERT(queryEnd - queryBegin <= MAX_QUERIES_COUNT, "Too many queries in one frame? Increase GPUProfiler::MAX_QUERIES_COUNT to fix the problem!");
 				currentFrame.queryCountIndices[currentNode] = queryEnd - queryBegin;
 
 				uint32_t startIndex = queryBegin % MAX_QUERIES_COUNT;
@@ -287,12 +287,12 @@ namespace Brofiler
 
 #else
 
-namespace Brofiler
+namespace Optick
 {
 	void InitGpuD3D12(void* /*device*/, void** /*cmdQueues*/, uint32_t /*numQueues*/)
 	{
-		BRO_FAILED("BRO_ENABLE_GPU_D3D12 is disabled! Can't initialize GPU Profiler!");
+		OPTICK_FAILED("OPTICK_ENABLE_GPU_D3D12 is disabled! Can't initialize GPU Profiler!");
 	}
 }
 
-#endif //BRO_ENABLE_GPU_D3D12
+#endif //OPTICK_ENABLE_GPU_D3D12

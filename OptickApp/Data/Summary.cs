@@ -11,10 +11,10 @@ namespace Profiler.Data
 	{
 		public enum Type
 		{
-			BRO_IMAGE,
-			BRO_TEXT,
-			BRO_OTHER,
-			BRO_CAPTURE,
+			IMAGE,
+			TEXT,
+			OTHER,
+			CAPTURE,
 		}
 		public Type FileType { get; set; }
 		public String Name { get; set; }

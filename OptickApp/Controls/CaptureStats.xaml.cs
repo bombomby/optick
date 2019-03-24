@@ -66,7 +66,7 @@ namespace Profiler.Controls
 			// Image
 			foreach (FileAttachment attachment in summary.Attachments)
 			{
-				if (attachment.FileType == FileAttachment.Type.BRO_IMAGE)
+				if (attachment.FileType == FileAttachment.Type.IMAGE)
 				{
 					attachment.Data.Position = 0;
 

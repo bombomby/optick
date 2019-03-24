@@ -4,16 +4,16 @@
 #include "GPUProfiler.h"
 
 // GPU Support for Vulkan
-#if !defined(BRO_ENABLE_GPU_VULKAN)
-#define BRO_ENABLE_GPU_VULKAN (BRO_ENABLE_GPU /*&& 0*/)
+#if !defined(OPTICK_ENABLE_GPU_VULKAN)
+#define OPTICK_ENABLE_GPU_VULKAN (OPTICK_ENABLE_GPU /*&& 0*/)
 #endif
 
-#if BRO_ENABLE_GPU_VULKAN
+#if OPTICK_ENABLE_GPU_VULKAN
 
 #include <vulkan/vulkan.h>
 
 // VS TODO: Implement
-namespace Brofiler
+namespace Optick
 {
 	class GPUProfilerVulkan : public GPUProfiler
 	{
@@ -63,4 +63,4 @@ namespace Brofiler
 	};
 }
 
-#endif //BRO_ENABLE_GPU_VULKAN
+#endif //OPTICK_ENABLE_GPU_VULKAN

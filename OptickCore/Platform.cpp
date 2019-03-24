@@ -1,17 +1,17 @@
 #include "Platform.h"
 
-namespace Brofiler
+namespace Optick
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ThreadID GetThreadID()
 {
-#if defined(BRO_MSVC)
+#if defined(OPTICK_MSVC)
 	return GetCurrentThreadId();
-#elif defined(BRO_OSX)
+#elif defined(OPTICK_OSX)
 	uint64_t tid;
 	pthread_threadid_np(pthread_self(), &tid);
 	return tid;
-#elif defined(BRO_LINUX)
+#elif defined(OPTICK_LINUX)
 	return syscall(SYS_gettid);
 #else
 #error Platform is not supported!
@@ -20,9 +20,9 @@ ThreadID GetThreadID()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ProcessID GetProcessID()
 {
-#if defined(BRO_MSVC)
+#if defined(OPTICK_MSVC)
 	return GetCurrentProcessId();
-#elif defined(BRO_GCC)
+#elif defined(OPTICK_GCC)
 	return (ProcessID)getpid();
 #else
 #error Platform is not supported!
@@ -31,15 +31,15 @@ ProcessID GetProcessID()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Platform::ID Platform::Get()
 {
-#if defined(BRO_LINUX)
+#if defined(OPTICK_LINUX)
 	return Platform::Linux;
-#elif defined(BRO_OSX)
+#elif defined(OPTICK_OSX)
 	return Platform::MacOS;
-#elif defined(BRO_XBOX)
+#elif defined(OPTICK_XBOX)
 	return Platform::XBox;
-#elif defined(BRO_PS)
+#elif defined(OPTICK_PS)
 	return Platform::Playstation;
-#elif defined(BRO_PC)
+#elif defined(OPTICK_PC)
 	return Platform::Windows;
 #else
 	return Platform::Unknown;

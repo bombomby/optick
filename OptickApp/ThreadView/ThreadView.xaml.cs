@@ -31,8 +31,8 @@ namespace Profiler
 		public ThreadScroll Scroll { get; set; } = new ThreadScroll();
 		private List<ThreadRow> Rows = new List<ThreadRow>();
 
-		public SolidColorBrush BroBackground;
-		public SolidColorBrush BroAlternativeBackground;
+		public SolidColorBrush OptickBackground;
+		public SolidColorBrush OptickAlternativeBackground;
 		public SolidColorBrush FrameSelection;
 		public SolidColorBrush FrameHover;
 		Color MeasureBackground;
@@ -41,10 +41,10 @@ namespace Profiler
 
 		void InitColors()
 		{
-			BroBackground = FindResource("BroBackground") as SolidColorBrush;
-			BroAlternativeBackground = FindResource("BroAlternative") as SolidColorBrush;
-			FrameSelection = FindResource("BroFrameSelection") as SolidColorBrush;
-			FrameHover = FindResource("BroFrameHover") as SolidColorBrush;
+			OptickBackground = FindResource("OptickBackground") as SolidColorBrush;
+			OptickAlternativeBackground = FindResource("OptickAlternative") as SolidColorBrush;
+			FrameSelection = FindResource("OptickFrameSelection") as SolidColorBrush;
+			FrameHover = FindResource("OptickFrameHover") as SolidColorBrush;
 			MeasureBackground = Color.FromArgb(100, 0, 0, 0);
 			HoverBackground = Color.FromArgb(170, 0, 0, 0);
 		}
@@ -102,7 +102,7 @@ namespace Profiler
 						Grid.SetRow(border, threadIndex);
 
 						if (threadIndex % 2 == 1)
-							border.Background = BroAlternativeBackground;
+							border.Background = OptickAlternativeBackground;
 
 						ThreadList.Children.Add(border);
 					}
@@ -133,7 +133,7 @@ namespace Profiler
 				row.Offset = offset;
 
 				if (threadIndex % 2 == 1)
-					backgroundBuilder.AddRect(new Rect(0.0, offset, Scroll.Width, row.Height), BroAlternativeBackground.Color);
+					backgroundBuilder.AddRect(new Rect(0.0, offset, Scroll.Width, row.Height), OptickAlternativeBackground.Color);
 
 				offset += row.Height;
 			}

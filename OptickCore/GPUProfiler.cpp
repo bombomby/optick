@@ -1,11 +1,11 @@
 #include "GPUProfiler.h"
 
-#if BRO_ENABLE_GPU
+#if OPTICK_ENABLE_GPU
 #include <thread>
 #include "Core.h"
 #include "Memory.h"
 
-namespace Brofiler
+namespace Optick
 {
 	static_assert((1ULL << 32) % GPUProfiler::MAX_QUERIES_COUNT == 0, "(1 << 32) should be a multiple of MAX_QUERIES_COUNT to handle query index overflow!");
 
@@ -118,5 +118,5 @@ namespace Brofiler
 		return GPUQueueToName[queue];
 	}
 }
-#endif //BRO_ENABLE_GPU
+#endif //OPTICK_ENABLE_GPU
 

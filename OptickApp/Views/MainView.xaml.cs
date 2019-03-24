@@ -122,7 +122,7 @@ namespace Profiler.Views
 		String GetUniqueID()
 		{
 			NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
-			return nics.Length > 0 ? nics[0].GetPhysicalAddress().ToString() : new Random().Next().ToString();
+			return nics.Length > 0 ? nics[0].GetPhysicalAddress().ToString().GetHashCode().ToString() : new Random().Next().ToString();
 		}
 
 		void SendReportToGoogleAnalytics()

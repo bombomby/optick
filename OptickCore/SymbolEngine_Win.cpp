@@ -1,9 +1,9 @@
 #if _WIN32
 #include "SymbolEngine.h"
 
-#if BRO_ENABLE_SYMENGINE
+#if OPTICK_ENABLE_SYMENGINE
 
-#define USE_DBG_HELP (BRO_PC)
+#define USE_DBG_HELP (OPTICK_PC)
 
 #if USE_DBG_HELP
 #include <DbgHelp.h>
@@ -12,7 +12,7 @@
 
 #include "Serialization.h"
 
-#if BRO_PC
+#if OPTICK_PC
 #include <psapi.h>
 #else
 // Forward declare kernel functions
@@ -40,7 +40,7 @@ EXTERN_C DWORD WINAPI K32GetModuleFileNameExA(HANDLE hProcess, HMODULE hModule, 
 
 
 
-namespace Brofiler
+namespace Optick
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //void ReportLastError()
@@ -247,7 +247,7 @@ void WinSymbolEngine::InitSystemModules()
 	if (status == ERROR_SUCCESS)
 	{
 		char systemRootPath[MAXIMUM_FILENAME_LENGTH] = { 0 };
-#if BRO_PC
+#if OPTICK_PC
 		ExpandEnvironmentStringsA("%SystemRoot%", systemRootPath, MAXIMUM_FILENAME_LENGTH);
 #else
 		strcpy_s(systemRootPath, "C:\\Windows");
@@ -278,7 +278,7 @@ void WinSymbolEngine::InitSystemModules()
 	}
 	else
 	{
-		BRO_FAILED("Can't query System Module Information!");
+		OPTICK_FAILED("Can't query System Module Information!");
 	}
 
 	if (pModuleList)
@@ -342,5 +342,5 @@ SymbolEngine* SymbolEngine::Get()
 }
 
 }
-#endif //BRO_ENABLE_SYMENGINE
+#endif //OPTICK_ENABLE_SYMENGINE
 #endif //_WIN32

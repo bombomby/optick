@@ -4,11 +4,11 @@
 #include "GPUProfiler.h"
 
 // GPU Support for D3D12
-#if !defined(BRO_ENABLE_GPU_D3D12)
-#define BRO_ENABLE_GPU_D3D12 (BRO_ENABLE_GPU && BRO_PC /*&& 0*/)
+#if !defined(OPTICK_ENABLE_GPU_D3D12)
+#define OPTICK_ENABLE_GPU_D3D12 (OPTICK_ENABLE_GPU && OPTICK_PC /*&& 0*/)
 #endif
 
-#if BRO_ENABLE_GPU_D3D12
+#if OPTICK_ENABLE_GPU_D3D12
 
 #include <atomic>
 #include <array>
@@ -21,7 +21,7 @@
 
 #include "Core.h"
 
-namespace Brofiler
+namespace Optick
 {
 	class GPUProfilerD3D12 : public GPUProfiler
 	{
@@ -108,4 +108,4 @@ namespace Brofiler
 	};
 }
 
-#endif //BRO_ENABLE_GPU_D3D12
+#endif //OPTICK_ENABLE_GPU_D3D12

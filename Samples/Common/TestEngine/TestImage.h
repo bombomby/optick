@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Brofiler
+namespace Optick
 {
 	namespace TestImage
 	{

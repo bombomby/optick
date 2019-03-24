@@ -153,7 +153,7 @@
         </Grid>
         
         <Grid Grid.Row="8">
-            <Button Content="Upload Selected Files and Edit New Issue in Web Browser" Command="{Binding CreateIssueCommand}" MahApps:ButtonHelper.PreserveTextCase="True" IsEnabled="{Binding IsNotUploading, Converter={StaticResource BooleanToVisibilityConverter}}" />
+            <Button Content="Upload Selected Files and Edit New Issue in a Web Browser" Command="{Binding CreateIssueCommand}" MahApps:ButtonHelper.PreserveTextCase="True" IsEnabled="{Binding IsNotUploading, Converter={StaticResource BooleanToVisibilityConverter}}" />
             <Button Content="Cancel" Command="{Binding CancelIssueCommand}" MahApps:ButtonHelper.PreserveTextCase="True" Visibility="{Binding IsUploading, Converter={StaticResource BooleanToVisibilityConverter}}" />
         </Grid>
         

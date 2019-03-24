@@ -52,12 +52,12 @@
                         <ToggleButton.Resources>
                             <Style TargetType="ToggleButton" BasedOn="{StaticResource SquareButtonStyle}">
                                 <Setter Property="BorderThickness" Value="1" />
-                                <Setter Property="BorderBrush" Value="{StaticResource BroBorder}" />
+                                <Setter Property="BorderBrush" Value="{StaticResource OptickBorder}" />
                                 <Setter Property="MinHeight" Value="16" />
                                 <Style.Triggers>
                                     <Trigger Property="IsChecked" Value="True">
                                         <Setter Property="BorderBrush" Value="{StaticResource AccentBaseColorBrush}" />
-                                        <Setter Property="Background" Value="{StaticResource BroAlternative}" />
+                                        <Setter Property="Background" Value="{StaticResource OptickAlternative}" />
                                         <Setter Property="ContentTemplate">
                                             <Setter.Value>
                                                 <DataTemplate>

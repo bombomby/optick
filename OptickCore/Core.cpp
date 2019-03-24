@@ -9,9 +9,9 @@
 #include <unordered_set>
 
 
-extern "C" Brofiler::EventData* NextEvent()
+extern "C" Optick::EventData* NextEvent()
 {
-	if (Brofiler::EventStorage* storage = Brofiler::Core::storage)
+	if (Optick::EventStorage* storage = Optick::Core::storage)
 	{
 		return &storage->NextEvent();
 	}
@@ -20,7 +20,7 @@ extern "C" Brofiler::EventData* NextEvent()
 }
 
 
-namespace Brofiler
+namespace Optick
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class T>
@@ -66,7 +66,7 @@ EventDescription::EventDescription() : name(""), file(""), line(0), color(0)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventDescription& EventDescription::operator=(const EventDescription&)
 {
-	BRO_FAILED("It is pointless to copy EventDescription. Please, check you logic!"); return *this;
+	OPTICK_FAILED("It is pointless to copy EventDescription. Please, check you logic!"); return *this;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventData* Event::Start(const EventDescription& description)
@@ -90,7 +90,7 @@ void Event::Stop(EventData& data)
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void BRO_INLINE PushEvent(EventStorage* pStorage, const EventDescription* description, int64_t timestampStart)
+void OPTICK_INLINE PushEvent(EventStorage* pStorage, const EventDescription* description, int64_t timestampStart)
 {
 	if (EventStorage* storage = pStorage)
 	{
@@ -102,7 +102,7 @@ void BRO_INLINE PushEvent(EventStorage* pStorage, const EventDescription* descri
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void BRO_INLINE PopEvent(EventStorage* pStorage, int64_t timestampFinish)
+void OPTICK_INLINE PopEvent(EventStorage* pStorage, int64_t timestampFinish)
 {
 	if (EventStorage* storage = pStorage)
 		if (storage->pushPopEventStackIndex > 0)
@@ -120,12 +120,12 @@ void Event::Push(const char* name)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Event::Push(const EventDescription& description)
 {
-	PushEvent(Core::storage, &description, Brofiler::GetHighPrecisionTime());
+	PushEvent(Core::storage, &description, Optick::GetHighPrecisionTime());
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Event::Pop()
 {
-	PopEvent(Core::storage, Brofiler::GetHighPrecisionTime());
+	PopEvent(Core::storage, Optick::GetHighPrecisionTime());
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Event::Add(EventStorage* storage, const EventDescription* description, int64_t timestampStart, int64_t timestampFinish)
@@ -307,7 +307,7 @@ EventDescription* EventDescriptionBoard::CreateDescription(const char* name, con
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventDescription* EventDescriptionBoard::CreateSharedDescription(const char* name, const char* file /*= nullptr*/, uint32_t line /*= 0*/, uint32_t color /*= Color::Null*/, uint32_t filter /*= 0*/)
 {
-	BroStringHash nameHash(name);
+	OptickStringHash nameHash(name);
 
 	std::lock_guard<std::mutex> lock(sharedLock);
 
@@ -329,7 +329,7 @@ OutputDataStream& operator << (OutputDataStream& stream, const EventDescriptionB
 	return stream;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Brofiler::EventDescriptionBoard EventDescriptionBoard::instance;
+Optick::EventDescriptionBoard EventDescriptionBoard::instance;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -439,13 +439,13 @@ bool CallstackCollector::SerializeSymbols(OutputDataStream& stream)
 	for (CallstacksPool::const_iterator it = callstacksPool.begin(); it != callstacksPool.end();)
 	{
 		CallstacksPool::const_iterator startIt = it;
-		BRO_UNUSED(startIt);
+		OPTICK_UNUSED(startIt);
 
 		uint64 threadID = *it;
-		BRO_UNUSED(threadID);
+		OPTICK_UNUSED(threadID);
 		++it; //Skip ThreadID
 		uint64 timestamp = *it;
-		BRO_UNUSED
+		OPTICK_UNUSED
 		(timestamp);
 		++it; //Skip Timestamp
 		uint64 count = *it;
@@ -549,10 +549,10 @@ bool SwitchContextCollector::Serialize(OutputDataStream& stream)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if defined(BRO_MSVC)
+#if defined(OPTICK_MSVC)
 #define CPUID(INFO, ID) __cpuid(INFO, ID)
 #include <intrin.h> 
-#elif defined(BRO_GCC)
+#elif defined(OPTICK_GCC)
 #include <cpuid.h>
 #define CPUID(INFO, ID) __cpuid(ID, INFO[0], INFO[1], INFO[2], INFO[3])
 #else
@@ -583,19 +583,19 @@ std::string GetCPUName()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::StartCapture()
 {
-	pendingState = BRO_START_CAPTURE;
+	pendingState = State::START_CAPTURE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::StopCapture()
 {
-	pendingState = BRO_STOP_CAPTURE;
+	pendingState = State::STOP_CAPTURE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpCapture()
 {
-	pendingState = BRO_DUMP_CAPTURE;
+	pendingState = State::DUMP_CAPTURE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -684,7 +684,7 @@ void Core::DumpThread(ThreadEntry& entry, const EventTime& timeSlice, ScopeData&
 	// Events
 	DumpEvents(entry.storage, timeSlice, scope);
 	DumpTags(entry.storage, scope);
-	BRO_ASSERT(entry.storage.fiberSyncBuffer.IsEmpty(), "Fiber switch events in native threads?");
+	OPTICK_ASSERT(entry.storage.fiberSyncBuffer.IsEmpty(), "Fiber switch events in native threads?");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -896,8 +896,8 @@ Core::Core()
 	, boardNumber(0)
 	, frameNumber(0)
 	, stateCallback(nullptr)
-	, currentState(BRO_DUMP_CAPTURE)
-	, pendingState(BRO_DUMP_CAPTURE)
+	, currentState(State::DUMP_CAPTURE)
+	, pendingState(State::DUMP_CAPTURE)
 	, isActive(false)
 	, gpuProfiler(nullptr)
 {
@@ -914,24 +914,24 @@ bool Core::UpdateState()
 {
 	if (currentState != pendingState)
 	{
-		BroState nextState = pendingState;
-		if (pendingState == BRO_DUMP_CAPTURE && currentState == BRO_START_CAPTURE)
-			nextState = BRO_STOP_CAPTURE;
+		State::Type nextState = pendingState;
+		if (pendingState == State::DUMP_CAPTURE && currentState == State::START_CAPTURE)
+			nextState = State::STOP_CAPTURE;
 
 		if ((stateCallback != nullptr) && !stateCallback(nextState))
 			return false;
 
 		switch (nextState)
 		{
-		case BRO_START_CAPTURE:
+		case State::START_CAPTURE:
 			Activate(true);
 			break;
 
-		case BRO_STOP_CAPTURE:
+		case State::STOP_CAPTURE:
 			Activate(false);
 			break;
 
-		case BRO_DUMP_CAPTURE:
+		case State::DUMP_CAPTURE:
 			DumpFrames();
 			break;
 		}
@@ -1134,7 +1134,7 @@ bool Core::RegisterThreadDescription(const ThreadDescription& description)
 	return false;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Core::SetStateChangedCallback(BroStateCallback cb)
+bool Core::SetStateChangedCallback(StateCallback cb)
 {
 	stateCallback = cb;
 	return stateCallback != nullptr;
@@ -1146,7 +1146,7 @@ bool Core::AttachSummary(const char* key, const char* value)
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Core::AttachFile(BroFile::Type type, const char* name, const uint8_t* data, uint32_t size)
+bool Core::AttachFile(File::Type type, const char* name, const uint8_t* data, uint32_t size)
 {
 	attachments.push_back(Attachment(type, name));
 	Attachment& attachment = attachments.back();
@@ -1154,14 +1154,14 @@ bool Core::AttachFile(BroFile::Type type, const char* name, const uint8_t* data,
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Core::AttachFile(BroFile::Type type, const char* name, std::istream& stream)
+bool Core::AttachFile(File::Type type, const char* name, std::istream& stream)
 {
 	std::streampos beg = stream.tellg();
 	stream.seekg(0, std::ios::end);
 	std::streampos end = stream.tellg();
 	stream.seekg(beg, std::ios::beg);
 
-	size_t size = end - beg;
+	size_t size =(size_t)(end - beg);
 	void* buffer = Memory::Alloc(size);
 
 	stream.read((char*)buffer, size);
@@ -1172,15 +1172,15 @@ bool Core::AttachFile(BroFile::Type type, const char* name, std::istream& stream
 
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Core::AttachFile(BroFile::Type type, const char* name, const char* path)
+bool Core::AttachFile(File::Type type, const char* name, const char* path)
 {
     std::ifstream stream(path, std::ios::binary);
 	return AttachFile(type, name, stream);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Core::AttachFile(BroFile::Type type, const char* name, const wchar_t* path)
+bool Core::AttachFile(File::Type type, const char* name, const wchar_t* path)
 {
-#if defined(BRO_MSVC)
+#if defined(OPTICK_MSVC)
 	std::ifstream stream(path, std::ios::binary);
 	return AttachFile(type, name, stream);
 #else
@@ -1193,7 +1193,7 @@ bool Core::AttachFile(BroFile::Type type, const char* name, const wchar_t* path)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::InitGPUProfiler(GPUProfiler* profiler)
 {
-	BRO_ASSERT(gpuProfiler == nullptr, "Can't reinitialize GPU profiler! Not supported yet!");
+	OPTICK_ASSERT(gpuProfiler == nullptr, "Can't reinitialize GPU profiler! Not supported yet!");
 	Memory::Delete<GPUProfiler>(gpuProfiler);
 	gpuProfiler = profiler;
 }
@@ -1225,7 +1225,7 @@ const std::vector<ThreadEntry*>& Core::GetThreads() const
 	return threads;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BRO_THREAD_LOCAL EventStorage* Core::storage = nullptr;
+OPTICK_THREAD_LOCAL EventStorage* Core::storage = nullptr;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core Core::notThreadSafeInstance;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1271,62 +1271,62 @@ OutputDataStream& operator<<(OutputDataStream& stream, const ProcessDescription&
 	return stream << description.processID << description.name << description.uniqueKey;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API bool SetStateChangedCallback(BroStateCallback cb)
+OPTICK_API bool SetStateChangedCallback(StateCallback cb)
 {
 	return Core::Get().SetStateChangedCallback(cb);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API bool AttachSummary(const char* key, const char* value)
+OPTICK_API bool AttachSummary(const char* key, const char* value)
 {
 	return Core::Get().AttachSummary(key, value);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API bool AttachFile(BroFile::Type type, const char* name, const uint8_t* data, uint32_t size)
+OPTICK_API bool AttachFile(File::Type type, const char* name, const uint8_t* data, uint32_t size)
 {
 	return Core::Get().AttachFile(type, name, data, size);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API bool AttachFile(BroFile::Type type, const char* name, const char* path)
+OPTICK_API bool AttachFile(File::Type type, const char* name, const char* path)
 {
 	return Core::Get().AttachFile(type, name, path);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API bool AttachFile(BroFile::Type type, const char* name, const wchar_t* path)
+OPTICK_API bool AttachFile(File::Type type, const char* name, const wchar_t* path)
 {
 	return Core::Get().AttachFile(type, name, path);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-OutputDataStream& operator<<(OutputDataStream& stream, const BroPoint& ob)
+OutputDataStream& operator<<(OutputDataStream& stream, const Point& ob)
 {
 	return stream << ob.x << ob.y << ob.z;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API uint32_t NextFrame()
+OPTICK_API uint32_t NextFrame()
 {
 	return Core::NextFrame();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API bool IsActive()
+OPTICK_API bool IsActive()
 {
 	return Core::Get().isActive;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API EventStorage** GetEventStorageSlotForCurrentThread()
+OPTICK_API EventStorage** GetEventStorageSlotForCurrentThread()
 {
 	return &Core::Get().storage;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API bool IsFiberStorage(EventStorage* fiberStorage)
+OPTICK_API bool IsFiberStorage(EventStorage* fiberStorage)
 {
 	return fiberStorage->isFiberStorage;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API bool RegisterThread(const char* name)
+OPTICK_API bool RegisterThread(const char* name)
 {
 	return Core::Get().RegisterThread(ThreadDescription(name, GetThreadID(), GetProcessID()), &Core::storage) != nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API bool RegisterThread(const wchar_t* name)
+OPTICK_API bool RegisterThread(const wchar_t* name)
 {
 	const int THREAD_NAME_LENGTH = 128;
 	char mbName[THREAD_NAME_LENGTH];
@@ -1335,29 +1335,29 @@ BROFILER_API bool RegisterThread(const wchar_t* name)
 	return Core::Get().RegisterThread(ThreadDescription(mbName, GetThreadID(), GetProcessID()), &Core::storage) != nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API bool UnRegisterThread(bool keepAlive)
+OPTICK_API bool UnRegisterThread(bool keepAlive)
 {
 	return Core::Get().UnRegisterThread(GetThreadID(), keepAlive);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API bool RegisterFiber(uint64 fiberId, EventStorage** slot)
+OPTICK_API bool RegisterFiber(uint64 fiberId, EventStorage** slot)
 {
 	return Core::Get().RegisterFiber(FiberDescription(fiberId), slot);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API EventStorage* RegisterStorage(const char* name, uint64_t threadID)
+OPTICK_API EventStorage* RegisterStorage(const char* name, uint64_t threadID)
 {
 	ThreadEntry* entry = Core::Get().RegisterThread(ThreadDescription(name, threadID, GetProcessID(), false), nullptr);
 	return entry ? &entry->storage : nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API void GpuFlip(void* swapChain)
+OPTICK_API void GpuFlip(void* swapChain)
 {
 	if (GPUProfiler* gpuProfiler = Core::Get().gpuProfiler)
 		gpuProfiler->Flip(swapChain);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API GPUContext SetGpuContext(GPUContext context)
+OPTICK_API GPUContext SetGpuContext(GPUContext context)
 {
 	if (EventStorage* storage = Core::storage)
 	{
@@ -1368,7 +1368,7 @@ BROFILER_API GPUContext SetGpuContext(GPUContext context)
 	return GPUContext();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-BROFILER_API const EventDescription* GetFrameDescription(FrameType::Type frame)
+OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame)
 {
 	return Core::Get().GetFrameDescription(frame);
 

@@ -18,12 +18,12 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="1*" />
                 </Grid.ColumnDefinitions>
-                <Grid x:Name="ThreadList" VerticalAlignment="Center" Background="{StaticResource BroBackground}">
+                <Grid x:Name="ThreadList" VerticalAlignment="Center" Background="{StaticResource OptickBackground}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                 </Grid>
-                <DX:DirectXCanvas x:Name="surface" Grid.Column="1" Height="Auto" Background="{StaticResource BroBackground}" />
+                <DX:DirectXCanvas x:Name="surface" Grid.Column="1" Height="Auto" Background="{StaticResource OptickBackground}" />
             </Grid>
         </ScrollViewer>
         <ScrollBar Orientation="Horizontal" Width="Auto" x:Name="scrollBar" Grid.Row="1" VerticalAlignment="Bottom" Margin="0,0,10,0" />

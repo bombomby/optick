@@ -3,7 +3,7 @@
 #include "Platform.h"
 
 
-#if defined(BRO_MSVC)
+#if defined(OPTICK_MSVC)
 #define USE_WINDOWS_SOCKETS (1)
 #else
 #define USE_BERKELEY_SOCKETS (1)
@@ -26,14 +26,14 @@ typedef UINT_PTR TcpSocket;
 #endif
 
 
-#if defined(BRO_MSVC)
+#if defined(OPTICK_MSVC)
 #pragma comment( lib, "ws2_32.lib" )
 #endif
 
-namespace Brofiler
+namespace Optick
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if defined(BRO_PC)
+#if defined(OPTICK_PC)
 static const short DEFAULT_PORT = 31313;
 #else
 static const short DEFAULT_PORT = 4601;
@@ -48,7 +48,7 @@ class Wsa
 	Wsa()
 	{
 		isInitialized = WSAStartup(0x0202, &data) == ERROR_SUCCESS;
-		BRO_ASSERT(isInitialized, "Can't initialize WSA");
+		OPTICK_ASSERT(isInitialized, "Can't initialize WSA");
 	}
 
 	~Wsa()
@@ -158,7 +158,7 @@ public:
 		Wsa::Init();
 #endif
 		listenSocket = ::socket(AF_INET, SOCK_STREAM, SOCKET_PROTOCOL_TCP);
-		BRO_ASSERT(IsValidSocket(listenSocket), "Can't create socket");
+		OPTICK_ASSERT(IsValidSocket(listenSocket), "Can't create socket");
 
 		SetSocketBlockingMode(listenSocket, false);
 	}
@@ -189,7 +189,7 @@ public:
 		int result = ::listen(listenSocket, 8);
 		if (result != 0)
 		{
-			BRO_FAILED("Can't start listening");
+			OPTICK_FAILED("Can't start listening");
 		}
 	}
 
@@ -254,7 +254,7 @@ Server::Server(short port) : socket(Memory::New<Socket>())
 {
 	if (!socket->Bind(port, 4))
 	{
-		BRO_FAILED("Failed to bind a socket! Most probably the port is blocked by anti-virus! Change the port and verify that your game has enough permissions to communicate over the TCP\IP.");
+		OPTICK_FAILED("Failed to bind a socket! Most probably the port is blocked by anti-virus! Change the port and verify that your game has enough permissions to communicate over the TCP\IP.");
 	}
 	else
 	{
@@ -305,7 +305,7 @@ std::string Server::GetHostName() const
     
 #if defined(USE_BERKELEY_SOCKETS)
 	gethostname(hostname, HOST_NAME_LENGTH);
-#elif defined(BRO_PC)
+#elif defined(OPTICK_PC)
     DWORD length = HOST_NAME_LENGTH;
 	GetComputerNameA(hostname, &length);
 #endif

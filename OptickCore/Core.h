@@ -17,36 +17,36 @@
 #include <list>
 #include <unordered_map>
 
-// We expect to have 1k unique strings going through Brofiler at once
+// We expect to have 1k unique strings going through Optick at once
 // The chances to hit a collision are 1 in 10 trillion (odds of a meteor landing on your house)
 // We should be quite safe here :)
 // https://preshing.com/20110504/hash-collision-probabilities/
 // Feel free to add a seed and wait for another strike if armageddon starts
-struct BroStringHash
+struct OptickStringHash
 {
 	uint64 hash;
 
-	BroStringHash(size_t h) : hash(h) {}
-	BroStringHash(const char* str) : hash(CityHash64(str, (int)strlen(str))) {}
+	OptickStringHash(size_t h) : hash(h) {}
+	OptickStringHash(const char* str) : hash(CityHash64(str, (int)strlen(str))) {}
 
-	bool operator==(const BroStringHash& other) const { return hash == other.hash; }
-	bool operator<(const BroStringHash& other) const { return hash < other.hash; }
+	bool operator==(const OptickStringHash& other) const { return hash == other.hash; }
+	bool operator<(const OptickStringHash& other) const { return hash < other.hash; }
 };
 
 // Overriding default hash function to return hash value directly
 namespace std
 {
 	template<>
-	struct hash<BroStringHash>
+	struct hash<OptickStringHash>
 	{
-		size_t operator()(const BroStringHash& x) const
+		size_t operator()(const OptickStringHash& x) const
 		{
-			return x.hash;
+			return (size_t)x.hash;
 		}
 	};
 }
 
-namespace Brofiler
+namespace Optick
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct Trace;
@@ -89,36 +89,36 @@ struct ScopeData
 	void Clear();
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if defined(BRO_MSVC)
+#if defined(OPTICK_MSVC)
 #pragma warning( push )
 #pragma warning( disable : 4996 )
-#endif //BRO_MSVC
+#endif //OPTICK_MSVC
 template<int N>
-struct BroString
+struct OptickString
 {
 	char data[N];
-	BroString() {}
-	BroString<N>& operator=(const char* text) { strncpy(data, text, N-1); return *this; }
-	BroString(const char* text) { *this = text; }
+	OptickString() {}
+	OptickString<N>& operator=(const char* text) { strncpy(data, text, N-1); return *this; }
+	OptickString(const char* text) { *this = text; }
 };
-#if defined(BRO_MSVC)
+#if defined(OPTICK_MSVC)
 #pragma warning( pop )
 #endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct BroPoint
+struct Point
 {
 	float x, y, z;
-	BroPoint() {}
-	BroPoint(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
-	BroPoint(float pos[3]) : x(pos[0]), y(pos[1]), z(pos[2]) {}
+	Point() {}
+	Point(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
+	Point(float pos[3]) : x(pos[0]), y(pos[1]), z(pos[2]) {}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<int N>
-OutputDataStream& operator<<(OutputDataStream& stream, const BroString<N>& ob)
+OutputDataStream& operator<<(OutputDataStream& stream, const OptickString<N>& ob)
 {
 	return stream << ob.data;
 }
-OutputDataStream& operator<<(OutputDataStream& stream, const BroPoint& ob);
+OutputDataStream& operator<<(OutputDataStream& stream, const Point& ob);
 OutputDataStream& operator<<(OutputDataStream& stream, const ScopeData& ob);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef MemoryPool<EventData, 1024> EventBuffer;
@@ -126,13 +126,13 @@ typedef MemoryPool<const EventData*, 32> CategoryBuffer;
 typedef MemoryPool<SyncData, 1024> SynchronizationBuffer;
 typedef MemoryPool<FiberSyncData, 1024> FiberSyncBuffer;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-typedef BroString<32> ShortString;
+typedef OptickString<32> ShortString;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef TagData<float> TagFloat;
 typedef TagData<int32> TagS32;
 typedef TagData<uint32> TagU32;
 typedef TagData<uint64> TagU64;
-typedef TagData<BroPoint> TagPoint;
+typedef TagData<Point> TagPoint;
 typedef TagData<ShortString> TagString;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef MemoryPool<TagFloat, 128> TagFloatBuffer;
@@ -154,7 +154,7 @@ class EventDescriptionBoard
 	EventDescriptionList boardDescriptions;
 
 	// Shared Descriptions
-	typedef std::unordered_map<BroStringHash, EventDescription*> DescriptionMap;
+	typedef std::unordered_map<OptickStringHash, EventDescription*> DescriptionMap;
 	DescriptionMap sharedDescriptions;
 	MemoryBuffer<64 * 1024> sharedNames;
 	std::mutex sharedLock;
@@ -204,12 +204,12 @@ struct EventStorage
 
 	EventStorage();
 
-	BRO_INLINE EventData& NextEvent() 
+	OPTICK_INLINE EventData& NextEvent() 
 	{
 		return eventBuffer.Add(); 
 	}
 
-	BRO_INLINE void RegisterCategory(const EventData& eventData) 
+	OPTICK_INLINE void RegisterCategory(const EventData& eventData) 
 	{ 
 		categoryBuffer.Add() = &eventData;
 	}
@@ -412,20 +412,20 @@ class Core
 	{
 		std::string name;
 		std::vector<uint8_t> data;
-		BroFile::Type type;
-		Attachment(BroFile::Type t, const char* n) : name(n), type(t) {}
+		File::Type type;
+		Attachment(File::Type t, const char* n) : name(n), type(t) {}
 	};
 	std::list<Attachment> attachments;
 
-	BroStateCallback stateCallback;
+	StateCallback stateCallback;
 
 	std::vector<ProcessDescription> processDescs;
 	std::vector<ThreadDescription> threadDescs;
 
 	std::array<const EventDescription*, FrameType::COUNT> frameDescriptions;
 
-	BroState currentState;
-	BroState pendingState;
+	State::Type currentState;
+	State::Type pendingState;
 
 	void UpdateEvents();
 	uint32_t Update();
@@ -455,7 +455,7 @@ public:
 	bool isActive;
 
 	// Active Frame (is used as buffer)
-	static BRO_THREAD_LOCAL EventStorage* storage;
+	static OPTICK_THREAD_LOCAL EventStorage* storage;
 
 	// Resolves symbols
 	SymbolEngine* symbolEngine;
@@ -521,16 +521,16 @@ public:
 	bool RegisterThreadDescription(const ThreadDescription& description);
 
 	// Sets state change callback
-	bool SetStateChangedCallback(BroStateCallback cb);
+	bool SetStateChangedCallback(StateCallback cb);
 
 	// Attaches a key-value pair to the next capture
 	bool AttachSummary(const char* key, const char* value);
 
 	// Attaches a screenshot to the current capture
-	bool AttachFile(BroFile::Type type, const char* name, const uint8_t* data, uint32_t size);
-	bool AttachFile(BroFile::Type type, const char* name, std::istream& stream);
-	bool AttachFile(BroFile::Type type, const char* name, const char* path);
-	bool AttachFile(BroFile::Type type, const char* name, const wchar_t* path);
+	bool AttachFile(File::Type type, const char* name, const uint8_t* data, uint32_t size);
+	bool AttachFile(File::Type type, const char* name, std::istream& stream);
+	bool AttachFile(File::Type type, const char* name, const char* path);
+	bool AttachFile(File::Type type, const char* name, const wchar_t* path);
 
 	// Initalizes GPU profiler
 	void InitGPUProfiler(GPUProfiler* profiler);
@@ -542,7 +542,7 @@ public:
 	const EventDescription* GetFrameDescription(FrameType::Type frame) const;
 
 	// NOT Thread Safe singleton (performance)
-	static BRO_INLINE Core& Get() { return notThreadSafeInstance; }
+	static OPTICK_INLINE Core& Get() { return notThreadSafeInstance; }
 
 	// Main Update Function
 	static uint32_t NextFrame() { return Get().Update(); }

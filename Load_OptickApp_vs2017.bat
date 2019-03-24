@@ -1,2 +1,2 @@
-start %cd%\BrofilerApp\BrofilerApp_vs2017.sln
+start %cd%\OptickApp\OptickApp_vs2017.sln
 
