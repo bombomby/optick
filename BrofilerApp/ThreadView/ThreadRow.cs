@@ -98,7 +98,7 @@ namespace Profiler
 		public ITick PixelToTime(double pixelX)
 		{
 			double unit = ViewUnit.Left + PixelToUnitLength(pixelX);
-			return new Tick() { Start = TimeSlice.Start + (long)(unit * (TimeSlice.Finish - TimeSlice.Start)) };
+			return TimeSlice != null ? new Tick() { Start = TimeSlice.Start + (long)(unit * (TimeSlice.Finish - TimeSlice.Start)) } : new Tick();
 		}
 
 		public Durable UnitToTime(Interval unit)
@@ -143,13 +143,17 @@ namespace Profiler
 
 	public class HeaderThreadRow : ThreadRow
 	{
-		public override double Height { get { return RenderParams.BaseHeight; } }
+		public static double DefaultHeaderHeight => RenderParams.BaseHeight * 1.25;
+		public override double Height { get { return DefaultHeaderHeight; } }
 		public override string Name { get { return String.Empty; } }
+
+		public FrameworkElement Header { get; set; }
 
 		public Color GradientTop { get; set; }
 		public Color GradientBottom { get; set; }
 		public Color SplitLines { get; set; }
 		public Color TextColor { get; set; }
+		public Color TickColor { get; set; } = Colors.Gray;
 		public HeaderThreadRow(FrameGroup group)
 		{
 			Group = group;
@@ -158,20 +162,44 @@ namespace Profiler
 		DirectX.Mesh BackgroundMeshLines { get; set; }
 		DirectX.Mesh BackgroundMeshTris { get; set; }
 
+		bool EnableTickers { get; set; }
+
 		public override void BuildMesh(DirectX.DirectXCanvas canvas, ThreadScroll scroll)
 		{
 			DirectX.DynamicMesh builder = canvas.CreateMesh();
 			builder.Geometry = DirectX.Mesh.GeometryType.Lines;
 
+			double headerHeight = (Height - RenderParams.BaseMargin) / scroll.Height;
+
+			// Adding Frame separators
 			foreach (EventFrame frame in Group.MainThread.Events)
 			{
 				double x = scroll.TimeToUnit(frame.Header).Left;
 				builder.AddLine(new Point(x, 0.0), new Point(x, 1.0), SplitLines);
 			}
+			// Adding Tickers
+			if (EnableTickers)
+			{
+				for (double tick = Math.Ceiling(scroll.TimeSlice.StartMS); tick < Math.Ceiling(scroll.TimeSlice.FinishMS); tick += 1.0)
+				{
+					double longX = scroll.TimeToUnit(new Tick { Start = Durable.MsToTick(tick) });
+					builder.AddLine(new Point(longX, headerHeight * 3.0 / 6.0), new Point(longX, headerHeight), TickColor);
+
+					double medX = scroll.TimeToUnit(new Tick { Start = Durable.MsToTick(tick + 0.5) });
+					builder.AddLine(new Point(medX, headerHeight * 4.0 / 6.0), new Point(medX, headerHeight), TickColor);
+
+
+					for (double miniTick = 0.1; miniTick < 1.0; miniTick += 0.1)
+					{
+						double miniX = scroll.TimeToUnit(new Tick { Start = Durable.MsToTick(tick + miniTick) });
+						builder.AddLine(new Point(miniX, headerHeight * 5.0 / 6.0), new Point(miniX, headerHeight), TickColor);
+					}
+				}
+			}
 			BackgroundMeshLines = builder.Freeze(canvas.RenderDevice);
 
 			DirectX.DynamicMesh builderHeader = canvas.CreateMesh();
-			builderHeader.AddRect(new Rect(0.0, 0.0, 1.0, (Height - RenderParams.BaseMargin) / scroll.Height), new Color[] { GradientTop, GradientTop, GradientBottom, GradientBottom });
+			builderHeader.AddRect(new Rect(0.0, 0.0, 1.0, headerHeight), new Color[] { GradientTop, GradientTop, GradientBottom, GradientBottom });
 			BackgroundMeshTris = builderHeader.Freeze(canvas.RenderDevice);
 		}
 
@@ -187,6 +215,8 @@ namespace Profiler
 				canvas.Draw(BackgroundMeshTris);
 				canvas.Draw(BackgroundMeshLines);
 
+				double yOffset = Offset + (Height - RenderParams.BaseHeight) * 0.5;
+
 				Data.Utils.ForEachInsideInterval(Group.MainThread.Events, scroll.ViewTime, (frame, index) =>
 				{
 					Interval interval = scroll.TimeToPixel(frame.Header);
@@ -195,7 +225,7 @@ namespace Profiler
 
 					// 2 times to emulate "bold"
 					for (int i = 0; i < 2; ++i)
-						canvas.Text.Draw(new Point(interval.Left, Offset), text, TextColor, TextAlignment.Center, interval.Width);
+						canvas.Text.Draw(new Point(interval.Left, yOffset), text, TextColor, TextAlignment.Center, interval.Width);
 				});
 			}
 		}

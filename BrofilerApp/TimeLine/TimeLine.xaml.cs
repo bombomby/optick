@@ -56,10 +56,10 @@ namespace Profiler
 			this.InitializeComponent();
 			this.DataContext = frames;
 
-			statusToError.Add(ETWStatus.ETW_ERROR_ACCESS_DENIED, new KeyValuePair<string, string>("ETW can't start: launch your game (or Visual Studio) as administrator to collect context switches", "https://github.com/bombomby/brofiler/wiki/Event-Tracing-for-Windows"));
-			statusToError.Add(ETWStatus.ETW_ERROR_ALREADY_EXISTS, new KeyValuePair<string, string>("ETW session already started (Reboot should help)", "https://github.com/bombomby/brofiler/wiki/Event-Tracing-for-Windows"));
-			statusToError.Add(ETWStatus.ETW_FAILED, new KeyValuePair<string, string>("ETW session failed", "https://github.com/bombomby/brofiler/wiki/Event-Tracing-for-Windows"));
-statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, string>("Tracing session failed: invalid root password. Run the game as a root or pass a valid password through Brofiler GUI", "https://github.com/bombomby/brofiler/wiki/Event-Tracing-for-Windows"));
+			statusToError.Add(ETWStatus.ETW_ERROR_ACCESS_DENIED, new KeyValuePair<string, string>("ETW can't start: launch your game (or Visual Studio) as administrator to collect context switches", "https://github.com/bombomby/optick/wiki/Event-Tracing-for-Windows"));
+			statusToError.Add(ETWStatus.ETW_ERROR_ALREADY_EXISTS, new KeyValuePair<string, string>("ETW session already started (Reboot should help)", "https://github.com/bombomby/optick/wiki/Event-Tracing-for-Windows"));
+			statusToError.Add(ETWStatus.ETW_FAILED, new KeyValuePair<string, string>("ETW session failed", "https://github.com/bombomby/optick/wiki/Event-Tracing-for-Windows"));
+statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, string>("Tracing session failed: invalid root password. Run the game as a root or pass a valid password through Brofiler GUI", "https://github.com/bombomby/optick/wiki/Event-Tracing-for-Windows"));
 
 			ProfilerClient.Get().ConnectionChanged += TimeLine_ConnectionChanged;
 
@@ -358,7 +358,7 @@ statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, st
 		public String Save()
 		{
 			SaveFileDialog dlg = new SaveFileDialog();
-			dlg.Filter = "Brofiler files (*.bro)|*.bro";
+			dlg.Filter = "Optick Performance Capture (*.opt)|*.opt";
 			dlg.Title = "Where should I save profiler results?";
 
 			if (dlg.ShowDialog() == true)
@@ -415,7 +415,7 @@ statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, st
 	{
 		public static double Convert(double value)
 		{
-			return 1.85 * value;
+			return 2.775 * value;
 		}
 
 		public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

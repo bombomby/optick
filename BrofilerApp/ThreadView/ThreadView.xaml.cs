@@ -85,16 +85,26 @@ namespace Profiler
 					{
 						ThreadList.RowDefinitions.Add(new RowDefinition());
 
-						Thickness margin = new Thickness(0, 0, 0, 0);
+						Border border = new Border()
+						{
+							Height = row.Height / RenderSettings.dpiScaleY,
+						};
 
-						Label labelName = new Label() { Content = row.Name, Margin = margin, Padding = new Thickness(), FontWeight = FontWeights.Bold, Height = row.Height / RenderSettings.dpiScaleY, VerticalContentAlignment = VerticalAlignment.Center };
+						if (row is HeaderThreadRow)
+						{
+							border.Child = (row as HeaderThreadRow).Header;
+						}
+						else
+						{
+							border.Child = new Label() { Content = row.Name, Margin = new Thickness(), Padding = new Thickness(), FontWeight = FontWeights.Bold, VerticalContentAlignment = VerticalAlignment.Center };
+						}
 
-						Grid.SetRow(labelName, threadIndex);
+						Grid.SetRow(border, threadIndex);
 
 						if (threadIndex % 2 == 1)
-							labelName.Background = BroAlternativeBackground;
+							border.Background = BroAlternativeBackground;
 
-						ThreadList.Children.Add(labelName);
+						ThreadList.Children.Add(border);
 					}
 
 					offset += row.Height;

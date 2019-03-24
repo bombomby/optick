@@ -247,7 +247,7 @@ namespace Profiler.Controls
 		private void OnOpenCommandExecuted(object sender, ExecutedRoutedEventArgs args)
 		{
 			System.Windows.Forms.OpenFileDialog dlg = new System.Windows.Forms.OpenFileDialog();
-			dlg.Filter = "Brofiler files (*.bro)|*.bro";
+			dlg.Filter = "Optick Performance Capture (*.opt)|*.opt";
 			dlg.Title = "Load profiler results?";
 			if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
 			{

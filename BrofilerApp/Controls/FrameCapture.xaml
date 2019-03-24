@@ -88,7 +88,7 @@
                                      x:Name="PlatformCombo" Margin="4,0,0,0" VerticalAlignment="Top"
                                     Height="{StaticResource DefaultButtonSize}"/>
                     <StackPanel x:Name="warningBlock"  Orientation="Horizontal">
-                        <Image x:Name="warningIcon" Source="/Brofiler;component/TimeLine/Icons/Warning-icon.png" Margin="5,0,0,0" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" />
+                        <Image x:Name="warningIcon" Source="/Optick;component/TimeLine/Icons/Warning-icon.png" Margin="5,0,0,0" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" />
                         <TextBlock VerticalAlignment="Center" TextTrimming="WordEllipsis" Width="Auto"><Hyperlink x:Name="warningUrl" RequestNavigate="Hyperlink_RequestNavigate"><Run x:Name="warningText" Text="ClickMe"/></Hyperlink></TextBlock>
                     </StackPanel>
                 </StackPanel>

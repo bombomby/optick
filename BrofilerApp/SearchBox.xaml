@@ -24,7 +24,7 @@
       <Button.Template>
         <ControlTemplate TargetType="{x:Type Button}">
           <Grid>
-            <Image Source="/Brofiler;component/TimeLine/Icons/Clear-icon.png" Margin="1"/>
+            <Image Source="/Optick;component/TimeLine/Icons/Clear-icon.png" Margin="1"/>
           </Grid>
         </ControlTemplate>
       </Button.Template>

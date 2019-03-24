@@ -31,8 +31,7 @@ namespace Profiler
 		public const UInt32 NETWORK_PROTOCOL_VERSION = NETWORK_PROTOCOL_VERSION_24;
 		public const UInt32 NETWORK_PROTOCOL_MIN_VERSION = NETWORK_PROTOCOL_VERSION_18;
 
-
-		public const UInt16 BROFILER_APP_ID = 0xB50F;
+		public const UInt16 OPTICK_APP_ID = 0xB50F;
 	}
 
 	public abstract class IResponseHolder

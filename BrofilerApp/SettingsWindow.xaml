@@ -14,7 +14,7 @@
         GlowBrush="{DynamicResource AccentColorBrush}"
         BorderThickness="1"
         Height="100"
-        Title="Brofiler Settings" Width="250">
+        Title="Optick Settings" Width="250">
     <Window.Resources>
         <ResourceDictionary>
             <Style TargetType="{x:Type Button}" 

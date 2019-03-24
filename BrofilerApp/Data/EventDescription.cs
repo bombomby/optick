@@ -306,7 +306,7 @@ namespace Profiler.Data
 				}
 			}
 
-			if (response.ApplicationID == NetworkProtocol.BROFILER_APP_ID)
+			if (response.ApplicationID == NetworkProtocol.OPTICK_APP_ID)
 			{
 				int fibersCount = reader.ReadInt32();
 				desc.Fibers = new List<FiberDescription>(fibersCount);

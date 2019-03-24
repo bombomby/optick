@@ -141,12 +141,12 @@
                                                         <Setter Property="Margin" Value="0,-3,4,0" />
                                                     </Style>
                                                 </StackPanel.Resources>
-                                                <Border>
+                                                <!--<Border>
                                                     <TextBlock Text="100.0 ms"  />
                                                 </Border>
                                                 <Border>
                                                     <TextBlock Text="83.3 ms"  />
-                                                </Border>
+                                                </Border>-->
                                                 <Border>
                                                     <TextBlock Text="66.6 ms"  />
                                                 </Border>

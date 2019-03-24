@@ -36,7 +36,7 @@ namespace Profiler.Controls
 					break;
 
 				case SettingsType.Local:
-					DirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Brofiler");
+					DirectoryPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Optick");
 					break;
 			}
 			FilePath = System.IO.Path.Combine(DirectoryPath, name);

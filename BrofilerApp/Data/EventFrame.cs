@@ -18,7 +18,7 @@ namespace Profiler.Data
 		{
 			FrameHeader header = new FrameHeader();
 			header.ThreadIndex = response.Reader.ReadInt32();
-			if (response.ApplicationID == NetworkProtocol.BROFILER_APP_ID)
+			if (response.ApplicationID == NetworkProtocol.OPTICK_APP_ID)
 			{
 				header.FiberIndex = response.Reader.ReadInt32();
 			}

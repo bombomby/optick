@@ -1,4 +1,5 @@
 ﻿using Profiler.Data;
+using Profiler.Views;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -77,7 +78,97 @@ namespace Profiler
 
 		public bool GenerateSamplingThreads { get; set; } = false;
 
+		private class EventsThreadGroup
+		{
+			public List<EventsThreadRow> Threads { get; set; } = new List<EventsThreadRow>();
 
+			static private int MAX_LEVENSTEIN_DISTANCE = 4;
+
+			public bool IsMatch(EventsThreadRow thread)
+			{
+				foreach (EventsThreadRow candidate in Threads)
+				{
+					if (Utils.ComputeLevenshteinDistance(candidate.Description.Name, thread.Description.Name) < MAX_LEVENSTEIN_DISTANCE)
+						return true;
+				}
+				return false;
+			}
+
+			private double CalcScore()
+			{
+				Int64 score = 0;
+				foreach (EventsThreadRow thread in Threads)
+				{
+					switch (thread.Description.Origin)
+					{
+						case ThreadDescription.Source.Core:
+							return double.MaxValue;
+
+						default:
+							foreach (EventFrame frame in thread.EventData.Events)
+								score += frame.Entries.Count;
+							break;
+					}
+				}
+				return (double)score / Threads.Count;
+			}
+
+			public void Sort()
+			{
+				Threads.Sort((a, b) =>
+				{
+					String rowA = a.Description.Name;
+					String rowB = b.Description.Name;
+
+					// Sorting by length at first to order "Thread 2" and Thread "12" correctly
+					int res = rowA.Length.CompareTo(rowB.Length);
+					if (res != 0)
+						return res;
+
+					// Sorting by name for the same length
+					return rowA.CompareTo(rowB);
+				});
+
+				Score = CalcScore();
+			}
+
+			public double Score { get; set; }
+		}
+
+		List<EventsThreadRow> SortRows(List<EventsThreadRow> threads)
+		{
+			List<EventsThreadGroup> groups = new List<EventsThreadGroup>();
+
+			foreach (EventsThreadRow thread in threads)
+			{
+				EventsThreadGroup outputGroup = null;
+				foreach (EventsThreadGroup group in groups)
+				{
+					if (group.IsMatch(thread))
+					{
+						outputGroup = group;
+						break;
+					}
+				}
+
+				if (outputGroup == null)
+				{
+					outputGroup = new EventsThreadGroup();
+					groups.Add(outputGroup);
+				}
+
+				outputGroup.Threads.Add(thread);
+			}
+
+			List<EventsThreadRow> result = new List<EventsThreadRow>();
+			groups.ForEach(g => g.Sort());
+			foreach (var group in groups.OrderBy(g => -g.Score))
+				result.AddRange(group.Threads);
+
+			return result;
+		}
+
+		const double MIN_THREAD_ACCUMULATED_DURATION = 0.1;
 
 		List<EventsThreadRow> GenerateThreadRows(FrameGroup group)
 		{
@@ -91,11 +182,18 @@ namespace Profiler
 				ThreadData data = group.Threads[i];
 
 				bool threadHasData = false;
-				if ((data.Callstacks != null && data.Callstacks.Count > 3) ||
-					(data.Events != null && data.Events.Count > 0))
-
+				if (data.Events != null)
 				{
-					threadHasData = true;
+					double duration = 0.0;
+					foreach (EventFrame frame in data.Events)
+					{
+						duration += frame.Duration;
+						if (duration > MIN_THREAD_ACCUMULATED_DURATION)
+						{
+							threadHasData = true;
+							break;
+						}
+					}
 				}
 
 				if (threadHasData)
@@ -118,8 +216,7 @@ namespace Profiler
 				}
 			}
 
-			eventThreads.Sort(ThreadNameSorter);
-			return eventThreads;
+			return SortRows(eventThreads);
 		}
 
 		enum ProcessGroup
@@ -275,7 +372,8 @@ namespace Profiler
 					GradientTop = (ThreadViewControl.BroAlternativeBackground as SolidColorBrush).Color,
 					GradientBottom = (ThreadViewControl.BroBackground as SolidColorBrush).Color,
 					SplitLines = (ThreadViewControl.BroBackground as SolidColorBrush).Color,
-					TextColor = Colors.Gray
+					TextColor = Colors.Gray,
+					Header = new ThreadFilterView(),
 				});
 
 				rows.Add(GenerateCoreChart(group));

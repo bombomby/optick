@@ -27,7 +27,7 @@ namespace Profiler.TaskManager
 
     class GDriveStorage : ExternalStorage
 	{
-		public override string DisplayName => "Public Google Drive Storage (Brofiler)";
+		public override string DisplayName => "Public Google Drive Storage (Optick)";
 		public override string Icon => "appbar_google";
 		public override bool IsPublic => true;
 
@@ -53,7 +53,7 @@ namespace Profiler.TaskManager
 				return new DriveService(new BaseClientService.Initializer()
 				{
 					HttpClientInitializer = credential,
-					ApplicationName = "Brofiler Github Sample",
+					ApplicationName = "Optick Github Sample",
 				});
 			}
 		}
@@ -72,7 +72,7 @@ namespace Profiler.TaskManager
 		{
 			File body = new File();
 			body.Name = System.IO.Path.GetFileName(name);
-			body.Description = "File uploaded by Brofiler";
+			body.Description = "File uploaded by Optick";
 			body.MimeType = GetMimeType(name);
 
 			// File's content.

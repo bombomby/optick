@@ -45,9 +45,9 @@ namespace Profiler.Controls
 
 		public int Version { get; set; }
 
-		public List<Platform.Connection> Connections { get; set; }
+		public List<Platform.Connection> Connections { get; set; } = new List<Platform.Connection>();
 
-        public string TempDirectoryPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Brofiler\\Temp\\");
+        public string TempDirectoryPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Optick\\Temp\\");
 
         public LocalSettings()
 		{
@@ -60,7 +60,7 @@ namespace Profiler.Controls
 		private static SharedSettings<GlobalSettings> globalSettings = new SharedSettings<GlobalSettings>("Config.xml", SettingsType.Global);
 		public static SharedSettings<GlobalSettings> GlobalSettings => globalSettings;
 
-		private static SharedSettings<LocalSettings> localSettings = new SharedSettings<LocalSettings>("Brofiler.LocalConfig.xml", SettingsType.Local);
+		private static SharedSettings<LocalSettings> localSettings = new SharedSettings<LocalSettings>("Optick.LocalConfig.xml", SettingsType.Local);
 		public static SharedSettings<LocalSettings> LocalSettings => localSettings;
 	}
 

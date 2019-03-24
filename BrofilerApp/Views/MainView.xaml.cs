@@ -165,7 +165,7 @@ namespace Profiler.Views
 
 			try
 			{
-				checkVersion.DownloadStringAsync(new Uri("http://brofiler.com/update"));
+				checkVersion.DownloadStringAsync(new Uri("https://optick.dev/update"));
 			}
 			catch (Exception ex)
 			{
@@ -245,7 +245,7 @@ namespace Profiler.Views
 
 			Stream screenshot = ControlUtils.CaptureScreenshot(this, ImageFormat.Png);
 			if (screenshot != null)
-				viewModel.AttachScreenshot("BrofilerApp.png", screenshot);
+				viewModel.AttachScreenshot("OptickApp.png", screenshot);
 
 			viewModel.SetGroup(FrameCaptureControl.EventThreadViewControl.Group);
 

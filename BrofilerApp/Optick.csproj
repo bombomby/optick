@@ -9,7 +9,7 @@
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Profiler</RootNamespace>
-    <AssemblyName>Brofiler</AssemblyName>
+    <AssemblyName>Optick</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
@@ -294,6 +294,7 @@
     <Compile Include="ViewModels\SummaryViewerModel.cs" />
     <Compile Include="InfrastructureMvvm\ViewModelLocator.cs" />
     <Compile Include="ViewModels\TaskTrackerViewModel.cs" />
+    <Compile Include="ViewModels\ThreadFilterViewModel.cs" />
     <Compile Include="Views\FunctionHistoryView.xaml.cs">
       <DependentUpon>FunctionHistoryView.xaml</DependentUpon>
     </Compile>
@@ -382,6 +383,9 @@
     </Compile>
     <Compile Include="Views\TaskTrackerView.xaml.cs">
       <DependentUpon>TaskTrackerView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ThreadFilterView.xaml.cs">
+      <DependentUpon>ThreadFilterView.xaml</DependentUpon>
     </Compile>
     <Page Include="Controls\AttachmentViewControl.xaml">
       <SubType>Designer</SubType>
@@ -510,6 +514,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\TaskTrackerView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ThreadFilterView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
