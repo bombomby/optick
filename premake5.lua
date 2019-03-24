@@ -81,11 +81,11 @@ if isVisualStudio then
 end
 
 if isUWP then
-	defines { "BRO_UWP=1" }
+	defines { "OPTICK_UWP=1" }
 end
 
 	defines { "USE_OPTICK=1"}
-	defines { "BRO_FIBERS=1"}
+	defines { "OPTICK_FIBERS=1"}
 
 	local config_list = {
 		"Release",
@@ -167,7 +167,7 @@ end
 	--		"dxgi",
 	--	}
 	else
-		defines { "BRO_ENABLE_GPU_D3D12=0" }
+		defines { "OPTICK_ENABLE_GPU_D3D12=0" }
 	end
 	
 	if isVulkan then
@@ -176,7 +176,7 @@ end
 			"$(VULKAN_SDK)/Include",
 		}
 	else
-		defines { "BRO_ENABLE_GPU_VULKAN=0" }
+		defines { "OPTICK_ENABLE_GPU_VULKAN=0" }
 	end
 	
 	files {
@@ -289,7 +289,7 @@ else
 
         if isFibersEnabled then
         defines {
-			"BRO_ENABLE_FIBERS=1"
+			"OPTICK_ENABLE_FIBERS=1"
 		}
 		files {
             "Samples/Common/TaskScheduler/Scheduler/Source/MTDefaultAppInterop.cpp",
