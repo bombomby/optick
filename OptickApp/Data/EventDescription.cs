@@ -187,13 +187,20 @@ namespace Profiler.Data
 
 		public enum Source
 		{
+			Core,
 			Game,
 			GameAuto,
-			System,
-			Core,
 			Sampling,
 		}
 		public Source Origin { get; set; }
+
+		public enum ThreadMask
+		{
+			None,
+			Main = 1 << 0,
+			GPU = 1 << 1,
+			IO = 1 << 2,
+		}
 
 		public String FullName
 		{

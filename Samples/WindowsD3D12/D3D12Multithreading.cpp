@@ -697,7 +697,7 @@ void D3D12Multithreading::LoadContexts()
 // Update frame-based values.
 void D3D12Multithreading::OnUpdate()
 {
-	OPTICK_CATEGORY(OPTICK_FUNC, Optick::Color::SkyBlue);
+	OPTICK_CATEGORY("OnUpdate", Optick::Category::Scene);
 
 	m_timer.Tick(NULL);
 
@@ -715,6 +715,7 @@ void D3D12Multithreading::OnUpdate()
 	// If it is, wait for it to complete.
 	if (m_pCurrentFrameResource->m_fenceValue > lastCompletedFence)
 	{
+		OPTICK_SCOPE("WaitForFence");
 		HANDLE eventHandle = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 		if (eventHandle == nullptr)
 		{
@@ -761,7 +762,7 @@ void D3D12Multithreading::OnUpdate()
 // Render the scene.
 void D3D12Multithreading::OnRender()
 {
-	OPTICK_CATEGORY(OPTICK_FUNC, Optick::Color::BurlyWood);
+	OPTICK_CATEGORY("OnRender", Optick::Category::Rendering);
 
 	BeginFrame();
 
@@ -776,23 +777,36 @@ void D3D12Multithreading::OnRender()
 #else
 	for (int i = 0; i < NumContexts; i++)
 	{
+		OPTICK_SCOPE("SetEvent");
 		SetEvent(m_workerBeginRenderFrame[i]); // Tell each worker to start drawing.
 	}
 
 	MidFrame();
 	EndFrame();
 
-	WaitForMultipleObjects(NumContexts, m_workerFinishShadowPass, TRUE, INFINITE);
+	{
+		OPTICK_CATEGORY("WaitForShadows", Optick::Category::Wait);
+		WaitForMultipleObjects(NumContexts, m_workerFinishShadowPass, TRUE, INFINITE);
+	}
 
 	// You can execute command lists on any thread. Depending on the work 
 	// load, apps can choose between using ExecuteCommandLists on one thread 
 	// vs ExecuteCommandList from multiple threads.
-	m_commandQueue->ExecuteCommandLists(NumContexts + 2, m_pCurrentFrameResource->m_batchSubmit); // Submit PRE, MID and shadows.
+	{
+		OPTICK_SCOPE("ExecuteCommandLists");
+		m_commandQueue->ExecuteCommandLists(NumContexts + 2, m_pCurrentFrameResource->m_batchSubmit); // Submit PRE, MID and shadows.
+	}
 
-	WaitForMultipleObjects(NumContexts, m_workerFinishedRenderFrame, TRUE, INFINITE);
+	{
+		OPTICK_CATEGORY("WaitForRenderFrame", Optick::Category::Wait);
+		WaitForMultipleObjects(NumContexts, m_workerFinishedRenderFrame, TRUE, INFINITE);
+	}
 
 	// Submit remaining command lists.
-	m_commandQueue->ExecuteCommandLists(_countof(m_pCurrentFrameResource->m_batchSubmit) - NumContexts - 2, m_pCurrentFrameResource->m_batchSubmit + NumContexts + 2);
+	{
+		OPTICK_SCOPE("ExecuteCommandLists");
+		m_commandQueue->ExecuteCommandLists(_countof(m_pCurrentFrameResource->m_batchSubmit) - NumContexts - 2, m_pCurrentFrameResource->m_batchSubmit + NumContexts + 2);
+	}
 #endif
 
 	m_cpuTimer.Tick(NULL);
@@ -825,8 +839,8 @@ void D3D12Multithreading::OnRender()
 	// Present and update the frame index for the next frame.
 	//PIXBeginEvent(m_commandQueue.Get(), 0, L"Presenting to screen");
 	{
-		OPTICK_CATEGORY("Present", Optick::Color::Tomato);
 		OPTICK_GPU_FLIP(m_swapChain.Get());
+		OPTICK_CATEGORY("Present", Optick::Category::Wait);
 		ThrowIfFailed(m_swapChain->Present(1, 0));
 	}
 
@@ -922,6 +936,8 @@ void D3D12Multithreading::OnKeyUp(UINT8 key)
 // Assemble the CommandListPre command list.
 void D3D12Multithreading::BeginFrame()
 {
+	OPTICK_SCOPE();
+
 	m_pCurrentFrameResource->Init();
 
 	// Indicate that the back buffer will be used as a render target.
@@ -930,8 +946,14 @@ void D3D12Multithreading::BeginFrame()
 	// Clear the render target and depth stencil.
 	const float clearColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHandle(m_rtvHeap->GetCPUDescriptorHandleForHeapStart(), m_frameIndex, m_rtvDescriptorSize);
-	m_pCurrentFrameResource->m_commandLists[CommandListPre]->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-	m_pCurrentFrameResource->m_commandLists[CommandListPre]->ClearDepthStencilView(m_dsvHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	{
+		OPTICK_SCOPE("ClearRenderTargetView");
+		m_pCurrentFrameResource->m_commandLists[CommandListPre]->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+	}
+	{
+		OPTICK_SCOPE("ClearDepthStencilView");
+		m_pCurrentFrameResource->m_commandLists[CommandListPre]->ClearDepthStencilView(m_dsvHeap->GetCPUDescriptorHandleForHeapStart(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	}
 
 	ThrowIfFailed(m_pCurrentFrameResource->m_commandLists[CommandListPre]->Close());
 }
@@ -939,6 +961,8 @@ void D3D12Multithreading::BeginFrame()
 // Assemble the CommandListMid command list.
 void D3D12Multithreading::MidFrame()
 {
+	OPTICK_SCOPE();
+
 	// Transition our shadow map from the shadow pass to readable in the scene pass.
 	m_pCurrentFrameResource->SwapBarriers();
 
@@ -948,6 +972,8 @@ void D3D12Multithreading::MidFrame()
 // Assemble the CommandListPost command list.
 void D3D12Multithreading::EndFrame()
 {
+	OPTICK_SCOPE();
+
 	m_pCurrentFrameResource->Finish();
 
 	// Indicate that the back buffer will now be used to present.
@@ -972,7 +998,7 @@ void D3D12Multithreading::WorkerThread(int threadIndex)
 
 		WaitForSingleObject(m_workerBeginRenderFrame[threadIndex], INFINITE);
 
-		OPTICK_CATEGORY("Render", Optick::Color::BurlyWood);
+		OPTICK_CATEGORY("Render", Optick::Category::Rendering);
 
 #endif
 		ID3D12GraphicsCommandList* pShadowCommandList = m_pCurrentFrameResource->m_shadowCommandLists[threadIndex].Get();
@@ -987,7 +1013,10 @@ void D3D12Multithreading::WorkerThread(int threadIndex)
 		m_pCurrentFrameResource->Bind(pShadowCommandList, FALSE, nullptr, nullptr);	// No need to pass RTV or DSV descriptor heap.
 
 		// Set null SRVs for the diffuse/normal textures.
-		pShadowCommandList->SetGraphicsRootDescriptorTable(0, m_cbvSrvHeap->GetGPUDescriptorHandleForHeapStart());
+		{
+			OPTICK_SCOPE("SetGraphicsRootDescriptorTable");
+			pShadowCommandList->SetGraphicsRootDescriptorTable(0, m_cbvSrvHeap->GetGPUDescriptorHandleForHeapStart());
+		}
 
 		// Distribute objects over threads by drawing only 1/NumContexts 
 		// objects per worker (i.e. every object such that objectnum % 
@@ -999,8 +1028,11 @@ void D3D12Multithreading::WorkerThread(int threadIndex)
 			OPTICK_GPU_EVENT("DrawShadows");
 			for (int j = threadIndex; j < _countof(SampleAssets::Draws); j += NumContexts)
 			{
+				//OPTICK_GPU_EVENT("DrawIndexedInstanced");
 				SampleAssets::DrawParameters drawArgs = SampleAssets::Draws[j];
 
+				OPTICK_SCOPE("DrawIndexedInstanced");
+				OPTICK_TAG("Name", SampleAssets::DebugNames[j]);
 				pShadowCommandList->DrawIndexedInstanced(drawArgs.IndexCount, 1, drawArgs.IndexStart, drawArgs.VertexBase, 0);
 			}
 		}
@@ -1039,10 +1071,20 @@ void D3D12Multithreading::WorkerThread(int threadIndex)
 
 				// Set the diffuse and normal textures for the current object.
 				CD3DX12_GPU_DESCRIPTOR_HANDLE cbvSrvHandle(cbvSrvHeapStart, nullSrvCount + drawArgs.DiffuseTextureIndex, cbvSrvDescriptorSize);
-				pSceneCommandList->SetGraphicsRootDescriptorTable(0, cbvSrvHandle);
+				{
+					OPTICK_SCOPE("SetGraphicsRootDescriptorTable");
+					pSceneCommandList->SetGraphicsRootDescriptorTable(0, cbvSrvHandle);
+				}
+				
 
 				//for (int repeat = 0; repeat < 10; ++repeat)
+				//OPTICK_GPU_EVENT("DrawIndexedInstanced");
+				{
+					OPTICK_SCOPE("DrawIndexedInstanced");
+					OPTICK_TAG("Name", SampleAssets::DebugNames[j]);
 					pSceneCommandList->DrawIndexedInstanced(drawArgs.IndexCount, 1, drawArgs.IndexStart, drawArgs.VertexBase, 0);
+				}
+					
 			}
 		}
 
@@ -1058,6 +1100,7 @@ void D3D12Multithreading::WorkerThread(int threadIndex)
 
 void D3D12Multithreading::SetCommonPipelineState(ID3D12GraphicsCommandList* pCommandList)
 {
+	OPTICK_SCOPE();
 	pCommandList->SetGraphicsRootSignature(m_rootSignature.Get());
 
 	ID3D12DescriptorHeap* ppHeaps[] = { m_cbvSrvHeap.Get(), m_samplerHeap.Get() };

@@ -226,6 +226,97 @@ namespace Optick
 			YellowGreen = 0xFF9ACD32,
 		};
 	};
+
+	#define MAKE_CATEGORY(filter, color) (((uint64_t)(color) << 32) | (1ull << filter))
+
+	struct Filter
+	{
+		enum Type : uint32_t
+		{
+			None,
+			
+			// CPU
+			AI,
+			Animation, 
+			Audio,
+			Debug,
+			Camera,
+			Cloth,
+			GameLogic,
+			Input,
+			Navigation,
+			Network,
+			Physics,
+			Rendering,
+			Scene,
+			Script,
+			Streaming,
+			UI,
+			VFX,
+			Visibility,
+			Wait,
+
+			// IO
+			IO,
+
+			// GPU
+			GPU_Cloth,
+			GPU_Lighting,
+			GPU_PostFX,
+			GPU_Reflections,
+			GPU_Scene,
+			GPU_Shadows,
+			GPU_UI,
+			GPU_VFX,
+			GPU_Water,
+
+		};
+	};
+
+	struct Category
+	{
+		enum Type : uint64_t
+		{
+			// CPU
+			None = MAKE_CATEGORY(Filter::None, Color::Null),
+			AI = MAKE_CATEGORY(Filter::AI, Color::Purple),
+			Animation = MAKE_CATEGORY(Filter::Animation, Color::LightSkyBlue),
+			Audio = MAKE_CATEGORY(Filter::Audio, Color::HotPink),
+			Debug = MAKE_CATEGORY(Filter::Debug, Color::Black),
+			Camera = MAKE_CATEGORY(Filter::Camera, Color::Black),
+			Cloth = MAKE_CATEGORY(Filter::Cloth, Color::DarkGreen),
+			GameLogic = MAKE_CATEGORY(Filter::GameLogic, Color::RoyalBlue),
+			Input = MAKE_CATEGORY(Filter::Input, Color::Ivory),
+			Navigation = MAKE_CATEGORY(Filter::Navigation, Color::Magenta),
+			Network = MAKE_CATEGORY(Filter::Network, Color::Olive),
+			Physics = MAKE_CATEGORY(Filter::Physics, Color::LawnGreen),
+			Rendering = MAKE_CATEGORY(Filter::Rendering, Color::BurlyWood),
+			Scene = MAKE_CATEGORY(Filter::Scene, Color::RoyalBlue),
+			Script = MAKE_CATEGORY(Filter::Script, Color::Plum),
+			Streaming = MAKE_CATEGORY(Filter::Streaming, Color::Gold),
+			UI = MAKE_CATEGORY(Filter::UI, Color::PaleTurquoise),
+			VFX = MAKE_CATEGORY(Filter::VFX, Color::SaddleBrown),
+			Visibility = MAKE_CATEGORY(Filter::Visibility, Color::Snow),
+			Wait = MAKE_CATEGORY(Filter::Wait, Color::Tomato),
+			// IO
+			IO = MAKE_CATEGORY(Filter::IO, Color::Khaki),
+			// GPU
+			GPU_Cloth = MAKE_CATEGORY(Filter::GPU_Cloth, Color::DarkGreen),
+			GPU_Lighting = MAKE_CATEGORY(Filter::GPU_Lighting, Color::Khaki),
+			GPU_PostFX = MAKE_CATEGORY(Filter::GPU_PostFX, Color::Maroon),
+			GPU_Reflections = MAKE_CATEGORY(Filter::GPU_Reflections, Color::CadetBlue),
+			GPU_Scene = MAKE_CATEGORY(Filter::GPU_Scene, Color::RoyalBlue),
+			GPU_Shadows = MAKE_CATEGORY(Filter::GPU_Shadows, Color::LightSlateGray),
+			GPU_UI = MAKE_CATEGORY(Filter::GPU_UI, Color::PaleTurquoise),
+			GPU_VFX = MAKE_CATEGORY(Filter::GPU_VFX, Color::SaddleBrown),
+			GPU_Water = MAKE_CATEGORY(Filter::GPU_Water, Color::SteelBlue),
+		};
+
+		static uint32_t GetColor(Type t) { return (uint32_t)(t >> 32); }
+		static uint32_t GetMask(Type t) { return (uint32_t)(t); }
+	};
+
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
@@ -274,7 +365,18 @@ OPTICK_API bool UnRegisterThread(bool keepAlive);
 OPTICK_API EventStorage** GetEventStorageSlotForCurrentThread();
 OPTICK_API bool IsFiberStorage(EventStorage* fiberStorage);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-OPTICK_API EventStorage* RegisterStorage(const char* name, uint64_t threadID = uint64_t(-1));
+struct ThreadMask
+{
+	enum Type
+	{
+		None	= 0,
+		Main	= 1 << 0,
+		GPU		= 1 << 1,
+		IO		= 1 << 2,
+	};
+};
+
+OPTICK_API EventStorage* RegisterStorage(const char* name, uint64_t threadID = uint64_t(-1), ThreadMask::Type type = ThreadMask::None);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct State
 {
@@ -431,6 +533,15 @@ struct OPTICK_API Event
 	}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+OPTICK_INLINE Optick::EventDescription* CreateDescription(const char* functionName, const char* fileName, int fileLine, const char* eventName = nullptr, const ::Optick::Category::Type category = ::Optick::Category::None)
+{
+	return ::Optick::EventDescription::Create(eventName != nullptr ? eventName : functionName, fileName, fileLine, ::Optick::Category::GetColor(category), ::Optick::Category::GetMask(category));
+}
+OPTICK_INLINE Optick::EventDescription* CreateDescription(const char* functionName, const char* fileName, int fileLine, const ::Optick::Category::Type category)
+{
+	return ::Optick::EventDescription::Create(functionName, fileName, fileLine, ::Optick::Category::GetColor(category), ::Optick::Category::GetMask(category));
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct OPTICK_API GPUEvent
 {
 	EventData* data;
@@ -464,11 +575,6 @@ struct OPTICK_API Tag
 	{
 		float p[3] = { x, y, z }; Attach(description, p);
 	}
-};
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct OPTICK_API Category : public Event
-{
-	Category( const EventDescription& description );
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct ThreadScope
@@ -553,62 +659,48 @@ OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame);
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// Scoped profiling event with a STATIC name. 
-// Useful for measuring multiple code blocks within a function call.
-// Example:
-//		{
-//			OPTICK_EVENT("ScopeName");
-//			... code ...
-//		}
-// Notes:
-//		Optick holds a pointer to the name, so please keep this pointer alive. 
-#define OPTICK_EVENT(NAME) static ::Optick::EventDescription* OPTICK_CONCAT(autogenerated_description_, __LINE__) = nullptr; \
-							 if (OPTICK_CONCAT(autogenerated_description_, __LINE__) == nullptr) OPTICK_CONCAT(autogenerated_description_, __LINE__) = ::Optick::EventDescription::Create( NAME, __FILE__, __LINE__ ); \
-							 ::Optick::Event OPTICK_CONCAT(autogenerated_event_, __LINE__)( *(OPTICK_CONCAT(autogenerated_description_, __LINE__)) ); \
-
 // Scoped profiling event which automatically grabs current function name.
 // Use tis macro 95% of the time.
-// Example:
+// Example A:
 //		void Function()
 //		{
-//			OPTICK_SCOPE;
+//			OPTICK_SCOPE();
+//			... code ...
+//		}
+//		or
+//		void Function()
+//		{
+//			OPTICK_SCOPE("CustomFunctionName");
 //			... code ...
 //		}
 // Notes:
 //		Optick captures full name of the function including name space and arguments.
 //		Full name is usually shortened in the Optick GUI in order to highlight the most important bits.
-#define OPTICK_SCOPE OPTICK_EVENT( OPTICK_FUNC )
+#define OPTICK_SCOPE(...) static ::Optick::EventDescription* OPTICK_CONCAT(autogenerated_description_, __LINE__) = nullptr; \
+							 if (OPTICK_CONCAT(autogenerated_description_, __LINE__) == nullptr) OPTICK_CONCAT(autogenerated_description_, __LINE__) = ::Optick::CreateDescription(OPTICK_FUNC, __FILE__, __LINE__, __VA_ARGS__); \
+							 ::Optick::Event OPTICK_CONCAT(autogenerated_event_, __LINE__)( *(OPTICK_CONCAT(autogenerated_description_, __LINE__)) ); \
 
 // Backward compatibility with previous versions of Optick
 #if !defined(PROFILE)
-#define PROFILE OPTICK_SCOPE
+#define PROFILE OPTICK_SCOPE()
 #endif
-
-// Inlined profiling event.
-// Useful for wrapping one-line call into with a profiling macro.
-// Example:
-//		OPTICK_INLINE_EVENT("ScopeName", FunctionCall());
-#define OPTICK_INLINE_EVENT(NAME, CODE) { OPTICK_EVENT(NAME) CODE; }
 
 // Scoped profiling macro with predefined color.
 // Use this macro for high-level function calls (e.g. AI, Physics, Audio, Render etc.).
 // Example:
 //		void UpdateAI()
 //		{
-//			OPTICK_CATEGORY("UpdateAI", Optick::Color::LimeGreen);
+//			OPTICK_CATEGORY("UpdateAI", Optick::Category::AI);
 //			... code ...
 //		}
 //	
-//		You could also use OPTICK_FUNC to capture current function name:
+//		Macro could automatically capture current function name:
 //		void UpdateAI()
 //		{
-//			OPTICK_CATEGORY(OPTICK_FUNC, Optick::Color::LimeGreen);
+//			OPTICK_CATEGORY(OPTICK_FUNC, Optick::Category::AI);
 //			... code ...
 //		}
-#define OPTICK_CATEGORY(NAME, COLOR)		  static ::Optick::EventDescription* OPTICK_CONCAT(autogenerated_description_, __LINE__) = nullptr; \
-											  if (OPTICK_CONCAT(autogenerated_description_, __LINE__) == nullptr) OPTICK_CONCAT(autogenerated_description_, __LINE__) = ::Optick::EventDescription::Create( NAME, __FILE__, __LINE__, (unsigned long)COLOR ); \
-											  ::Optick::Category OPTICK_CONCAT(autogenerated_event_, __LINE__)( *(OPTICK_CONCAT(autogenerated_description_, __LINE__)) ); \
+#define OPTICK_CATEGORY(NAME, CATEGORY)	OPTICK_SCOPE(NAME, CATEGORY)
 
 // Profiling event for Main Loop update.
 // You need to call this function in the beginning of the each new frame.
@@ -621,7 +713,7 @@ OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame);
 #define OPTICK_FRAME(FRAME_NAME)  static ::Optick::ThreadScope mainThreadScope(FRAME_NAME);		\
 									OPTICK_UNUSED(mainThreadScope);									\
 									uint32_t frameNumber = ::Optick::NextFrame();					\
-									::Optick::Category OPTICK_CONCAT(autogenerated_event_, __LINE__)(*::Optick::GetFrameDescription(::Optick::FrameType::CPU)); \
+									::Optick::Event OPTICK_CONCAT(autogenerated_event_, __LINE__)(*::Optick::GetFrameDescription(::Optick::FrameType::CPU)); \
 									OPTICK_TAG("Frame", frameNumber);
 
 
@@ -636,7 +728,7 @@ OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame);
 //			}
 //		}
 #define OPTICK_THREAD(THREAD_NAME) ::Optick::ThreadScope brofilerThreadScope(THREAD_NAME);	\
-									 OPTICK_UNUSED(brofilerThreadScope);							\
+									 OPTICK_UNUSED(brofilerThreadScope);					\
 
 
 // Thread registration macros.
@@ -742,7 +834,7 @@ OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame);
 #define OPTICK_GPU_CONTEXT(...)	 ::Optick::GPUContextScope OPTICK_CONCAT(gpu_autogenerated_context_, __LINE__)(__VA_ARGS__); \
 									 (void)OPTICK_CONCAT(gpu_autogenerated_context_, __LINE__);
 
-#define OPTICK_GPU_EVENT(NAME)	 OPTICK_EVENT(NAME); \
+#define OPTICK_GPU_EVENT(NAME)	 OPTICK_SCOPE(NAME); \
 									 static ::Optick::EventDescription* OPTICK_CONCAT(gpu_autogenerated_description_, __LINE__) = nullptr; \
 									 if (OPTICK_CONCAT(gpu_autogenerated_description_, __LINE__) == nullptr) OPTICK_CONCAT(gpu_autogenerated_description_, __LINE__) = ::Optick::EventDescription::Create( NAME, __FILE__, __LINE__ ); \
 									 ::Optick::GPUEvent OPTICK_CONCAT(gpu_autogenerated_event_, __LINE__)( *(OPTICK_CONCAT(gpu_autogenerated_description_, __LINE__)) ); \
@@ -750,9 +842,7 @@ OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame);
 #define OPTICK_GPU_FLIP(SWAP_CHAIN)		::Optick::GpuFlip(SWAP_CHAIN);
 
 #else
-#define OPTICK_EVENT(NAME)
-#define OPTICK_SCOPE
-#define OPTICK_INLINE_EVENT(NAME, CODE) { CODE; }
+#define OPTICK_SCOPE(...)
 #define OPTICK_CATEGORY(NAME, COLOR)
 #define OPTICK_FRAME(NAME)
 #define OPTICK_THREAD(FRAME_NAME)

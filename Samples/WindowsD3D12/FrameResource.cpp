@@ -12,6 +12,7 @@
 #include "stdafx.h"
 #include "FrameResource.h"
 #include "SquidRoom.h"
+#include "Optick.h"
 
 FrameResource::FrameResource(ID3D12Device* pDevice, ID3D12PipelineState* pPso, ID3D12PipelineState* pShadowMapPso, ID3D12DescriptorHeap* pDsvHeap, ID3D12DescriptorHeap* pCbvSrvHeap, D3D12_VIEWPORT* pViewport, UINT frameResourceIndex) :
 	m_fenceValue(0),
@@ -198,6 +199,8 @@ FrameResource::~FrameResource()
 // this frame resource.
 void FrameResource::WriteConstantBuffers(D3D12_VIEWPORT* pViewport, Camera* pSceneCamera, Camera lightCams[NumLights], LightState lights[NumLights])
 {
+	OPTICK_SCOPE();
+
 	SceneConstantBuffer sceneConsts = {}; 
 	SceneConstantBuffer shadowConsts = {};
 	
@@ -225,25 +228,39 @@ void FrameResource::WriteConstantBuffers(D3D12_VIEWPORT* pViewport, Camera* pSce
 
 	shadowConsts.ambientColor = sceneConsts.ambientColor = { 0.1f, 0.2f, 0.3f, 1.0f };
 
-	memcpy(mp_sceneConstantBufferWO, &sceneConsts, sizeof(SceneConstantBuffer));
-	memcpy(mp_shadowConstantBufferWO, &shadowConsts, sizeof(SceneConstantBuffer));
+	{
+		OPTICK_SCOPE("MemCpy_sceneConsts");
+		memcpy(mp_sceneConstantBufferWO, &sceneConsts, sizeof(SceneConstantBuffer));
+	}
+
+	{
+		OPTICK_SCOPE("MemCpy_sceneConsts");
+		memcpy(mp_shadowConstantBufferWO, &shadowConsts, sizeof(SceneConstantBuffer));
+	}
 }
 
 void FrameResource::Init()
 {
+	OPTICK_SCOPE();
 	// Reset the command allocators and lists for the main thread.
 	for (int i = 0; i < CommandListCount; i++)
 	{
+		OPTICK_SCOPE("ResetCommanAllocator");
 		ThrowIfFailed(m_commandAllocators[i]->Reset());
 		ThrowIfFailed(m_commandLists[i]->Reset(m_commandAllocators[i].Get(), m_pipelineState.Get()));
 	}
 
 	// Clear the depth stencil buffer in preparation for rendering the shadow map.
-	m_commandLists[CommandListPre]->ClearDepthStencilView(m_shadowDepthView, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	{
+		OPTICK_SCOPE("ClearDepthStencilView");
+		m_commandLists[CommandListPre]->ClearDepthStencilView(m_shadowDepthView, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	}
 
 	// Reset the worker command allocators and lists.
 	for (int i = 0; i < NumContexts; i++)
 	{
+		OPTICK_SCOPE("ResetCommandAllocator");
+
 		ThrowIfFailed(m_shadowCommandAllocators[i]->Reset());
 		ThrowIfFailed(m_shadowCommandLists[i]->Reset(m_shadowCommandAllocators[i].Get(), m_pipelineStateShadowMap.Get()));
 
@@ -267,6 +284,7 @@ void FrameResource::Finish()
 // resources provided by frame resource.
 void FrameResource::Bind(ID3D12GraphicsCommandList* pCommandList, BOOL scenePass, D3D12_CPU_DESCRIPTOR_HANDLE* pRtvHandle, D3D12_CPU_DESCRIPTOR_HANDLE* pDsvHandle)
 {
+	OPTICK_SCOPE();
 	if (scenePass)
 	{
 		// Scene pass. We use constant buf #2 and depth stencil #2

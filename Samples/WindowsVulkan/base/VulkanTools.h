@@ -31,6 +31,8 @@
 #include <android/asset_manager.h>
 #endif
 
+#include "Optick.h"
+
 // Custom define for better code readability
 #define VK_FLAGS_NONE 0
 // Default fence timeout in nanoseconds
@@ -50,6 +52,7 @@
 #else
 #define VK_CHECK_RESULT(f)																				\
 {																										\
+	OPTICK_SCOPE(#f);																					\
 	VkResult res = (f);																					\
 	if (res != VK_SUCCESS)																				\
 	{																									\

@@ -216,7 +216,7 @@ void FBrofilerPlugin::StopCapture()
 		Settings->PostEditChange();
 		Settings->SaveConfig();
 #endif
-	}
+	}^
 	
 }
 

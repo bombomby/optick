@@ -78,18 +78,20 @@ namespace Profiler
 
 		public bool GenerateSamplingThreads { get; set; } = false;
 
-		private class EventsThreadGroup
+		private class EventsThreadGroup : IComparable<EventsThreadGroup>
 		{
 			public List<EventsThreadRow> Threads { get; set; } = new List<EventsThreadRow>();
 
-			static private int MAX_LEVENSTEIN_DISTANCE = 4;
-
 			public bool IsMatch(EventsThreadRow thread)
 			{
+				// Max distance between thread names
+				int maxLevensteinDistance = thread.Description.Name.Length / 3;
+
 				foreach (EventsThreadRow candidate in Threads)
 				{
-					if (Utils.ComputeLevenshteinDistance(candidate.Description.Name, thread.Description.Name) < MAX_LEVENSTEIN_DISTANCE)
-						return true;
+					if (candidate.Description.Mask == thread.Description.Mask && candidate.Description.Origin == thread.Description.Origin)
+						if (Utils.ComputeLevenshteinDistance(candidate.Description.Name, thread.Description.Name) < maxLevensteinDistance)
+							return true;
 				}
 				return false;
 			}
@@ -99,16 +101,8 @@ namespace Profiler
 				Int64 score = 0;
 				foreach (EventsThreadRow thread in Threads)
 				{
-					switch (thread.Description.Origin)
-					{
-						case ThreadDescription.Source.Core:
-							return double.MaxValue;
-
-						default:
-							foreach (EventFrame frame in thread.EventData.Events)
-								score += frame.Entries.Count;
-							break;
-					}
+					foreach (EventFrame frame in thread.EventData.Events)
+						score += frame.Entries.Count;
 				}
 				return (double)score / Threads.Count;
 			}
@@ -130,6 +124,19 @@ namespace Profiler
 				});
 
 				Score = CalcScore();
+			}
+
+			public int CompareTo(EventsThreadGroup other)
+			{
+				int compareOrigin = Threads[0].Description.Origin.CompareTo(other.Threads[0].Description.Origin);
+				if (compareOrigin != 0)
+					return compareOrigin;
+
+				int compareMasks = Threads[0].Description.Mask.CompareTo(other.Threads[0].Description.Mask);
+				if (compareMasks != 0)
+					return -compareMasks;
+
+				return -Score.CompareTo(other.Score);
 			}
 
 			public double Score { get; set; }
@@ -162,7 +169,8 @@ namespace Profiler
 
 			List<EventsThreadRow> result = new List<EventsThreadRow>();
 			groups.ForEach(g => g.Sort());
-			foreach (var group in groups.OrderBy(g => -g.Score))
+			groups.Sort();
+			foreach (var group in groups)
 				result.AddRange(group.Threads);
 
 			return result;

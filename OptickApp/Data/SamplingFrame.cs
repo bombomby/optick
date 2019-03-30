@@ -101,7 +101,17 @@ namespace Profiler.Data
 		public String Path
 		{
 			get { return path; }
-			set { path = value; Name = System.IO.Path.GetFileName(value); }
+			set {
+				path = value;
+				try
+				{
+					Name = System.IO.Path.GetFileName(value);
+				}
+				catch (System.ArgumentException ex)
+				{
+					Name = ex.Message;
+				}
+			}
 		}
 		public String Name { get; private set; }
 		public UInt64 Address { get; set; }

@@ -22,7 +22,8 @@ namespace Optick
 		{
 			char name[128] = { 0 };
 			sprintf_s(name, "%s [%s]", nodeName, GetGPUQueueName((GPUQueueType)i));
-			node->gpuEventStorage[i] = RegisterStorage(name);
+			node->gpuEventStorage[i] = RegisterStorage(name, uint64_t(-1), ThreadMask::GPU);
+			node->name = nodeName;
 		}
 		nodes[nodeIndex] = node;
 	}
@@ -61,6 +62,11 @@ namespace Optick
 				}
 			}
 		}
+	}
+
+	std::string GPUProfiler::GetName() const
+	{
+		return !nodes.empty() ? nodes[0]->name : std::string();
 	}
 
 	GPUProfiler::~GPUProfiler()

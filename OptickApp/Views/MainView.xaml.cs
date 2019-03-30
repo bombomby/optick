@@ -254,6 +254,16 @@ namespace Profiler.Views
 				var screenShotView = scope.Resolve<IWindowManager>().ShowWindow(viewModel);
 			}
 		}
+
+		private void ContactDeveloperIcon_Click(object sender, RoutedEventArgs e)
+		{
+			Process.Start("mailto:support@optick.dev");
+		}
+
+		private void OpenWikiIcon_Click(object sender, RoutedEventArgs e)
+		{
+			Process.Start("https://github.com/bombomby/optick/wiki");
+		}
 	}
 
 

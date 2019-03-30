@@ -82,6 +82,7 @@ namespace vks
 		// Add a new job to the thread's queue
 		void addJob(std::function<void()> function)
 		{
+			OPTICK_SCOPE();
 			std::lock_guard<std::mutex> lock(queueMutex);
 			jobQueue.push(std::move(function));
 			condition.notify_one();
@@ -90,6 +91,7 @@ namespace vks
 		// Wait until all work items have been finished
 		void wait()
 		{
+			OPTICK_CATEGORY(OPTICK_FUNC, Optick::Category::Wait);
 			std::unique_lock<std::mutex> lock(queueMutex);
 			condition.wait(lock, [this]() { return jobQueue.empty(); });
 		}

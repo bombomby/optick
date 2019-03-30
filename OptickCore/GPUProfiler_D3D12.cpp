@@ -163,7 +163,7 @@ namespace Optick
 
 	void GPUProfilerD3D12::WaitForFrame(uint64_t frameNumberToWait)
 	{
-		PROFILE;
+		OPTICK_SCOPE();
 
 		NodePayload* payload = nodePayloads[currentNode];
 		while (frameNumberToWait > payload->syncFence->GetCompletedValue())
@@ -174,7 +174,7 @@ namespace Optick
 
 	void GPUProfilerD3D12::Flip(IDXGISwapChain* swapChain)
 	{
-		PROFILE;
+		OPTICK_CATEGORY("GPUProfilerD3D12::Flip", Category::Debug);
 
 		std::lock_guard<std::recursive_mutex> lock(updateLock);
 

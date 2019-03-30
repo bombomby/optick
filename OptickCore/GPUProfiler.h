@@ -86,6 +86,8 @@ namespace Optick
 				return index;
 			}
 
+			std::string name;
+
 			Node() : queryIndex(0) { gpuEventStorage.fill(nullptr); }
 		};
 
@@ -114,12 +116,13 @@ namespace Optick
 		virtual void Stop(uint32 mode);
 		virtual void Dump(uint32 mode);
 
+		virtual std::string GetName() const;
+
 		// Interface to implement
 		virtual ClockSynchronization GetClockSynchronization(uint32_t nodeIndex) = 0;
 		virtual void QueryTimestamp(void* context, int64_t* cpuTimestampOut) = 0;
 		virtual void Flip(void* swapChain) = 0;
-		
-		
+
 		virtual ~GPUProfiler();
 	};
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

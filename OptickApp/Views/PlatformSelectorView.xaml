@@ -37,7 +37,7 @@
                                 <Border Width="16" Height="16" Grid.Column="0" >
                                     <ContentControl Style="{Binding Icon, Converter={StaticResource StringToResource}}" Margin="-6" />
                                 </Border>
-                                <Label Grid.Column="1" MinWidth="68" Content="{Binding Name}" Margin="0" FontWeight="Bold" />
+                                <Label Grid.Column="1" MinWidth="68" Content="{Binding Name}" Margin="2,0" FontWeight="Bold" />
                                 <Label Grid.Column="2" Content="{Binding Status}" Margin="0" Opacity="0.75" />
                                 <Button Grid.Column="3" ToolTip="Remove Connection"
                                  Margin="0,0,0,0" Padding="-6" 
@@ -84,7 +84,7 @@
                                 <Border Width="16" Height="16" Grid.Column="0" >
                                     <ContentControl Style="{Binding Icon, Converter={StaticResource StringToResource}}" Margin="-6" />
                                 </Border>
-                                <Label Grid.Column="1" MinWidth="68" Content="{Binding Name}" Margin="0" FontWeight="Bold" />
+                                <Label Grid.Column="1" MinWidth="68" Content="{Binding Name}" FontWeight="Bold" Margin="4,0" />
                                 <Label Grid.Column="2" Content="{Binding Status}" Opacity="0.75" Margin="0" />
                                 <Border Width="16" Height="16" Grid.Column="3" >
                                     <ContentControl Style="{StaticResource appbar_connect}" Visibility="{Binding IsDisconnect, Converter={StaticResource BoolToVisibilityConverter}}" Margin="-6" />

@@ -60,6 +60,21 @@
         <Setter Property="Padding" Value="0" />
     </Style>
 
+    <Style TargetType="Label" BasedOn="{StaticResource MetroLabel}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Label">
+                    <Border>
+                        <ContentPresenter
+                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}" 
+                           RecognizesAccessKey="False" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <ControlTemplate x:Key="SplitToggleButtonHorizontal" TargetType="{x:Type Controls:SplitButton}">
         <Grid UseLayoutRounding="True">
             <Border x:Name="PART_Border"

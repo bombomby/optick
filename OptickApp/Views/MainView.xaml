@@ -26,10 +26,10 @@
                 <TextBlock Text="{Binding Version, Mode=OneTime, StringFormat={}v{0}}" FontWeight="Bold" FontSize="14" Opacity="0.3" VerticalAlignment="Center" Margin="10,0" />
             </StackPanel>
             <StackPanel Orientation="Horizontal">
-                <Button Margin="-2" ToolTip="Navigate to the Wiki">
+                <Button Margin="-2" ToolTip="Navigate to the Wiki" x:Name="OpenWikiIcon" Click="OpenWikiIcon_Click">
                     <ContentControl Style="{StaticResource appbar_book_perspective_help}" />
                 </Button>
-                <Button Margin="-2" ToolTip="Ask a question">
+                <Button Margin="-2" ToolTip="Ask a question" x:Name="ContactDeveloperIcon" Click="ContactDeveloperIcon_Click">
                     <ContentControl Style="{StaticResource appbar_message_profanity}" />
                 </Button>
                 <Button Margin="-2" ToolTip="Report a bug" x:Name="ReportBugIcon" Click="ReportBugIcon_Click">

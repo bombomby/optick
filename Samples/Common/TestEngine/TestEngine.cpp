@@ -63,7 +63,7 @@ static const unsigned long REPEAT_COUNT = 128 * 1024;
 template<unsigned long N>
 void SlowFunction()
 { 
-	OPTICK_SCOPE;
+	OPTICK_SCOPE();
 	// Make it static to fool compiler and prevent it from skipping
 	static float value = 0.0f;
 	
@@ -77,7 +77,7 @@ void SlowFunction()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void SlowFunction2()
 { 
-	OPTICK_SCOPE;
+	OPTICK_SCOPE();
 	// Make it static to fool compiler and prevent it from skipping
 	static const size_t NUM_VALUES = 1024 * 1024;
 	static float values[NUM_VALUES] = { 0 };
@@ -104,7 +104,7 @@ struct SimpleTask
 	void Do(MT::FiberContext& ctx)
 	{
 		{
-			OPTICK_CATEGORY("BeforeYield", Optick::Color::PaleGreen);
+			OPTICK_SCOPE("BeforeYield", Optick::Category::AI);
 
 			for (unsigned long i = 0; i < N; ++i)
 				value = (value + sin((float)i)) * 0.5f;
@@ -113,7 +113,7 @@ struct SimpleTask
 		ctx.Yield();
 
 		{
-			OPTICK_CATEGORY("AfterYield", Optick::Color::SandyBrown);
+			OPTICK_SCOPE("AfterYield", Optick::Category::AI);
 
 			for (unsigned long i = 0; i < N; ++i)
 				value = (value + cos((float)i)) * 0.5f;
@@ -163,7 +163,7 @@ struct PriorityTask
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Engine::Update()
 { 
-	OPTICK_SCOPE;
+	OPTICK_SCOPE();
 
 	UpdateInput();
 
@@ -184,19 +184,19 @@ bool Engine::Update()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdateInput()
 {
-	OPTICK_CATEGORY("UpdateInput", Optick::Color::SteelBlue);
+	OPTICK_CATEGORY("UpdateInput", Optick::Category::Input);
 	SlowFunction2();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdateMessages()
 {
-	OPTICK_CATEGORY("UpdateMessages", Optick::Color::Orange);
+	OPTICK_CATEGORY("UpdateMessages", Optick::Category::Network);
 	SlowFunction<REPEAT_COUNT>();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdateLogic()
 {
-	OPTICK_CATEGORY("UpdateLogic", Optick::Color::Orchid);
+	OPTICK_CATEGORY("UpdateLogic", Optick::Category::GameLogic);
 
 	static const char* name[3] = { "Alice", "Bob", "Craig" };
 
@@ -214,7 +214,7 @@ void Engine::UpdateLogic()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdateTasks()
 {
-	OPTICK_CATEGORY("UpdateTasks", Optick::Color::SkyBlue);
+	OPTICK_CATEGORY("UpdateTasks", Optick::Category::Scene);
     
 #if OPTICK_ENABLE_FIBERS
 	RootTask<16> task;
@@ -231,13 +231,13 @@ void Engine::UpdateTasks()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdateScene()
 {
-	OPTICK_CATEGORY("UpdateScene", Optick::Color::SkyBlue);
+	OPTICK_CATEGORY("UpdateScene", Optick::Category::Scene);
 	SlowFunction<REPEAT_COUNT>();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::Draw()
 {
-	OPTICK_CATEGORY("Draw", Optick::Color::Salmon);
+	OPTICK_CATEGORY("Draw", Optick::Category::Rendering);
 
 	int64_t cpuTimestampStart = Optick::GetHighPrecisionTime();
 	SlowFunction<REPEAT_COUNT>();
@@ -255,7 +255,7 @@ void Engine::Draw()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdatePhysics()
 { 
-	OPTICK_CATEGORY("UpdatePhysics", Optick::Color::Wheat);
+	OPTICK_CATEGORY("UpdatePhysics", Optick::Category::Physics);
 	OPTICK_TAG("Position", 123.0f, 456.0f, 789.0f);
 	SpinSleep(20);
 }
@@ -291,7 +291,7 @@ void RecursiveUpdate<0>(int) {}
 
 void Engine::UpdateRecursive()
 {
-	OPTICK_SCOPE;
+	OPTICK_SCOPE();
 	RecursiveUpdate<4>(1);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

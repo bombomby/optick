@@ -131,7 +131,8 @@ namespace Optick
 
 	void GPUProfilerVulkan::WaitForFrame(uint64_t frameNumberToWait)
 	{
-		PROFILE;
+		OPTICK_SCOPE();
+
 		int r = VK_SUCCESS;
 		do
 		{
@@ -142,7 +143,7 @@ namespace Optick
 
 	void GPUProfilerVulkan::Flip(void* /*swapChain*/)
 	{
-		PROFILE;
+		OPTICK_CATEGORY("GPUProfilerVulkan::Flip", Category::Debug);
 
 		std::lock_guard<std::recursive_mutex> lock(updateLock);
 

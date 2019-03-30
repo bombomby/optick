@@ -258,17 +258,6 @@ OutputDataStream& operator<<(OutputDataStream& stream, const FiberSyncData& ob)
 	return stream << (EventTime)(ob) << ob.threadId;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Category::Category(const EventDescription& description) : Event(description)
-{
-	if (data)
-	{
-		if (EventStorage* storage = Core::storage)
-		{
-			storage->RegisterCategory(*data);
-		}
-	}
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static std::mutex& GetBoardLock()
@@ -888,7 +877,10 @@ void Core::DumpBoard(uint32 mode, EventTime timeSlice, uint32 mainThreadIndex)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::GenerateCommonSummary()
 {
+	AttachSummary("Platform", Platform::GetName());
 	AttachSummary("CPU", GetCPUName().c_str());
+	if (gpuProfiler)
+		AttachSummary("GPU", gpuProfiler->GetName().c_str());
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core::Core() 
@@ -1345,9 +1337,9 @@ OPTICK_API bool RegisterFiber(uint64 fiberId, EventStorage** slot)
 	return Core::Get().RegisterFiber(FiberDescription(fiberId), slot);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-OPTICK_API EventStorage* RegisterStorage(const char* name, uint64_t threadID)
+OPTICK_API EventStorage* RegisterStorage(const char* name, uint64_t threadID, ThreadMask::Type type)
 {
-	ThreadEntry* entry = Core::Get().RegisterThread(ThreadDescription(name, threadID, GetProcessID(), false), nullptr);
+	ThreadEntry* entry = Core::Get().RegisterThread(ThreadDescription(name, threadID, GetProcessID(), 1, 0, type), nullptr);
 	return entry ? &entry->storage : nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

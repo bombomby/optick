@@ -64,11 +64,21 @@ namespace Optick
 
 		~MemoryChunk()
 		{
-			if (next)
+			MemoryChunk* chunk = this;
+			while (chunk->next)
+				chunk = chunk->next;
+
+			while (chunk != this)
 			{
-				Memory::Delete(next);
-				next = 0;
-				prev = 0;
+				MemoryChunk* toDelete = chunk;
+				chunk = toDelete->prev;
+				Memory::Delete(toDelete);
+			}
+
+			if (prev != nullptr)
+			{
+				prev->next = nullptr;
+				prev = nullptr;
 			}
 		}
 	};

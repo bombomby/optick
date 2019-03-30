@@ -98,7 +98,7 @@ struct OptickString
 {
 	char data[N];
 	OptickString() {}
-	OptickString<N>& operator=(const char* text) { strncpy(data, text, N-1); return *this; }
+	OptickString<N>& operator=(const char* text) { strcpy_s(data, text); return *this; }
 	OptickString(const char* text) { *this = text; }
 };
 #if defined(OPTICK_MSVC)
@@ -135,12 +135,12 @@ typedef TagData<uint64> TagU64;
 typedef TagData<Point> TagPoint;
 typedef TagData<ShortString> TagString;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-typedef MemoryPool<TagFloat, 128> TagFloatBuffer;
-typedef MemoryPool<TagS32, 128> TagS32Buffer;
-typedef MemoryPool<TagU32, 128> TagU32Buffer;
-typedef MemoryPool<TagU64, 128> TagU64Buffer;
+typedef MemoryPool<TagFloat, 1024> TagFloatBuffer;
+typedef MemoryPool<TagS32, 1024> TagS32Buffer;
+typedef MemoryPool<TagU32, 1024> TagU32Buffer;
+typedef MemoryPool<TagU64, 1024> TagU64Buffer;
 typedef MemoryPool<TagPoint, 64> TagPointBuffer;
-typedef MemoryPool<TagString, 64> TagStringBuffer;
+typedef MemoryPool<TagString, 1024> TagStringBuffer;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -175,7 +175,6 @@ public:
 struct EventStorage
 {
 	EventBuffer eventBuffer;
-	CategoryBuffer categoryBuffer; 
 	FiberSyncBuffer fiberSyncBuffer;
 
 	TagFloatBuffer tagFloatBuffer;
@@ -209,16 +208,10 @@ struct EventStorage
 		return eventBuffer.Add(); 
 	}
 
-	OPTICK_INLINE void RegisterCategory(const EventData& eventData) 
-	{ 
-		categoryBuffer.Add() = &eventData;
-	}
-
 	// Free all temporary memory
 	void Clear(bool preserveContent)
 	{
 		eventBuffer.Clear(preserveContent);
-		categoryBuffer.Clear(preserveContent);
 		fiberSyncBuffer.Clear(preserveContent);
 		gpuStorage.Clear(preserveContent);
 		ClearTags(preserveContent);
