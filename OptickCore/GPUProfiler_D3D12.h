@@ -28,24 +28,23 @@ namespace Optick
 		struct Frame
 		{
 			ID3D12CommandAllocator* commandAllocator;
-			std::array<ID3D12GraphicsCommandList*, MAX_GPU_NODES> commandList;
+			ID3D12GraphicsCommandList* commandList;
 			
-			std::array<EventData*, MAX_GPU_NODES> frameEvents;
+			//std::array<EventData*, MAX_GPU_NODES> frameEvents;
 			
-			std::array<uint32_t, MAX_GPU_NODES> queryStartIndices;
-			std::array<uint32_t, MAX_GPU_NODES> queryCountIndices;
+			//std::array<uint32_t, MAX_GPU_NODES> queryStartIndices;
+			//std::array<uint32_t, MAX_GPU_NODES> queryCountIndices;
 
-			Frame() : commandAllocator(nullptr)
+			Frame() : commandAllocator(nullptr), commandList(nullptr)
 			{
-				commandList.fill(nullptr);
 				Reset();
 			}
 
 			void Reset()
 			{
-				frameEvents.fill(nullptr);
-				queryStartIndices.fill((uint32_t)-1);
-				queryCountIndices.fill(0);
+				//frameEvents.fill(nullptr);
+				//queryStartIndices.fill((uint32_t)-1);
+				//queryCountIndices.fill(0);
 			}
 
 			void Shutdown();
@@ -61,13 +60,12 @@ namespace Optick
 			ID3D12CommandQueue* commandQueue;
 			ID3D12QueryHeap* queryHeap;
 			ID3D12Fence* syncFence;
+			std::array<Frame, NUM_FRAMES_DELAY> frames;
 
 			NodePayload() : commandQueue(nullptr), queryHeap(nullptr), syncFence(nullptr) {}
 			~NodePayload();
 		};
 		std::vector<NodePayload*> nodePayloads;
-
-		std::array<Frame, NUM_FRAMES_DELAY> frames;
 		
 		ID3D12Resource* queryBuffer;
 		ID3D12Device* device;

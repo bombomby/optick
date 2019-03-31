@@ -82,7 +82,7 @@ namespace vks
 		// Add a new job to the thread's queue
 		void addJob(std::function<void()> function)
 		{
-			OPTICK_SCOPE();
+			OPTICK_EVENT();
 			std::lock_guard<std::mutex> lock(queueMutex);
 			jobQueue.push(std::move(function));
 			condition.notify_one();

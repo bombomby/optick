@@ -199,7 +199,7 @@ FrameResource::~FrameResource()
 // this frame resource.
 void FrameResource::WriteConstantBuffers(D3D12_VIEWPORT* pViewport, Camera* pSceneCamera, Camera lightCams[NumLights], LightState lights[NumLights])
 {
-	OPTICK_SCOPE();
+	OPTICK_EVENT();
 
 	SceneConstantBuffer sceneConsts = {}; 
 	SceneConstantBuffer shadowConsts = {};
@@ -229,37 +229,37 @@ void FrameResource::WriteConstantBuffers(D3D12_VIEWPORT* pViewport, Camera* pSce
 	shadowConsts.ambientColor = sceneConsts.ambientColor = { 0.1f, 0.2f, 0.3f, 1.0f };
 
 	{
-		OPTICK_SCOPE("MemCpy_sceneConsts");
+		OPTICK_EVENT("MemCpy_sceneConsts");
 		memcpy(mp_sceneConstantBufferWO, &sceneConsts, sizeof(SceneConstantBuffer));
 	}
 
 	{
-		OPTICK_SCOPE("MemCpy_sceneConsts");
+		OPTICK_EVENT("MemCpy_sceneConsts");
 		memcpy(mp_shadowConstantBufferWO, &shadowConsts, sizeof(SceneConstantBuffer));
 	}
 }
 
 void FrameResource::Init()
 {
-	OPTICK_SCOPE();
+	OPTICK_EVENT();
 	// Reset the command allocators and lists for the main thread.
 	for (int i = 0; i < CommandListCount; i++)
 	{
-		OPTICK_SCOPE("ResetCommanAllocator");
+		OPTICK_EVENT("ResetCommanAllocator");
 		ThrowIfFailed(m_commandAllocators[i]->Reset());
 		ThrowIfFailed(m_commandLists[i]->Reset(m_commandAllocators[i].Get(), m_pipelineState.Get()));
 	}
 
 	// Clear the depth stencil buffer in preparation for rendering the shadow map.
 	{
-		OPTICK_SCOPE("ClearDepthStencilView");
+		OPTICK_EVENT("ClearDepthStencilView");
 		m_commandLists[CommandListPre]->ClearDepthStencilView(m_shadowDepthView, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 	}
 
 	// Reset the worker command allocators and lists.
 	for (int i = 0; i < NumContexts; i++)
 	{
-		OPTICK_SCOPE("ResetCommandAllocator");
+		OPTICK_EVENT("ResetCommandAllocator");
 
 		ThrowIfFailed(m_shadowCommandAllocators[i]->Reset());
 		ThrowIfFailed(m_shadowCommandLists[i]->Reset(m_shadowCommandAllocators[i].Get(), m_pipelineStateShadowMap.Get()));
@@ -284,7 +284,7 @@ void FrameResource::Finish()
 // resources provided by frame resource.
 void FrameResource::Bind(ID3D12GraphicsCommandList* pCommandList, BOOL scenePass, D3D12_CPU_DESCRIPTOR_HANDLE* pRtvHandle, D3D12_CPU_DESCRIPTOR_HANDLE* pDsvHandle)
 {
-	OPTICK_SCOPE();
+	OPTICK_EVENT();
 	if (scenePass)
 	{
 		// Scene pass. We use constant buf #2 and depth stencil #2

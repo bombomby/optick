@@ -182,7 +182,7 @@ void VulkanExampleBase::createPipelineCache()
 
 void VulkanExampleBase::prepare()
 {
-	OPTICK_SCOPE();
+	OPTICK_EVENT();
 	if (vulkanDevice->enableDebugMarkers) {
 		vks::debugmarker::setup(device);
 	}
@@ -560,7 +560,7 @@ void VulkanExampleBase::renderLoop()
 
 void VulkanExampleBase::updateOverlay()
 {
-	OPTICK_SCOPE();
+	OPTICK_EVENT();
 
 	if (!settings.overlay)
 		return;
@@ -624,7 +624,7 @@ void VulkanExampleBase::drawUI(const VkCommandBuffer commandBuffer)
 
 void VulkanExampleBase::prepareFrame()
 {
-	OPTICK_SCOPE();
+	OPTICK_EVENT();
 	// Acquire the next image from the swap chain
 	VkResult err = swapChain.acquireNextImage(semaphores.presentComplete, &currentBuffer);
 	// Recreate the swapchain if it's no longer compatible with the surface (OUT_OF_DATE) or no longer optimal for presentation (SUBOPTIMAL)
@@ -638,7 +638,7 @@ void VulkanExampleBase::prepareFrame()
 
 void VulkanExampleBase::submitFrame()
 {
-	OPTICK_SCOPE();
+	OPTICK_EVENT();
 	VkResult res = swapChain.queuePresent(queue, currentBuffer, semaphores.renderComplete);
 	if (!((res == VK_SUCCESS) || (res == VK_SUBOPTIMAL_KHR))) {
 		if (res == VK_ERROR_OUT_OF_DATE_KHR) {

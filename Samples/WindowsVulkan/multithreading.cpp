@@ -297,13 +297,13 @@ public:
 			vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
 
 			{
-				OPTICK_SCOPE("vkCmdBindPipeline");
+				OPTICK_EVENT("vkCmdBindPipeline");
 				vkCmdBindPipeline(cmdBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelines.phong);
 			}
 
 			// Update
 			if (!paused) {
-				OPTICK_SCOPE("UpdateUFO");
+				OPTICK_EVENT("UpdateUFO");
 				objectData->rotation.y += 2.5f * objectData->rotationSpeed * frameTimer;
 				if (objectData->rotation.y > 360.0f) {
 					objectData->rotation.y -= 360.0f;
@@ -315,7 +315,7 @@ public:
 			}
 
 			{
-				OPTICK_SCOPE("UpdateMVP");
+				OPTICK_EVENT("UpdateMVP");
 				objectData->model = glm::translate(glm::mat4(1.0f), objectData->pos);
 				objectData->model = glm::rotate(objectData->model, -sinf(glm::radians(objectData->deltaT * 360.0f)) * 0.25f, glm::vec3(objectData->rotationDir, 0.0f, 0.0f));
 				objectData->model = glm::rotate(objectData->model, glm::radians(objectData->rotation.y), glm::vec3(0.0f, objectData->rotationDir, 0.0f));
@@ -328,7 +328,7 @@ public:
 			// Update shader push constant block
 			// Contains model view matrix
 			{
-				OPTICK_SCOPE("vkCmdPushConstants");
+				OPTICK_EVENT("vkCmdPushConstants");
 				vkCmdPushConstants(
 					cmdBuffer,
 					pipelineLayout,
@@ -340,15 +340,15 @@ public:
 
 			VkDeviceSize offsets[1] = { 0 };
 			{
-				OPTICK_SCOPE("vkCmdBindVertexBuffers");
+				OPTICK_EVENT("vkCmdBindVertexBuffers");
 				vkCmdBindVertexBuffers(cmdBuffer, 0, 1, &models.ufo.vertices.buffer, offsets);
 			}
 			{
-				OPTICK_SCOPE("vkCmdBindIndexBuffer");
+				OPTICK_EVENT("vkCmdBindIndexBuffer");
 				vkCmdBindIndexBuffer(cmdBuffer, models.ufo.indices.buffer, 0, VK_INDEX_TYPE_UINT32);
 			}
 			{
-				OPTICK_SCOPE("vkCmdDrawIndexed");
+				OPTICK_EVENT("vkCmdDrawIndexed");
 				vkCmdDrawIndexed(cmdBuffer, models.ufo.indexCount, 1, 0, 0, 0);
 			}
 		}
@@ -425,7 +425,7 @@ public:
 	// lat submitted to the queue for rendering
 	void updateCommandBuffers(VkFramebuffer frameBuffer)
 	{
-		OPTICK_SCOPE();
+		OPTICK_EVENT();
 		// Contains the list of secondary command buffers to be submitted
 		std::vector<VkCommandBuffer> commandBuffers;
 
@@ -496,12 +496,12 @@ public:
 
 		// Execute render commands from the secondary command buffer
 		{
-			OPTICK_SCOPE("vkCmdExecuteCommands");
+			OPTICK_EVENT("vkCmdExecuteCommands");
 			vkCmdExecuteCommands(primaryCommandBuffer, commandBuffers.size(), commandBuffers.data());
 		}
 
 		{
-			OPTICK_SCOPE("vkCmdEndRenderPass");
+			OPTICK_EVENT("vkCmdEndRenderPass");
 			vkCmdEndRenderPass(primaryCommandBuffer);
 		}
 
@@ -640,12 +640,12 @@ public:
 
 	void draw()
 	{
-		OPTICK_SCOPE();
+		OPTICK_EVENT();
 
 		// Wait for fence to signal that all command buffers are ready
 		VkResult fenceRes;
 		do {
-			OPTICK_SCOPE("vkWaitForFences");
+			OPTICK_EVENT("vkWaitForFences");
 			fenceRes = vkWaitForFences(device, 1, &renderFence, VK_TRUE, 100000000);
 		} while (fenceRes == VK_TIMEOUT);
 		VK_CHECK_RESULT(fenceRes);
@@ -670,7 +670,7 @@ public:
 
 	void prepare()
 	{
-		OPTICK_SCOPE();
+		OPTICK_EVENT();
 		VulkanExampleBase::prepare();
 		// Create a fence for synchronization
 		VkFenceCreateInfo fenceCreateInfo = vks::initializers::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
@@ -685,7 +685,7 @@ public:
 
 	virtual void render()
 	{
-		OPTICK_SCOPE();
+		OPTICK_EVENT();
 		if (!prepared)
 			return;
 		draw();

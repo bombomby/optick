@@ -63,7 +63,7 @@ static const unsigned long REPEAT_COUNT = 128 * 1024;
 template<unsigned long N>
 void SlowFunction()
 { 
-	OPTICK_SCOPE();
+	OPTICK_EVENT();
 	// Make it static to fool compiler and prevent it from skipping
 	static float value = 0.0f;
 	
@@ -77,7 +77,7 @@ void SlowFunction()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void SlowFunction2()
 { 
-	OPTICK_SCOPE();
+	OPTICK_EVENT();
 	// Make it static to fool compiler and prevent it from skipping
 	static const size_t NUM_VALUES = 1024 * 1024;
 	static float values[NUM_VALUES] = { 0 };
@@ -104,7 +104,7 @@ struct SimpleTask
 	void Do(MT::FiberContext& ctx)
 	{
 		{
-			OPTICK_SCOPE("BeforeYield", Optick::Category::AI);
+			OPTICK_CATEGORY("BeforeYield", Optick::Category::AI);
 
 			for (unsigned long i = 0; i < N; ++i)
 				value = (value + sin((float)i)) * 0.5f;
@@ -113,7 +113,7 @@ struct SimpleTask
 		ctx.Yield();
 
 		{
-			OPTICK_SCOPE("AfterYield", Optick::Category::AI);
+			OPTICK_CATEGORY("AfterYield", Optick::Category::AI);
 
 			for (unsigned long i = 0; i < N; ++i)
 				value = (value + cos((float)i)) * 0.5f;
@@ -163,7 +163,7 @@ struct PriorityTask
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Engine::Update()
 { 
-	OPTICK_SCOPE();
+	OPTICK_EVENT();
 
 	UpdateInput();
 
@@ -291,7 +291,7 @@ void RecursiveUpdate<0>(int) {}
 
 void Engine::UpdateRecursive()
 {
-	OPTICK_SCOPE();
+	OPTICK_EVENT();
 	RecursiveUpdate<4>(1);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

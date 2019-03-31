@@ -554,6 +554,9 @@ namespace Optick
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class ETW : public Trace
 {
+	static const int ETW_BUFFER_SIZE = 1024 << 10; // 1Mb
+	static const int ETW_BUFFER_COUNT = 32;
+
 	EVENT_TRACE_PROPERTIES *traceProperties;
 	EVENT_TRACE_LOGFILE logFile;
 	TRACEHANDLE traceSessionHandle;
@@ -1086,9 +1089,8 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads)
 		traceProperties->LoggerNameOffset = sizeof(EVENT_TRACE_PROPERTIES);
 		traceProperties->EnableFlags = 0;
 
-
-		traceProperties->BufferSize = 256 << 10; // 512 Kb
-		traceProperties->MinimumBuffers = 4;
+		traceProperties->BufferSize = ETW_BUFFER_SIZE;
+		traceProperties->MinimumBuffers = ETW_BUFFER_COUNT;
 
 		if (mode & SWITCH_CONTEXTS)
 		{

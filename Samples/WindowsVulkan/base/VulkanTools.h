@@ -52,7 +52,7 @@
 #else
 #define VK_CHECK_RESULT(f)																				\
 {																										\
-	OPTICK_SCOPE(#f);																					\
+	OPTICK_EVENT(#f);																					\
 	VkResult res = (f);																					\
 	if (res != VK_SUCCESS)																				\
 	{																									\

@@ -428,7 +428,7 @@ namespace Profiler.ViewModels
 			}
 			else
 			{
-				capture.Attachment.Name = "Capture.bro";
+				capture.Attachment.Name = "Capture.opt";
 				capture.Attachment.Data = new MemoryStream();
 				Task.Run(()=> 
 				{

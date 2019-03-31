@@ -114,9 +114,11 @@ struct Point
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<int N>
-OutputDataStream& operator<<(OutputDataStream& stream, const OptickString<N>& ob)
+OutputDataStream& operator<<(OutputDataStream &stream, const OptickString<N>& ob)
 {
-	return stream << ob.data;
+	size_t length = strnlen(ob.data, N);
+	stream << (uint32)length;
+	return stream.Write(ob.data, length);
 }
 OutputDataStream& operator<<(OutputDataStream& stream, const Point& ob);
 OutputDataStream& operator<<(OutputDataStream& stream, const ScopeData& ob);

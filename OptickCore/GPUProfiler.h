@@ -88,6 +88,8 @@ namespace Optick
 
 			std::string name;
 
+			void Reset();
+
 			Node() : queryIndex(0) { gpuEventStorage.fill(nullptr); }
 		};
 

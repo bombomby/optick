@@ -103,7 +103,7 @@
                 <ColumnDefinition Width="1*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <Label Content="{Binding Path=DeatiledDescription}" Grid.Column="0" FontWeight="Bold" />
+            <TextBlock Text="{Binding Path=DeatiledDescription}" Grid.Column="0" FontWeight="Bold" VerticalAlignment="Center" Margin="2" />
             <StackPanel x:Name="TreeToolPanel" VerticalAlignment="Center" Orientation="Horizontal" HorizontalAlignment="Right" Opacity="0.5" Grid.Column="1">
                 <ToggleButton x:Name="FilterByTime" VerticalAlignment="Top" IsChecked="True" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" ToolTip="Hides all nodes with small time" FontWeight="Bold" Click="RefreshFilter" Margin="1,1,0,1">
                     <ContentControl Style="{StaticResource appbar_timer}" Margin="-13"/>

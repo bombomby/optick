@@ -9,6 +9,12 @@ namespace Optick
 		return str();
 	}
 
+	OutputDataStream & OutputDataStream::Write(const char * buffer, size_t size)
+	{
+		write(buffer, size);
+		return *this;
+	}
+
 	Optick::OutputDataStream OutputDataStream::Empty;
 
 	OutputDataStream &operator << ( OutputDataStream &stream, const char* val )
@@ -73,15 +79,15 @@ namespace Optick
 
 	OutputDataStream & operator<<(OutputDataStream &stream, const std::string& val)
 	{
-		stream << (uint32)val.size();
+		stream << (uint32)val.length();
 		if (!val.empty())
-			stream.write(&val[0], sizeof(val[0]) * val.size());
+			stream.write(&val[0], sizeof(val[0]) * val.length());
 		return stream;
 	}
 
 	OutputDataStream & operator<<(OutputDataStream &stream, const std::wstring& val)
 	{
-		size_t count = val.size() * sizeof(wchar_t);
+		size_t count = val.length() * sizeof(wchar_t);
 		stream << (uint32)count;
 		if (!val.empty())
 			stream.write((char*)(&val[0]), count);

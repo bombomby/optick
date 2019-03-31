@@ -81,10 +81,8 @@ namespace Optick
 		for (uint32_t nodeIndex = 0; nodeIndex < nodes.size(); ++nodeIndex)
 		{
 			Node& node = *nodes[nodeIndex];
+			node.Reset();
 			node.clock = GetClockSynchronization(nodeIndex);
-			
-			for (size_t frameIndex = 0; frameIndex < node.queryGpuframes.size(); ++frameIndex)
-				node.queryGpuframes[frameIndex];
 		}
 	}
 
@@ -122,6 +120,14 @@ namespace Optick
 	{
 		const char* GPUQueueToName[GPU_QUEUE_COUNT] = { "Graphics", "Compute", "Transfer", "VSync" };
 		return GPUQueueToName[queue];
+	}
+
+	void GPUProfiler::Node::Reset()
+	{
+		queryIndex = 0;
+
+		for (size_t frameIndex = 0; frameIndex < queryGpuframes.size(); ++frameIndex)
+			queryGpuframes[frameIndex].Reset();
 	}
 }
 #endif //OPTICK_ENABLE_GPU

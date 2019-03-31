@@ -36,12 +36,12 @@ namespace Optick
 	{
 		WaitForFrame(frameNumber - 1);
 
-		for (Frame& frame : frames)
-			frame.Shutdown();
+		for (NodePayload* payload : nodePayloads)
+			Memory::Delete(payload);
+		nodePayloads.clear();
 
 		for (Node* node : nodes)
 			Memory::Delete(node);
-
 		nodes.clear();
 
 		SafeRelease(&queryBuffer);
@@ -84,17 +84,6 @@ namespace Optick
 			nullptr,
 			IID_PPV_ARGS(&queryBuffer)));
 
-		for (Frame& frame : frames)
-		{
-			OPTICK_CHECK(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&frame.commandAllocator)));
-			
-			for (uint32_t nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
-			{
-				OPTICK_CHECK(device->CreateCommandList(1u << nodeIndex, D3D12_COMMAND_LIST_TYPE_DIRECT, frame.commandAllocator, nullptr, IID_PPV_ARGS(&frame.commandList[nodeIndex])));
-				OPTICK_CHECK(frame.commandList[nodeIndex]->Close());
-			}
-		}
-
 		// Get Device Name
 		LUID adapterLUID = pDevice->GetAdapterLuid();
 
@@ -132,6 +121,13 @@ namespace Optick
 		OPTICK_CHECK(device->CreateQueryHeap(&queryHeapDesc, IID_PPV_ARGS(&node->queryHeap)));
 
 		OPTICK_CHECK(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&node->syncFence)));
+
+		for (Frame& frame : node->frames)
+		{
+			OPTICK_CHECK(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&frame.commandAllocator)));
+			OPTICK_CHECK(device->CreateCommandList(1u << nodeIndex, D3D12_COMMAND_LIST_TYPE_DIRECT, frame.commandAllocator, nullptr, IID_PPV_ARGS(&frame.commandList)));
+			OPTICK_CHECK(frame.commandList->Close());
+		}
 	}
 
 	void GPUProfilerD3D12::QueryTimestamp(ID3D12GraphicsCommandList* context, int64_t* outCpuTimestamp)
@@ -163,7 +159,7 @@ namespace Optick
 
 	void GPUProfilerD3D12::WaitForFrame(uint64_t frameNumberToWait)
 	{
-		OPTICK_SCOPE();
+		OPTICK_EVENT();
 
 		NodePayload* payload = nodePayloads[currentNode];
 		while (frameNumberToWait > payload->syncFence->GetCompletedValue())
@@ -183,69 +179,74 @@ namespace Optick
 
 		if (currentState == STATE_RUNNING)
 		{
-			Frame& currentFrame = frames[frameNumber % NUM_FRAMES_DELAY];
-			Frame& nextFrame = frames[(frameNumber + 1) % NUM_FRAMES_DELAY];
+			Node& node = *nodes[currentNode];
+			NodePayload& payload = *nodePayloads[currentNode];
 
-			Node* node = nodes[currentNode];
+			uint32_t currentFrameIndex = frameNumber % NUM_FRAMES_DELAY;
+			uint32_t nextFrameIndex = (frameNumber + 1) % NUM_FRAMES_DELAY;
 
-			ID3D12GraphicsCommandList* commandList = currentFrame.commandList[currentNode];
-			ID3D12CommandAllocator* commandAllocator = currentFrame.commandAllocator;
+			//Frame& currentFrame = frames[frameNumber % NUM_FRAMES_DELAY];
+			//Frame& nextFrame = frames[(frameNumber + 1) % NUM_FRAMES_DELAY];
+
+			QueryFrame& currentFrame = node.queryGpuframes[currentFrameIndex];
+			QueryFrame& nextFrame = node.queryGpuframes[nextFrameIndex];
+
+			ID3D12GraphicsCommandList* commandList = payload.frames[currentFrameIndex].commandList;
+			ID3D12CommandAllocator* commandAllocator = payload.frames[currentFrameIndex].commandAllocator;
 			commandAllocator->Reset();
 			commandList->Reset(commandAllocator, nullptr);
 
-			if (EventData* frameEvent = currentFrame.frameEvents[currentNode])
+			if (EventData* frameEvent = currentFrame.frameEvent)
 				QueryTimestamp(commandList, &frameEvent->finish);
-
-			uint32_t queryBegin = currentFrame.queryStartIndices[currentNode];
-			uint32_t queryEnd = node->queryIndex;
 
 			// Generate GPU Frame event for the next frame
 			EventData& event = AddFrameEvent();
 			QueryTimestamp(commandList, &event.start);
 			QueryTimestamp(commandList, &AddFrameTag().timestamp);
-			nextFrame.frameEvents[currentNode] = &event;
+			nextFrame.frameEvent = &event;
 
-			NodePayload* payload = nodePayloads[currentNode];
+			uint32_t queryBegin = currentFrame.queryIndexStart;
+			uint32_t queryEnd = node.queryIndex;
 
 			if (queryBegin != (uint32_t)-1)
 			{
 				OPTICK_ASSERT(queryEnd - queryBegin <= MAX_QUERIES_COUNT, "Too many queries in one frame? Increase GPUProfiler::MAX_QUERIES_COUNT to fix the problem!");
-				currentFrame.queryCountIndices[currentNode] = queryEnd - queryBegin;
+				currentFrame.queryIndexCount = queryEnd - queryBegin;
 
 				uint32_t startIndex = queryBegin % MAX_QUERIES_COUNT;
 				uint32_t finishIndex = queryEnd % MAX_QUERIES_COUNT;
 
 				if (startIndex < finishIndex)
 				{
-					commandList->ResolveQueryData(payload->queryHeap, D3D12_QUERY_TYPE_TIMESTAMP, startIndex, queryEnd - queryBegin, queryBuffer, startIndex * sizeof(int64_t));
+					commandList->ResolveQueryData(payload.queryHeap, D3D12_QUERY_TYPE_TIMESTAMP, startIndex, queryEnd - queryBegin, queryBuffer, startIndex * sizeof(int64_t));
 				}
 				else
 				{
-					commandList->ResolveQueryData(payload->queryHeap, D3D12_QUERY_TYPE_TIMESTAMP, startIndex, MAX_QUERIES_COUNT - startIndex, queryBuffer, startIndex * sizeof(int64_t));
-					commandList->ResolveQueryData(payload->queryHeap, D3D12_QUERY_TYPE_TIMESTAMP, 0, finishIndex, queryBuffer, 0);
+					commandList->ResolveQueryData(payload.queryHeap, D3D12_QUERY_TYPE_TIMESTAMP, startIndex, MAX_QUERIES_COUNT - startIndex, queryBuffer, startIndex * sizeof(int64_t));
+					commandList->ResolveQueryData(payload.queryHeap, D3D12_QUERY_TYPE_TIMESTAMP, 0, finishIndex, queryBuffer, 0);
 				}
 			}
 
 			commandList->Close();
 
-			payload->commandQueue->ExecuteCommandLists(1, (ID3D12CommandList*const*)&commandList);
-			payload->commandQueue->Signal(payload->syncFence, frameNumber);
+			payload.commandQueue->ExecuteCommandLists(1, (ID3D12CommandList*const*)&commandList);
+			payload.commandQueue->Signal(payload.syncFence, frameNumber);
 
 			// Preparing Next Frame
 			// Try resolve timestamps for the current frame
-			if (frameNumber >= NUM_FRAMES_DELAY && nextFrame.queryCountIndices[currentNode])
+			if (frameNumber >= NUM_FRAMES_DELAY && nextFrame.queryIndexCount)
 			{
 				WaitForFrame(frameNumber + 1 - NUM_FRAMES_DELAY);
 
-				uint32_t resolveStart = nextFrame.queryStartIndices[currentNode] % MAX_QUERIES_COUNT;
-				uint32_t resolveFinish = resolveStart + nextFrame.queryCountIndices[currentNode];
+				uint32_t resolveStart = nextFrame.queryIndexStart % MAX_QUERIES_COUNT;
+				uint32_t resolveFinish = resolveStart + nextFrame.queryIndexCount;
 				ResolveTimestamps(resolveStart, std::min<uint32_t>(resolveFinish, MAX_QUERIES_COUNT) - resolveStart);
 				if (resolveFinish > MAX_QUERIES_COUNT)
 					ResolveTimestamps(0, resolveFinish - MAX_QUERIES_COUNT);
 			}
 				
-			nextFrame.queryStartIndices[currentNode] = queryEnd;
-			nextFrame.queryCountIndices[currentNode] = 0;
+			nextFrame.queryIndexStart = queryEnd;
+			nextFrame.queryIndexCount = 0;
 
 			// Process VSync
 			DXGI_FRAME_STATISTICS currentFrameStatistics = { 0 };
@@ -280,8 +281,7 @@ namespace Optick
 	void GPUProfilerD3D12::Frame::Shutdown()
 	{
 		SafeRelease(&commandAllocator);
-		for (size_t i = 0; i < commandList.size(); ++i)
-			SafeRelease(&commandList[i]);
+		SafeRelease(&commandList);
 	}
 }
 

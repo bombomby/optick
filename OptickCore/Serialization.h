@@ -37,6 +37,8 @@ namespace Optick
 		friend OutputDataStream &operator << ( OutputDataStream &stream, float val);
 		friend OutputDataStream &operator << ( OutputDataStream &stream, const std::string& val );
 		friend OutputDataStream &operator << ( OutputDataStream &stream, const std::wstring& val );
+
+		OutputDataStream& Write(const char* buffer, size_t size);
 	};
 
 	template<class T>

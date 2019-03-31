@@ -479,7 +479,7 @@ public:
 	*/
 	VkResult queuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore = VK_NULL_HANDLE)
 	{
-		OPTICK_SCOPE();
+		OPTICK_EVENT();
 		VkPresentInfoKHR presentInfo = {};
 		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 		presentInfo.pNext = NULL;
