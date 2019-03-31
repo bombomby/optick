@@ -98,7 +98,7 @@ struct OptickString
 {
 	char data[N];
 	OptickString() {}
-	OptickString<N>& operator=(const char* text) { strcpy_s(data, text); return *this; }
+	OptickString<N>& operator=(const char* text) { strncpy(data, text, N - 1); data[N - 1] = 0; return *this; }
 	OptickString(const char* text) { *this = text; }
 };
 #if defined(OPTICK_MSVC)
