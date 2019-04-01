@@ -9,7 +9,7 @@ compiler:
   - gcc
   - clang
 
- install:
+install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install --force-yes -qq gcc-4.9 g++-4.9; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 90; fi
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get --force-yes -y install gcc-4.9-multilib g++-4.9-multilib; fi
