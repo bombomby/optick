@@ -9,6 +9,11 @@ compiler:
   - gcc
   - clang
 
+ install:
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install --force-yes -qq gcc-4.9 g++-4.9; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.9 90; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get --force-yes -y install gcc-4.9-multilib g++-4.9-multilib; fi
+  
 script:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then ./Tools/Linux/premake5 gmake && pushd Build/gmake/ && make config=release_x64 && popd; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then ./Tools/MacOS/premake5 gmake && pushd Build/gmake/ && make config=debug_x64 && popd; fi
