@@ -49,12 +49,12 @@ namespace Optick
 		SymbolCache cache;
 		std::vector<Module> modules;
 	public:
+		virtual void UpdateModules() {}
 		virtual const std::vector<Module>& GetModules() { return modules; }
 
 		// Get Symbol from address
 		virtual const Symbol* const GetSymbol(uint64 dwAddress);
 
-		virtual void UpdateModules() {}
 
 		virtual ~SymbolEngine() {};
 

@@ -1,8 +1,5 @@
 #pragma once
-
-#include "Common.h"
-
-#define OPTICK_ENABLE_GPU (USE_OPTICK /*&& 0*/)
+#include "Optick.Config.h"
 
 #if OPTICK_ENABLE_GPU
 
@@ -11,6 +8,8 @@
 #include <mutex>
 #include <string>
 #include <vector>
+
+#include "Common.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Optick

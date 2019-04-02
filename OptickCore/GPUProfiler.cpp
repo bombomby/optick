@@ -1,6 +1,7 @@
-#include "GPUProfiler.h"
+#include "Optick.Config.h"
 
 #if OPTICK_ENABLE_GPU
+#include "GPUProfiler.h"
 #include <thread>
 #include "Core.h"
 #include "Memory.h"

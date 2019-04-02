@@ -1,13 +1,62 @@
-#include "GPUProfiler_Vulkan.h"
+#include "Optick.Config.h"
 
 #if OPTICK_ENABLE_GPU_VULKAN
+#include <vulkan/vulkan.h>
 
 #include "Core.h"
+#include "GPUProfiler.h"
 
 #define OPTICK_VK_CHECK(args) do { VkResult __hr = args; OPTICK_ASSERT(__hr == VK_SUCCESS, "Failed check"); (void)__hr; } while(false);
 
 namespace Optick
 {
+	class GPUProfilerVulkan : public GPUProfiler
+	{
+	protected:
+		struct Frame
+		{
+			VkCommandBuffer commandBuffer;
+			VkFence fence;
+			Frame() : commandBuffer(VK_NULL_HANDLE), fence(VK_NULL_HANDLE) {}
+		};
+
+		struct NodePayload
+		{
+			VkDevice			device;
+			VkPhysicalDevice	physicalDevice;
+			VkQueue				queue;
+			VkQueryPool			queryPool;
+			VkCommandPool		commandPool;
+
+			std::array<Frame, NUM_FRAMES_DELAY> frames;
+
+			NodePayload() : device(VK_NULL_HANDLE), physicalDevice(VK_NULL_HANDLE), queue(VK_NULL_HANDLE), queryPool(VK_NULL_HANDLE), commandPool(VK_NULL_HANDLE) {}
+			~NodePayload();
+		};
+		std::vector<NodePayload*> nodePayloads;
+
+		void ResolveTimestamps(VkCommandBuffer commandBuffer, uint32_t startIndex, uint32_t count);
+		void WaitForFrame(uint64_t frameNumber);
+
+	public:
+		GPUProfilerVulkan();
+		~GPUProfilerVulkan();
+
+		void InitDevice(VkDevice* devices, VkPhysicalDevice* physicalDevices, VkQueue* cmdQueues, uint32_t* cmdQueuesFamily, uint32_t nodeCount);
+		void QueryTimestamp(VkCommandBuffer commandBuffer, int64_t* outCpuTimestamp);
+
+
+		// Interface implementation
+		ClockSynchronization GetClockSynchronization(uint32_t nodeIndex) override;
+
+		void QueryTimestamp(void* context, int64_t* outCpuTimestamp) override
+		{
+			QueryTimestamp((VkCommandBuffer)context, outCpuTimestamp);
+		}
+
+		void Flip(void* swapChain) override;
+	};
+
 	void InitGpuVulkan(VkDevice* devices, VkPhysicalDevice* physicalDevices, VkQueue* cmdQueues, uint32_t* cmdQueuesFamily, uint32_t numQueues)
 	{
 		GPUProfilerVulkan* gpuProfiler = Memory::New<GPUProfilerVulkan>();

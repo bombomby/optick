@@ -4,7 +4,6 @@
 
 #include "Common.h"
 
-#include "CityHash.h"
 #include "Memory.h"
 #include "Serialization.h"
 
@@ -21,24 +20,29 @@
 // We should be quite safe here :)
 // https://preshing.com/20110504/hash-collision-probabilities/
 // Feel free to add a seed and wait for another strike if armageddon starts
-struct OptickStringHash
+namespace Optick
 {
-	uint64 hash;
+	struct StringHash
+	{
+		uint64 hash;
 
-	OptickStringHash(size_t h) : hash(h) {}
-	OptickStringHash(const char* str) : hash(CityHash64(str, (int)strlen(str))) {}
+		StringHash(size_t h) : hash(h) {}
+		StringHash(const char* str) : hash(CalcHash(str)) {}
 
-	bool operator==(const OptickStringHash& other) const { return hash == other.hash; }
-	bool operator<(const OptickStringHash& other) const { return hash < other.hash; }
-};
+		bool operator==(const StringHash& other) const { return hash == other.hash; }
+		bool operator<(const StringHash& other) const { return hash < other.hash; }
+
+		static uint64 CalcHash(const char* str);
+	};
+}
 
 // Overriding default hash function to return hash value directly
 namespace std
 {
 	template<>
-	struct hash<OptickStringHash>
+	struct hash<Optick::StringHash>
 	{
-		size_t operator()(const OptickStringHash& x) const
+		size_t operator()(const Optick::StringHash& x) const
 		{
 			return (size_t)x.hash;
 		}
@@ -155,7 +159,7 @@ class EventDescriptionBoard
 	EventDescriptionList boardDescriptions;
 
 	// Shared Descriptions
-	typedef std::unordered_map<OptickStringHash, EventDescription*> DescriptionMap;
+	typedef std::unordered_map<StringHash, EventDescription*> DescriptionMap;
 	DescriptionMap sharedDescriptions;
 	MemoryBuffer<64 * 1024> sharedNames;
 	std::mutex sharedLock;
