@@ -173,7 +173,7 @@ struct Parser
 
 	bool Starts(const char* text) const
 	{
-		return strncmp(cursor, text, sizeof(text)) == 0;
+		return strncmp(cursor, text, strlen(text)) == 0;
 	}
 
 	int GetInt() const
@@ -238,11 +238,6 @@ bool FTrace::Stop()
 	Set(FTRACE_TRACE, "");
 
 	isActive = false;
-
-	if (!Trace::Stop())
-	{
-		return false;
-	}
 
 	return true;
 }
