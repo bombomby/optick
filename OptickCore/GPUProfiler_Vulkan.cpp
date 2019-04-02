@@ -57,10 +57,10 @@ namespace Optick
 		void Flip(void* swapChain) override;
 	};
 
-	void InitGpuVulkan(VkDevice* devices, VkPhysicalDevice* physicalDevices, VkQueue* cmdQueues, uint32_t* cmdQueuesFamily, uint32_t numQueues)
+	void InitGpuVulkan(void* vkDevices, void* vkPhysicalDevices, void* vkQueues, uint32_t* cmdQueuesFamily, uint32_t numQueues)
 	{
 		GPUProfilerVulkan* gpuProfiler = Memory::New<GPUProfilerVulkan>();
-		gpuProfiler->InitDevice(devices, physicalDevices, cmdQueues, cmdQueuesFamily, numQueues);
+		gpuProfiler->InitDevice((VkDevice*)vkDevices, (VkPhysicalDevice*)vkPhysicalDevices, (VkQueue*)vkQueues, cmdQueuesFamily, numQueues);
 		Core::Get().InitGPUProfiler(gpuProfiler);
 	}
 
@@ -352,8 +352,8 @@ namespace Optick
 	}
 }
 #else
-
-void InitGpuVulkan(VkDevice* /*devices*/, VkPhysicalDevice* /*physicalDevices*/, VkQueue* /*cmdQueues*/, uint32_t* /*cmdQueuesFamily*/, uint32_t /*numQueues*/)
+#include "Common.h"
+void InitGpuVulkan(void* /*devices*/, void* /*physicalDevices*/, void* /*cmdQueues*/, uint32_t* /*cmdQueuesFamily*/, uint32_t /*numQueues*/)
 {
 	OPTICK_FAILED("OPTICK_ENABLE_GPU_VULKAN is disabled! Can't initialize GPU Profiler!");
 }
