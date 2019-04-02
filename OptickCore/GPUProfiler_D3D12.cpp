@@ -376,6 +376,7 @@ namespace Optick
 }
 
 #else
+#include "Common.h"
 
 namespace Optick
 {
