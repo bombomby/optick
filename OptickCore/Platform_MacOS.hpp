@@ -9,8 +9,6 @@
 #include <pthread.h>
 #include <unistd.h>
 
-#include "Trace.h"
-
 namespace Optick
 {
 	const char* Platform::GetName()
