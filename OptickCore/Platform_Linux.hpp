@@ -1,6 +1,43 @@
+#pragma once
 #if defined(__linux__)
 
-#include "Trace.h"
+#include "Platform_Common.h"
+
+#include <sys/syscall.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <pthread.h>
+#include <unistd.h>
+
+namespace Optick
+{
+	const char* Platform::GetName() 
+	{
+		return "Linux";
+	}
+
+	ThreadID Platform::GetThreadID()
+	{
+		return syscall(SYS_gettid);
+	}
+
+	ProcessID Platform::GetProcessID()
+	{
+		return (ProcessID)getpid();
+	}
+
+	int64 Platform::GetFrequency()
+	{
+		return 1000000000;
+	}
+
+	int64 Platform::GetTime()
+	{
+		struct timespec ts;
+		clock_gettime(CLOCK_MONOTONIC, &ts);
+		return ts.tv_sec * 1000000000LL + ts.tv_nsec;
+	}
+}
 
 #if OPTICK_ENABLE_TRACING
 
@@ -11,53 +48,53 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace ft
 {
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct base_event
-{
-	int64_t timestamp;
-	short common_type;
-	uint8_t cpu_id;
-	base_event(short type) : timestamp(-1), common_type(type), cpu_id(uint8_t(-1)) {}
-};
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-template<short TYPE>
-struct event : public base_event
-{
-	static const short type = TYPE;
-	event() : base_event(TYPE) {}
-};
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct process_state
-{
-	enum type
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	struct base_event
 	{
-		Unknown,
-		//D	Uninterruptible sleep(usually IO)
-		UninterruptibleSleep,
-		//R	Running or runnable(on run queue)
-		Running,
-		//S	Interruptible sleep(waiting for an event to complete)
-		InterruptibleSleep,
-		//T	Stopped, either by a job control signal or because it is being traced.
-		Stopped,
-		//X	dead(should never be seen)
-		Dead,
-		//Z	Defunct(“zombie”) process, terminated but not reaped by its parent.
-		Zombie,
+		int64_t timestamp;
+		short common_type;
+		uint8_t cpu_id;
+		base_event(short type) : timestamp(-1), common_type(type), cpu_id(uint8_t(-1)) {}
+};
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	template<short TYPE>
+	struct event : public base_event
+	{
+		static const short type = TYPE;
+		event() : base_event(TYPE) {}
 	};
-};
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct sched_switch : public event<305>
-{
-	char prev_comm[16];
-	pid_t prev_pid;
-	int prev_prio;
-	process_state::type prev_state;
-	char next_comm[16];
-	pid_t next_pid;
-	int next_prio;
-};
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	struct process_state
+	{
+		enum type
+		{
+			Unknown,
+			//D	Uninterruptible sleep(usually IO)
+			UninterruptibleSleep,
+			//R	Running or runnable(on run queue)
+			Running,
+			//S	Interruptible sleep(waiting for an event to complete)
+			InterruptibleSleep,
+			//T	Stopped, either by a job control signal or because it is being traced.
+			Stopped,
+			//X	dead(should never be seen)
+			Dead,
+			//Z	Defunct(“zombie”) process, terminated but not reaped by its parent.
+			Zombie,
+		};
+	};
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	struct sched_switch : public event<305>
+	{
+		char prev_comm[16];
+		pid_t prev_pid;
+		int prev_prio;
+		process_state::type prev_state;
+		char next_comm[16];
+		pid_t next_pid;
+		int next_prio;
+	};
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 } // namespace ft
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -75,6 +112,7 @@ static const uint8_t PROCESS_STATE_REASON_START = 40;
 class FTrace : public Trace
 {
 	bool isActive;
+	std::string password;
 
 	bool Parse(const char* line);
 	bool ProcessEvent(const ft::base_event& ev);
@@ -87,7 +125,7 @@ public:
 	FTrace();
 	~FTrace();
 
-	virtual CaptureStatus::Type Start(int mode, const ThreadList& threads) override;
+	virtual CaptureStatus::Type Start(Trace::Mode mode, const ThreadList& threads) override;
 	virtual bool Stop() override;
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -100,7 +138,7 @@ struct Parser
 	size_t length;
 
 	Parser(const char* b) : cursor(b), finish(b + strlen(b)) {}
-	
+
 	bool Skip(size_t count)
 	{
 		if (finish - cursor > count)
@@ -149,9 +187,9 @@ struct Parser
 	}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-CaptureStatus::Type FTrace::Start(int mode, const ThreadList& threads)
+CaptureStatus::Type FTrace::Start(Trace::Mode mode, const ThreadList& threads)
 {
-	if (!isActive) 
+	if (!isActive)
 	{
 		// Disable tracing
 		Set(FTRACE_TRACING_ON, false);
@@ -314,18 +352,18 @@ bool FTrace::ProcessEvent(const ft::base_event& ev)
 	switch (ev.common_type)
 	{
 	case ft::sched_switch::type:
-		{
-			const ft::sched_switch& switchEv = (const ft::sched_switch&)ev;
-			Optick::SwitchContextDesc desc;
-			desc.reason = switchEv.prev_state + PROCESS_STATE_REASON_START;
-			desc.cpuId = switchEv.cpu_id;
-			desc.oldThreadId = (uint64)switchEv.prev_pid;
-			desc.newThreadId = (uint64)switchEv.next_pid;
-			desc.timestamp = switchEv.timestamp;
-			Core::Get().ReportSwitchContext(desc);
-			return true;
-		}
-		break;
+	{
+		const ft::sched_switch& switchEv = (const ft::sched_switch&)ev;
+		Optick::SwitchContextDesc desc;
+		desc.reason = switchEv.prev_state + PROCESS_STATE_REASON_START;
+		desc.cpuId = switchEv.cpu_id;
+		desc.oldThreadId = (uint64)switchEv.prev_pid;
+		desc.newThreadId = (uint64)switchEv.next_pid;
+		desc.timestamp = switchEv.timestamp;
+		Core::Get().ReportSwitchContext(desc);
+		return true;
+	}
+	break;
 	}
 
 	return false;
@@ -359,11 +397,12 @@ FTrace::~FTrace()
 	Stop();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Trace* Trace::Get()
+Trace* Platform::GetTrace()
 {
 	return &g_FTrace;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 #endif //OPTICK_ENABLE_TRACING
-#endif //__linux__
+
+#endif

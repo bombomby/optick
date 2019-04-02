@@ -1,7 +1,5 @@
 #include "ProfilerServer.h"
 #include "Common.h"
-#include "Platform.h"
-
 
 #if defined(OPTICK_MSVC)
 #define USE_WINDOWS_SOCKETS (1)
@@ -33,11 +31,7 @@ typedef UINT_PTR TcpSocket;
 namespace Optick
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if defined(OPTICK_PC)
 static const short DEFAULT_PORT = 31313;
-#else
-static const short DEFAULT_PORT = 4601;
-#endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #if USE_WINDOWS_SOCKETS
 class Wsa
@@ -100,11 +94,16 @@ inline bool SetSocketBlockingMode(TcpSocket socket, bool isBlocking)
 #ifdef USE_WINDOWS_SOCKETS
 	unsigned long mode = isBlocking ? 0 : 1;
 	return (ioctlsocket(socket, FIONBIO, &mode) == 0) ? true : false;
-#else
+#else 
+#if defined(OPTICK_OSX) || defined(OPTICK_LINUX)
 	int flags = fcntl(socket, F_GETFL, 0);
 	if (flags < 0) return false;
 	flags = isBlocking ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);
 	return (fcntl(socket, F_SETFL, flags) == 0) ? true : false;
+#else
+	int nonblocking = isBlocking ? 0 : 1;
+	return setsockopt((int)socket, SOL_SOCKET, 0x1200, (char*)&nonblocking, sizeof(nonblocking)) == 0;
+#endif
 #endif
 }
 
@@ -304,7 +303,9 @@ std::string Server::GetHostName() const
     char hostname[HOST_NAME_LENGTH] = { 0 };
     
 #if defined(USE_BERKELEY_SOCKETS)
+#if defined(OPTICK_LINUX) || defined(OPTICK_OSX)
 	gethostname(hostname, HOST_NAME_LENGTH);
+#endif
 #elif defined(OPTICK_PC)
     DWORD length = HOST_NAME_LENGTH;
 	GetComputerNameA(hostname, &length);

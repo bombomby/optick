@@ -3,7 +3,6 @@
 #include <thread>
 
 #include "Common.h"
-#include "Platform.h"
 
 #include "CityHash.h"
 #include "Memory.h"

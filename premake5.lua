@@ -181,11 +181,13 @@ end
 	
 	files {
 		"OptickCore/**.cpp",
+        "OptickCore/**.hpp", 
         "OptickCore/**.h", 
 	}
 	vpaths {
 		["API"] = { 
 			"OptickCore/Optick.h",
+			"OptickCore/Optick.Config.h",
 		},
 		["Core"] = {
 			"OptickCore/Core.h",

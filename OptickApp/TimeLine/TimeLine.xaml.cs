@@ -194,7 +194,10 @@ statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, st
 								Address = response.Source.Address,
 								Port = response.Source.Port
 							};
-							connection.Target = (Platform.Type)response.Reader.ReadUInt32();
+							Platform.Type target = Platform.Type.Unknown;
+							String targetName = Utils.ReadBinaryString(response.Reader);
+							Enum.TryParse(targetName, true, out target);
+							connection.Target = target;
 							connection.Name = Utils.ReadBinaryString(response.Reader);
 							RaiseEvent(new NewConnectionEventArgs(connection));
 						}

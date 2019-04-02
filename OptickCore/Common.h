@@ -45,7 +45,10 @@ static_assert(sizeof(uint32) == 4, "Invalid type size, uint32");
 static_assert(sizeof(int64) == 8, "Invalid type size, int64");
 static_assert(sizeof(uint64) == 8, "Invalid type size, uint64");
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+typedef uint64 ThreadID;
+static const ThreadID INVALID_THREAD_ID = (ThreadID)-1;
+typedef uint32 ProcessID;
+static const ProcessID INVALID_PROCESS_ID = (ProcessID)-1;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Memory
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -60,6 +63,17 @@ static_assert(sizeof(uint64) == 8, "Invalid type size, uint64");
 #define OPTICK_ALIGN_CACHE OPTICK_ALIGN(OPTICK_CACHE_LINE_SIZE)
 #define OPTICK_ARRAY_SIZE(ARR) (sizeof(ARR)/sizeof((ARR)[0]))
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////
+// OPTICK_THREAD_LOCAL
+////////////////////////////////////////////////////////////////////////
+#if defined(OPTICK_MSVC)
+#define OPTICK_THREAD_LOCAL __declspec(thread)
+#elif defined(OPTICK_GCC)
+#define OPTICK_THREAD_LOCAL __thread
+#else
+#error Can not define OPTICK_THREAD_LOCAL. Unknown platform.
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Warnings
@@ -84,19 +98,18 @@ static_assert(sizeof(uint64) == 8, "Invalid type size, uint64");
 #define OPTICK_UNUSED(x) (void)(x)
 #ifdef _DEBUG
 	#define OPTICK_ASSERT(arg, description) if (!(arg)) { OPTICK_DEBUG_BREAK; }
-	#define OPTICK_VERIFY(arg, description, operation) if (!(arg)) { OPTICK_DEBUG_BREAK; operation; }
 	#define OPTICK_FAILED(description) { OPTICK_DEBUG_BREAK; }
 #else
 	#define OPTICK_ASSERT(arg, description)
-	#define OPTICK_VERIFY(arg, description, operation)
 	#define OPTICK_FAILED(description)
 #endif
+#define OPTICK_VERIFY(arg, description, operation) if (!(arg)) { OPTICK_DEBUG_BREAK; operation; }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Safe functions
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if defined(OPTICK_GCC)
+#if defined(OPTICK_LINUX) || defined(OPTICK_OSX)
 template<size_t sizeOfBuffer>
 inline int sprintf_s(char(&buffer)[sizeOfBuffer], const char* format, ...)
 {
@@ -106,7 +119,9 @@ inline int sprintf_s(char(&buffer)[sizeOfBuffer], const char* format, ...)
 	va_end(ap);
 	return result;
 }
+#endif
 
+#if defined(OPTICK_GCC)
 template<size_t sizeOfBuffer>
 inline int wcstombs_s(char(&buffer)[sizeOfBuffer], const wchar_t* src, size_t maxCount)
 {

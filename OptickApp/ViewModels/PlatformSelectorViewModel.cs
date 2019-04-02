@@ -402,7 +402,7 @@ namespace Profiler.ViewModels
                     return "appbar_social_apple";
                 case Platform.Type.XBox:
                     return "appbar_controller_xbox";
-                case Platform.Type.Playstation:
+                case Platform.Type.PS4:
                     return "appbar_social_playstation";
                 default:
                     return "appbar_network";

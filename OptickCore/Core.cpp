@@ -1,13 +1,30 @@
 #include "Core.h"
 #include "ProfilerServer.h"
 
-#include "Trace.h"
 #include "SymbolEngine.h"
 
 #include <algorithm>
 #include <fstream>
 #include <unordered_set>
 
+//////////////////////////////////////////////////////////////////////////
+// Start of the Platform-specific stuff
+//////////////////////////////////////////////////////////////////////////
+#if defined(OPTICK_MSVC)
+#include "Platform_Win.hpp"
+#endif
+#if defined(OPTICK_LINUX)
+#include "Platform_Linux.hpp"
+#endif
+#if defined(OPTICK_OSX)
+#include "Platform_MacOS.hpp"
+#endif
+#if defined(OPTICK_PS4)
+#include "Platform_PS4.hpp"
+#endif
+//////////////////////////////////////////////////////////////////////////
+// End of the Platform-specific stuff
+//////////////////////////////////////////////////////////////////////////
 
 extern "C" Optick::EventData* NextEvent()
 {
@@ -22,6 +39,12 @@ extern "C" Optick::EventData* NextEvent()
 
 namespace Optick
 {
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Get current time in milliseconds
+int64 GetTimeMilliSeconds()
+{
+	return Platform::GetTime() * 1000 / Platform::GetFrequency();
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 template<class T>
 OutputDataStream& operator<<(OutputDataStream& stream, const TagData<T>& ob)
@@ -335,13 +358,13 @@ ThreadDescription::ThreadDescription(const char* threadName, ThreadID tid, Proce
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int64_t GetHighPrecisionTime()
 {
-	return GetTime();
+	return Platform::GetTime();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int64_t GetHighPrecisionFrequency()
 {
-	return GetFrequency();
+	return Platform::GetFrequency();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -804,7 +827,7 @@ void Core::DumpSummary()
 	stream << boardNumber;
 
 	// Frames
-	double frequency = (double)GetFrequency();
+	double frequency = (double)Platform::GetFrequency();
 	stream << (uint32_t)frames.size();
 	for (const EventTime& frame : frames)
 	{
@@ -851,7 +874,7 @@ void Core::DumpBoard(uint32 mode, EventTime timeSlice, uint32 mainThreadIndex)
 	OutputDataStream boardStream;
 
 	boardStream << boardNumber;
-	boardStream << GetFrequency();
+	boardStream << Platform::GetFrequency();
 	boardStream << (uint64)0; // Origin
 	boardStream << (uint32)0; // Precision
 	boardStream << timeSlice;
@@ -866,7 +889,7 @@ void Core::DumpBoard(uint32 mode, EventTime timeSlice, uint32 mainThreadIndex)
 	boardStream << mode; // Mode
 	boardStream << processDescs;
 	boardStream << threadDescs;
-	boardStream << (uint32)GetProcessID();
+	boardStream << (uint32)Platform::GetProcessID();
 	boardStream << (uint32)std::thread::hardware_concurrency();
 	Server::Get().Send(DataResponse::FrameDescriptionBoard, boardStream);
 
@@ -893,8 +916,8 @@ Core::Core()
 	, isActive(false)
 	, gpuProfiler(nullptr)
 {
-	mainThreadID = GetThreadID();
-	schedulerTrace = Trace::Get();
+	mainThreadID = Platform::GetThreadID();
+	schedulerTrace = Platform::GetTrace();
 	symbolEngine = SymbolEngine::Get();
 
 	frameDescriptions[FrameType::CPU] = EventDescription::Create("CPU Frame", __FILE__, __LINE__);
@@ -1043,7 +1066,7 @@ void Core::SendHandshakeResponse(CaptureStatus::Type status)
 {
 	OutputDataStream stream;
 	stream << (uint32)status;
-	stream << (uint32)Platform::Get();
+	stream << Platform::GetName();
 	stream << Server::Get().GetHostName();
 	Server::Get().Send(DataResponse::Handshake, stream);
 }
@@ -1315,7 +1338,7 @@ OPTICK_API bool IsFiberStorage(EventStorage* fiberStorage)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OPTICK_API bool RegisterThread(const char* name)
 {
-	return Core::Get().RegisterThread(ThreadDescription(name, GetThreadID(), GetProcessID()), &Core::storage) != nullptr;
+	return Core::Get().RegisterThread(ThreadDescription(name, Platform::GetThreadID(), Platform::GetProcessID()), &Core::storage) != nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OPTICK_API bool RegisterThread(const wchar_t* name)
@@ -1324,12 +1347,12 @@ OPTICK_API bool RegisterThread(const wchar_t* name)
 	char mbName[THREAD_NAME_LENGTH];
 	wcstombs_s(mbName, name, THREAD_NAME_LENGTH);
 
-	return Core::Get().RegisterThread(ThreadDescription(mbName, GetThreadID(), GetProcessID()), &Core::storage) != nullptr;
+	return Core::Get().RegisterThread(ThreadDescription(mbName, Platform::GetThreadID(), Platform::GetProcessID()), &Core::storage) != nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OPTICK_API bool UnRegisterThread(bool keepAlive)
 {
-	return Core::Get().UnRegisterThread(GetThreadID(), keepAlive);
+	return Core::Get().UnRegisterThread(Platform::GetThreadID(), keepAlive);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OPTICK_API bool RegisterFiber(uint64 fiberId, EventStorage** slot)
@@ -1339,7 +1362,7 @@ OPTICK_API bool RegisterFiber(uint64 fiberId, EventStorage** slot)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OPTICK_API EventStorage* RegisterStorage(const char* name, uint64_t threadID, ThreadMask::Type type)
 {
-	ThreadEntry* entry = Core::Get().RegisterThread(ThreadDescription(name, threadID, GetProcessID(), 1, 0, type), nullptr);
+	ThreadEntry* entry = Core::Get().RegisterThread(ThreadDescription(name, threadID, Platform::GetProcessID(), 1, 0, type), nullptr);
 	return entry ? &entry->storage : nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

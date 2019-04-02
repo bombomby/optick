@@ -1,14 +1,52 @@
+#pragma once
 #if defined(_MSC_VER)
 
-#include "Trace.h"
+#include "Platform_Common.h"
+
+namespace Optick
+{
+	const char* Platform::GetName()
+	{
+	#if defined(OPTICK_PC)
+		return "Windows";
+	#else
+		return "XBox";
+	#endif
+	}
+
+	ThreadID Platform::GetThreadID()
+	{
+		return GetCurrentThreadId();
+	}
+
+	ProcessID Platform::GetProcessID()
+	{
+		return GetCurrentProcessId();
+	}
+
+	int64 Platform::GetFrequency()
+	{
+		LARGE_INTEGER frequency;
+		QueryPerformanceFrequency(&frequency);
+		return frequency.QuadPart;
+	}
+
+	int64 Platform::GetTime()
+	{
+		LARGE_INTEGER largeInteger;
+		QueryPerformanceCounter(&largeInteger);
+		return largeInteger.QuadPart;
+	}
+}
 
 #if OPTICK_ENABLE_TRACING
 #include <array>
+#include <unordered_set>
 #include <vector>
+#include <psapi.h>
+
 #include "Core.h"
 #include "SymbolEngine.h"
-
-#include <psapi.h>
 
 /*
 Event Tracing Functions - API
@@ -537,20 +575,16 @@ TraceQueryInformation(
 #define QueryAllTraces          QueryAllTracesW
 #define OpenTrace               OpenTraceW
 //////////////////////////////////////////////////////////////////////////
-
 #else
-
 #define INITGUID  // Causes definition of SystemTraceControlGuid in evntrace.h.
 #include <wmistr.h>
 #include <evntrace.h>
 #include <strsafe.h>
 #include <evntcons.h>
-
 #endif //DECLARE_ETW
 
 namespace Optick
 {
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class ETW : public Trace
 {
@@ -565,7 +599,6 @@ class ETW : public Trace
 	HANDLE processThreadHandle;
 	DWORD currentProcessId;
 
-
 	bool isActive;
 
 	static DWORD WINAPI RunProcessTraceThreadFunction(LPVOID parameter);
@@ -576,10 +609,12 @@ class ETW : public Trace
 	void ResolveSysCalls();
 public:
 
+	std::unordered_set<uint64> activeThreadsIDs;
+
 	ETW();
 	~ETW();
 
-	virtual CaptureStatus::Type Start(int mode, const ThreadList& threads) override;
+	virtual CaptureStatus::Type Start(Trace::Mode mode, const ThreadList& threads) override;
 	virtual bool Stop() override;
 
 	DWORD GetProcessID() const { return currentProcessId; }
@@ -587,7 +622,7 @@ public:
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct CSwitch 
+struct CSwitch
 {
 	// New thread ID after the switch.
 	uint32 NewThreadId;
@@ -684,10 +719,10 @@ struct StackWalk_Event
 
 	// The process identifier of the original event
 	uint32 StackProcess;
-	
+
 	// The thread identifier of the original event
 	uint32 StackThread;
-	
+
 	// Callstack head
 	uint64 Stack0;
 
@@ -758,7 +793,7 @@ size_t GetSIDSize(uint8* ptr)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // https://github.com/Microsoft/perfview/blob/688a8564062d51321bbab53cd71d9e174a77d2ce/src/TraceEvent/TraceEvent.cs
-struct Process_TypeGroup1 
+struct Process_TypeGroup1
 {
 	// The address of the process object in the kernel.
 	uint64 UniqueProcessKey;
@@ -787,7 +822,7 @@ struct Process_TypeGroup1
 
 		return 24;
 	}
-	
+
 	const char* GetProcessName(PEVENT_RECORD pEvent) const
 	{
 		OPTICK_ASSERT((pEvent->EventHeader.Flags & EVENT_HEADER_FLAG_64_BIT_HEADER) != 0, "32-bit is not supported! Disable OPTICK_ENABLE_TRACING on 32-bit platform if needed!");
@@ -823,7 +858,7 @@ struct SysCallEnter
 	static const byte OPCODE = 51;
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct SysCallExit 
+struct SysCallExit
 {
 	uint32 SysCallNtStatus;
 
@@ -930,7 +965,7 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 	{
 		SampledProfile* pEvent = (SampledProfile*)eventRecord->UserData;
 		OPTICK_UNUSED(pEvent);
-	} 
+	}
 	else if (opcode == SysCallEnter::OPCODE)
 	{
 		if (eventRecord->UserDataLength >= sizeof(SysCallEnter))
@@ -952,7 +987,7 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 				g_ETWRuntime.activeSyscalls.push_back(std::make_pair(cpuId, &sysCall));
 			}
 		}
-	} 
+	}
 	else if (opcode == SysCallExit::OPCODE)
 	{
 		if (eventRecord->UserDataLength >= sizeof(SysCallExit))
@@ -983,7 +1018,7 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 				const Thread_TypeGroup1* pThreadEvent = (const Thread_TypeGroup1*)eventRecord->UserData;
 				Core::Get().RegisterThreadDescription(ThreadDescription("", pThreadEvent->TThreadId, pThreadEvent->ProcessId, 1, pThreadEvent->BasePriority));
 			}
-			
+
 		}
 		else if (IsEqualGUID(eventRecord->EventHeader.ProviderId, ProcessGuid))
 		{
@@ -1005,7 +1040,7 @@ static ULONG WINAPI OnBufferRecord(_In_ PEVENT_TRACE_LOGFILE Buffer)
 const TRACEHANDLE INVALID_TRACEHANDLE = (TRACEHANDLE)-1;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-DWORD WINAPI ETW::RunProcessTraceThreadFunction( LPVOID parameter )
+DWORD WINAPI ETW::RunProcessTraceThreadFunction(LPVOID parameter)
 {
 	Core::Get().RegisterThreadDescription(ThreadDescription("[Optick] ETW", GetCurrentThreadId(), GetCurrentProcessId()));
 	ETW* etw = (ETW*)parameter;
@@ -1045,7 +1080,7 @@ void ETW::ResolveSysCalls()
 			if (symbol != nullptr)
 			{
 				std::string name(symbol->function.begin(), symbol->function.end());
-				
+
 				data.description = EventDescription::CreateShared(name.c_str(), "SysCall", (long)data.id);
 				syscallDescriptions.insert(std::pair<const uint64_t, const Optick::EventDescription *>(data.id, data.description));
 			}
@@ -1069,20 +1104,24 @@ ETW::ETW()
 	currentProcessId = GetCurrentProcessId();
 }
 
-CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads)
+CaptureStatus::Type ETW::Start(Trace::Mode mode, const ThreadList& threads)
 {
-	if (!isActive) 
+	if (!isActive)
 	{
 		AdjustPrivileges();
 
 		g_ETWRuntime.Reset();
 
-		CaptureStatus::Type res = Trace::Start(mode, threads);
-		if (res != CaptureStatus::OK)
+		activeThreadsIDs.clear();
+		for (auto it = threads.begin(); it != threads.end(); ++it)
 		{
-			return res;
+			ThreadEntry* entry = *it;
+			if (entry->isAlive)
+			{
+				activeThreadsIDs.insert(entry->description.threadID);
+			}
 		}
-
+				
 		ULONG bufferSize = sizeof(EVENT_TRACE_PROPERTIES) + sizeof(KERNEL_LOGGER_NAME);
 		ZeroMemory(traceProperties, bufferSize);
 		traceProperties->Wnode.BufferSize = bufferSize;
@@ -1179,19 +1218,19 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads)
 			++callstackCountSamplesCount;
 		}
 
-/*
-			callstackSamples[callstackCountSamplesCount].EventGuid = CSwitchProfileGuid;
-			callstackSamples[callstackCountSamplesCount].Type = CSwitch::OPCODE;
-			++callstackCountSamplesCount;
-*/
+		/*
+					callstackSamples[callstackCountSamplesCount].EventGuid = CSwitchProfileGuid;
+					callstackSamples[callstackCountSamplesCount].Type = CSwitch::OPCODE;
+					++callstackCountSamplesCount;
+		*/
 
 
-/*		
-		https://msdn.microsoft.com/en-us/library/windows/desktop/dd392328%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
-		Typically, on 64-bit computers, you cannot capture the kernel stack in certain contexts when page faults are not allowed. To enable walking the kernel stack on x64, set
-		the DisablePagingExecutive Memory Management registry value to 1. The DisablePagingExecutive registry value is located under the following registry key:
-		HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Memory Management
-*/
+		/*
+				https://msdn.microsoft.com/en-us/library/windows/desktop/dd392328%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
+				Typically, on 64-bit computers, you cannot capture the kernel stack in certain contexts when page faults are not allowed. To enable walking the kernel stack on x64, set
+				the DisablePagingExecutive Memory Management registry value to 1. The DisablePagingExecutive registry value is located under the following registry key:
+				HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\Session Manager\Memory Management
+		*/
 		if (callstackCountSamplesCount > 0)
 		{
 			status = TraceSetInformation(traceSessionHandle, TraceStackTracingInfo, &callstackSamples[0], sizeof(CLASSIC_EVENT_ID) * callstackCountSamplesCount);
@@ -1227,7 +1266,7 @@ CaptureStatus::Type ETW::Start(int mode, const ThreadList& threads)
 
 		DWORD threadID;
 		processThreadHandle = CreateThread(0, 0, RunProcessTraceThreadFunction, this, 0, &threadID);
-		
+
 		isActive = true;
 	}
 
@@ -1256,11 +1295,8 @@ bool ETW::Stop()
 
 	//VS TODO: Disabling resolving of the syscalls - we can't use then as EventDescriptions at the moment
 	//ResolveSysCalls();
-	
-	if (!Trace::Stop())
-	{
-		return false;
-	}
+
+	activeThreadsIDs.clear();
 
 	return wasThreadClosed && (closeTraceStatus == ERROR_SUCCESS) && (controlTraceResult == ERROR_SUCCESS);
 }
@@ -1268,16 +1304,17 @@ bool ETW::Stop()
 ETW::~ETW()
 {
 	Stop();
-	free (traceProperties);
+	free(traceProperties);
 	traceProperties = nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Trace* Trace::Get()
+Trace* Platform::GetTrace()
 {
 	return &g_ETW;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
-
 #endif //OPTICK_ENABLE_TRACING
-#endif //_MSC_VER
+
+
+#endif

@@ -8,6 +8,8 @@
 #		define OPTICK_OSX (1)
 #	elif defined(__linux__)
 #		define OPTICK_LINUX (1)
+#	elif defined(__ORBIS__)
+#		define OPTICK_PS4 (1)
 #	endif
 #elif defined(_MSC_VER)
 #	define OPTICK_MSVC (1)
@@ -33,13 +35,9 @@
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// SETTINGS
+// Config
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// Enable\Disable Optick
-#if !defined(USE_OPTICK)
-#define USE_OPTICK 1
-#endif
+#include "Optick.Config.h"
 
 
 #if USE_OPTICK

@@ -15,7 +15,7 @@ namespace Profiler
 			Linux,
 			MacOS,
 			XBox,
-			Playstation,
+			PS4,
 		}
 
 		public class Connection
