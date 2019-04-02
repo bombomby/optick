@@ -107,7 +107,7 @@ static const char* FTRACE_TRACING_ON = "tracing_on";
 static const char* FTRACE_TRACE_CLOCK = "trace_clock";
 static const char* FTRACE_OPTIONS_IRQ_INFO = "options/irq-info";
 static const char* FTRACE_SCHED_SWITCH = "events/sched/sched_switch/enable";
-static const uint8_t PROCESS_STATE_REASON_START = 40;
+static const uint8_t PROCESS_STATE_REASON_START = 38;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class FTrace : public Trace
 {
@@ -125,6 +125,7 @@ public:
 	FTrace();
 	~FTrace();
 
+	virtual void SetPassword(const char* pwd) override { password = pwd; }
 	virtual CaptureStatus::Type Start(Trace::Mode mode, const ThreadList& threads) override;
 	virtual bool Stop() override;
 };

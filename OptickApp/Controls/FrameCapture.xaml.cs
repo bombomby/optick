@@ -51,25 +51,13 @@ namespace Profiler.Controls
             }
         }
 
-        PlatformSelectorViewModel _platformSelectorVM;
-        public PlatformSelectorViewModel PlatformSelectorVM
-        {
-            get { return _platformSelectorVM; }
-            set
-            {
-                _platformSelectorVM = value;
-                OnPropertyChanged("PlatformSelectorVM");
-            }
-        }
-
+        AddressBarViewModel AddressBarVM { get; set; }
 
         public FrameCapture()
 		{
-
             using (var scope = BootStrapperBase.Container.BeginLifetimeScope())
             {
                 SummaryVM = scope.Resolve<SummaryViewerModel>();
-                PlatformSelectorVM = scope.Resolve<PlatformSelectorViewModel>();
             }
 
 
@@ -87,7 +75,8 @@ namespace Profiler.Controls
 			timeLine.ShowWarning += TimeLine_ShowWarning;
 			warningBlock.Visibility = Visibility.Collapsed;
 
-			FunctionSummaryVM = (FunctionSummaryViewModel)FindResource("FunctionSummaryVM");
+            AddressBarVM = (AddressBarViewModel)FindResource("AddressBarVM");
+            FunctionSummaryVM = (FunctionSummaryViewModel)FindResource("FunctionSummaryVM");
 			FunctionInstanceVM = (FunctionInstanceViewModel)FindResource("FunctionInstanceVM");
 		}
 
@@ -101,7 +90,7 @@ namespace Profiler.Controls
 			return timeLine.LoadFile(path);
 		}
 
-		private void MainWindow_ConnectionChanged(IPAddress address, int port, ProfilerClient.State state, String message)
+		private void MainWindow_ConnectionChanged(IPAddress address, UInt16 port, ProfilerClient.State state, String message)
 		{
 			if (state == ProfilerClient.State.Disconnected)
 			{
@@ -118,13 +107,8 @@ namespace Profiler.Controls
 		private void TimeLine_NewConnection(object sender, RoutedEventArgs e)
 		{
 			TimeLine.NewConnectionEventArgs args = e as TimeLine.NewConnectionEventArgs;
-
-            if (PlatformSelectorVM !=null)
-                PlatformSelectorVM.PlatformUpdate (new PlatformDescription()
-                { PlatformType = args.Connection.Target, IP = args.Connection.Address,
-                    Port = (short)args.Connection.Port, Name = args.Connection.Name });
-
-		}
+            AddressBarVM?.Update(args.Connection);
+        }
 
 		private void OpenFrame(object source, TimeLine.FocusFrameEventArgs args)
 		{
@@ -223,19 +207,16 @@ namespace Profiler.Controls
 
 		private void StartButton_Checked(object sender, System.Windows.RoutedEventArgs e)
 		{
-            var platform = PlatformSelectorVM.ActivePlatform;
+            var platform = AddressBarVM.Selection;
 
 			if (platform == null)
 				return;
 
-			Properties.Settings.Default.DefaultIP = platform.IP.ToString();
-			Properties.Settings.Default.DefaultPort = (short)platform.Port;
-			Properties.Settings.Default.Save();
+            IPAddress address = null;
+            if (!IPAddress.TryParse(platform.Address, out address))
+                return;
 
-			ProfilerClient.Get().IpAddress = platform.IP;
-			ProfilerClient.Get().Port = (short)platform.Port;
-
-			timeLine.StartCapture();
+            timeLine.StartCapture(address, platform.Port, platform.Password);
 		}
 
 		private void SettingsButton_Click(object sender, RoutedEventArgs e)

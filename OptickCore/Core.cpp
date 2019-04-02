@@ -87,6 +87,56 @@ uint64_t StringHash::CalcHash(const char* str)
 	return MurmurHash64A(str, (int)strlen(str), 0);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Base 64
+// https://renenyffenegger.ch/notes/development/Base64/Encoding-and-decoding-base-64-with-cpp
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+static const std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+static inline bool is_base64(unsigned char c) {
+	return (isalnum(c) || (c == '+') || (c == '/'));
+}
+std::string base64_decode(std::string const& encoded_string) {
+	int in_len = (int)encoded_string.size();
+	int i = 0;
+	int j = 0;
+	int in_ = 0;
+	unsigned char char_array_4[4], char_array_3[3];
+	std::string ret;
+
+	while (in_len-- && (encoded_string[in_] != '=') && is_base64(encoded_string[in_])) {
+		char_array_4[i++] = encoded_string[in_]; in_++;
+		if (i == 4) {
+			for (i = 0; i < 4; i++)
+				char_array_4[i] = (unsigned char)base64_chars.find(char_array_4[i]);
+
+			char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+			char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+			char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+			for (i = 0; (i < 3); i++)
+				ret += char_array_3[i];
+			i = 0;
+		}
+	}
+
+	if (i) {
+		for (j = i; j < 4; j++)
+			char_array_4[j] = 0;
+
+		for (j = 0; j < 4; j++)
+			char_array_4[j] = (unsigned char)base64_chars.find(char_array_4[j]);
+
+		char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+		char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+		char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+		for (j = 0; (j < i - 1); j++) ret += char_array_3[j];
+	}
+
+	return ret;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Get current time in milliseconds
 int64 GetTimeMilliSeconds()
 {
@@ -964,7 +1014,7 @@ Core::Core()
 	, gpuProfiler(nullptr)
 {
 	mainThreadID = Platform::GetThreadID();
-	schedulerTrace = Platform::GetTrace();
+	tracer = Platform::GetTrace();
 	symbolEngine = SymbolEngine::Get();
 
 	frameDescriptions[FrameType::CPU] = EventDescription::Create("CPU Frame", __FILE__, __LINE__);
@@ -1069,13 +1119,13 @@ void Core::Activate( bool active )
 		{
 			CaptureStatus::Type status = CaptureStatus::ERR_TRACER_FAILED;
 
-			if (schedulerTrace)
+			if (tracer)
 			{
                 std::lock_guard<std::recursive_mutex> lock(threadsLock);
-				status = schedulerTrace->Start(Trace::ALL, threads);
+				status = tracer->Start(Trace::ALL, threads);
 				// Let's retry with more narrow setup
 				if (status != CaptureStatus::OK)
-					status = schedulerTrace->Start(Trace::SWITCH_CONTEXTS, threads);
+					status = tracer->Start(Trace::SWITCH_CONTEXTS, threads);
 			}
 
 			if (gpuProfiler)
@@ -1085,8 +1135,8 @@ void Core::Activate( bool active )
 		}
 		else
 		{
-			if (schedulerTrace)
-				schedulerTrace->Stop();
+			if (tracer)
+				tracer->Stop();
 
 			if (gpuProfiler)
 				gpuProfiler->Stop(0);
@@ -1258,6 +1308,17 @@ void Core::InitGPUProfiler(GPUProfiler* profiler)
 	OPTICK_ASSERT(gpuProfiler == nullptr, "Can't reinitialize GPU profiler! Not supported yet!");
 	Memory::Delete<GPUProfiler>(gpuProfiler);
 	gpuProfiler = profiler;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool Core::SetPassword(const std::string& encodedPassword)
+{
+	if (tracer)
+	{
+		std::string decoded = base64_decode(encodedPassword);
+		tracer->SetPassword(decoded.c_str());
+		return true;
+	}
+	return false;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const EventDescription* Core::GetFrameDescription(FrameType::Type frame) const

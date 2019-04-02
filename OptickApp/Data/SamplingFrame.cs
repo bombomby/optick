@@ -199,7 +199,7 @@ namespace Profiler.Data
 	public class SamplingDescriptionPack : SamplingDescriptionBoard
 	{
 		public DataResponse Response { get; set; }
-		public static SamplingDescriptionPack Create(DataResponse response)
+		public static SamplingDescriptionPack CreatePack(DataResponse response)
 		{
 			SamplingDescriptionPack pack = new SamplingDescriptionPack() { Response = response };
 			pack.Read(response);

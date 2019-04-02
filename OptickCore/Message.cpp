@@ -107,12 +107,22 @@ IMessage* IMessage::Create(InputDataStream& str)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void StartMessage::Apply()
 {
-	Core::Get().StartCapture();
+	Core& core = Core::Get();
+	core.SetPassword(password);
+	core.StartCapture();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-IMessage* StartMessage::Create(InputDataStream&)
+IMessage* StartMessage::Create(InputDataStream& stream)
 {
-	return Memory::New<StartMessage>();
+	StartMessage* msg = Memory::New<StartMessage>();
+	stream	>> msg->mode 
+			>> msg->categoryMask 
+			>> msg->samplingFrequency 
+			>> msg->timeLimit 
+			>> msg->frameLimit 
+			>> msg->memoryLimit
+			>> msg->password;
+	return msg;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -6,6 +6,8 @@ using System.IO;
 using System.Windows;
 using System.Net;
 using System.Net.Sockets;
+using Profiler.Data;
+using System.Security;
 
 namespace Profiler
 {
@@ -71,7 +73,7 @@ namespace Profiler
 		public struct ConnectionSource
 		{
 			public IPAddress Address { get; set; }
-			public int Port { get; set; }
+			public UInt16 Port { get; set; }
 		}
 		public ConnectionSource Source;
 
@@ -157,7 +159,7 @@ namespace Profiler
 			return DataResponse.Create(stream);
 		}
 
-		internal static DataResponse Create(NetworkStream stream, IPAddress ipAddress, int port)
+		internal static DataResponse Create(NetworkStream stream, IPAddress ipAddress, UInt16 port)
 		{
 			DataResponse response = Create(stream);
 			if (response != null)
@@ -191,7 +193,15 @@ namespace Profiler
 
 	class StartMessage : Message
 	{
-		public StartMessage()
+        public UInt32 Mode { get; set; }
+        public UInt32 CategoryMask { get; set; } = UInt32.MaxValue;
+        public UInt32 SamplingFrequency { get; set; } = 1000;
+        public UInt32 TimeLimit { get; set; }
+        public UInt32 FrameLimit { get; set; }
+        public UInt64 MemoryLimit { get; set; }
+        public SecureString Password { get; set; }
+
+        public StartMessage()
 		{
 		}
 
@@ -203,6 +213,14 @@ namespace Profiler
 		public override void Write(BinaryWriter writer)
 		{
 			base.Write(writer);
+            writer.Write(Mode);
+            writer.Write(CategoryMask);
+            writer.Write(SamplingFrequency);
+            writer.Write(MemoryLimit);
+            writer.Write(TimeLimit);
+            writer.Write(FrameLimit);
+            String pwd = Utils.GetUnsecureBase64String(Password);
+            Utils.WriteBinaryString(writer, pwd);
 		}
 	}
 

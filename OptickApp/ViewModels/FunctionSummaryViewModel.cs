@@ -149,13 +149,11 @@ namespace Profiler.ViewModels
 
     public class FunctionSummaryViewModel : FunctionViewModel
     {
-        public class FunctionSummaryItem : INotifyPropertyChanged
+        public class FunctionSummaryItem : BaseViewModel
         {
             public Style Icon { get; set; }
             public String Name { get; set; }
             public String Description { get; set; }
-
-            public event PropertyChangedEventHandler PropertyChanged;
         }
 
         public class MinMaxFunctionSummaryItem : FunctionSummaryItem

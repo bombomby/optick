@@ -200,7 +200,10 @@ namespace Profiler.Data
 			Main = 1 << 0,
 			GPU = 1 << 1,
 			IO = 1 << 2,
+            Idle = 1 << 3,
 		}
+
+        public bool IsIdle { get { return (Mask & (int)ThreadMask.Idle) != 0; } }
 
 		public String FullName
 		{
@@ -363,8 +366,8 @@ namespace Profiler.Data
 				thread.Origin = ThreadDescription.Source.GameAuto;
 				if (!desc.ThreadDescriptions.ContainsKey(thread.ThreadID))
 					desc.ThreadDescriptions.Add(thread.ThreadID, thread);
-				else if (!String.IsNullOrEmpty(thread.Name))
-					desc.ThreadDescriptions[thread.ThreadID] = thread;
+				//else if (!String.IsNullOrEmpty(thread.Name))
+				//	desc.ThreadDescriptions[thread.ThreadID] = thread;
 
 				ProcessDescription process = null;
 				if (desc.ProcessDescritpions.TryGetValue(thread.ProcessID, out process))

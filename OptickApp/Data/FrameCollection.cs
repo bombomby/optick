@@ -167,16 +167,13 @@ namespace Profiler.Data
 		{
 			List<KeyValuePair<ThreadDescription, ThreadData>> cores = new List<KeyValuePair<ThreadDescription, ThreadData>>(Board.CPUCoreCount);
 
-			for (int i = 0; i < Board.CPUCoreCount; ++i)
-			{
-				ThreadDescription desc = new ThreadDescription() { Name = String.Format("CPU Core {0:00}", i), ThreadID = UInt64.MaxValue, Origin = ThreadDescription.Source.Core };
-				cores.Add(new KeyValuePair<ThreadDescription, ThreadData>(desc, AddThread(desc)));
-			}
-
 			foreach (KeyValuePair<UInt64, Synchronization> pair in Synchronization.SyncMap)
 			{
 				ThreadDescription threadDesc = null;
 				Board.ThreadDescriptions.TryGetValue(pair.Key, out threadDesc);
+
+                if (threadDesc != null && threadDesc.IsIdle)
+                    continue;
 
 				EventDescription eventDesc = new EventDescription(threadDesc != null ? String.Format("{0}:0x{1:X}", threadDesc.FullName, threadDesc.ThreadID) : pair.Key.ToString("X"));
 				if (threadDesc != null && threadDesc.ProcessID != Board.ProcessID)
@@ -184,7 +181,13 @@ namespace Profiler.Data
 
 				foreach (SyncInterval interval in pair.Value)
 				{
-					Debug.Assert(0 <= interval.Core && interval.Core < cores.Count, "Invalid Core Index");
+                    byte core = interval.Core;
+
+                    while (cores.Count <= core)
+                    {
+                        ThreadDescription desc = new ThreadDescription() { Name = String.Format("CPU Core {0:00}", cores.Count), ThreadID = UInt64.MaxValue, Origin = ThreadDescription.Source.Core };
+                        cores.Add(new KeyValuePair<ThreadDescription, ThreadData>(desc, AddThread(desc)));
+                    }
 
 					Entry entry = new Entry(eventDesc, interval.Start, interval.Finish);
 
@@ -204,7 +207,7 @@ namespace Profiler.Data
 			foreach (KeyValuePair<UInt64, ThreadDescription> pair in Board.ThreadDescriptions)
 			{
 				ThreadDescription desc = pair.Value;
-				if (desc.ProcessID == Board.ProcessID)
+				if (desc.ProcessID == Board.ProcessID && !desc.IsIdle)
 				{
 					ThreadData threadData = GetThread(pair.Key);
 					if (threadData == null || threadData.Events.Count == 0)
@@ -395,11 +398,6 @@ namespace Profiler.Data
 			return null;
 		}
 
-		public bool IsCurrentProcess(UInt64 threadID)
-		{
-			return GetThread(threadID) != null;
-		}
-
 		public ThreadData AddThread(ThreadDescription desc)
 		{
 			int index = Threads.Count;
@@ -532,7 +530,7 @@ namespace Profiler.Data
 						int id = response.Reader.ReadInt32();
 						FrameGroup group = groups[id];
 
-						group.AddSymbolPack(SamplingDescriptionPack.Create(response));
+						group.AddSymbolPack(SamplingDescriptionPack.CreatePack(response));
 
 						break;
 					}

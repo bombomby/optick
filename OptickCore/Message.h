@@ -72,6 +72,14 @@ public:
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct StartMessage : public Message<IMessage::Start>
 {
+	uint32 mode;
+	uint32 categoryMask;
+	uint32 samplingFrequency;
+	uint32 timeLimit;
+	uint32 frameLimit;
+	uint64 memoryLimit;
+	std::string password;
+
 	static IMessage* Create(InputDataStream&);
 	virtual void Apply() override;
 };

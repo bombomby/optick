@@ -462,7 +462,7 @@ public:
 	// Graphics graphics;
 
 	// System scheduler trace
-	Trace* schedulerTrace;
+	Trace* tracer;
 
 	// SysCall Collector
 	SysCallCollector syscallCollector;
@@ -532,6 +532,9 @@ public:
 
 	// Initalizes GPU profiler
 	void InitGPUProfiler(GPUProfiler* profiler);
+
+	// Initializes root password for the device
+	bool SetPassword(const std::string& encodedPassword);
 
 	// Current Frame Number (since the game started)
 	uint32_t GetCurrentFrame() const { return frameNumber; }

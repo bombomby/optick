@@ -45,10 +45,10 @@ namespace Profiler.Data
 		Win_WrFastMutex,
 		Win_WrGuardedMutex,
 		Win_WrRundown,
-		Win_MaximumWaitReason,
+		Win_Count,
 
-		//===> Linux
-		Pthread_Unknown = 40,
+		//===> Pthread
+		Pthread_Unknown,
 		//D	Uninterruptible sleep(usually IO)
 		Pthread_UninterruptibleSleep,
 		//R	Running or runnable(on run queue)
@@ -61,9 +61,40 @@ namespace Profiler.Data
 		Pthread_Dead,
 		//Z	Defunct(“zombie”) process, terminated but not reaped by its parent.
 		Pthread_Zombie,
+        Pthread_Count,
 
-		
-		SyncReasonActive,
+        //===> FreeBSD
+        // Unspecified switch
+        SWT_NONE,
+        // Switching due to preemption
+        SWT_PREEMPT,
+        // Switching due to opepreempt
+        SWT_OWEPREEMPT,
+        // Turnstile contention
+        SWT_TURNSTILE,
+        // Sleepq wait
+        SWT_SLEEPQ,
+        //Sleepq timeout wait
+        SWT_SLEEPQTIMO,
+        // Yield call
+        SWT_RELINQUISH,
+        // NEEDRESCHED was set
+        SWT_NEEDRESCHED,
+        // Switching from the idle thread
+        SWT_IDLE,
+        // Waiting for interrupts
+        SWT_IWAIT,
+        // Thread suspended
+        SWT_SUSPEND,
+        // Remote processor preempted
+        SWT_REMOTEPREEMPT,
+        // Remote processor preempted idle
+        SWT_REMOTEWAKEIDLE,
+        // Number of switch types
+        SWT_COUNT,
+
+
+        SyncReasonActive,
 		SyncReasonCount,
 	}
 

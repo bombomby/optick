@@ -50,16 +50,22 @@ namespace Profiler
 
 		bool IsUserInitiatedSync(SyncReason reason)
 		{
-			if (reason <= SyncReason.Win_MaximumWaitReason)
+			if (reason <= SyncReason.Win_Count)
 			{
 				return reason <= SyncReason.Win_UserRequest;
 			}
 
-			if (reason <= SyncReason.Pthread_Zombie)
+			if (reason <= SyncReason.Pthread_Count)
 			{
 				// VS TODO: Find out proper user\kernel pre-emption mapping
 				return true; // (reason == SyncReason.Pthread_InterruptibleSleep) || (reason == SyncReason.Pthread_UninterruptibleSleep);
 			}
+
+            if (reason <= SyncReason.SWT_COUNT)
+            {
+                if (reason == SyncReason.SWT_PREEMPT || reason == SyncReason.SWT_OWEPREEMPT || reason == SyncReason.SWT_NEEDRESCHED)
+                    return false;
+            }
 
 			return true;
 		}
@@ -474,7 +480,7 @@ namespace Profiler
 					{
 						if (EventData.Sync[index].Finish < tick.Start && tick.Start < EventData.Sync[index + 1].Start)
 						{
-							UInt64 threadId = EventData.Sync[index + 1].NewThreadId;
+							UInt64 threadId = EventData.Sync[index].NewThreadId;
 
 							ThreadDescription threadDesc = null;
 							Group.Board.ThreadDescriptions.TryGetValue(threadId, out threadDesc);

@@ -46,6 +46,7 @@ namespace Profiler.Controls
 		public int Version { get; set; }
 
 		public List<Platform.Connection> Connections { get; set; } = new List<Platform.Connection>();
+        public Platform.Connection LastConnection { get; set; }
 
         public string TempDirectoryPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Optick\\Temp\\");
 

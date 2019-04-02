@@ -36,7 +36,7 @@ namespace Profiler
 			get { return ipAddress; }
 			set
 			{
-				if (ipAddress != value)
+				if (!value.Equals(ipAddress))
 				{
 					ipAddress = value;
 					Reconnect();
@@ -44,7 +44,7 @@ namespace Profiler
 			}
 		}
 
-		public int Port
+		public UInt16 Port
 		{
 			get { return port; }
 			set
@@ -96,9 +96,9 @@ namespace Profiler
 		}
 
 		private IPAddress ipAddress;
-		private int port = -1;
+		private UInt16 port = UInt16.MaxValue;
 
-		const int PORT_RANGE = 3;
+		const UInt16 PORT_RANGE = 3;
 
 		private bool CheckConnection()
 		{
@@ -106,7 +106,7 @@ namespace Profiler
 			{
 				if (!client.Connected)
 				{
-					for (int currentPort = port; currentPort < port + PORT_RANGE; ++currentPort)
+					for (UInt16 currentPort = port; currentPort < port + PORT_RANGE; ++currentPort)
 					{
 						try
 						{
@@ -138,7 +138,7 @@ namespace Profiler
 			Connected,
 			Disconnected,
 		}
-		public delegate void ConnectionStateEventHandler(IPAddress address, int port, State state, String message);
+		public delegate void ConnectionStateEventHandler(IPAddress address, UInt16 port, State state, String message);
 		public event ConnectionStateEventHandler ConnectionChanged;
 
 		public bool SendMessage(Message message, bool autoconnect = false)

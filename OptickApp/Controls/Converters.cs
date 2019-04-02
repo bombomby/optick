@@ -2,7 +2,9 @@
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
 
@@ -150,4 +152,78 @@ namespace Profiler
 			return null;
 		}
 	}
+
+    public class StringToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return (value != null && !String.IsNullOrEmpty(value.ToString())) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return null;
+        }
+    }
+
+    public class SecureStringToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            System.Security.SecureString str = value as System.Security.SecureString;
+            return (str != null && str.Length > 0) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            return null;
+        }
+    }
+
+    public class Base64Converter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is String)
+            {
+                var base64EncodedBytes = System.Convert.FromBase64String(value as String);
+                return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+            }
+            return null;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            if (value is String)
+            {
+                var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(value as String);
+                return System.Convert.ToBase64String(plainTextBytes);
+            }
+            return null;
+        }
+    }
+
+
+    public class IPAddressValidationRule : ValidationRule
+    {
+        public override ValidationResult Validate(object value, CultureInfo cultureInfo)
+        {
+            var validationResult = new ValidationResult(true, null);
+
+            if (value != null)
+            {
+                String text = value.ToString();
+                if (!string.IsNullOrEmpty(text))
+                {
+                    IPAddress dummy = null;
+                    if (!IPAddress.TryParse(text, out dummy))
+                    {
+                        validationResult = new ValidationResult(false, "Invalid IP Address!");
+                    }
+                }
+            }
+
+            return validationResult;
+        }
+    }
 }

@@ -1,4 +1,5 @@
 ﻿using Profiler.Data;
+using Profiler.InfrastructureMvvm;
 using Profiler.Views;
 using System;
 using System.Collections.Generic;
@@ -187,6 +188,10 @@ namespace Profiler
 			for (int i = 0; i < Math.Min(group.Board.Threads.Count, group.Threads.Count); ++i)
 			{
 				ThreadDescription thread = group.Board.Threads[i];
+
+                if (thread.IsIdle)
+                    continue;
+
 				ThreadData data = group.Threads[i];
 
 				bool threadHasData = false;
@@ -236,7 +241,19 @@ namespace Profiler
 
 		ProcessGroup GetProcessGroup(FrameGroup group, UInt64 threadID)
 		{
-			return threadID == 0 ? ProcessGroup.None : (group.IsCurrentProcess(threadID) ? ProcessGroup.CurrentProcess : ProcessGroup.OtherProcess);
+            if (threadID == 0)
+                return ProcessGroup.None;
+
+            ThreadData thread = group.GetThread(threadID);
+            if (thread != null)
+                return ProcessGroup.CurrentProcess;
+
+            ThreadDescription desc = null;
+            if (group.Board.ThreadDescriptions.TryGetValue(threadID, out desc))
+                if (desc.IsIdle)
+                    return ProcessGroup.None;
+
+            return ProcessGroup.OtherProcess;
 		}
 
 		ChartRow GenerateCoreChart(FrameGroup group)
@@ -253,8 +270,6 @@ namespace Profiler
 			ChartRow.Entry otherProcess = new ChartRow.Entry(eventsCount) { Fill = Colors.Tomato, Name = "Other Process" };
 
 			List<bool> isCoreInUse = new List<bool>(group.Board.CPUCoreCount);
-			for (int i = 0; i < group.Board.CPUCoreCount; ++i)
-				isCoreInUse.Add(false);
 
 			int currCores = 0;
 			int otherCores = 0;
@@ -264,7 +279,10 @@ namespace Profiler
 				ProcessGroup prevGroup = GetProcessGroup(group, ev.OldThreadID);
 				ProcessGroup currGroup = GetProcessGroup(group, ev.NewThreadID);
 
-				if ((prevGroup != currGroup) || !isCoreInUse[ev.CPUID])
+                while (isCoreInUse.Count <= ev.CPUID)
+                    isCoreInUse.Add(false);
+
+                if ((prevGroup != currGroup) || !isCoreInUse[ev.CPUID])
 				{
 					timestamps.Add(ev.Timestamp);
 
@@ -297,7 +315,7 @@ namespace Profiler
 				}
 			}
 
-			ChartRow chart = new ChartRow("CPU", timestamps, new List<ChartRow.Entry>() { currProcess, otherProcess }, group.Board.CPUCoreCount);
+			ChartRow chart = new ChartRow("CPU", timestamps, new List<ChartRow.Entry>() { currProcess, otherProcess }, isCoreInUse.Count);
 			chart.ChartHover += Row_ChartHover;
 			return chart;
 		}
@@ -434,11 +452,10 @@ namespace Profiler
 			SurfacePopup.IsOpen = dataContext.Count > 0 ? true : false;
 		}
 
-		class CallstackFilterItem : INotifyPropertyChanged
+		class CallstackFilterItem : BaseViewModel
 		{
 			public bool IsChecked { get; set; }
 			public CallStackReason Reason { get; set; }
-			public event PropertyChangedEventHandler PropertyChanged;
 		}
 		List<CallstackFilterItem> CallstackFilter = new List<CallstackFilterItem>();
 

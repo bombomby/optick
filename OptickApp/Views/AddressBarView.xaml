@@ -1,0 +1,60 @@
+﻿<UserControl x:Class="Profiler.Views.AddressBarView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:MahApps="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:local="clr-namespace:Profiler.Views"
+             xmlns:Profiler="clr-namespace:Profiler"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <Profiler:StringToResource x:Key="StringToResource" />
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <Profiler:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+        <Profiler:SecureStringToVisibilityConverter x:Key="SecureStringToVisibilityConverter" />
+    </UserControl.Resources>
+    <StackPanel Orientation="Horizontal">
+        <ComboBox x:Name="ConnectionComboBox" ItemsSource="{Binding Connections}" SelectedItem="{Binding Selection, Mode=TwoWay}" MinHeight="{StaticResource DefaultButtonSize}" SelectionChanged="ComboBox_SelectionChanged">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="16" Height="16">
+                            <ContentControl Style="{Binding Icon, Converter={StaticResource StringToResource}}" Margin="-8" />
+                        </Border>
+                        <Label Content="{Binding Name}" Margin="4,0" FontWeight="Bold" Width="110" />
+                        <Label Content="{Binding Address}" Margin="0" Opacity="0.5" Width="90" HorizontalContentAlignment="Right" />
+                        <Border Width="16" Height="16" Margin="2,0,0,0" Visibility="{Binding Password, Converter={StaticResource SecureStringToVisibilityConverter}}">
+                            <ContentControl Style="{StaticResource appbar_unlock}" Margin="-4,-6,-4,-4" ToolTip="Password is Cached!" />
+                        </Border>
+                    </StackPanel>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+        <StackPanel Orientation="Horizontal" DataContext="{Binding Selection}" Visibility="{Binding CanEdit, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Label Content="IP:" VerticalAlignment="Center" Margin="2,0" />
+            <TextBox Width="94" Height="{StaticResource DefaultButtonSize}">
+                <TextBox.Text>
+                    <Binding Path="Address" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
+                        <Binding.ValidationRules>
+                            <Profiler:IPAddressValidationRule />
+                        </Binding.ValidationRules>
+                    </Binding>
+                </TextBox.Text>
+            </TextBox>
+            <Label Content="Port:" VerticalAlignment="Center" Margin="2,0" />
+            <TextBox Text="{Binding Port, UpdateSourceTrigger=PropertyChanged}" MinWidth="50" Height="{StaticResource DefaultButtonSize}" />
+            <!--<Label Content="Root Password:" VerticalAlignment="Center" Margin="2,0" />-->
+            <ContentControl Style="{StaticResource appbar_unlock}" Margin="-4,-5,-4,-3" ToolTip="Root password for the device required on some platforms in order to get access to the Kernel metrics: switch-contexts, sampling, etc." />
+            <PasswordBox x:Name="PwdBox"
+                         Background="{StaticResource OptickContentBackground}"
+                         Height="{StaticResource DefaultButtonSize}"
+                         MinHeight="{StaticResource DefaultButtonSize}"
+                         MinWidth="50"
+                         MahApps:TextBoxHelper.ClearTextButton="True" 
+                         MahApps:TextBoxHelper.Watermark="Root Password" 
+                         Style="{StaticResource MetroButtonRevealedPasswordBox}"
+                         PasswordChanged="PasswordBox_PasswordChanged" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

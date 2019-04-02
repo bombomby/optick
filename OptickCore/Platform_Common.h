@@ -40,7 +40,7 @@ namespace Optick
 			// Collect Everything
 			ALL = 0xFFFFFFFF
 		};
-
+		virtual void SetPassword(const char* /*pwd*/) {};
 		virtual CaptureStatus::Type Start(Trace::Mode mode, const ThreadList& threads) = 0;
 		virtual bool Stop() = 0;
 		virtual ~Trace() {};

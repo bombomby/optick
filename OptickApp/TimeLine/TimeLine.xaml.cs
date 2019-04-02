@@ -28,6 +28,7 @@ using System.Net.NetworkInformation;
 using System.ComponentModel;
 using System.IO.Compression;
 using System.Threading.Tasks;
+using System.Security;
 
 namespace Profiler
 {
@@ -67,7 +68,7 @@ statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, st
 			socketThread.Start();
 		}
 
-		private void TimeLine_ConnectionChanged(IPAddress address, int port, ProfilerClient.State state, String message)
+		private void TimeLine_ConnectionChanged(IPAddress address, UInt16 port, ProfilerClient.State state, String message)
 		{
 			switch (state)
 			{
@@ -191,7 +192,7 @@ statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, st
 						if (response.Version >= NetworkProtocol.NETWORK_PROTOCOL_VERSION_23)
 						{
 							Platform.Connection connection = new Platform.Connection() {
-								Address = response.Source.Address,
+								Address = response.Source.Address.ToString(),
 								Port = response.Source.Port
 							};
 							Platform.Type target = Platform.Type.Unknown;
@@ -402,15 +403,18 @@ statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, st
 		//	view.Filter = new Predicate<object>((item) => { return (item is Frame) ? (item as Frame).Duration >= FrameFilterSlider.Value : true; });
 		//}
 
-		public void StartCapture()
+		public void StartCapture(IPAddress address, UInt16 port, SecureString password)
 		{
-			Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            ProfilerClient.Get().IpAddress = address;
+            ProfilerClient.Get().Port = port;
+
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
 			{
 				StatusText.Text = "Connecting...";
 				StatusText.Visibility = System.Windows.Visibility.Visible;
 			}));
 
-			Task.Run(() => { ProfilerClient.Get().SendMessage(new StartMessage(), true); });
+			Task.Run(() => { ProfilerClient.Get().SendMessage(new StartMessage() { Password = password } , true); });
 		}
 	}
 

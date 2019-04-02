@@ -136,6 +136,15 @@ namespace Optick
 		return stream;
 	}
 
+	InputDataStream & operator >> ( InputDataStream &stream, std::string &val)
+	{
+		int32 length = 0;
+		stream >> length;
+		val.resize(length + 1);
+		stream.read( (char*)&val[0], length);
+		return stream;
+	}
+
 	InputDataStream::InputDataStream() :
 		std::stringstream( ios_base::in | ios_base::out )
 	{

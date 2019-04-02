@@ -94,6 +94,7 @@ public:
 
 	DTrace();
 
+	virtual void SetPassword(const char* pwd) override { password = pwd; }
 	virtual CaptureStatus::Type Start(Trace::Mode mode, const ThreadList& threads) override;
 	virtual bool Stop() override;
 };

@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Profiler.Data;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+using System.Security;
 using System.Xml.Serialization;
 
 namespace Profiler
@@ -22,16 +24,17 @@ namespace Profiler
 		{
 			public Platform.Type Target { get; set; }
 			public string Name { get; set; }
+            public string Address { get; set; }
+            public UInt16 Port { get; set; }
             [XmlIgnore]
-            public IPAddress Address { get; set; }
-            [XmlElement("Address")]
-            public string AddressForXml
+            public SecureString Password { get; set; }
+            [XmlElement("Password")]
+            public string PasswordForXml
             {
-                get { return Address.ToString(); }
-                set{ Address = string.IsNullOrEmpty(value) ? null : IPAddress.Parse(value);}
+                get { return Utils.GetUnsecureBase64String(Password); }
+                set { Password = Utils.GetSecureStringFromBase64String(value); }
             }
-            public int Port { get; set; }
-		}
+        }
 
 		public static IPAddress GetPS4Address()
 		{

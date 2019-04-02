@@ -101,13 +101,14 @@ namespace Optick
 			return true;
 		}
 
-		friend InputDataStream &operator >> ( InputDataStream &stream, byte &val );
+		friend InputDataStream &operator >> (InputDataStream &stream, byte &val );
 		friend InputDataStream &operator >> (InputDataStream &stream, int16 &val);
 		friend InputDataStream &operator >> (InputDataStream &stream, uint16 &val);
-		friend InputDataStream &operator >> ( InputDataStream &stream, int32 &val );
-		friend InputDataStream &operator >> ( InputDataStream &stream, uint32 &val );
-		friend InputDataStream &operator >> ( InputDataStream &stream, int64 &val );
-		friend InputDataStream &operator >> ( InputDataStream &stream, uint64 &val );
+		friend InputDataStream &operator >> (InputDataStream &stream, int32 &val );
+		friend InputDataStream &operator >> (InputDataStream &stream, uint32 &val );
+		friend InputDataStream &operator >> (InputDataStream &stream, int64 &val );
+		friend InputDataStream &operator >> (InputDataStream &stream, uint64 &val );
+		friend InputDataStream &operator >> (InputDataStream &stream, std::string &val);
 	};
 
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -134,7 +135,17 @@ namespace Profiler.Data
 			return System.Text.Encoding.ASCII.GetString(reader.ReadBytes(reader.ReadInt32()));
 		}
 
-		public static String ReadBinaryWideString(BinaryReader reader)
+        public static void WriteBinaryString(BinaryWriter writer, String text)
+        {
+            writer.Write(text != null ? text.Length : 0);
+            if (text != null)
+            {
+                byte[] data = System.Text.Encoding.ASCII.GetBytes(text);
+                writer.Write(data);
+            }
+        }
+
+        public static String ReadBinaryWideString(BinaryReader reader)
 		{
 			return System.Text.Encoding.Unicode.GetString(reader.ReadBytes(reader.ReadInt32()));
 		}
@@ -213,5 +224,19 @@ namespace Profiler.Data
 			// Step 7
 			return d[n, m];
 		}
-	}
+
+        public static String GetUnsecureBase64String(SecureString text)
+        {
+            String password = new System.Net.NetworkCredential(string.Empty, text).Password;
+            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(password);
+            return System.Convert.ToBase64String(plainTextBytes);
+        }
+
+        public static SecureString GetSecureStringFromBase64String(String text)
+        {
+            var base64EncodedBytes = System.Convert.FromBase64String(text);
+            return new System.Net.NetworkCredential("", System.Text.Encoding.UTF8.GetString(base64EncodedBytes)).SecurePassword;
+        }
+
+    }
 }

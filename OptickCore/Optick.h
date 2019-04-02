@@ -371,6 +371,7 @@ struct ThreadMask
 		Main	= 1 << 0,
 		GPU		= 1 << 1,
 		IO		= 1 << 2,
+		Idle	= 1 << 3,
 	};
 };
 

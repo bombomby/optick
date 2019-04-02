@@ -232,9 +232,6 @@
     <Compile Include="Controls\EditTaskTrackerListDialog.xaml.cs">
       <DependentUpon>EditTaskTrackerListDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\IPTextBox.xaml.cs">
-      <DependentUpon>IPTextBox.xaml</DependentUpon>
-    </Compile>
     <Compile Include="InfrastructureMvvm\BoolToVisibilityConverter.cs" />
     <Compile Include="InfrastructureMvvm\BootStrapperBase.cs" />
     <Compile Include="InfrastructureMvvm\DialogManager.cs" />
@@ -287,14 +284,17 @@
     <Compile Include="ThreadView\SamplingThreadView.xaml.cs">
       <DependentUpon>SamplingThreadView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModels\AddressBarViewModel.cs" />
     <Compile Include="ViewModels\FunctionSummaryViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
-    <Compile Include="ViewModels\PlatformSelectorViewModel.cs" />
     <Compile Include="ViewModels\ScreenShotViewModel.cs" />
     <Compile Include="ViewModels\SummaryViewerModel.cs" />
     <Compile Include="InfrastructureMvvm\ViewModelLocator.cs" />
     <Compile Include="ViewModels\TaskTrackerViewModel.cs" />
     <Compile Include="ViewModels\ThreadFilterViewModel.cs" />
+    <Compile Include="Views\AddressBarView.xaml.cs">
+      <DependentUpon>AddressBarView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\FunctionHistoryView.xaml.cs">
       <DependentUpon>FunctionHistoryView.xaml</DependentUpon>
     </Compile>
@@ -303,9 +303,6 @@
     </Compile>
     <Compile Include="Views\FunctionSummaryView.xaml.cs">
       <DependentUpon>FunctionSummaryView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\PlatformSelectorView.xaml.cs">
-      <DependentUpon>PlatformSelectorView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ScreenShotView.xaml.cs">
       <DependentUpon>ScreenShotView.xaml</DependentUpon>
@@ -423,10 +420,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Controls\IPTextBox.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Controls\SettingsControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -443,6 +436,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\AddressBarView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\FunctionHistoryView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -452,10 +449,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\FunctionSummaryView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\PlatformSelectorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
