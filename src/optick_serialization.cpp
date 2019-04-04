@@ -1,9 +1,13 @@
-#include "Serialization.h"
-#include "Common.h"
+#include "optick.config.h"
+
+#if USE_OPTICK
+
+#include "optick_common.h"
+#include "optick_serialization.h"
 
 namespace Optick
 {
-	std::string OutputDataStream::GetData()
+	string OutputDataStream::GetData()
 	{
 		flush();
 		return str();
@@ -15,7 +19,7 @@ namespace Optick
 		return *this;
 	}
 
-	Optick::OutputDataStream OutputDataStream::Empty;
+	OutputDataStream OutputDataStream::Empty;
 
 	OutputDataStream &operator << ( OutputDataStream &stream, const char* val )
 	{
@@ -77,7 +81,7 @@ namespace Optick
 		return stream;
 	}
 
-	OutputDataStream & operator<<(OutputDataStream &stream, const std::string& val)
+	OutputDataStream & operator<<(OutputDataStream &stream, const string& val)
 	{
 		stream << (uint32)val.length();
 		if (!val.empty())
@@ -85,7 +89,7 @@ namespace Optick
 		return stream;
 	}
 
-	OutputDataStream & operator<<(OutputDataStream &stream, const std::wstring& val)
+	OutputDataStream & operator<<(OutputDataStream &stream, const wstring& val)
 	{
 		size_t count = val.length() * sizeof(wchar_t);
 		stream << (uint32)count;
@@ -136,7 +140,7 @@ namespace Optick
 		return stream;
 	}
 
-	InputDataStream & operator >> ( InputDataStream &stream, std::string &val)
+	InputDataStream & operator >> ( InputDataStream &stream, string &val)
 	{
 		int32 length = 0;
 		stream >> length;
@@ -146,7 +150,7 @@ namespace Optick
 	}
 
 	InputDataStream::InputDataStream() :
-		std::stringstream( ios_base::in | ios_base::out )
+		stringstream( ios_base::in | ios_base::out )
 	{
 	}
 
@@ -170,3 +174,5 @@ namespace Optick
 
 
 }
+
+#endif //USE_OPTICK

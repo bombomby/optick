@@ -1,7 +1,10 @@
 #pragma once
 #if defined(__APPLE_CC__)
 
-#include "Platform_Common.h"
+#include "optick.config.h"
+#if USE_OPTICK
+
+#include "optick_core.platform.h"
 
 #include <mach/mach_time.h>
 #include <sys/time.h>
@@ -43,9 +46,7 @@ namespace Optick
 
 #if OPTICK_ENABLE_TRACING
 
-#include <array>
-#include <vector>
-#include "Core.h"
+#include "optick_core.h"
 
 namespace Optick
 {
@@ -55,7 +56,7 @@ class DTrace : public Trace
 	static const bool isSilent = true;
 
 	std::thread processThread;
-	std::string password;
+	string password;
 
 	enum State
 	{
@@ -76,7 +77,7 @@ class DTrace : public Trace
 		CoreState() : pid(INVALID_THREAD_ID), tid(INVALID_THREAD_ID), prio(0) {}
 	};
 	static const int MAX_CPU_CORES = 256;
-	std::array<CoreState, MAX_CPU_CORES> cores;
+	array<CoreState, MAX_CPU_CORES> cores;
 
 	static void AsyncProcess(DTrace* trace);
 	void Process();
@@ -253,7 +254,7 @@ DTrace::ParseResult DTrace::Parse(const char* line)
 
 		if (prevState.IsValid())
 		{
-			Optick::SwitchContextDesc desc;
+			SwitchContextDesc desc;
 			desc.reason = 0;
 			desc.cpuId = cpu;
 			desc.oldThreadId = prevState.tid;
@@ -267,7 +268,7 @@ DTrace::ParseResult DTrace::Parse(const char* line)
 	return PARSE_FAILED;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void DTrace::AsyncProcess(Optick::DTrace *trace) {
+void DTrace::AsyncProcess(DTrace *trace) {
 	trace->Process();
 }
 
@@ -279,5 +280,5 @@ Trace* Platform::GetTrace()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 #endif //OPTICK_ENABLE_TRACING
-
-#endif
+#endif //USE_OPTICK
+#endif //__APPLE_CC__

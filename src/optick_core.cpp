@@ -1,26 +1,29 @@
-#include "Core.h"
-#include "ProfilerServer.h"
+#include "optick.config.h"
+
+#if USE_OPTICK
+
+#include "optick_core.h"
+#include "optick_server.h"
 
 #include "SymbolEngine.h"
 
 #include <algorithm>
 #include <fstream>
-#include <unordered_set>
 
 //////////////////////////////////////////////////////////////////////////
 // Start of the Platform-specific stuff
 //////////////////////////////////////////////////////////////////////////
 #if defined(OPTICK_MSVC)
-#include "Platform_Win.hpp"
+#include "optick_core.win.h"
 #endif
 #if defined(OPTICK_LINUX)
-#include "Platform_Linux.hpp"
+#include "optick_core.linux.h"
 #endif
 #if defined(OPTICK_OSX)
-#include "Platform_MacOS.hpp"
+#include "optick_core.macos.h"
 #endif
 #if defined(OPTICK_PS4)
-#include "Platform_PS4.hpp"
+#include "optick_core.ps4.h"
 #endif
 //////////////////////////////////////////////////////////////////////////
 // End of the Platform-specific stuff
@@ -38,6 +41,9 @@ extern "C" Optick::EventData* NextEvent()
 
 namespace Optick
 {
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void* (*Memory::allocate)(size_t) = operator new;
+void  (*Memory::deallocate)(void* p) = operator delete;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 uint64_t MurmurHash64A(const void * key, int len, uint64_t seed)
 {
@@ -92,17 +98,17 @@ uint64_t StringHash::CalcHash(const char* str)
 // Base 64
 // https://renenyffenegger.ch/notes/development/Base64/Encoding-and-decoding-base-64-with-cpp
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-static const std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+static const string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 static inline bool is_base64(unsigned char c) {
 	return (isalnum(c) || (c == '+') || (c == '/'));
 }
-std::string base64_decode(std::string const& encoded_string) {
+string base64_decode(string const& encoded_string) {
 	int in_len = (int)encoded_string.size();
 	int i = 0;
 	int j = 0;
 	int in_ = 0;
 	unsigned char char_array_4[4], char_array_3[3];
-	std::string ret;
+	string ret;
 
 	while (in_len-- && (encoded_string[in_] != '=') && is_base64(encoded_string[in_])) {
 		char_array_4[i++] = encoded_string[in_]; in_++;
@@ -157,7 +163,7 @@ void SortMemoryPool(MemoryPool<T, SIZE>& memoryPool)
 	if (count == 0)
 		return;
 
-	std::vector<T> memoryArray;
+	vector<T> memoryArray;
 	memoryArray.resize(count);
 	memoryPool.ToArray(&memoryArray[0]);
 
@@ -240,12 +246,12 @@ void Event::Push(const char* name)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Event::Push(const EventDescription& description)
 {
-	PushEvent(Core::storage, &description, Optick::GetHighPrecisionTime());
+	PushEvent(Core::storage, &description, GetHighPrecisionTime());
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Event::Pop()
 {
-	PopEvent(Core::storage, Optick::GetHighPrecisionTime());
+	PopEvent(Core::storage, GetHighPrecisionTime());
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Event::Add(EventStorage* storage, const EventDescription* description, int64_t timestampStart, int64_t timestampFinish)
@@ -438,7 +444,7 @@ OutputDataStream& operator << (OutputDataStream& stream, const EventDescriptionB
 	return stream;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Optick::EventDescriptionBoard EventDescriptionBoard::instance;
+EventDescriptionBoard EventDescriptionBoard::instance;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -542,7 +548,7 @@ bool CallstackCollector::SerializeModules(OutputDataStream& stream)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CallstackCollector::SerializeSymbols(OutputDataStream& stream)
 {
-	typedef std::unordered_set<uint64> SymbolSet;
+	typedef unordered_set<uint64> SymbolSet;
 	SymbolSet symbolSet;
 
 	for (CallstacksPool::const_iterator it = callstacksPool.begin(); it != callstacksPool.end();)
@@ -582,7 +588,7 @@ bool CallstackCollector::SerializeSymbols(OutputDataStream& stream)
 
 	SymbolEngine* symEngine = Core::Get().symbolEngine;
 
-	std::vector<const Symbol*> symbols;
+	vector<const Symbol*> symbols;
 	symbols.reserve(symbolSet.size());
 
 	size_t callstackIndex = 0;
@@ -668,7 +674,7 @@ bool SwitchContextCollector::Serialize(OutputDataStream& stream)
 #error Platform is not supported!
 #endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::string GetCPUName()
+string GetCPUName()
 {
 	int cpuInfo[4] = { -1 };
 	char cpuBrandString[0x40] = { 0 };
@@ -684,7 +690,7 @@ std::string GetCPUName()
 		else if (i == 0x80000004)
 			memcpy(cpuBrandString + 32, cpuInfo, sizeof(cpuInfo));
 	}
-	return std::string(cpuBrandString);
+	return string(cpuBrandString);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1012,10 +1018,15 @@ Core::Core()
 	, pendingState(State::DUMP_CAPTURE)
 	, isActive(false)
 	, gpuProfiler(nullptr)
+	, tracer(nullptr)
+	, symbolEngine(nullptr)
 {
 	mainThreadID = Platform::GetThreadID();
+#if OPTICK_ENABLE_TRACING
+
 	tracer = Platform::GetTrace();
 	symbolEngine = SymbolEngine::Get();
+#endif
 
 	frameDescriptions[FrameType::CPU] = EventDescription::Create("CPU Frame", __FILE__, __LINE__);
 	frameDescriptions[FrameType::GPU] = EventDescription::Create("GPU Frame", __FILE__, __LINE__);
@@ -1146,7 +1157,7 @@ void Core::Activate( bool active )
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpCapturingProgress()
 {
-	std::stringstream stream;
+	stringstream stream;
 
 	if (isActive)
 		stream << "Capturing Frame " << (uint32)frames.size() << std::endl;
@@ -1254,16 +1265,21 @@ bool Core::SetStateChangedCallback(StateCallback cb)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::AttachSummary(const char* key, const char* value)
 {
-	summary.push_back(make_pair(std::string(key), std::string(value)));
+	summary.push_back(make_pair(string(key), string(value)));
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::AttachFile(File::Type type, const char* name, const uint8_t* data, uint32_t size)
 {
-	attachments.push_back(Attachment(type, name));
-	Attachment& attachment = attachments.back();
-	attachment.data = std::vector<uint8_t>(data, data + size);
-	return true;
+	if (size > 0)
+	{
+		attachments.push_back(Attachment(type, name));
+		Attachment& attachment = attachments.back();
+		attachment.data.resize(size);
+		memcpy(&attachment.data[0], data, size);
+		return true;
+	}
+	return false;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::AttachFile(File::Type type, const char* name, std::istream& stream)
@@ -1298,7 +1314,7 @@ bool Core::AttachFile(File::Type type, const char* name, const wchar_t* path)
 #else
 	char p[256] = { 0 };
 	wcstombs(p, path, sizeof(p));
-    std::ifstream stream(p, std::ios::binary);
+    ifstream stream(p, std::ios::binary);
 	return AttachFile(type, name, stream);
 #endif
 }
@@ -1310,11 +1326,11 @@ void Core::InitGPUProfiler(GPUProfiler* profiler)
 	gpuProfiler = profiler;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Core::SetPassword(const std::string& encodedPassword)
+bool Core::SetPassword(const string& encodedPassword)
 {
 	if (tracer)
 	{
-		std::string decoded = base64_decode(encodedPassword);
+		string decoded = base64_decode(encodedPassword);
 		tracer->SetPassword(decoded.c_str());
 		return true;
 	}
@@ -1343,7 +1359,7 @@ Core::~Core()
 	fibers.clear();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-const std::vector<ThreadEntry*>& Core::GetThreads() const
+const vector<ThreadEntry*>& Core::GetThreads() const
 {
 	return threads;
 }
@@ -1526,7 +1542,7 @@ bool IsSleepOnlyScope(const ScopeData& scope)
 	//if (!scope.categories.empty())
 	//	return false;
 
-	const std::vector<EventData>& events = scope.events;
+	const vector<EventData>& events = scope.events;
 	for(auto it = events.begin(); it != events.end(); ++it)
 	{
 		const EventData& data = *it;
@@ -1563,7 +1579,7 @@ void ScopeData::Clear()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void EventStorage::GPUStorage::Clear(bool preserveMemory)
 {
-	for (int i = 0; i < MAX_GPU_NODES; ++i)
+	for (size_t i = 0; i < gpuBuffer.size(); ++i)
 		for (int j = 0; j < GPU_QUEUE_COUNT; ++j)
 			gpuBuffer[i][j].Clear(preserveMemory);
 }
@@ -1591,3 +1607,5 @@ void EventStorage::GPUStorage::Stop(EventData& data)
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
+
+#endif //USE_OPTICK

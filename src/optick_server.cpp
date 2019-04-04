@@ -1,5 +1,8 @@
-#include "ProfilerServer.h"
-#include "Common.h"
+#include "optick.config.h"
+
+#if USE_OPTICK
+#include "optick_server.h"
+#include "optick_common.h"
 
 #if defined(OPTICK_MSVC)
 #define USE_WINDOWS_SOCKETS (1)
@@ -31,9 +34,9 @@ typedef UINT_PTR TcpSocket;
 namespace Optick
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-static const short DEFAULT_PORT = 31313;
+static const short DEFAULT_PORT = 31318;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#if USE_WINDOWS_SOCKETS
+#if defined(USE_WINDOWS_SOCKETS)
 class Wsa
 {
 	bool isInitialized;
@@ -64,7 +67,7 @@ public:
 
 inline bool IsValidSocket(TcpSocket socket)
 {
-#ifdef USE_WINDOWS_SOCKETS
+#if defined(USE_WINDOWS_SOCKETS)
 	if (socket == INVALID_SOCKET)
 	{
 		return false;
@@ -80,7 +83,7 @@ inline bool IsValidSocket(TcpSocket socket)
 
 inline void CloseSocket(TcpSocket& socket)
 {
-#ifdef USE_WINDOWS_SOCKETS
+#if defined(USE_WINDOWS_SOCKETS)
 	closesocket(socket);
 	socket = INVALID_SOCKET;
 #else
@@ -91,7 +94,7 @@ inline void CloseSocket(TcpSocket& socket)
 
 inline bool SetSocketBlockingMode(TcpSocket socket, bool isBlocking)
 {
-#ifdef USE_WINDOWS_SOCKETS
+#if defined(USE_WINDOWS_SOCKETS)
 	unsigned long mode = isBlocking ? 0 : 1;
 	return (ioctlsocket(socket, FIONBIO, &mode) == 0) ? true : false;
 #else 
@@ -117,7 +120,7 @@ class Socket
 	fd_set recieveSet;
 
 	std::recursive_mutex socketLock;
-	std::wstring errorMessage;
+	wstring errorMessage;
 
 	void Close()
 	{
@@ -153,7 +156,7 @@ class Socket
 public:
 	Socket() : acceptSocket((TcpSocket)-1), listenSocket((TcpSocket)-1)
 	{
-#ifdef USE_WINDOWS_SOCKETS
+#if defined(USE_WINDOWS_SOCKETS)
 		Wsa::Init();
 #endif
 		listenSocket = ::socket(AF_INET, SOCK_STREAM, SOCKET_PROTOCOL_TCP);
@@ -285,7 +288,7 @@ void Server::Send(DataResponse::Type type, OutputDataStream& stream)
 {
 	std::lock_guard<std::recursive_mutex> lock(socketLock);
 
-	std::string data = stream.GetData();
+	string data = stream.GetData();
 
 	DataResponse response(type, (uint32)data.size());
 	socket->Send((char*)&response, sizeof(response));
@@ -297,7 +300,7 @@ bool Server::InitConnection()
 	return socket->Accept();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::string Server::GetHostName() const
+string Server::GetHostName() const
 {
     const uint32 HOST_NAME_LENGTH = 256;
     char hostname[HOST_NAME_LENGTH] = { 0 };
@@ -331,3 +334,5 @@ Server & Server::Get()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 }
+
+#endif //USE_OPTICK

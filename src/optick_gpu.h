@@ -1,22 +1,18 @@
 #pragma once
-#include "Optick.Config.h"
+#include "optick.config.h"
 
-#if OPTICK_ENABLE_GPU
+#if USE_OPTICK
 
-#include <array>
 #include <atomic>
 #include <mutex>
-#include <string>
-#include <vector>
 
-#include "Common.h"
+#include "optick_common.h"
+#include "optick_memory.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Optick
 {
 	const char* GetGPUQueueName(GPUQueueType queue);
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	const int MAX_GPU_NODES = 2;
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	class GPUProfiler
 	{
@@ -86,7 +82,7 @@ namespace Optick
 				return index;
 			}
 
-			std::string name;
+			string name;
 
 			void Reset();
 
@@ -96,7 +92,7 @@ namespace Optick
 		std::recursive_mutex updateLock;
 		volatile State currentState;
 
-		std::vector<Node*> nodes;
+		vector<Node*> nodes;
 		uint32_t currentNode;
 
 		uint32_t frameNumber;
@@ -118,7 +114,7 @@ namespace Optick
 		virtual void Stop(uint32 mode);
 		virtual void Dump(uint32 mode);
 
-		virtual std::string GetName() const;
+		virtual string GetName() const;
 
 		// Interface to implement
 		virtual ClockSynchronization GetClockSynchronization(uint32_t nodeIndex) = 0;
@@ -130,4 +126,4 @@ namespace Optick
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
-#endif //OPTICK_ENABLE_GPU
+#endif //USE_OPTICK

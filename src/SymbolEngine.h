@@ -1,11 +1,20 @@
 #pragma once
-#include "Common.h"
-#include "Serialization.h"
 
-#include <unordered_map>
+#include "optick.config.h"
+
+#if USE_OPTICK
+
+
+#include "optick_common.h"
+#include "optick_memory.h"
+#include "optick_serialization.h"
 
 #if !defined(OPTICK_ENABLE_SYMENGINE)
-#define OPTICK_ENABLE_SYMENGINE (USE_OPTICK && OPTICK_MSVC)
+#if defined(OPTICK_MSVC)
+#define OPTICK_ENABLE_SYMENGINE (USE_OPTICK)
+#else
+#define OPTICK_ENABLE_SYMENGINE (0)
+#endif
 #endif
 
 namespace Optick
@@ -13,7 +22,7 @@ namespace Optick
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	struct Module
 	{
-		std::string path;
+		string path;
 		void* address;
 		size_t size;
 		Module(const char* p, void* a, size_t s) : path(p), address(a), size(s) {}
@@ -23,8 +32,8 @@ namespace Optick
 	{
 		uint64 address;
 		uint64 offset;
-		std::wstring file;
-		std::wstring function;
+		wstring file;
+		wstring function;
 		uint32 line;
 		Symbol()
 			: address(0)
@@ -40,17 +49,17 @@ namespace Optick
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	typedef std::unordered_map<uint64, Symbol> SymbolCache;
+	typedef unordered_map<uint64, Symbol> SymbolCache;
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	class SymbolEngine
 	{
 	protected:
 		SymbolCache cache;
-		std::vector<Module> modules;
+		vector<Module> modules;
 	public:
 		virtual void UpdateModules() {}
-		virtual const std::vector<Module>& GetModules() { return modules; }
+		virtual const vector<Module>& GetModules() { return modules; }
 
 		// Get Symbol from address
 		virtual const Symbol* const GetSymbol(uint64 dwAddress);
@@ -64,3 +73,6 @@ namespace Optick
 	};
 
 }
+
+
+#endif //USE_OPTICK

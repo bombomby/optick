@@ -1,9 +1,10 @@
 #pragma once
+#include "optick.config.h"
 
-#include "Message.h"
+#if USE_OPTICK
+#include "optick_message.h"
 
 #include <mutex>
-#include <string>
 #include <thread>
 
 namespace Optick
@@ -31,9 +32,11 @@ public:
 	void Send(DataResponse::Type type, OutputDataStream& stream = OutputDataStream::Empty);
 	void Update();
 
-	std::string GetHostName() const;
+	string GetHostName() const;
 
 	static Server &Get();
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
+
+#endif //USE_OPTICK

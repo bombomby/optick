@@ -1,10 +1,11 @@
-#include "Optick.Config.h"
+#include "optick.config.h"
 
+#if USE_OPTICK
 #if OPTICK_ENABLE_GPU_VULKAN
 #include <vulkan/vulkan.h>
 
-#include "Core.h"
-#include "GPUProfiler.h"
+#include "optick_core.h"
+#include "optick_gpu.h"
 
 #define OPTICK_VK_CHECK(args) do { VkResult __hr = args; OPTICK_ASSERT(__hr == VK_SUCCESS, "Failed check"); (void)__hr; } while(false);
 
@@ -28,12 +29,12 @@ namespace Optick
 			VkQueryPool			queryPool;
 			VkCommandPool		commandPool;
 
-			std::array<Frame, NUM_FRAMES_DELAY> frames;
+			array<Frame, NUM_FRAMES_DELAY> frames;
 
 			NodePayload() : device(VK_NULL_HANDLE), physicalDevice(VK_NULL_HANDLE), queue(VK_NULL_HANDLE), queryPool(VK_NULL_HANDLE), commandPool(VK_NULL_HANDLE) {}
 			~NodePayload();
 		};
-		std::vector<NodePayload*> nodePayloads;
+		vector<NodePayload*> nodePayloads;
 
 		void ResolveTimestamps(VkCommandBuffer commandBuffer, uint32_t startIndex, uint32_t count);
 		void WaitForFrame(uint64_t frameNumber);
@@ -352,10 +353,13 @@ namespace Optick
 	}
 }
 #else
-#include "Common.h"
-void InitGpuVulkan(void* /*devices*/, void* /*physicalDevices*/, void* /*cmdQueues*/, uint32_t* /*cmdQueuesFamily*/, uint32_t /*numQueues*/)
+#include "optick_common.h"
+namespace Optick
 {
-	OPTICK_FAILED("OPTICK_ENABLE_GPU_VULKAN is disabled! Can't initialize GPU Profiler!");
+	void InitGpuVulkan(void* /*devices*/, void* /*physicalDevices*/, void* /*cmdQueues*/, uint32_t* /*cmdQueuesFamily*/, uint32_t /*numQueues*/)
+	{
+		OPTICK_FAILED("OPTICK_ENABLE_GPU_VULKAN is disabled! Can't initialize GPU Profiler!");
+	}
 }
-
 #endif //OPTICK_ENABLE_GPU_D3D12
+#endif //USE_OPTICK

@@ -1,5 +1,10 @@
 #pragma once
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Config
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#include "optick.config.h"
 
+#if USE_OPTICK
 #include <stdint.h>
 
 #if defined(__clang__) || defined(__GNUC__)
@@ -34,13 +39,6 @@
 #error Compiler not supported
 #endif
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Config
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#include "Optick.Config.h"
-
-
-#if USE_OPTICK
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // EXPORTS 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -225,8 +223,6 @@ namespace Optick
 		};
 	};
 
-	#define MAKE_CATEGORY(filter, color) (((uint64_t)(color) << 32) | (1ull << filter))
-
 	struct Filter
 	{
 		enum Type : uint32_t
@@ -271,49 +267,51 @@ namespace Optick
 		};
 	};
 
+	#define OPTICK_MAKE_CATEGORY(filter, color) (((uint64_t)(1ull) << (filter + 32)) | (uint64_t)color)
+
 	struct Category
 	{
 		enum Type : uint64_t
 		{
 			// CPU
-			None = MAKE_CATEGORY(Filter::None, Color::Null),
-			AI = MAKE_CATEGORY(Filter::AI, Color::Purple),
-			Animation = MAKE_CATEGORY(Filter::Animation, Color::LightSkyBlue),
-			Audio = MAKE_CATEGORY(Filter::Audio, Color::HotPink),
-			Debug = MAKE_CATEGORY(Filter::Debug, Color::Black),
-			Camera = MAKE_CATEGORY(Filter::Camera, Color::Black),
-			Cloth = MAKE_CATEGORY(Filter::Cloth, Color::DarkGreen),
-			GameLogic = MAKE_CATEGORY(Filter::GameLogic, Color::RoyalBlue),
-			Input = MAKE_CATEGORY(Filter::Input, Color::Ivory),
-			Navigation = MAKE_CATEGORY(Filter::Navigation, Color::Magenta),
-			Network = MAKE_CATEGORY(Filter::Network, Color::Olive),
-			Physics = MAKE_CATEGORY(Filter::Physics, Color::LawnGreen),
-			Rendering = MAKE_CATEGORY(Filter::Rendering, Color::BurlyWood),
-			Scene = MAKE_CATEGORY(Filter::Scene, Color::RoyalBlue),
-			Script = MAKE_CATEGORY(Filter::Script, Color::Plum),
-			Streaming = MAKE_CATEGORY(Filter::Streaming, Color::Gold),
-			UI = MAKE_CATEGORY(Filter::UI, Color::PaleTurquoise),
-			VFX = MAKE_CATEGORY(Filter::VFX, Color::SaddleBrown),
-			Visibility = MAKE_CATEGORY(Filter::Visibility, Color::Snow),
-			Wait = MAKE_CATEGORY(Filter::Wait, Color::Tomato),
+			None			= OPTICK_MAKE_CATEGORY(Filter::None, Color::Null),
+			AI				= OPTICK_MAKE_CATEGORY(Filter::AI, Color::Purple),
+			Animation		= OPTICK_MAKE_CATEGORY(Filter::Animation, Color::LightSkyBlue),
+			Audio			= OPTICK_MAKE_CATEGORY(Filter::Audio, Color::HotPink),
+			Debug			= OPTICK_MAKE_CATEGORY(Filter::Debug, Color::Black),
+			Camera			= OPTICK_MAKE_CATEGORY(Filter::Camera, Color::Black),
+			Cloth			= OPTICK_MAKE_CATEGORY(Filter::Cloth, Color::DarkGreen),
+			GameLogic		= OPTICK_MAKE_CATEGORY(Filter::GameLogic, Color::RoyalBlue),
+			Input			= OPTICK_MAKE_CATEGORY(Filter::Input, Color::Ivory),
+			Navigation		= OPTICK_MAKE_CATEGORY(Filter::Navigation, Color::Magenta),
+			Network			= OPTICK_MAKE_CATEGORY(Filter::Network, Color::Olive),
+			Physics			= OPTICK_MAKE_CATEGORY(Filter::Physics, Color::LawnGreen),
+			Rendering		= OPTICK_MAKE_CATEGORY(Filter::Rendering, Color::BurlyWood),
+			Scene			= OPTICK_MAKE_CATEGORY(Filter::Scene, Color::RoyalBlue),
+			Script			= OPTICK_MAKE_CATEGORY(Filter::Script, Color::Plum),
+			Streaming		= OPTICK_MAKE_CATEGORY(Filter::Streaming, Color::Gold),
+			UI				= OPTICK_MAKE_CATEGORY(Filter::UI, Color::PaleTurquoise),
+			VFX				= OPTICK_MAKE_CATEGORY(Filter::VFX, Color::SaddleBrown),
+			Visibility		= OPTICK_MAKE_CATEGORY(Filter::Visibility, Color::Snow),
+			Wait			= OPTICK_MAKE_CATEGORY(Filter::Wait, Color::Tomato),
+			WaitEmpty		= OPTICK_MAKE_CATEGORY(Filter::Wait, Color::White),
 			// IO
-			IO = MAKE_CATEGORY(Filter::IO, Color::Khaki),
+			IO				= OPTICK_MAKE_CATEGORY(Filter::IO, Color::Khaki),
 			// GPU
-			GPU_Cloth = MAKE_CATEGORY(Filter::GPU_Cloth, Color::DarkGreen),
-			GPU_Lighting = MAKE_CATEGORY(Filter::GPU_Lighting, Color::Khaki),
-			GPU_PostFX = MAKE_CATEGORY(Filter::GPU_PostFX, Color::Maroon),
-			GPU_Reflections = MAKE_CATEGORY(Filter::GPU_Reflections, Color::CadetBlue),
-			GPU_Scene = MAKE_CATEGORY(Filter::GPU_Scene, Color::RoyalBlue),
-			GPU_Shadows = MAKE_CATEGORY(Filter::GPU_Shadows, Color::LightSlateGray),
-			GPU_UI = MAKE_CATEGORY(Filter::GPU_UI, Color::PaleTurquoise),
-			GPU_VFX = MAKE_CATEGORY(Filter::GPU_VFX, Color::SaddleBrown),
-			GPU_Water = MAKE_CATEGORY(Filter::GPU_Water, Color::SteelBlue),
+			GPU_Cloth		= OPTICK_MAKE_CATEGORY(Filter::GPU_Cloth, Color::DarkGreen),
+			GPU_Lighting	= OPTICK_MAKE_CATEGORY(Filter::GPU_Lighting, Color::Khaki),
+			GPU_PostFX		= OPTICK_MAKE_CATEGORY(Filter::GPU_PostFX, Color::Maroon),
+			GPU_Reflections = OPTICK_MAKE_CATEGORY(Filter::GPU_Reflections, Color::CadetBlue),
+			GPU_Scene		= OPTICK_MAKE_CATEGORY(Filter::GPU_Scene, Color::RoyalBlue),
+			GPU_Shadows		= OPTICK_MAKE_CATEGORY(Filter::GPU_Shadows, Color::LightSlateGray),
+			GPU_UI			= OPTICK_MAKE_CATEGORY(Filter::GPU_UI, Color::PaleTurquoise),
+			GPU_VFX			= OPTICK_MAKE_CATEGORY(Filter::GPU_VFX, Color::SaddleBrown),
+			GPU_Water		= OPTICK_MAKE_CATEGORY(Filter::GPU_Water, Color::SteelBlue),
 		};
 
-		static uint32_t GetColor(Type t) { return (uint32_t)(t >> 32); }
-		static uint32_t GetMask(Type t) { return (uint32_t)(t); }
+		static uint32_t GetMask(Type t) { return (uint32_t)(t >> 32); }
+		static uint32_t GetColor(Type t) { return (uint32_t)(t); }
 	};
-
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
@@ -574,6 +572,7 @@ struct OPTICK_API Tag
 	{
 		float p[3] = { x, y, z }; Attach(description, p);
 	}
+
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct ThreadScope
@@ -676,14 +675,14 @@ OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame);
 // Notes:
 //		Optick captures full name of the function including name space and arguments.
 //		Full name is usually shortened in the Optick GUI in order to highlight the most important bits.
-#define OPTICK_EVENT(...)	 static ::Optick::EventDescription* OPTICK_CONCAT(autogenerated_description_, __LINE__) = nullptr; \
-							 if (OPTICK_CONCAT(autogenerated_description_, __LINE__) == nullptr) OPTICK_CONCAT(autogenerated_description_, __LINE__) = ::Optick::CreateDescription(OPTICK_FUNC, __FILE__, __LINE__  OPTICK_VA_ARGS(__VA_ARGS__)); \
-							 ::Optick::Event OPTICK_CONCAT(autogenerated_event_, __LINE__)( *(OPTICK_CONCAT(autogenerated_description_, __LINE__)) ); \
+#define OPTICK_EVENT(...)	 static ::Optick::EventDescription* OPTICK_CONCAT(autogen_description_, __LINE__) = nullptr; \
+							 if (OPTICK_CONCAT(autogen_description_, __LINE__) == nullptr) OPTICK_CONCAT(autogen_description_, __LINE__) = ::Optick::CreateDescription(OPTICK_FUNC, __FILE__, __LINE__  OPTICK_VA_ARGS(__VA_ARGS__)); \
+							 ::Optick::Event OPTICK_CONCAT(autogen_event_, __LINE__)( *(OPTICK_CONCAT(autogen_description_, __LINE__)) ); 
 
 // Backward compatibility with previous versions of Optick
-#if !defined(PROFILE)
-#define PROFILE OPTICK_EVENT()
-#endif
+//#if !defined(PROFILE)
+//#define PROFILE OPTICK_EVENT()
+//#endif
 
 // Scoped profiling macro with predefined color.
 // Use this macro for high-level function calls (e.g. AI, Physics, Audio, Render etc.).
@@ -710,10 +709,10 @@ OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame);
 //			OPTICK_FRAME("MainThread");
 //			... code ...
 //		}
-#define OPTICK_FRAME(FRAME_NAME)  static ::Optick::ThreadScope mainThreadScope(FRAME_NAME);		\
+#define OPTICK_FRAME(FRAME_NAME)	static ::Optick::ThreadScope mainThreadScope(FRAME_NAME);		\
 									OPTICK_UNUSED(mainThreadScope);									\
 									uint32_t frameNumber = ::Optick::NextFrame();					\
-									::Optick::Event OPTICK_CONCAT(autogenerated_event_, __LINE__)(*::Optick::GetFrameDescription(::Optick::FrameType::CPU)); \
+									::Optick::Event OPTICK_CONCAT(autogen_event_, __LINE__)(*::Optick::GetFrameDescription(::Optick::FrameType::CPU)); \
 									OPTICK_TAG("Frame", frameNumber);
 
 
@@ -745,9 +744,9 @@ OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame);
 //		OPTICK_TAG("Height(cm)", 176.3f);
 //		OPTICK_TAG("Address", (uint64)*this);
 //		OPTICK_TAG("Position", 123.0f, 456.0f, 789.0f);
-#define OPTICK_TAG(NAME, ...)		static ::Optick::EventDescription* OPTICK_CONCAT(autogenerated_tag_, __LINE__) = nullptr; \
-									if (OPTICK_CONCAT(autogenerated_tag_, __LINE__) == nullptr) OPTICK_CONCAT(autogenerated_tag_, __LINE__) = ::Optick::EventDescription::Create( NAME, __FILE__, __LINE__ ); \
-									::Optick::Tag::Attach(*OPTICK_CONCAT(autogenerated_tag_, __LINE__), __VA_ARGS__); \
+#define OPTICK_TAG(NAME, ...)		static ::Optick::EventDescription* OPTICK_CONCAT(autogen_tag_, __LINE__) = nullptr; \
+									if (OPTICK_CONCAT(autogen_tag_, __LINE__) == nullptr) OPTICK_CONCAT(autogen_tag_, __LINE__) = ::Optick::EventDescription::Create( NAME, __FILE__, __LINE__ ); \
+									::Optick::Tag::Attach(*OPTICK_CONCAT(autogen_tag_, __LINE__), __VA_ARGS__); \
 
 // Scoped macro with DYNAMIC name.
 // Optick holds a copy of the provided name.
@@ -768,9 +767,9 @@ OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame);
 //		OPTICK_PUSH("ScopeName");
 //		...
 //		OPTICK_POP();
-#define OPTICK_PUSH(NAME)				static ::Optick::EventDescription* OPTICK_CONCAT(autogenerated_description_, __LINE__) = nullptr; \
-										if (OPTICK_CONCAT(autogenerated_description_, __LINE__) == nullptr) OPTICK_CONCAT(autogenerated_description_, __LINE__) = ::Optick::EventDescription::Create( NAME, __FILE__, __LINE__ ); \
-										::Optick::Event::Push(*OPTICK_CONCAT(autogenerated_description_, __LINE__));		
+#define OPTICK_PUSH(NAME)				static ::Optick::EventDescription* OPTICK_CONCAT(autogen_description_, __LINE__) = nullptr; \
+										if (OPTICK_CONCAT(autogen_description_, __LINE__) == nullptr) OPTICK_CONCAT(autogen_description_, __LINE__) = ::Optick::EventDescription::Create( NAME, __FILE__, __LINE__ ); \
+										::Optick::Event::Push(*OPTICK_CONCAT(autogen_description_, __LINE__));		
 #define OPTICK_POP()					::Optick::Event::Pop();
 
 
@@ -783,7 +782,7 @@ OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame);
 //
 //		Then we could just use a pointer to cached description later for profiling:
 //		OPTICK_CUSTOM_EVENT(description);
-#define OPTICK_CUSTOM_EVENT(DESCRIPTION) 							::Optick::Event						  OPTICK_CONCAT(autogenerated_event_, __LINE__)( *DESCRIPTION ); \
+#define OPTICK_CUSTOM_EVENT(DESCRIPTION) 							::Optick::Event						  OPTICK_CONCAT(autogen_event_, __LINE__)( *DESCRIPTION ); \
 
 // Registration of a custom EventStorage (e.g. GPU, IO, etc.)
 // Use it to present any extra information on the timeline.
@@ -810,9 +809,9 @@ OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame);
 // Notes:
 //		It's not thread-safe to add events to the same storage from multiple threads.
 //		Please guarantee thread-safety on the higher level if access from multiple threads to the same storage is required.
-#define OPTICK_STORAGE_EVENT(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START, CPU_TIMESTAMP_FINISH)		if (::Optick::IsActive()) { ::Optick::Event::Add(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START, CPU_TIMESTAMP_FINISH); }
+#define OPTICK_STORAGE_EVENT(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START, CPU_TIMESTAMP_FINISH)	if (::Optick::IsActive()) { ::Optick::Event::Add(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START, CPU_TIMESTAMP_FINISH); }
 #define OPTICK_STORAGE_PUSH(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START)							if (::Optick::IsActive()) { ::Optick::Event::Push(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START); }
-#define OPTICK_STORAGE_POP(STORAGE, CPU_TIMESTAMP_FINISH)											if (::Optick::IsActive()) { ::Optick::Event::Pop(STORAGE, CPU_TIMESTAMP_FINISH); }
+#define OPTICK_STORAGE_POP(STORAGE, CPU_TIMESTAMP_FINISH)										if (::Optick::IsActive()) { ::Optick::Event::Pop(STORAGE, CPU_TIMESTAMP_FINISH); }
 
 
 // Registers state change callback
@@ -831,13 +830,13 @@ OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame);
 //		OPTICK_GPU_CONTEXT(cmdBuffer); - all OPTICK_GPU_EVENT will use the same command buffer within the scope
 //		OPTICK_GPU_CONTEXT(cmdBuffer, Optick::GPU_QUEUE_COMPUTE); - all events will use the same command buffer and queue for the scope 
 //		OPTICK_GPU_CONTEXT(cmdBuffer, Optick::GPU_QUEUE_COMPUTE, gpuIndex); - all events will use the same command buffer and queue for the scope 
-#define OPTICK_GPU_CONTEXT(...)	 ::Optick::GPUContextScope OPTICK_CONCAT(gpu_autogenerated_context_, __LINE__)(__VA_ARGS__); \
-									 (void)OPTICK_CONCAT(gpu_autogenerated_context_, __LINE__);
+#define OPTICK_GPU_CONTEXT(...)	 ::Optick::GPUContextScope OPTICK_CONCAT(gpu_autogen_context_, __LINE__)(__VA_ARGS__); \
+									 (void)OPTICK_CONCAT(gpu_autogen_context_, __LINE__);
 
 #define OPTICK_GPU_EVENT(NAME)	 OPTICK_EVENT(NAME); \
-									 static ::Optick::EventDescription* OPTICK_CONCAT(gpu_autogenerated_description_, __LINE__) = nullptr; \
-									 if (OPTICK_CONCAT(gpu_autogenerated_description_, __LINE__) == nullptr) OPTICK_CONCAT(gpu_autogenerated_description_, __LINE__) = ::Optick::EventDescription::Create( NAME, __FILE__, __LINE__ ); \
-									 ::Optick::GPUEvent OPTICK_CONCAT(gpu_autogenerated_event_, __LINE__)( *(OPTICK_CONCAT(gpu_autogenerated_description_, __LINE__)) ); \
+									 static ::Optick::EventDescription* OPTICK_CONCAT(gpu_autogen_description_, __LINE__) = nullptr; \
+									 if (OPTICK_CONCAT(gpu_autogen_description_, __LINE__) == nullptr) OPTICK_CONCAT(gpu_autogen_description_, __LINE__) = ::Optick::EventDescription::Create( NAME, __FILE__, __LINE__ ); \
+									 ::Optick::GPUEvent OPTICK_CONCAT(gpu_autogen_event_, __LINE__)( *(OPTICK_CONCAT(gpu_autogen_description_, __LINE__)) ); \
 
 #define OPTICK_GPU_FLIP(SWAP_CHAIN)		::Optick::GpuFlip(SWAP_CHAIN);
 

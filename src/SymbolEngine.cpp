@@ -1,3 +1,7 @@
+#include "optick.config.h"
+
+#if USE_OPTICK
+
 #include "SymbolEngine.h"
 
 namespace Optick
@@ -28,3 +32,5 @@ namespace Optick
     }
 #endif
 }
+
+#endif //USE_OPTICK

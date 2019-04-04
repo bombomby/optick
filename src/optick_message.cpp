@@ -1,7 +1,10 @@
-#include "Message.h"
-#include "Common.h"
-#include "Core.h"
-#include "ProfilerServer.h"
+#include "optick.config.h"
+
+#if USE_OPTICK
+#include "optick_common.h"
+#include "optick_core.h"
+#include "optick_message.h"
+#include "optick_server.h"
 
 namespace Optick
 {
@@ -151,3 +154,5 @@ void TurnSamplingMessage::Apply()
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
+
+#endif //USE_OPTICK

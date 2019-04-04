@@ -1,21 +1,21 @@
-#include "Optick.Config.h"
-
+#include "optick.config.h"
+#if USE_OPTICK
 #if OPTICK_ENABLE_GPU_D3D12
 
+#include "optick_common.h"
+#include "optick_memory.h"
+#include "optick_core.h"
+#include "optick_gpu.h"
+
 #include <atomic>
-#include <array>
-#include <string>
 #include <thread>
-#include <vector>
 
 #include <d3d12.h>
 #include <dxgi.h>
 #include <dxgi1_4.h>
 
-#include "Core.h"
-#include "GPUProfiler.h"
 
-#define OPTICK_CHECK(args) do { HRESULT __hr = args; OPTICK_ASSERT(__hr == S_OK, "Failed check"); } while(false);
+#define OPTICK_CHECK(args) do { HRESULT __hr = args; (void)__hr; OPTICK_ASSERT(__hr == S_OK, "Failed check"); } while(false);
 
 namespace Optick
 {
@@ -26,11 +26,6 @@ namespace Optick
 			ID3D12CommandAllocator* commandAllocator;
 			ID3D12GraphicsCommandList* commandList;
 
-			//std::array<EventData*, MAX_GPU_NODES> frameEvents;
-
-			//std::array<uint32_t, MAX_GPU_NODES> queryStartIndices;
-			//std::array<uint32_t, MAX_GPU_NODES> queryCountIndices;
-
 			Frame() : commandAllocator(nullptr), commandList(nullptr)
 			{
 				Reset();
@@ -38,9 +33,6 @@ namespace Optick
 
 			void Reset()
 			{
-				//frameEvents.fill(nullptr);
-				//queryStartIndices.fill((uint32_t)-1);
-				//queryCountIndices.fill(0);
 			}
 
 			void Shutdown();
@@ -61,7 +53,7 @@ namespace Optick
 			NodePayload() : commandQueue(nullptr), queryHeap(nullptr), syncFence(nullptr) {}
 			~NodePayload();
 		};
-		std::vector<NodePayload*> nodePayloads;
+		vector<NodePayload*> nodePayloads;
 
 		ID3D12Resource* queryBuffer;
 		ID3D12Device* device;
@@ -70,7 +62,7 @@ namespace Optick
 		DXGI_FRAME_STATISTICS prevFrameStatistics;
 
 		//void UpdateRange(uint32_t start, uint32_t finish)
-		void InitNode(const char* nodeName, uint32_t nodeIndex, ID3D12CommandQueue* pCmdQueue);
+		void InitNodeInternal(const char* nodeName, uint32_t nodeIndex, ID3D12CommandQueue* pCmdQueue);
 
 		void ResolveTimestamps(uint32_t startIndex, uint32_t count);
 
@@ -193,10 +185,10 @@ namespace Optick
 		wcstombs_s(deviceName, desc.Description, OPTICK_ARRAY_SIZE(deviceName) - 1);
 
 		for (uint32_t nodeIndex = 0; nodeIndex < nodeCount; ++nodeIndex)
-			InitNode(deviceName, nodeIndex, pCommandQueues[nodeIndex]);
+			InitNodeInternal(deviceName, nodeIndex, pCommandQueues[nodeIndex]);
 	}
 
-	void GPUProfilerD3D12::InitNode(const char* nodeName, uint32_t nodeIndex, ID3D12CommandQueue* pCmdQueue)
+	void GPUProfilerD3D12::InitNodeInternal(const char* nodeName, uint32_t nodeIndex, ID3D12CommandQueue* pCmdQueue)
 	{
 		GPUProfiler::InitNode(nodeName, nodeIndex);
 
@@ -376,7 +368,7 @@ namespace Optick
 }
 
 #else
-#include "Common.h"
+#include "optick_common.h"
 
 namespace Optick
 {
@@ -387,3 +379,4 @@ namespace Optick
 }
 
 #endif //OPTICK_ENABLE_GPU_D3D12
+#endif //USE_OPTICK

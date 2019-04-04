@@ -1,10 +1,11 @@
-#include "Optick.Config.h"
+#include "optick.config.h"
 
-#if OPTICK_ENABLE_GPU
-#include "GPUProfiler.h"
+#if USE_OPTICK
+#include "optick_gpu.h"
+#include "optick_core.h"
+#include "optick_memory.h"
+
 #include <thread>
-#include "Core.h"
-#include "Memory.h"
 
 namespace Optick
 {
@@ -52,7 +53,7 @@ namespace Optick
 			{
 				EventBuffer& gpuBuffer = node->gpuEventStorage[queueIndex]->eventBuffer;
 
-				const std::vector<ThreadEntry*>& threads = Core::Get().GetThreads();
+				const vector<ThreadEntry*>& threads = Core::Get().GetThreads();
                 for (size_t threadIndex = 0; threadIndex < threads.size(); ++threadIndex)
 				{
                     ThreadEntry* thread = threads[threadIndex];
@@ -65,9 +66,9 @@ namespace Optick
 		}
 	}
 
-	std::string GPUProfiler::GetName() const
+	string GPUProfiler::GetName() const
 	{
-		return !nodes.empty() ? nodes[0]->name : std::string();
+		return !nodes.empty() ? nodes[0]->name : string();
 	}
 
 	GPUProfiler::~GPUProfiler()
@@ -131,5 +132,5 @@ namespace Optick
 			queryGpuframes[frameIndex].Reset();
 	}
 }
-#endif //OPTICK_ENABLE_GPU
+#endif //USE_OPTICK
 

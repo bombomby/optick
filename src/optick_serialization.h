@@ -1,9 +1,8 @@
 #pragma once
-#include "Common.h"
-#include "Memory.h"
+#include "optick_common.h"
 
-#include <vector>
-#include <sstream>
+#if USE_OPTICK
+#include "optick_memory.h"
 
 #if defined(OPTICK_MSVC)
 #pragma warning( push )
@@ -17,13 +16,13 @@
 
 namespace Optick
 {
-	class OutputDataStream : private std::ostringstream 
+	class OutputDataStream : private ostringstream 
 	{
 	public:
 		static OutputDataStream Empty;
 		// Move constructor rocks!
 		// Beware of one copy here(do not use it in performance critical parts)
-		std::string GetData();
+		string GetData();
 
 		// It is important to make private inheritance in order to avoid collision with default operator implementation
 		friend OutputDataStream &operator << ( OutputDataStream &stream, const char* val );
@@ -35,14 +34,14 @@ namespace Optick
 		friend OutputDataStream &operator << ( OutputDataStream &stream, byte val );
 		friend OutputDataStream &operator << ( OutputDataStream &stream, int8 val);
 		friend OutputDataStream &operator << ( OutputDataStream &stream, float val);
-		friend OutputDataStream &operator << ( OutputDataStream &stream, const std::string& val );
-		friend OutputDataStream &operator << ( OutputDataStream &stream, const std::wstring& val );
+		friend OutputDataStream &operator << ( OutputDataStream &stream, const string& val );
+		friend OutputDataStream &operator << ( OutputDataStream &stream, const wstring& val );
 
 		OutputDataStream& Write(const char* buffer, size_t size);
 	};
 
 	template<class T>
-	OutputDataStream& operator<<(OutputDataStream &stream, const std::vector<T>& val)
+	OutputDataStream& operator<<(OutputDataStream &stream, const vector<T>& val)
 	{
 		stream << (uint32)val.size();
 
@@ -69,7 +68,7 @@ namespace Optick
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	class InputDataStream : private std::stringstream {
+	class InputDataStream : private stringstream {
 	public:
 		bool CanRead() { return !eof(); }
 
@@ -108,7 +107,7 @@ namespace Optick
 		friend InputDataStream &operator >> (InputDataStream &stream, uint32 &val );
 		friend InputDataStream &operator >> (InputDataStream &stream, int64 &val );
 		friend InputDataStream &operator >> (InputDataStream &stream, uint64 &val );
-		friend InputDataStream &operator >> (InputDataStream &stream, std::string &val);
+		friend InputDataStream &operator >> (InputDataStream &stream, string &val);
 	};
 
 
@@ -117,3 +116,5 @@ namespace Optick
 #if defined(OPTICK_MSVC)
 #pragma warning( pop )
 #endif
+
+#endif //USE_OPTICK

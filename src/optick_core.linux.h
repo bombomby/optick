@@ -1,7 +1,10 @@
 #pragma once
 #if defined(__linux__)
 
-#include "Platform_Common.h"
+#include "optick.config.h"
+#if USE_OPTICK
+
+#include "optick_core.platform.h"
 
 #include <sys/syscall.h>
 #include <sys/time.h>
@@ -41,9 +44,7 @@ namespace Optick
 
 #if OPTICK_ENABLE_TRACING
 
-#include <array>
-#include <vector>
-#include <string>
+#include "optick_memory.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace ft
@@ -112,7 +113,7 @@ static const uint8_t PROCESS_STATE_REASON_START = 38;
 class FTrace : public Trace
 {
 	bool isActive;
-	std::string password;
+	string password;
 
 	bool Parse(const char* line);
 	bool ProcessEvent(const ft::base_event& ev);
@@ -188,7 +189,7 @@ struct Parser
 	}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-CaptureStatus::Type FTrace::Start(Trace::Mode mode, const ThreadList& threads)
+CaptureStatus::Type FTrace::Start(Trace::Mode mode, const ThreadList& /*threads*/)
 {
 	if (!isActive)
 	{
@@ -350,7 +351,7 @@ bool FTrace::ProcessEvent(const ft::base_event& ev)
 	case ft::sched_switch::type:
 	{
 		const ft::sched_switch& switchEv = (const ft::sched_switch&)ev;
-		Optick::SwitchContextDesc desc;
+		SwitchContextDesc desc;
 		desc.reason = switchEv.prev_state + PROCESS_STATE_REASON_START;
 		desc.cpuId = switchEv.cpu_id;
 		desc.oldThreadId = (uint64)switchEv.prev_pid;
@@ -400,5 +401,5 @@ Trace* Platform::GetTrace()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 #endif //OPTICK_ENABLE_TRACING
-
-#endif
+#endif //USE_OPTICK
+#endif //__linux__

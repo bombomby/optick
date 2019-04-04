@@ -1,6 +1,10 @@
 #pragma once
-#include "Common.h"
-#include "Serialization.h"
+#include "optick.config.h"
+
+#if USE_OPTICK
+
+#include "optick_common.h"
+#include "optick_serialization.h"
 
 namespace Optick
 {
@@ -78,7 +82,7 @@ struct StartMessage : public Message<IMessage::Start>
 	uint32 timeLimit;
 	uint32 frameLimit;
 	uint64 memoryLimit;
-	std::string password;
+	string password;
 
 	static IMessage* Create(InputDataStream&);
 	virtual void Apply() override;
@@ -100,3 +104,5 @@ struct TurnSamplingMessage : public Message<IMessage::TurnSampling>
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
+
+#endif //USE_OPTICK

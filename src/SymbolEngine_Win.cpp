@@ -1,4 +1,9 @@
-#if _WIN32
+#if defined(_WIN32)
+
+#include "optick.config.h"
+
+#if USE_OPTICK
+
 #include "SymbolEngine.h"
 
 #if OPTICK_ENABLE_SYMENGINE
@@ -10,7 +15,7 @@
 #pragma comment( lib, "DbgHelp.Lib" )
 #endif
 
-#include "Serialization.h"
+#include "optick_serialization.h"
 
 #if OPTICK_PC
 #include <psapi.h>
@@ -58,7 +63,7 @@ namespace Optick
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-typedef std::array<uintptr_t, 512> CallStackBuffer;
+typedef array<uintptr_t, 512> CallStackBuffer;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class WinSymbolEngine : public SymbolEngine
@@ -84,7 +89,7 @@ public:
 	// Get Symbol from PDB file
 	virtual const Symbol * const GetSymbol(uint64 dwAddress) override;
 
-	virtual const std::vector<Module>& GetModules() override;
+	virtual const vector<Module>& GetModules() override;
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -151,7 +156,7 @@ const Symbol * const WinSymbolEngine::GetSymbol(uint64 address)
 	return &symbol;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-const std::vector<Module>& WinSymbolEngine::GetModules()
+const vector<Module>& WinSymbolEngine::GetModules()
 {
 	if (modules.empty())
 	{
@@ -188,7 +193,7 @@ void WinSymbolEngine::Init()
 			isInitialized = true;
 		}
 
-		const std::vector<Module>& loadedModules = GetModules();
+		const vector<Module>& loadedModules = GetModules();
 		for (size_t i = 0; i < loadedModules.size(); ++i)
 		{
 			const Module& module = loadedModules[i];
@@ -343,4 +348,5 @@ SymbolEngine* SymbolEngine::Get()
 
 }
 #endif //OPTICK_ENABLE_SYMENGINE
+#endif //USE_PROFILER
 #endif //_WIN32

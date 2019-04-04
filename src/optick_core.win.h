@@ -1,7 +1,11 @@
 #pragma once
 #if defined(_MSC_VER)
 
-#include "Platform_Common.h"
+#include "optick.config.h"
+
+#if USE_OPTICK
+
+#include "optick_core.platform.h"
 
 namespace Optick
 {
@@ -40,12 +44,8 @@ namespace Optick
 }
 
 #if OPTICK_ENABLE_TRACING
-#include <array>
-#include <unordered_set>
-#include <vector>
 #include <psapi.h>
-
-#include "Core.h"
+#include "optick_core.h"
 #include "SymbolEngine.h"
 
 /*
@@ -590,6 +590,7 @@ class ETW : public Trace
 {
 	static const int ETW_BUFFER_SIZE = 1024 << 10; // 1Mb
 	static const int ETW_BUFFER_COUNT = 32;
+	static const int ETW_MAXIMUM_SESSION_NAME = 1024;
 
 	EVENT_TRACE_PROPERTIES *traceProperties;
 	EVENT_TRACE_LOGFILE logFile;
@@ -604,12 +605,12 @@ class ETW : public Trace
 	static DWORD WINAPI RunProcessTraceThreadFunction(LPVOID parameter);
 	static void AdjustPrivileges();
 
-	std::unordered_map<uint64_t, const EventDescription*> syscallDescriptions;
+	unordered_map<uint64_t, const EventDescription*> syscallDescriptions;
 
 	void ResolveSysCalls();
 public:
 
-	std::unordered_set<uint64> activeThreadsIDs;
+	unordered_set<uint64> activeThreadsIDs;
 
 	ETW();
 	~ETW();
@@ -885,8 +886,8 @@ const int MAX_CPU_CORES = 256;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct ETWRuntime
 {
-	std::array<ThreadID, MAX_CPU_CORES> activeCores;
-	std::vector<std::pair<uint8_t, SysCallData*>> activeSyscalls;
+	array<ThreadID, MAX_CPU_CORES> activeCores;
+	vector<std::pair<uint8_t, SysCallData*>> activeSyscalls;
 
 	ETWRuntime()
 	{
@@ -915,7 +916,7 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 		{
 			CSwitch* pSwitchEvent = (CSwitch*)eventRecord->UserData;
 
-			Optick::SwitchContextDesc desc;
+			SwitchContextDesc desc;
 			desc.reason = pSwitchEvent->OldThreadWaitReason;
 			desc.cpuId = eventRecord->BufferContext.ProcessorNumber;
 			desc.oldThreadId = (uint64)pSwitchEvent->OldThreadId;
@@ -1079,10 +1080,10 @@ void ETW::ResolveSysCalls()
 			const Symbol* symbol = SymbolEngine::Get()->GetSymbol(data.id);
 			if (symbol != nullptr)
 			{
-				std::string name(symbol->function.begin(), symbol->function.end());
+				string name(symbol->function.begin(), symbol->function.end());
 
 				data.description = EventDescription::CreateShared(name.c_str(), "SysCall", (long)data.id);
-				syscallDescriptions.insert(std::pair<const uint64_t, const Optick::EventDescription *>(data.id, data.description));
+				syscallDescriptions.insert(std::pair<const uint64_t, const EventDescription *>(data.id, data.description));
 			}
 		}
 		else
@@ -1098,9 +1099,8 @@ ETW::ETW()
 	, traceSessionHandle(INVALID_TRACEHANDLE)
 	, openedHandle(INVALID_TRACEHANDLE)
 	, processThreadHandle(INVALID_HANDLE_VALUE)
+	, traceProperties(nullptr)
 {
-	ULONG bufferSize = sizeof(EVENT_TRACE_PROPERTIES) + sizeof(KERNEL_LOGGER_NAME);
-	traceProperties = (EVENT_TRACE_PROPERTIES*)malloc(bufferSize);
 	currentProcessId = GetCurrentProcessId();
 }
 
@@ -1121,11 +1121,15 @@ CaptureStatus::Type ETW::Start(Trace::Mode mode, const ThreadList& threads)
 				activeThreadsIDs.insert(entry->description.threadID);
 			}
 		}
+
 				
-		ULONG bufferSize = sizeof(EVENT_TRACE_PROPERTIES) + sizeof(KERNEL_LOGGER_NAME);
+		ULONG bufferSize = sizeof(EVENT_TRACE_PROPERTIES) + (ETW_MAXIMUM_SESSION_NAME + MAX_PATH) * sizeof(WCHAR);
+		if (traceProperties == nullptr)
+			traceProperties = (EVENT_TRACE_PROPERTIES*)Memory::Alloc(bufferSize);
 		ZeroMemory(traceProperties, bufferSize);
 		traceProperties->Wnode.BufferSize = bufferSize;
 		traceProperties->LoggerNameOffset = sizeof(EVENT_TRACE_PROPERTIES);
+		StringCchCopyW((LPWSTR)((PCHAR)traceProperties + traceProperties->LoggerNameOffset), ETW_MAXIMUM_SESSION_NAME, KERNEL_LOGGER_NAMEW);
 		traceProperties->EnableFlags = 0;
 
 		traceProperties->BufferSize = ETW_BUFFER_SIZE;
@@ -1248,7 +1252,7 @@ CaptureStatus::Type ETW::Start(Trace::Mode mode, const ThreadList& threads)
 			memset(&itnerval, 0, sizeof(TRACE_PROFILE_INTERVAL));
 			itnerval.Interval = highFrequencySampling ? 1221 : 10000;
 			// The SessionHandle is irrelevant for this information class and must be zero, else the function returns ERROR_INVALID_PARAMETER.
-			status = TraceSetInformation(NULL /*traceSessionHandle*/, TraceSampledProfileIntervalInfo, &itnerval, sizeof(TRACE_PROFILE_INTERVAL));
+			status = TraceSetInformation(0, TraceSampledProfileIntervalInfo, &itnerval, sizeof(TRACE_PROFILE_INTERVAL));
 			OPTICK_ASSERT(status == ERROR_SUCCESS, "TraceSetInformation - failed");
 		}
 
@@ -1304,7 +1308,7 @@ bool ETW::Stop()
 ETW::~ETW()
 {
 	Stop();
-	free(traceProperties);
+	Memory::Free(traceProperties);
 	traceProperties = nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1315,6 +1319,5 @@ Trace* Platform::GetTrace()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 #endif //OPTICK_ENABLE_TRACING
-
-
-#endif
+#endif //USE_OPTICK
+#endif //_MSC_VER

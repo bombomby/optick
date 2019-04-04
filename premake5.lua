@@ -184,7 +184,7 @@ end
         "src/**.h", 
 	}
 	vpaths {
-		["API"] = { 
+		["api"] = { 
 			"src/optick.h",
 			"src/optick.config.h",
 		},

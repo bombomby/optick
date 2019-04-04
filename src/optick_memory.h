@@ -1,25 +1,36 @@
 #pragma once
 
-#include "Common.h"
+#include "optick_common.h"
+
+#if USE_OPTICK
 
 #include <cstring>
 #include <new>
 #include <stdlib.h>
-#include <xmmintrin.h>
+
+#include <array>
+#include <list>
+#include <string>
+#include <sstream>
+#include <unordered_set>
+#include <unordered_map>
+#include <vector>
 
 namespace Optick
 {
 	class Memory
 	{
+		static void* (*allocate)(size_t);
+		static void  (*deallocate)(void* p);
 	public:
-		static void* Alloc(size_t size, size_t align = 16)
+		static OPTICK_NOINLINE void* Alloc(size_t size)
 		{
-			return _mm_malloc(size, align);
+			return allocate(size);
 		}
 
-		static void Free(void* p)
+		static OPTICK_NOINLINE void Free(void* p)
 		{
-			_mm_free(p);
+			deallocate(p);
 		}
 
 		template<class T>
@@ -49,8 +60,46 @@ namespace Optick
 				Free(p);
 			}
 		}
+
+		static void SetAllocator(void* (*allocateFn)(size_t), void(*deallocateFn)(void*))
+		{
+			allocate = allocateFn;
+			deallocate = deallocateFn;
+		}
+
+		template<typename T> 
+		struct Allocator : public std::allocator<T> 
+		{
+			Allocator() {}
+			template<class U> 
+			Allocator(const Allocator<U>&) {}
+			template<typename U> struct rebind { typedef Allocator<U> other; };
+
+			OPTICK_NOINLINE typename std::allocator<T>::pointer allocate(typename std::allocator<T>::size_type n, typename std::allocator<void>::const_pointer = 0)
+			{
+				return reinterpret_cast<typename std::allocator<T>::pointer>(Memory::Alloc(n * sizeof(T)));
+			}
+
+			OPTICK_NOINLINE void deallocate(typename std::allocator<T>::pointer p, typename std::allocator<T>::size_type)
+			{
+				Memory::Free(p);
+			}
+		};
 	};
 
+	// std::* section
+	template <typename T, size_t _Size> class array  : public std::array<T, _Size>{};
+	template <typename T> class vector : public std::vector<T, Memory::Allocator<T>>{};
+	template <typename T> class list : public std::list<T, Memory::Allocator<T>>{};
+	template <typename T> class unordered_set : public std::unordered_set<T, std::hash<T>, std::equal_to<T>, Memory::Allocator<T>>{};
+	template <typename T, typename V> class unordered_map : public std::unordered_map<T, V, std::hash<T>, std::equal_to<T>, Memory::Allocator<std::pair<const T, V>>>{};
+	
+	using string = std::basic_string<char, std::char_traits<char>, Memory::Allocator<char>>;
+	using wstring = std::basic_string<wchar_t, std::char_traits<wchar_t>, Memory::Allocator<wchar_t>>;
+	
+	using istringstream = std::basic_istringstream<char, std::char_traits<char>, Memory::Allocator<char>>;
+	using ostringstream = std::basic_ostringstream<char, std::char_traits<char>, Memory::Allocator<char>>;
+	using stringstream = std::basic_stringstream<char, std::char_traits<char>, Memory::Allocator<char>>;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	template<class T, uint32 SIZE>
@@ -246,7 +295,7 @@ namespace Optick
 				advance();
 				return i;
 			}
-			self_type operator++(int junk)
+			self_type operator++(int /*junk*/)
 			{
 				advance();
 				return *this;
@@ -339,3 +388,5 @@ namespace Optick
 	};
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
+
+#endif //USE_OPTICK

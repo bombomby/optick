@@ -1,19 +1,19 @@
 #pragma once
+#include "optick.config.h"
+
+#if USE_OPTICK
+
 #include <mutex>
 #include <thread>
 
-#include "Common.h"
+#include "optick_common.h"
 
-#include "Memory.h"
-#include "Serialization.h"
+#include "optick_memory.h"
+#include "optick_serialization.h"
 
-#include "GPUProfiler.h"
+#include "optick_gpu.h"
 
-#include <array>
 #include <atomic>
-#include <map>
-#include <list>
-#include <unordered_map>
 
 // We expect to have 1k unique strings going through Optick at once
 // The chances to hit a collision are 1 in 10 trillion (odds of a meteor landing on your house)
@@ -70,8 +70,8 @@ OutputDataStream& operator << ( OutputDataStream& stream, const ScopeHeader& ob)
 struct ScopeData
 {
 	ScopeHeader header;
-	std::vector<EventData> categories;
-	std::vector<EventData> events;
+	vector<EventData> categories;
+	vector<EventData> events;
 
 	void AddEvent(const EventData& data)
 	{
@@ -159,7 +159,7 @@ class EventDescriptionBoard
 	EventDescriptionList boardDescriptions;
 
 	// Shared Descriptions
-	typedef std::unordered_map<StringHash, EventDescription*> DescriptionMap;
+	typedef unordered_map<StringHash, EventDescription*> DescriptionMap;
 	DescriptionMap sharedDescriptions;
 	MemoryBuffer<64 * 1024> sharedNames;
 	std::mutex sharedLock;
@@ -191,7 +191,8 @@ struct EventStorage
 
 	struct GPUStorage
 	{
-		std::array<std::array<EventBuffer, GPU_QUEUE_COUNT>, MAX_GPU_NODES> gpuBuffer;
+		static const int MAX_GPU_NODES = 2;
+		array<array<EventBuffer, GPU_QUEUE_COUNT>, MAX_GPU_NODES> gpuBuffer;
 		GPUContext context;
 
 		void Clear(bool preserveMemory);
@@ -201,8 +202,8 @@ struct EventStorage
 	};
 	GPUStorage gpuStorage;
 
-	uint32					   pushPopEventStackIndex;
-	std::array<EventData*, 32> pushPopEventStack;
+	uint32					    pushPopEventStackIndex;
+	array<EventData*, 32>		pushPopEventStack;
 
 	bool isFiberStorage;
 
@@ -245,7 +246,7 @@ struct EventStorage
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct ProcessDescription
 {
-	std::string name;
+	string name;
 	ProcessID processID;
 	uint64 uniqueKey;
 	ProcessDescription(const char* processName, ProcessID pid, uint64 key);
@@ -253,7 +254,7 @@ struct ProcessDescription
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct ThreadDescription
 {
-	std::string name;
+	string name;
 	ThreadID threadID;
 	ProcessID processID;
 	int32 maxDepth;
@@ -296,8 +297,8 @@ struct FiberEntry
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-typedef std::vector<ThreadEntry*> ThreadList;
-typedef std::vector<FiberEntry*> FiberList;
+typedef vector<ThreadEntry*> ThreadList;
+typedef vector<FiberEntry*> FiberList;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct SysCallData : EventData
@@ -396,31 +397,31 @@ class Core
 
 	int64 progressReportedLastTimestampMS;
 
-	std::vector<EventTime> frames;
+	vector<EventTime> frames;
 	uint32 boardNumber;
 
 	CallstackCollector callstackCollector;
 	SwitchContextCollector switchContextCollector;
 
-	std::vector<std::pair<std::string, std::string>> summary;
+	vector<std::pair<string, string>> summary;
 
 	std::atomic<uint32_t> frameNumber;
 
 	struct Attachment
 	{
-		std::string name;
-		std::vector<uint8_t> data;
+		string name;
+		vector<uint8_t> data;
 		File::Type type;
 		Attachment(File::Type t, const char* n) : name(n), type(t) {}
 	};
-	std::list<Attachment> attachments;
+	list<Attachment> attachments;
 
 	StateCallback stateCallback;
 
-	std::vector<ProcessDescription> processDescs;
-	std::vector<ThreadDescription> threadDescs;
+	vector<ProcessDescription> processDescs;
+	vector<ThreadDescription> threadDescs;
 
-	std::array<const EventDescription*, FrameType::COUNT> frameDescriptions;
+	array<const EventDescription*, FrameType::COUNT> frameDescriptions;
 
 	State::Type currentState;
 	State::Type pendingState;
@@ -471,7 +472,7 @@ public:
 	GPUProfiler* gpuProfiler;
 
 	// Returns thread collection
-	const std::vector<ThreadEntry*>& GetThreads() const;
+	const vector<ThreadEntry*>& GetThreads() const;
 
 	// Request to start a new capture
 	void StartCapture();
@@ -534,7 +535,7 @@ public:
 	void InitGPUProfiler(GPUProfiler* profiler);
 
 	// Initializes root password for the device
-	bool SetPassword(const std::string& encodedPassword);
+	bool SetPassword(const string& encodedPassword);
 
 	// Current Frame Number (since the game started)
 	uint32_t GetCurrentFrame() const { return frameNumber; }
@@ -550,3 +551,5 @@ public:
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
+
+#endif //USE_OPTICK
