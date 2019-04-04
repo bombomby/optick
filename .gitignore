@@ -4,6 +4,9 @@ Optick/obj/
 OptickApp/obj/
 OptickApp/packages/
 OptickApp/.vs/
+gui/obj/
+gui/packages/
+gui/.vs/
 Build/
 *.suo
 *.user
