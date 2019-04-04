@@ -1314,7 +1314,7 @@ bool Core::AttachFile(File::Type type, const char* name, const wchar_t* path)
 #else
 	char p[256] = { 0 };
 	wcstombs(p, path, sizeof(p));
-    ifstream stream(p, std::ios::binary);
+    std::ifstream stream(p, std::ios::binary);
 	return AttachFile(type, name, stream);
 #endif
 }
