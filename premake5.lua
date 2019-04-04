@@ -22,7 +22,7 @@ if not _ACTION then
 	_ACTION="vs2017"
 end
 
-outFolderRoot = "Bin/" .. _ACTION .. "/";
+outFolderRoot = "bin/" .. _ACTION .. "/";
 
 isVisualStudio = false
 isUWP = false
@@ -54,7 +54,7 @@ if isUWP then
 	premake.vstudio.storeapp = "10.0"
 end
 
-outputFolder = "Build/" .. _ACTION
+outputFolder = "build/" .. _ACTION
 
 if isUWP then
 	outputFolder = outputFolder .. "_UWP"
@@ -154,7 +154,7 @@ end
 
 	includedirs
 	{
-		"OptickCore"
+		"src"
 	}
 	
 	if isDX12 then
@@ -180,72 +180,31 @@ end
 	end
 	
 	files {
-		"OptickCore/**.cpp",
-        "OptickCore/**.hpp", 
-        "OptickCore/**.h", 
+		"src/**.cpp",
+        "src/**.h", 
 	}
 	vpaths {
 		["API"] = { 
-			"OptickCore/Optick.h",
-			"OptickCore/Optick.Config.h",
-		},
-		["Core"] = {
-			"OptickCore/Core.h",
-			"OptickCore/Core.cpp",
-			"OptickCore/ETW.h",
-			"OptickCore/Event.h",
-			"OptickCore/Event.cpp",
-			"OptickCore/EventDescription.h",
-			"OptickCore/EventDescription.cpp",
-			"OptickCore/EventDescriptionBoard.h",
-			"OptickCore/EventDescriptionBoard.cpp",
-			"OptickCore/Sampler.h",
-			"OptickCore/Sampler.cpp",
-			"OptickCore/SymEngine.h",
-			"OptickCore/SymEngine.cpp",
-		},
-		["Network"] = {
-			"OptickCore/Message.h", 
-			"OptickCore/Message.cpp",
-			"OptickCore/ProfilerServer.h", 
-			"OptickCore/ProfilerServer.cpp", 
-			"OptickCore/Socket.h", 
-			"OptickCore/Serialization.h", 
-			"OptickCore/Serialization.cpp", 
-		},
-		["System"] = {
-			"OptickCore/Common.h",
-			"OptickCore/Concurrency.h",
-			"OptickCore/CityHash.h",
-			"OptickCore/CityHash.cpp",
-			"OptickCore/HPTimer.h",
-			"OptickCore/HPTimer.cpp",
-			"OptickCore/Memory.h",
-			"OptickCore/Memory.cpp",
-			"OptickCore/MemoryPool.h",
-			"OptickCore/StringHash.h",
-			"OptickCore/Platform.h",
-			"OptickCore/Timer.h",
-			"OptickCore/ThreadID.h",
-			"OptickCore/Types.h",
+			"src/optick.h",
+			"src/optick.config.h",
 		},
 	}
 	
 group "Samples"
 if isFibersEnabled then
 	project "TaskScheduler"
-		excludes { "Samples/Common/TaskScheduler/Scheduler/Source/MTDefaultAppInterop.cpp", }
+		excludes { "samples/Common/TaskScheduler/Scheduler/Source/MTDefaultAppInterop.cpp", }
 		kind "StaticLib"
 		flags {"NoPCH"}
 		defines {"USE_OPTICK=1"}
 		files {
-			"Samples/Common/TaskScheduler/Scheduler/**.*", 
+			"samples/Common/TaskScheduler/Scheduler/**.*", 
 		}
 
 		includedirs
 		{
-			"Samples/Common/TaskScheduler/Scheduler/Include",
-			"OptickCore"
+			"samples/Common/TaskScheduler/Scheduler/Include",
+			"src"
 		}
 
 		excludes { "Src/Platform/Posix/**.*" }
@@ -259,11 +218,11 @@ if isUWP then
 	-- Genie can't generate proper UWP application
 	-- It's a dummy project to match existing project file
 	project "DurangoUWP"
-		location( "Samples/DurangoUWP" )
+		location( "samples/DurangoUWP" )
 		kind "WindowedApp"
 		uuid "5CA6AF66-C2CB-412E-B335-B34357F2FBB6"
 		files {
-			"Samples/DurangoUWP/**.*", 
+			"samples/DurangoUWP/**.*", 
 		}
 else
 	project "ConsoleApp"
@@ -271,14 +230,14 @@ else
 		kind "ConsoleApp"
 		uuid "C50A1240-316C-EF4D-BAD9-3500263A260D"
 		files {
-			"Samples/ConsoleApp/**.*", 
-			"Samples/Common/TestEngine/**.*",
+			"samples/ConsoleApp/**.*", 
+			"samples/Common/TestEngine/**.*",
 		}
 		
 		includedirs {
-			"OptickCore",
-			"Samples/Common/TestEngine",
-			"Samples/Common/TaskScheduler/Scheduler/Include"
+			"src",
+			"samples/Common/TestEngine",
+			"samples/Common/TaskScheduler/Scheduler/Include"
 		}
 		
 		links {
@@ -286,7 +245,7 @@ else
 		}
 
 		vpaths { 
-			["*"] = "Samples/ConsoleApp"
+			["*"] = "samples/ConsoleApp"
 		}
 
         if isFibersEnabled then
@@ -294,7 +253,7 @@ else
 			"OPTICK_ENABLE_FIBERS=1"
 		}
 		files {
-            "Samples/Common/TaskScheduler/Scheduler/Source/MTDefaultAppInterop.cpp",
+            "samples/Common/TaskScheduler/Scheduler/Source/MTDefaultAppInterop.cpp",
         }
         links {
             "TaskScheduler"
@@ -322,12 +281,12 @@ if isDX12 then
 		}
 		
 		files {
-			"Samples/WindowsD3D12/**.h", 
-			"Samples/WindowsD3D12/**.cpp", 
+			"samples/WindowsD3D12/**.h", 
+			"samples/WindowsD3D12/**.cpp", 
 		}
 		
 		includedirs {
-			"OptickCore",
+			"src",
 		}
 		
 		links {
@@ -335,7 +294,7 @@ if isDX12 then
 		}
 		
 		vpaths { 
-			["*"] = "Samples/WindowsD3D12" 
+			["*"] = "samples/WindowsD3D12" 
 		}
 end
 
@@ -368,19 +327,19 @@ if isVulkan then
 		}
 	
 		files {
-			"Samples/WindowsVulkan/**.*", 
+			"samples/WindowsVulkan/**.*", 
 		}
 		
 		includedirs {
 			"$(VULKAN_SDK)/Include",
 			"Samples/WindowsVulkan",
 			"Samples/WindowsVulkan/base",
-			"OptickCore",
+			"src",
 		}
 		
 		libdirs {
 			"$(VULKAN_SDK)/Lib",
-			"Samples/WindowsVulkan/libs/assimp",
+			"samples/WindowsVulkan/libs/assimp",
 		}
 
 		links { 
@@ -393,11 +352,11 @@ if isVulkan then
 		}
 		
 		vpaths { 
-			["*"] = "Samples/WindowsVulkan" 
+			["*"] = "samples/WindowsVulkan" 
 		}
 		
 		if isVisualStudio then
-			fullPath = os.getcwd() .. "\\Samples\\WindowsVulkan\\"
+			fullPath = os.getcwd() .. "\\samples\\WindowsVulkan\\"
 			postbuildcommands { "copy \"" .. fullPath .. "dll\\assimp-vc140-mt.dll\" \"" .. fullPath .. "$(OutputPath)\\assimp-vc140-mt.dll\" /Y" }
 		end
 end

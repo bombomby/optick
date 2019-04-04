@@ -1,3 +1,3 @@
-%~dp0\Tools\genie.exe vs2017 genie.lua
-start %~dp0\Build\vs2017\Optick.sln
+%~dp0\tools\windows\premake5.exe vs2017
+start %~dp0\build\vs2017\optick.sln
 

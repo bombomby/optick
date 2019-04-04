@@ -18,14 +18,14 @@
       "remoteCopySourcesExclusionList": [
         ".vs",
         ".git",
-        "Bin",
-        "Build",
-        "OptickApp",
-        "Tools",
-        "Samples/DurangoUWP",
-        "Samples/UnrealEnginePlugin",
-        "Samples/WindowsVulkan",
-        "Samples/WindowsD3D12"
+        "bin",
+        "build",
+        "stc",
+        "tools",
+        "samples/DurangoUWP",
+        "samples/UnrealEnginePlugin",
+        "samples/WindowsVulkan",
+        "samples/WindowsD3D12"
       ],
       "rsyncCommandArgs": "-t --delete --delete-excluded",
       "remoteCopyBuildOutput": false,

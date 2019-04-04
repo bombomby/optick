@@ -16,10 +16,10 @@ set (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Build)
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
 
 #OptickCore
-file(GLOB OPTICK_SOURCE ${PROJECT_SOURCE_DIR}/OptickCore/*.*)
+file(GLOB OPTICK_SOURCE ${PROJECT_SOURCE_DIR}/src/*.*)
 SET(OPTICK_SRC ${OPTICK_SOURCE})  
 source_group("OptickCore" FILES ${OPTICK_SOURCE})
-include_directories ("${PROJECT_SOURCE_DIR}/OptickCore")
+include_directories ("${PROJECT_SOURCE_DIR}/src")
 
 if(BUILD_VULKAN)
 	include_directories("$(VULKAN_SDK)/Include")
@@ -37,11 +37,11 @@ add_library(OptickCore ${OPTICK_SRC})
 set (EXTRA_LIBS ${EXTRA_LIBS} OptickCore pthread)
 
 #ConsoleApp
-file(GLOB TEST_ENGINE_SOURCE ${PROJECT_SOURCE_DIR}/Samples/Common/TestEngine/*.*)
+file(GLOB TEST_ENGINE_SOURCE ${PROJECT_SOURCE_DIR}/samples/Common/TestEngine/*.*)
 SET(TEST_ENGINE_SRC ${TEST_ENGINE_SOURCE})  
 source_group("TestEngine" FILES ${TEST_ENGINE_SRC})
-include_directories("${PROJECT_SOURCE_DIR}/Samples/Common/TestEngine")
-add_executable(ConsoleApp ${PROJECT_SOURCE_DIR}/Samples/ConsoleApp/main.cpp ${TEST_ENGINE_SRC})
+include_directories("${PROJECT_SOURCE_DIR}/samples/Common/TestEngine")
+add_executable(ConsoleApp ${PROJECT_SOURCE_DIR}/samples/ConsoleApp/main.cpp ${TEST_ENGINE_SRC})
 target_link_libraries (ConsoleApp ${EXTRA_LIBS})
 set_target_properties (ConsoleApp PROPERTIES
     FOLDER Samples

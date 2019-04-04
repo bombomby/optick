@@ -10,5 +10,5 @@ compiler:
 
   
 script:
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then ./Tools/Linux/premake5 gmake && pushd Build/gmake/ && make config=release_x64 && popd; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then ./Tools/MacOS/premake5 gmake && pushd Build/gmake/ && make config=debug_x64 && popd; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then ./tools/Linux/premake5 gmake && pushd build/gmake/ && make config=release_x64 && popd; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then ./tools/MacOS/premake5 gmake && pushd build/gmake/ && make config=debug_x64 && popd; fi
