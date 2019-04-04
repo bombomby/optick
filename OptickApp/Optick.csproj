@@ -569,7 +569,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="app.config" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
     <EmbeddedResource Include="DirectX\Fonts\SegoeUI_16_Normal.fnt" />
     <EmbeddedResource Include="DirectX\Fonts\SegoeUI_20_Normal.fnt" />
     <EmbeddedResource Include="DirectX\Fonts\SegoeUI_24_Normal.fnt" />
@@ -579,6 +581,7 @@
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </None>
     <AppDesigner Include="Properties\" />
     <EmbeddedResource Include="TaskManager\brofiler-github-07994fd14248.p12" />

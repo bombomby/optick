@@ -17,6 +17,7 @@
         IconBitmapScalingMode="HighQuality"
         BorderBrush="{DynamicResource AccentColorBrush}"
         GlowBrush="{DynamicResource AccentColorBrush}"
+        WindowTitleBrush="{StaticResource OptickBackground}"
         BorderThickness="1"
         ResizeMode="CanResizeWithGrip"
     >

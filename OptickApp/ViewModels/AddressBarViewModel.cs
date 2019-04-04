@@ -14,7 +14,7 @@ namespace Profiler.ViewModels
 {
     class ConnectionVM : BaseViewModel
     {
-        const UInt16 DEFAULT_PORT = 31313;
+        const UInt16 DEFAULT_PORT = 31318;
 
         private String _name;
         public String Name

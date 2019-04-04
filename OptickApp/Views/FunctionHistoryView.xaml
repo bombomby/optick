@@ -33,7 +33,14 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="1*" />
             </Grid.RowDefinitions>
-            <lvc:CartesianChart Grid.Row="1" x:Name="FrameChart" DisableAnimations="True" AnimationsSpeed="0" Hoverable="True" Background="{StaticResource OptickContentBackground}" MinHeight="100">
+            <lvc:CartesianChart Grid.Row="1" 
+                                x:Name="FrameChart" 
+                                DisableAnimations="True" 
+                                AnimationsSpeed="0" 
+                                Hoverable="True" 
+                                Background="{StaticResource OptickContentBackground}" 
+                                MinHeight="100"
+                                DataClickCommand="{Binding DataClickCommand}">
                 <lvc:CartesianChart.Series>
                     <lvc:StackedColumnSeries Values="{Binding WorkValues}" ColumnPadding="0.5">
                         <lvc:StackedColumnSeries.Fill>

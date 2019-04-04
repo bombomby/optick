@@ -23,7 +23,7 @@
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                 </Grid>
-                <DX:DirectXCanvas x:Name="surface" Grid.Column="1" Height="Auto" Background="{StaticResource OptickBackground}" />
+                <DX:DirectXCanvas x:Name="surface" Grid.Column="1" Height="Auto" Background="{StaticResource OptickContentBackground}" />
             </Grid>
         </ScrollViewer>
         <ScrollBar Orientation="Horizontal" Width="Auto" x:Name="scrollBar" Grid.Row="1" VerticalAlignment="Bottom" Margin="0,0,10,0" />
