@@ -5,8 +5,6 @@
 #include "optick_core.h"
 #include "optick_server.h"
 
-#include "SymbolEngine.h"
-
 #include <algorithm>
 #include <fstream>
 
@@ -153,6 +151,17 @@ template<class T>
 OutputDataStream& operator<<(OutputDataStream& stream, const TagData<T>& ob)
 {
 	return stream << ob.timestamp << ob.description->index << ob.data;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+OutputDataStream& operator<<(OutputDataStream& os, const Symbol * const symbol)
+{
+	OPTICK_VERIFY(symbol, "Can't serialize NULL symbol!", return os);
+	return os << symbol->address << symbol->function << symbol->file << symbol->line;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+OutputDataStream& operator<<(OutputDataStream& os, const Module& module)
+{
+	return os << module.path << (uint64)module.address << (uint64)module.size;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // VS TODO: Replace with random access iterator for MemoryPool
@@ -1025,7 +1034,7 @@ Core::Core()
 #if OPTICK_ENABLE_TRACING
 
 	tracer = Platform::GetTrace();
-	symbolEngine = SymbolEngine::Get();
+	symbolEngine = Platform::GetSymbolEngine();
 #endif
 
 	frameDescriptions[FrameType::CPU] = EventDescription::Create("CPU Frame", __FILE__, __LINE__);
