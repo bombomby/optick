@@ -31,7 +31,7 @@
 #include <android/asset_manager.h>
 #endif
 
-#include "Optick.h"
+#include "optick.h"
 
 // Custom define for better code readability
 #define VK_FLAGS_NONE 0

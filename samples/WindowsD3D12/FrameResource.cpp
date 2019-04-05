@@ -12,7 +12,7 @@
 #include "stdafx.h"
 #include "FrameResource.h"
 #include "SquidRoom.h"
-#include "Optick.h"
+#include "optick.h"
 
 FrameResource::FrameResource(ID3D12Device* pDevice, ID3D12PipelineState* pPso, ID3D12PipelineState* pShadowMapPso, ID3D12DescriptorHeap* pDsvHeap, ID3D12DescriptorHeap* pCbvSrvHeap, D3D12_VIEWPORT* pViewport, UINT frameResourceIndex) :
 	m_fenceValue(0),

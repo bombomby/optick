@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Optick.h"
+#include "optick.h"
 #include "TestEngine.h"
 
 #if OPTICK_MSVC

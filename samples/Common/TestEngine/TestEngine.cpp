@@ -1,4 +1,4 @@
-#include "Optick.h"
+#include "optick.h"
 #include "TestEngine.h"
 #include "TestImage.h"
 #include <chrono>
