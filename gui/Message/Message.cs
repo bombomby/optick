@@ -175,6 +175,7 @@ namespace Profiler
 	{
 		Start,
 		Stop,
+		Cancel,
 		TurnSampling,
 	}
 
@@ -193,13 +194,8 @@ namespace Profiler
 
 	class StartMessage : Message
 	{
-        public UInt32 Mode { get; set; }
-        public UInt32 CategoryMask { get; set; } = UInt32.MaxValue;
-        public UInt32 SamplingFrequency { get; set; } = 1000;
-        public UInt32 TimeLimit { get; set; }
-        public UInt32 FrameLimit { get; set; }
-        public UInt64 MemoryLimit { get; set; }
-        public SecureString Password { get; set; }
+		public CaptureSettings Settings {get;set;}
+		public SecureString Password { get; set; }
 
         public StartMessage()
 		{
@@ -213,13 +209,14 @@ namespace Profiler
 		public override void Write(BinaryWriter writer)
 		{
 			base.Write(writer);
-            writer.Write(Mode);
-            writer.Write(CategoryMask);
-            writer.Write(SamplingFrequency);
-            writer.Write(MemoryLimit);
-            writer.Write(TimeLimit);
-            writer.Write(FrameLimit);
-            String pwd = Utils.GetUnsecureBase64String(Password);
+            writer.Write(Settings.Mode);
+            writer.Write(Settings.CategoryMask);
+            writer.Write(Settings.SamplingFrequencyHz);
+            writer.Write(Settings.FrameLimit);
+			writer.Write(Settings.TimeLimitUs);
+			writer.Write(Settings.MaxSpikeLimitUs);
+			writer.Write(Settings.MemoryLimitMb);
+			String pwd = Utils.GetUnsecureBase64String(Password);
             Utils.WriteBinaryString(writer, pwd);
 		}
 	}
@@ -229,6 +226,14 @@ namespace Profiler
 		public override Int16 GetMessageType()
 		{
 			return (Int16)MessageType.Stop;
+		}
+	}
+
+	class CancelMessage : Message
+	{
+		public override Int16 GetMessageType()
+		{
+			return (Int16)MessageType.Cancel;
 		}
 	}
 

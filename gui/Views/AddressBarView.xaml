@@ -44,15 +44,13 @@
             </TextBox>
             <Label Content="Port:" VerticalAlignment="Center" Margin="2,0" />
             <TextBox Text="{Binding Port, UpdateSourceTrigger=PropertyChanged}" MinWidth="50" Height="{StaticResource DefaultButtonSize}" />
-            <!--<Label Content="Root Password:" VerticalAlignment="Center" Margin="2,0" />-->
             <ContentControl Style="{StaticResource appbar_unlock}" Margin="-4,-5,-4,-3" ToolTip="Root password for the device required on some platforms in order to get access to the Kernel metrics: switch-contexts, sampling, etc." />
             <PasswordBox x:Name="PwdBox"
                          Background="{StaticResource OptickContentBackground}"
                          Height="{StaticResource DefaultButtonSize}"
                          MinHeight="{StaticResource DefaultButtonSize}"
-                         MinWidth="50"
                          MahApps:TextBoxHelper.ClearTextButton="True" 
-                         MahApps:TextBoxHelper.Watermark="Root Password" 
+                         MahApps:TextBoxHelper.Watermark="(Optional) Root Password" 
                          Style="{StaticResource MetroButtonRevealedPasswordBox}"
                          PasswordChanged="PasswordBox_PasswordChanged" />
         </StackPanel>

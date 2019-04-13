@@ -40,7 +40,7 @@
                                 Hoverable="True" 
                                 Background="{StaticResource OptickContentBackground}" 
                                 MinHeight="100"
-                                DataClickCommand="{Binding DataClickCommand}">
+                                DataClick="FrameChart_DataClick">
                 <lvc:CartesianChart.Series>
                     <lvc:StackedColumnSeries Values="{Binding WorkValues}" ColumnPadding="0.5">
                         <lvc:StackedColumnSeries.Fill>

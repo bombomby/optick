@@ -40,8 +40,9 @@ namespace Profiler.Controls
         }
 
         SummaryViewerModel _summaryVM;
+		CaptureSettingsViewModel CaptureSettingsVM { get; set; }
 
-        public SummaryViewerModel SummaryVM
+		public SummaryViewerModel SummaryVM
         {
             get { return _summaryVM; }
             set
@@ -52,8 +53,9 @@ namespace Profiler.Controls
         }
 
         AddressBarViewModel AddressBarVM { get; set; }
+		public double DefaultWarningTimerInSeconds { get; set; } = 15.0;
 
-        public FrameCapture()
+		public FrameCapture()
 		{
             using (var scope = BootStrapperBase.Container.BeginLifetimeScope())
             {
@@ -68,16 +70,28 @@ namespace Profiler.Controls
 
             ProfilerClient.Get().ConnectionChanged += MainWindow_ConnectionChanged;
 
-			WarningTimer = new DispatcherTimer(TimeSpan.FromSeconds(12.0), DispatcherPriority.Background, OnWarningTimeout, Application.Current.Dispatcher);
+			WarningTimer = new DispatcherTimer(TimeSpan.FromSeconds(DefaultWarningTimerInSeconds), DispatcherPriority.Background, OnWarningTimeout, Application.Current.Dispatcher);
 
 
 			timeLine.NewConnection += TimeLine_NewConnection;
+			timeLine.CancelConnection += TimeLine_CancelConnection;
 			timeLine.ShowWarning += TimeLine_ShowWarning;
 			warningBlock.Visibility = Visibility.Collapsed;
 
             AddressBarVM = (AddressBarViewModel)FindResource("AddressBarVM");
             FunctionSummaryVM = (FunctionSummaryViewModel)FindResource("FunctionSummaryVM");
 			FunctionInstanceVM = (FunctionInstanceViewModel)FindResource("FunctionInstanceVM");
+			CaptureSettingsVM = (CaptureSettingsViewModel)FindResource("CaptureSettingsVM");
+		}
+
+		private void CancelConnection()
+		{
+			StartButton.IsChecked = false;
+		}
+
+		private void TimeLine_CancelConnection(object sender, RoutedEventArgs e)
+		{
+			CancelConnection();
 		}
 
 		FunctionSummaryViewModel FunctionSummaryVM { get; set; }
@@ -94,7 +108,7 @@ namespace Profiler.Controls
 		{
 			if (state == ProfilerClient.State.Disconnected)
 			{
-				StartButton.IsChecked = false;
+				CancelConnection();
 			}
 		}
 
@@ -193,6 +207,12 @@ namespace Profiler.Controls
 			InstanceHistoryControl.DataContext = null;
 
 			SamplingTreeControl.SetDescription(null, null);
+
+			MainViewModel vm = DataContext as MainViewModel;
+			if (vm.IsCapturing)
+			{
+				ProfilerClient.Get().SendMessage(new CancelMessage());
+			}
 		}
 
         private void ClearSamplingButton_Click(object sender, System.Windows.RoutedEventArgs e)
@@ -216,7 +236,8 @@ namespace Profiler.Controls
             if (!IPAddress.TryParse(platform.Address, out address))
                 return;
 
-            timeLine.StartCapture(address, platform.Port, platform.Password);
+			CaptureSettings settings = CaptureSettingsVM.GetSettings();
+			timeLine.StartCapture(address, platform.Port, settings, platform.Password);
 		}
 
 		private void SettingsButton_Click(object sender, RoutedEventArgs e)
@@ -248,6 +269,15 @@ namespace Profiler.Controls
 		private void OnSearchCommandExecuted(object sender, ExecutedRoutedEventArgs args)
 		{
 			EventThreadViewControl.FunctionSearchControl.Open();
+		}
+
+		private void OnShowDebugInfoCommandExecuted(object sender, ExecutedRoutedEventArgs args)
+		{
+			MemoryStatsViewModel vm = new MemoryStatsViewModel();
+			timeLine.ForEachResponse((group, response) => vm.Load(response));
+			vm.Update();
+			DebugInfoPopup.DataContext = vm;
+			DebugInfoPopup.IsOpen = true;
 		}
 	}
 }

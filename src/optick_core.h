@@ -7,8 +7,8 @@
 #include <thread>
 
 #include "optick_common.h"
-
 #include "optick_memory.h"
+#include "optick_message.h"
 #include "optick_serialization.h"
 
 #include "optick_gpu.h"
@@ -147,6 +147,14 @@ typedef MemoryPool<TagU64, 1024> TagU64Buffer;
 typedef MemoryPool<TagPoint, 64> TagPointBuffer;
 typedef MemoryPool<TagString, 1024> TagStringBuffer;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Base64
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+string base64_decode(string const& encoded_string);
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Board
@@ -385,7 +393,6 @@ struct CaptureStatus
     };
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 class Core
 {
 	std::recursive_mutex coreLock;
@@ -425,6 +432,8 @@ class Core
 
 	State::Type currentState;
 	State::Type pendingState;
+
+	CaptureSettings settings;
 
 	void UpdateEvents();
 	uint32_t Update();
@@ -479,6 +488,9 @@ public:
 
 	// Request to stop an active capture
 	void StopCapture();
+
+	// Request to stop an active capture
+	void CancelCapture();
 
 	// Requests to dump current capture
 	void DumpCapture();
@@ -535,7 +547,7 @@ public:
 	void InitGPUProfiler(GPUProfiler* profiler);
 
 	// Initializes root password for the device
-	bool SetPassword(const string& encodedPassword);
+	bool SetSettings(const CaptureSettings& settings);
 
 	// Current Frame Number (since the game started)
 	uint32_t GetCurrentFrame() const { return frameNumber; }

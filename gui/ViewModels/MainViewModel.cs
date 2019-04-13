@@ -11,5 +11,12 @@ namespace Profiler.ViewModels
     public class MainViewModel: BaseViewModel
     {
 		public String Version { get { return Assembly.GetEntryAssembly().GetName().Version.ToString(); } }
+
+		private bool _isCapturing = false;
+		public bool IsCapturing
+		{
+			get { return _isCapturing; }
+			set { SetProperty(ref _isCapturing, value); }
+		}
     }
 }

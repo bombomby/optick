@@ -42,6 +42,7 @@ namespace Optick
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void* (*Memory::allocate)(size_t) = operator new;
 void  (*Memory::deallocate)(void* p) = operator delete;
+std::atomic<uint64_t> Memory::memAllocated;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 uint64_t MurmurHash64A(const void * key, int len, uint64_t seed)
 {
@@ -721,7 +722,11 @@ void Core::DumpCapture()
 {
 	pendingState = State::DUMP_CAPTURE;
 }
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Core::CancelCapture()
+{
+	pendingState = State::CANCEL_CAPTURE;
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpProgress(const char* message)
 {
@@ -1083,6 +1088,9 @@ uint32_t Core::Update()
 		if (!frames.empty())
 			frames.back().Stop();
 
+		if (settings.frameLimit > 0 && frames.size() >= settings.frameLimit)
+			Core::DumpCapture();
+
 		if (IsTimeToReportProgress())
 			DumpCapturingProgress();		
 	}
@@ -1142,6 +1150,7 @@ void Core::Activate( bool active )
 			if (tracer)
 			{
                 std::lock_guard<std::recursive_mutex> lock(threadsLock);
+				tracer->SetPassword(settings.password.c_str());
 				status = tracer->Start(Trace::ALL, threads);
 				// Let's retry with more narrow setup
 				if (status != CaptureStatus::OK)
@@ -1169,7 +1178,12 @@ void Core::DumpCapturingProgress()
 	stringstream stream;
 
 	if (isActive)
-		stream << "Capturing Frame " << (uint32)frames.size() << std::endl;
+	{
+		size_t memUsedKb = Memory::GetAllocatedSize() >> 10;
+		float memUsedMb = memUsedKb / 1024.0f;
+		// VS TODO: Format to 3 digits
+		stream << "Capturing Frame " << (uint32)frames.size() << "..." << std::endl << "Memory Used: " << memUsedMb << " Mb";
+	}
 
 	DumpProgress(stream.str().c_str());
 }
@@ -1335,14 +1349,16 @@ void Core::InitGPUProfiler(GPUProfiler* profiler)
 	gpuProfiler = profiler;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool Core::SetPassword(const string& encodedPassword)
+bool Core::SetSettings(const CaptureSettings& captureSettings)
 {
-	if (tracer)
-	{
-		string decoded = base64_decode(encodedPassword);
-		tracer->SetPassword(decoded.c_str());
-		return true;
-	}
+	settings = captureSettings;
+
+	//if (tracer)
+	//{
+	//	string decoded = base64_decode(encodedPassword);
+	//	tracer->SetPassword(decoded.c_str());
+	//	return true;
+	//}
 	return false;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

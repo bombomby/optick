@@ -11,6 +11,7 @@ using LiveCharts;
 using LiveCharts.Wpf;
 using Profiler.Data;
 using Profiler.InfrastructureMvvm;
+using Profiler.Views;
 
 namespace Profiler.ViewModels
 {
@@ -151,7 +152,6 @@ namespace Profiler.ViewModels
     {
         public FunctionSummaryViewModel()
         {
-            DataClickCommand = new RelayCommand<ChartPoint>(OnDataClickCommand);
         }
 
         public class FunctionSummaryItem : BaseViewModel
@@ -274,25 +274,23 @@ namespace Profiler.ViewModels
             set { SetProperty(ref _waitValues, value); }
         }
 
-        void OnDataClickCommand(ChartPoint point)
-        {
-            int index = (int)point.X;
-            if (Stats != null && 0 <= index && index < Stats.Samples.Count)
-            {
-                FunctionStats.Sample sample = Stats.Samples[index];
+		public void OnDataClick(FrameworkElement parent, ChartPoint point)
+		{
+			int index = (int)point.X;
+			if (Stats != null && 0 <= index && index < Stats.Samples.Count)
+			{
+				FunctionStats.Sample sample = Stats.Samples[index];
 
-                Entry maxEntry = null;
-                double maxDuration = 0;
+				Entry maxEntry = null;
+				double maxDuration = 0;
 
-                sample.Entries.ForEach(e => { if (maxDuration < e.Duration) { maxDuration = e.Duration; maxEntry = e; } });
+				sample.Entries.ForEach(e => { if (maxDuration < e.Duration) { maxDuration = e.Duration; maxEntry = e; } });
 
-                EventNode maxNode = maxEntry.Frame.Root.FindNode(maxEntry);
+				EventNode maxNode = maxEntry.Frame.Root.FindNode(maxEntry);
 
-                Application.Current.MainWindow.RaiseEvent(new TimeLine.FocusFrameEventArgs(TimeLine.FocusFrameEvent, new EventFrame(maxEntry.Frame, maxNode), null));
-            }
-        }
-
-        public RelayCommand<ChartPoint> DataClickCommand { get; set; }
+				parent.RaiseEvent(new TimeLine.FocusFrameEventArgs(TimeLine.FocusFrameEvent, new EventFrame(maxEntry.Frame, maxNode), null));
+			}
+		}
 
 
         public double AreaOpacity { get; set; } = 0.66;

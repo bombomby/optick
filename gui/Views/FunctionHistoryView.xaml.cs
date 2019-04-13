@@ -30,5 +30,14 @@ namespace Profiler.Views
             FrameChart.DataTooltip.BorderBrush = FindResource("AccentColorBrush") as SolidColorBrush;
             FrameChart.DataTooltip.BorderThickness = new Thickness(0.5);
         }
-    }
+
+		private void FrameChart_DataClick(object sender, LiveCharts.ChartPoint chartPoint)
+		{
+			FunctionSummaryViewModel vm = DataContext as FunctionSummaryViewModel;
+			if (vm != null)
+			{
+				vm.OnDataClick(this, chartPoint);
+			}
+		}
+	}
 }

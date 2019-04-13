@@ -232,6 +232,8 @@
     <Compile Include="Controls\EditTaskTrackerListDialog.xaml.cs">
       <DependentUpon>EditTaskTrackerListDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Data\CaptureSettings.cs" />
+    <Compile Include="Data\Mode.cs" />
     <Compile Include="InfrastructureMvvm\BoolToVisibilityConverter.cs" />
     <Compile Include="InfrastructureMvvm\BootStrapperBase.cs" />
     <Compile Include="InfrastructureMvvm\DialogManager.cs" />
@@ -285,8 +287,10 @@
       <DependentUpon>SamplingThreadView.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\AddressBarViewModel.cs" />
+    <Compile Include="ViewModels\CaptureSettingsViewModel.cs" />
     <Compile Include="ViewModels\FunctionSummaryViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
+    <Compile Include="ViewModels\MemoryStatsViewModel.cs" />
     <Compile Include="ViewModels\ScreenShotViewModel.cs" />
     <Compile Include="ViewModels\SummaryViewerModel.cs" />
     <Compile Include="InfrastructureMvvm\ViewModelLocator.cs" />
@@ -294,6 +298,9 @@
     <Compile Include="ViewModels\ThreadFilterViewModel.cs" />
     <Compile Include="Views\AddressBarView.xaml.cs">
       <DependentUpon>AddressBarView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CaptureSettingsView.xaml.cs">
+      <DependentUpon>CaptureSettingsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\FunctionHistoryView.xaml.cs">
       <DependentUpon>FunctionHistoryView.xaml</DependentUpon>
@@ -437,6 +444,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\AddressBarView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\CaptureSettingsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

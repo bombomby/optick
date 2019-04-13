@@ -56,6 +56,7 @@ public:
 	{
 		Start,
 		Stop,
+		Cancel,
 		TurnSampling,
 		COUNT,
 	};
@@ -74,21 +75,42 @@ public:
 	static uint32 GetMessageType() { return id; }
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct StartMessage : public Message<IMessage::Start>
+struct CaptureSettings
 {
+	// Capture Mode
 	uint32 mode;
+	// Category Filter
 	uint32 categoryMask;
+	// Tracer: Sampling Frequency
 	uint32 samplingFrequency;
-	uint32 timeLimit;
+	// Max Duration for a capture (frames)
 	uint32 frameLimit;
-	uint64 memoryLimit;
+	// Max Duration for a capture (us)
+	uint32 timeLimitUs;
+	// Max Duration for a capture (us)
+	uint32 spikeLimitUs;
+	// Max Memory for a capture (MB)
+	uint64 memoryLimitMb;
+	// Tracer: Root Password for the Device
 	string password;
 
+	CaptureSettings() : mode(0), categoryMask(0), samplingFrequency(0), frameLimit(0), timeLimitUs(0), spikeLimitUs(0), memoryLimitMb(0) {}
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct StartMessage : public Message<IMessage::Start>
+{
+	CaptureSettings settings;
 	static IMessage* Create(InputDataStream&);
 	virtual void Apply() override;
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct StopMessage : public Message<IMessage::Stop>
+{
+	static IMessage* Create(InputDataStream&);
+	virtual void Apply() override;
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct CancelMessage : public Message<IMessage::Cancel>
 {
 	static IMessage* Create(InputDataStream&);
 	virtual void Apply() override;

@@ -101,8 +101,7 @@ namespace Profiler
 
 						Grid.SetRow(border, threadIndex);
 
-						if (threadIndex % 2 == 1)
-							border.Background = OptickAlternativeBackground;
+						border.Background = (threadIndex % 2 == 1) ? OptickAlternativeBackground : OptickBackground;
 
 						ThreadList.Children.Add(border);
 					}
@@ -132,8 +131,7 @@ namespace Profiler
 				ThreadRow row = Rows[threadIndex];
 				row.Offset = offset;
 
-				if (threadIndex % 2 == 1)
-					backgroundBuilder.AddRect(new Rect(0.0, offset, Scroll.Width, row.Height), OptickAlternativeBackground.Color);
+				backgroundBuilder.AddRect(new Rect(0.0, offset, Scroll.Width, row.Height), (threadIndex % 2 == 1) ? OptickAlternativeBackground.Color : OptickBackground.Color);
 
 				offset += row.Height;
 			}

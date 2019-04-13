@@ -48,7 +48,7 @@ namespace Optick
 			ID3D12CommandQueue* commandQueue;
 			ID3D12QueryHeap* queryHeap;
 			ID3D12Fence* syncFence;
-			std::array<Frame, NUM_FRAMES_DELAY> frames;
+			array<Frame, NUM_FRAMES_DELAY> frames;
 
 			NodePayload() : commandQueue(nullptr), queryHeap(nullptr), syncFence(nullptr) {}
 			~NodePayload();

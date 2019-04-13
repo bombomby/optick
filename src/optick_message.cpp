@@ -38,6 +38,7 @@ class MessageFactory
 
 		RegisterMessage<StartMessage>();
 		RegisterMessage<StopMessage>();
+		RegisterMessage<CancelMessage>();
 		RegisterMessage<TurnSamplingMessage>();
 
 		for (uint32 msg = 0; msg < IMessage::COUNT; ++msg)
@@ -111,20 +112,24 @@ IMessage* IMessage::Create(InputDataStream& str)
 void StartMessage::Apply()
 {
 	Core& core = Core::Get();
-	core.SetPassword(password);
+	core.SetSettings(settings);
 	core.StartCapture();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 IMessage* StartMessage::Create(InputDataStream& stream)
 {
 	StartMessage* msg = Memory::New<StartMessage>();
-	stream	>> msg->mode 
-			>> msg->categoryMask 
-			>> msg->samplingFrequency 
-			>> msg->timeLimit 
-			>> msg->frameLimit 
-			>> msg->memoryLimit
-			>> msg->password;
+	CaptureSettings& settings = msg->settings;
+	stream	>> settings.mode
+			>> settings.categoryMask
+			>> settings.samplingFrequency
+			>> settings.frameLimit
+			>> settings.timeLimitUs
+			>> settings.spikeLimitUs
+			>> settings.memoryLimitMb;
+	string password;
+	stream >> settings.password;
+	settings.password = base64_decode(password);
 	return msg;
 }
 
@@ -138,7 +143,16 @@ IMessage* StopMessage::Create(InputDataStream&)
 {
 	return Memory::New<StopMessage>();
 }
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void CancelMessage::Apply()
+{
+	Core::Get().CancelCapture();
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+IMessage* CancelMessage::Create(InputDataStream&)
+{
+	return Memory::New<CancelMessage>();
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 IMessage* TurnSamplingMessage::Create( InputDataStream& stream )
 {

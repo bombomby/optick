@@ -23,13 +23,18 @@
         <ControlsViewModel:FunctionSummaryViewModel x:Key="FunctionSummaryVM" Origin="MainThread" Title="Per Frame Statistics" AreaOpacity="0.5" />
         <ControlsViewModel:FunctionInstanceViewModel x:Key="FunctionInstanceVM" Origin="IndividualCalls" Title="Per Call Statistics" />
         <ControlsViewModel:AddressBarViewModel x:Key="AddressBarVM" />
+        <ControlsViewModel:CaptureSettingsViewModel x:Key="CaptureSettingsVM" />
     </UserControl.Resources>
 
     <UserControl.CommandBindings>
         <CommandBinding Command="ApplicationCommands.Find" Executed="OnSearchCommandExecuted" />
         <CommandBinding Command="ApplicationCommands.Open" Executed="OnOpenCommandExecuted" />
         <CommandBinding Command="ApplicationCommands.Save" Executed="OnSaveCommandExecuted" />
+        <CommandBinding Command="ApplicationCommands.Print" Executed="OnShowDebugInfoCommandExecuted" />
     </UserControl.CommandBindings>
+    <UserControl.InputBindings>
+        <KeyBinding Modifiers="Ctrl" Key="M" Command="{Binding ShowDebugCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" />
+    </UserControl.InputBindings>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="227"/>
@@ -46,7 +51,7 @@
             </Grid.ColumnDefinitions>
             <Grid>
                 <StackPanel Orientation="Horizontal" Margin="2,2,0,-2" Grid.ColumnSpan="2" HorizontalAlignment="Left" VerticalAlignment="Top">
-                    <ToggleButton x:Name="StartButton" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" Unchecked="StartButton_Unchecked" Checked="StartButton_Checked" ToolTip="Start Profiling Session" Padding="-6">
+                    <ToggleButton x:Name="StartButton" IsChecked="{Binding IsCapturing, Mode=TwoWay}" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" Unchecked="StartButton_Unchecked" Checked="StartButton_Checked" ToolTip="Start Profiling Session" Padding="-6">
                         <ToggleButton.Resources>
                             <Style TargetType="ToggleButton" BasedOn="{StaticResource SquareButtonStyle}">
                                 <Setter Property="BorderThickness" Value="1" />
@@ -71,6 +76,9 @@
                             </Style>
                         </ToggleButton.Resources>
                         <ContentControl Style="{DynamicResource appbar_control_play}" />
+                    </ToggleButton>
+                    <ToggleButton x:Name="SettingsButton" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Open Capture Settings" Margin="1,0,0,0" Padding="-4">
+                        <ContentControl Style="{StaticResource appbar_settings}" />
                     </ToggleButton>
                     <Button x:Name="OpenButton" Command="ApplicationCommands.Open" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Open Saved Session" Margin="1,0,0,0" Padding="-6">
                         <ContentControl Style="{StaticResource appbar_folder_open}" />
@@ -126,7 +134,14 @@
                         <xcad:LayoutPanel Orientation="Horizontal" DockHeight="1*">
                             <xcad:LayoutAnchorablePaneGroup DockWidth="1*">
                                 <xcad:LayoutAnchorablePane>
-                                    <xcad:LayoutAnchorable ContentId="function_list" Title="Frame Statistics" CanClose="False">
+                                    <!--<xcad:LayoutAnchorable ContentId="temp" Title="Temp" CanHide="False" CanClose="False" AutoHideWidth="240">
+                                        <Grid x:Name="CaptureSettings" >
+                                            <Border BorderThickness="1" BorderBrush="Black" Background="{StaticResource OptickBackground}">
+                                                <ControlsView:CaptureSettingsView DataContext="{StaticResource CaptureSettingsVM}" />
+                                            </Border>
+                                        </Grid>
+                                    </xcad:LayoutAnchorable>-->
+                                    <xcad:LayoutAnchorable ContentId="function_list" Title="Function Statistics (Frame)" CanClose="False">
                                         <ControlsView:FunctionHistoryView x:Name="FunctionHistoryControl" DataContext="{StaticResource FunctionSummaryVM}" />
                                     </xcad:LayoutAnchorable>
                                     <xcad:LayoutAnchorable ContentId="properties" Title="Properties" CanHide="False" CanClose="False" AutoHideWidth="240">
@@ -145,7 +160,7 @@
                                     <xcad:LayoutAnchorable ContentId="syscalls_tree" Title="Function SysCalls" CanClose="False">
                                         <Profiler:SampleInfo x:Name="SysCallInfoControl" CallstackType="SysCall" />
                                     </xcad:LayoutAnchorable>
-                                    <xcad:LayoutAnchorable ContentId="instance_list" Title="Function Statistics" CanClose="False">
+                                    <xcad:LayoutAnchorable ContentId="instance_list" Title="Function Statistics (Call)" CanClose="False">
                                         <ControlsView:FunctionInstanceView x:Name="InstanceHistoryControl" DataContext="{StaticResource FunctionInstanceVM}" Margin="0,0,1,0" />
                                     </xcad:LayoutAnchorable>
                                     <xcad:LayoutAnchorable ContentId="sampling_tree_sharpdx" Title="Function Callstacks" CanClose="False">
@@ -184,5 +199,23 @@
             </Expander>
             <GridSplitter ResizeDirection="Columns" Width="4" Grid.Column="1" HorizontalAlignment="Left" Grid.RowSpan="2"/>-->
         </Grid>
+
+        <Popup IsOpen="False" Placement="Center" Width="800" Height="600" x:Name="DebugInfoPopup" StaysOpen="False">
+            <Border BorderThickness="1" BorderBrush="{StaticResource OptickBorder}">
+                <StackPanel Orientation="Vertical">
+                    <StackPanel Orientation="Horizontal">
+                        <Label VerticalAlignment="Center" Content="Total Memory: " />
+                        <Label VerticalAlignment="Center" Content="{Binding TotalMemory, StringFormat={}{0:### ### ### ###}}" />
+                    </StackPanel>
+                    <DataGrid ItemsSource="{Binding Stats}" />
+                </StackPanel>
+            </Border>
+        </Popup>
+
+        <Popup Width="Auto" Height="Auto" Placement="Bottom" PlacementTarget="{Binding ElementName=SettingsButton}" IsOpen="{Binding IsChecked, ElementName=SettingsButton}">
+            <Border BorderThickness="1" BorderBrush="Black" Background="{StaticResource OptickBackground}">
+                <ControlsView:CaptureSettingsView DataContext="{StaticResource CaptureSettingsVM}" />
+            </Border>
+        </Popup>
     </Grid>
 </UserControl>

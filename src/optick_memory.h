@@ -7,6 +7,7 @@
 #include <cstring>
 #include <new>
 #include <stdlib.h>
+#include <atomic>
 
 #include <array>
 #include <list>
@@ -20,17 +21,40 @@ namespace Optick
 {
 	class Memory
 	{
+		struct Header
+		{
+			uint64_t size;
+		};
+
+		static std::atomic<uint64_t> memAllocated;
+
 		static void* (*allocate)(size_t);
 		static void  (*deallocate)(void* p);
 	public:
 		static OPTICK_NOINLINE void* Alloc(size_t size)
 		{
-			return allocate(size);
+			size_t totalSize = size + sizeof(Header);
+			void *ptr = allocate(totalSize);
+			OPTICK_VERIFY(ptr, "Can't allocate memory", return nullptr);
+
+			Header* header = (Header*)ptr;
+			header->size = totalSize;
+			memAllocated += totalSize;
+
+			return (uint8_t*)ptr + sizeof(Header);
 		}
 
 		static OPTICK_NOINLINE void Free(void* p)
 		{
-			deallocate(p);
+			uint8_t* basePtr = (uint8_t*)p - sizeof(Header);
+			Header* header = (Header*)basePtr;
+			memAllocated -= header->size;
+			deallocate(basePtr);
+		}
+
+		static OPTICK_INLINE size_t GetAllocatedSize()
+		{
+			return memAllocated;
 		}
 
 		template<class T>

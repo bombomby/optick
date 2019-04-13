@@ -66,14 +66,14 @@ namespace Optick
 
 		struct Node
 		{
-			std::array<QueryFrame, NUM_FRAMES_DELAY> queryGpuframes;
-			std::array<int64_t, MAX_QUERIES_COUNT> queryGpuTimestamps;
-			std::array<int64_t*, MAX_QUERIES_COUNT> queryCpuTimestamps;
+			array<QueryFrame, NUM_FRAMES_DELAY> queryGpuframes;
+			array<int64_t, MAX_QUERIES_COUNT> queryGpuTimestamps;
+			array<int64_t*, MAX_QUERIES_COUNT> queryCpuTimestamps;
 			std::atomic<uint32_t> queryIndex;
 
 			ClockSynchronization clock;
 
-			std::array<EventStorage*, GPU_QUEUE_COUNT> gpuEventStorage;
+			array<EventStorage*, GPU_QUEUE_COUNT> gpuEventStorage;
 
 			uint32_t QueryTimestamp(int64_t* outCpuTimestamp)
 			{

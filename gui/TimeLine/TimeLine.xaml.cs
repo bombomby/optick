@@ -60,7 +60,7 @@ namespace Profiler
 			statusToError.Add(ETWStatus.ETW_ERROR_ACCESS_DENIED, new KeyValuePair<string, string>("ETW can't start: launch your game (or Visual Studio) as administrator to collect context switches", "https://github.com/bombomby/optick/wiki/Event-Tracing-for-Windows"));
 			statusToError.Add(ETWStatus.ETW_ERROR_ALREADY_EXISTS, new KeyValuePair<string, string>("ETW session already started (Reboot should help)", "https://github.com/bombomby/optick/wiki/Event-Tracing-for-Windows"));
 			statusToError.Add(ETWStatus.ETW_FAILED, new KeyValuePair<string, string>("ETW session failed", "https://github.com/bombomby/optick/wiki/Event-Tracing-for-Windows"));
-statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, string>("Tracing session failed: invalid root password. Run the game as a root or pass a valid password through Optick GUI", "https://github.com/bombomby/optick/wiki/Event-Tracing-for-Windows"));
+			statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, string>("Tracing session failed: invalid root password. Run the game as a root or pass a valid password through Optick GUI", "https://github.com/bombomby/optick/wiki/Event-Tracing-for-Windows"));
 
 			ProfilerClient.Get().ConnectionChanged += TimeLine_ConnectionChanged;
 
@@ -172,6 +172,7 @@ statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, st
 						break;
 
 					case DataResponse.Type.NullFrame:
+						RaiseEvent(new CancelConnectionEventArgs());
 						StatusText.Visibility = System.Windows.Visibility.Collapsed;
 						lock (frames)
 						{
@@ -285,13 +286,22 @@ statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, st
 			}
 		}
 
+		public class CancelConnectionEventArgs : RoutedEventArgs
+		{
+			public CancelConnectionEventArgs() : base(CancelConnectionEvent)
+			{
+			}
+		}
+
 		public delegate void FocusFrameEventHandler(object sender, FocusFrameEventArgs e);
 		public delegate void ShowWarningEventHandler(object sender, ShowWarningEventArgs e);
 		public delegate void NewConnectionEventHandler(object sender, NewConnectionEventArgs e);
+		public delegate void CancelConnectionEventHandler(object sender, CancelConnectionEventArgs e);
 
 		public static readonly RoutedEvent FocusFrameEvent = EventManager.RegisterRoutedEvent("FocusFrame", RoutingStrategy.Bubble, typeof(FocusFrameEventHandler), typeof(TimeLine));
 		public static readonly RoutedEvent ShowWarningEvent = EventManager.RegisterRoutedEvent("ShowWarning", RoutingStrategy.Bubble, typeof(ShowWarningEventArgs), typeof(TimeLine));
 		public static readonly RoutedEvent NewConnectionEvent = EventManager.RegisterRoutedEvent("NewConnection", RoutingStrategy.Bubble, typeof(NewConnectionEventHandler), typeof(TimeLine));
+		public static readonly RoutedEvent CancelConnectionEvent = EventManager.RegisterRoutedEvent("CancelConnection", RoutingStrategy.Bubble, typeof(CancelConnectionEventHandler), typeof(TimeLine));
 
 		public event RoutedEventHandler FocusFrame
 		{
@@ -310,6 +320,12 @@ statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, st
 			add { AddHandler(NewConnectionEvent, value); }
 			remove { RemoveHandler(NewConnectionEvent, value); }
 		}
+
+		public event RoutedEventHandler CancelConnection
+		{
+			add { AddHandler(CancelConnectionEvent, value); }
+			remove { RemoveHandler(CancelConnectionEvent, value); }
+		}
 		#endregion
 
 		private void frameList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -320,13 +336,9 @@ statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, st
 			}
 		}
 
-		public void Save(Stream stream)
+		public void ForEachResponse(Action<FrameGroup, DataResponse> action)
 		{
-			HashSet<EventDescriptionBoard> boards = new HashSet<EventDescriptionBoard>();
-			HashSet<FrameGroup> groups = new HashSet<FrameGroup>();
-
 			FrameGroup currentGroup = null;
-
 			foreach (Frame frame in frames)
 			{
 				if (frame is EventFrame)
@@ -334,7 +346,7 @@ statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, st
 					EventFrame eventFrame = frame as EventFrame;
 					if (eventFrame.Group != currentGroup && currentGroup != null)
 					{
-						currentGroup.Responses.ForEach(response => response.Serialize(stream));
+						currentGroup.Responses.ForEach(response => action(currentGroup, response));
 					}
 					currentGroup = eventFrame.Group;
 				}
@@ -342,21 +354,20 @@ statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, st
 				{
 					if (currentGroup != null)
 					{
-						currentGroup.Responses.ForEach(response => response.Serialize(stream));
+						currentGroup.Responses.ForEach(response => action(currentGroup, response));
 						currentGroup = null;
 					}
 
-					(frame as SamplingFrame).Response.Serialize(stream);
+					action(null, (frame as SamplingFrame).Response);
 				}
 			}
 
-			if (currentGroup != null)
-			{
-				currentGroup.Responses.ForEach(response =>
-				{
-					response.Serialize(stream);
-				});
-			}
+			currentGroup?.Responses.ForEach(response => action(currentGroup, response));
+		}
+
+		public void Save(Stream stream)
+		{
+			ForEachResponse((group, response) => response.Serialize(stream));
 		}
 
 		public String Save()
@@ -403,7 +414,7 @@ statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, st
 		//	view.Filter = new Predicate<object>((item) => { return (item is Frame) ? (item as Frame).Duration >= FrameFilterSlider.Value : true; });
 		//}
 
-		public void StartCapture(IPAddress address, UInt16 port, SecureString password)
+		public void StartCapture(IPAddress address, UInt16 port, CaptureSettings settings, SecureString password)
 		{
             ProfilerClient.Get().IpAddress = address;
             ProfilerClient.Get().Port = port;
@@ -414,7 +425,7 @@ statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, st
 				StatusText.Visibility = System.Windows.Visibility.Visible;
 			}));
 
-			Task.Run(() => { ProfilerClient.Get().SendMessage(new StartMessage() { Password = password } , true); });
+			Task.Run(() => { ProfilerClient.Get().SendMessage(new StartMessage() { Settings = settings, Password = password } , true); });
 		}
 	}
 
