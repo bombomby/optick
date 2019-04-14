@@ -10,10 +10,10 @@ namespace Profiler.Data
 {
     public class Capture
     {
-		public class RockyHeader
+		public class OptickHeader
 		{
-			const UInt32 ROCKY_MAGIC = 0xB50FB50F;
-			const UInt16 ROCKY_VERSION = 0;
+			const UInt32 OPTICK_MAGIC = 0xB50FB50F;
+			const UInt16 OPTICK_VERSION = 0;
 			public enum Flags : UInt16
 			{
 				IsZip = 1 << 0,
@@ -23,7 +23,7 @@ namespace Profiler.Data
 			public UInt16 Version { get; set; }
 			public Flags Settings { get; set; }
 
-			public RockyHeader(Stream stream)
+			public OptickHeader(Stream stream)
 			{
 				BinaryReader reader = new BinaryReader(stream);
 				Magic = reader.ReadUInt32();
@@ -31,16 +31,16 @@ namespace Profiler.Data
 				Settings = (Flags)reader.ReadUInt16();
 			}
 
-			public RockyHeader()
+			public OptickHeader()
 			{
-				Magic = ROCKY_MAGIC;
-				Version = ROCKY_VERSION;
+				Magic = OPTICK_MAGIC;
+				Version = OPTICK_VERSION;
 				Settings = Flags.IsZip;
 			}
 
 			public bool IsValid
 			{
-				get { return Magic == ROCKY_MAGIC; }
+				get { return Magic == OPTICK_MAGIC; }
 			}
 
 			public bool IsZip
@@ -62,7 +62,7 @@ namespace Profiler.Data
 			if (File.Exists(path))
 			{
 				FileStream stream = new FileStream(path, FileMode.Open);
-				RockyHeader header = new RockyHeader(stream);
+				OptickHeader header = new OptickHeader(stream);
 				if (header.IsValid)
 				{
 					return (header.IsZip ? (Stream)new GZipStream(stream, CompressionMode.Decompress, false) : stream);
@@ -82,7 +82,7 @@ namespace Profiler.Data
 
 		public static Stream Create(Stream stream)
 		{
-			RockyHeader header = new RockyHeader();
+			OptickHeader header = new OptickHeader();
 			header.Write(stream);
 			if (header.IsZip)
 				return new GZipStream(stream, CompressionLevel.Fastest);

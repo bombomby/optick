@@ -20,6 +20,7 @@ using Profiler.DirectX;
 using System.Windows.Threading;
 using System.Diagnostics;
 using Profiler.Controls;
+using System.Threading.Tasks;
 
 namespace Profiler
 {
@@ -56,64 +57,74 @@ namespace Profiler
         public delegate void HighlightFrameEventHandler(object sender, HighlightFrameEventArgs e);
         public static readonly RoutedEvent HighlightFrameEvent = EventManager.RegisterRoutedEvent("HighlightFrameEvent", RoutingStrategy.Bubble, typeof(HighlightFrameEventHandler), typeof(ThreadView));
 
- 		public void InitRows(List<ThreadRow> rows, IDurable timeslice)
+		public void UpdateRows()
 		{
-			Rows = rows;
-
-			ThreadList.RowDefinitions.Clear();
 			ThreadList.Children.Clear();
-
+			ThreadList.RowDefinitions.Clear();
+			ThreadList.Margin = new Thickness(0, 0, 3, 0);
 			double offset = 0.0;
-
-			if (rows.Count > 0)
+			bool isAlternative = false;
+			for (int threadIndex = 0; threadIndex < Rows.Count; ++threadIndex)
 			{
-				Scroll.TimeSlice = new Durable(timeslice.Start, timeslice.Finish);
-				Scroll.Height = 0.0;
-				Scroll.Width = surface.ActualWidth * RenderSettings.dpiScaleX;
-				rows.ForEach(row => Scroll.Height += row.Height);
+				ThreadRow row = Rows[threadIndex];
+				row.Offset = offset;
 
-				rows.ForEach(row => row.BuildMesh(surface, Scroll));
+				if (!row.IsVisible)
+					continue;
 
-				ThreadList.Margin = new Thickness(0, 0, 3, 0);
-
-				for (int threadIndex = 0; threadIndex < rows.Count; ++threadIndex)
+				if (ShowThreadHeaders)
 				{
-					ThreadRow row = rows[threadIndex];
-					row.Offset = offset;
+					ThreadList.RowDefinitions.Add(new RowDefinition());
 
-					if (ShowThreadHeaders)
+					Border border = new Border()
 					{
-						ThreadList.RowDefinitions.Add(new RowDefinition());
+						Height = row.Height / RenderSettings.dpiScaleY,
+					};
 
-						Border border = new Border()
-						{
-							Height = row.Height / RenderSettings.dpiScaleY,
-						};
+					FrameworkElement header = row.Header;
+					if (header != null && header.Parent != null && (header.Parent is Border))
+						(header.Parent as Border).Child = null;
+						
+					border.Child = row.Header;
+					border.Background = isAlternative ? OptickAlternativeBackground : OptickBackground;
+					Grid.SetRow(border, threadIndex);
 
-						if (row is HeaderThreadRow)
-						{
-							border.Child = (row as HeaderThreadRow).Header;
-						}
-						else
-						{
-							border.Child = new Label() { Content = row.Name, Margin = new Thickness(), Padding = new Thickness(), FontWeight = FontWeights.Bold, VerticalContentAlignment = VerticalAlignment.Center };
-						}
-
-						Grid.SetRow(border, threadIndex);
-
-						border.Background = (threadIndex % 2 == 1) ? OptickAlternativeBackground : OptickBackground;
-
-						ThreadList.Children.Add(border);
-					}
-
-					offset += row.Height;
+					ThreadList.Children.Add(border);
 				}
-
-				InitBackgroundMesh();
+				isAlternative = !isAlternative;
+				offset += row.Height;
 			}
 
 			surface.Height = offset;
 			surface.MaxHeight = offset;
+			Scroll.Height = offset;
+
+			InitBackgroundMesh();
+		}
+
+		public void InitRows(List<ThreadRow> rows, IDurable timeslice)
+		{
+			Rows = rows;
+
+			if (rows.Count > 0)
+			{
+				Scroll.TimeSlice = new Durable(timeslice.Start, timeslice.Finish);
+				Scroll.Width = surface.ActualWidth * RenderSettings.dpiScaleX;
+				rows.ForEach(row => row.BuildMesh(surface, Scroll));
+				rows.ForEach(row => row.ExpandChanged += Row_ExpandChanged);
+				rows.ForEach(row => row.VisibilityChanged += Row_ExpandChanged);
+			}
+
+			UpdateRows();
+		}
+
+		private void Row_ExpandChanged(ThreadRow row)
+		{
+			//Task.Run(()=>
+			//{
+				row.BuildMesh(surface, Scroll);
+				Application.Current.Dispatcher.BeginInvoke(new Action(() => UpdateRows() ));
+			//});
 		}
 
 		private void InitBackgroundMesh()
@@ -125,13 +136,16 @@ namespace Profiler
 			backgroundBuilder.Projection = Mesh.ProjectionType.Pixel;
 
 			double offset = 0.0;
+			bool isAlternative = false;
 
 			for (int threadIndex = 0; threadIndex < Rows.Count; ++threadIndex)
 			{
 				ThreadRow row = Rows[threadIndex];
-				row.Offset = offset;
+				if (!row.IsVisible)
+					continue;
 
-				backgroundBuilder.AddRect(new Rect(0.0, offset, Scroll.Width, row.Height), (threadIndex % 2 == 1) ? OptickAlternativeBackground.Color : OptickBackground.Color);
+				backgroundBuilder.AddRect(new Rect(0.0, offset, Scroll.Width, row.Height), isAlternative ? OptickAlternativeBackground.Color : OptickBackground.Color);
+				isAlternative = !isAlternative;
 
 				offset += row.Height;
 			}

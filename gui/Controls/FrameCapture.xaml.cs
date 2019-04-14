@@ -99,9 +99,13 @@ namespace Profiler.Controls
 
 		public bool LoadFile(string path)
 		{
-            _captureName = path;
             timeLine.Clear();
-			return timeLine.LoadFile(path);
+			if (timeLine.LoadFile(path))
+			{
+				_captureName = path;
+				return true;
+			}
+			return false;
 		}
 
 		private void MainWindow_ConnectionChanged(IPAddress address, UInt16 port, ProfilerClient.State state, String message)

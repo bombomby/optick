@@ -4,8 +4,6 @@ using System.Windows;
 using Profiler.Data;
 using System.Windows.Media;
 using Profiler.DirectX;
-using System.Windows.Forms;
-using System.Diagnostics;
 
 namespace Profiler
 {
@@ -14,8 +12,6 @@ namespace Profiler
 		public ThreadDescription Description { get; set; }
 		public ThreadData EventData { get; set; }
 		int MaxDepth { get; set; }
-
-		public bool IsExpanded { get; set; }
 
 		List<Mesh> Blocks { get; set; }
 		List<Mesh> SyncMesh { get; set; }
@@ -82,7 +78,8 @@ namespace Profiler
 			EventData = data;
 			Group = group;
 			MaxDepth = 1;
-			IsExpanded = true;
+
+			Header = new ThreadNameView() { DataContext = this };
 
 			List<EventNode> rootCategories = new List<EventNode>();
 			List<EventNode> nodesToProcess = new List<EventNode>();
@@ -157,7 +154,16 @@ namespace Profiler
 					}
 				}
 				// ------------------------------------------------------------------------------------------------------
+			}
 
+			UpdateDepth();
+		}
+
+		private void UpdateDepth()
+		{
+			MaxDepth = 1;
+			foreach (EventFrame frame in EventData.Events)
+			{
 				MaxDepth = Math.Max(GetTree(frame).Depth, MaxDepth);
 			}
 		}
@@ -189,6 +195,9 @@ namespace Profiler
 
 		public override void BuildMesh(DirectX.DirectXCanvas canvas, ThreadScroll scroll)
 		{
+			SetBusy(true);			
+			UpdateDepth();
+
 			// Build Mesh
 			DirectX.ComplexDynamicMesh builder = new ComplexDynamicMesh(canvas, DIPSplitCount);
 			DirectX.ComplexDynamicMesh syncBuilder = new ComplexDynamicMesh(canvas, DIPSplitCount);
@@ -265,6 +274,8 @@ namespace Profiler
 			CallstackMeshLines = canvas.CreateMesh();
 			CallstackMeshLines.Geometry = Mesh.GeometryType.Lines;
 			CallstackMeshLines.Projection = Mesh.ProjectionType.Pixel;
+
+			SetBusy(false);
 		}
 
 		public override double Height { get { return RenderParams.BaseHeight * MaxDepth; } }
@@ -289,6 +300,9 @@ namespace Profiler
 
 		public override void Render(DirectX.DirectXCanvas canvas, ThreadScroll scroll, DirectXCanvas.Layer layer, Rect box)
 		{
+			if (!IsVisible)
+				return;
+
 			Matrix world = GetWorldMatrix(scroll);
 
 			if (layer == DirectXCanvas.Layer.Background)

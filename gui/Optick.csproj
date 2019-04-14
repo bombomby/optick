@@ -286,6 +286,9 @@
     <Compile Include="ThreadView\SamplingThreadView.xaml.cs">
       <DependentUpon>SamplingThreadView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ThreadView\ThreadNameView.xaml.cs">
+      <DependentUpon>ThreadNameView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModels\AddressBarViewModel.cs" />
     <Compile Include="ViewModels\CaptureSettingsViewModel.cs" />
     <Compile Include="ViewModels\FunctionSummaryViewModel.cs" />
@@ -440,6 +443,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ThreadView\SamplingThreadView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ThreadView\ThreadNameView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

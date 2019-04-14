@@ -8,6 +8,8 @@ using Profiler.Data;
 using System.Windows.Media;
 using Profiler.DirectX;
 using System.Windows.Forms;
+using Profiler.InfrastructureMvvm;
+using System.Threading;
 
 namespace Profiler
 {
@@ -118,8 +120,10 @@ namespace Profiler
 		public SyncDrawType SyncDraw { get; set; }
 	}
 
-	public abstract class ThreadRow
+	public abstract class ThreadRow : BaseViewModel
 	{
+		public FrameworkElement Header { get; set; }
+
 		public double Offset { get; set; }
 		public abstract double Height { get; }
 		public abstract String Name { get; }
@@ -139,6 +143,52 @@ namespace Profiler
 							  -(scroll.ViewUnit.Left * scroll.Zoom),
 							  (Offset + 1.0 * RenderParams.BaseMargin) / scroll.Height);
 		}
+
+		public delegate void OnVisibilityChangedHandler(ThreadRow row);
+		public event OnVisibilityChangedHandler VisibilityChanged;
+
+		private bool _isVisible = true;
+		public bool IsVisible
+		{
+			get { return _isVisible; }
+			set { SetProperty(ref _isVisible, value); VisibilityChanged?.Invoke(this); }
+		}
+
+		public delegate void OnExpanedChangedHandler(ThreadRow row);
+		public event OnExpanedChangedHandler ExpandChanged;
+
+		private bool _isExpanded = true;
+		public bool IsExpanded
+		{
+			get { return _isExpanded; }
+			set { SetProperty(ref _isExpanded, value); ExpandChanged?.Invoke(this); }
+		}
+
+		private long _busyCounter = 0;
+		public bool IsBusy
+		{
+			get { return Interlocked.Read(ref _busyCounter) > 0; }
+		}
+
+		public void SetBusy(bool isBusy)
+		{
+			bool changed = false;
+			if (isBusy)
+			{
+				if (Interlocked.Increment(ref _busyCounter) == 1)
+					changed = true;
+			}
+			else
+			{
+				if (Interlocked.Decrement(ref _busyCounter) == 0)
+					changed = true;
+			}
+					
+			if (changed)
+			{
+				System.Windows.Application.Current.Dispatcher.Invoke(new Action(() => OnPropertyChanged("IsBusy")));
+			}
+		}
 	}
 
 	public class HeaderThreadRow : ThreadRow
@@ -146,8 +196,6 @@ namespace Profiler
 		public static double DefaultHeaderHeight => RenderParams.BaseHeight * 1.25;
 		public override double Height { get { return DefaultHeaderHeight; } }
 		public override string Name { get { return String.Empty; } }
-
-		public FrameworkElement Header { get; set; }
 
 		public Color GradientTop { get; set; }
 		public Color GradientBottom { get; set; }

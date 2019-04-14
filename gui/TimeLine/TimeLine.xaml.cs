@@ -95,8 +95,7 @@ namespace Profiler
 				{
 					using (Stream stream = Data.Capture.Open(file))
 					{
-						Open(file, stream);
-						return true;
+						return Open(file, stream);
 					}
 				}
 			}
@@ -380,7 +379,7 @@ namespace Profiler
 			{
 				lock (frames)
 				{
-					using (Stream stream = new FileStream(dlg.FileName, FileMode.Create))
+					using (Stream stream = Capture.Create(dlg.FileName))
 						Save(stream);
 
 					frames.UpdateName(dlg.FileName, true);

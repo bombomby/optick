@@ -58,6 +58,7 @@ namespace Profiler
 			Timestamps = timestamps;
 			Entries = entries;
 			MaxValue = maxValue;
+			Header = new ThreadNameView() { DataContext = this };
 		}
 
 		const int DIPSpltCount = 64;
