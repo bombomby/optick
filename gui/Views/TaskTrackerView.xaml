@@ -1,0 +1,161 @@
+﻿<Controls:MetroWindow
+    xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls" x:Class="Profiler.Views.TaskTrackerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Profiler.Views"
+             xmlns:ControlsViewModel="clr-namespace:Profiler.ViewModels"
+            xmlns:controls="clr-namespace:Profiler.Controls"
+            xmlns:Profiler="clr-namespace:Profiler"
+            xmlns:MahApps="http://metro.mahapps.com/winfx/xaml/controls"
+            xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
+            Width="700"
+            WindowTransitionsEnabled="False"
+            Title="Create Issue"
+            Icon="../Resources/Bug.ico" 
+            TextOptions.TextFormattingMode="Display"
+            Dialog:DialogParticipation.Register="{Binding}"
+            TitleCaps="False"
+            mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Controls:MetroWindow.Resources>
+        <ControlsViewModel:TaskTrackerViewModel x:Key="DesignVM" />
+        <Profiler:StringToResource x:Key="StringToResource" />
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+    </Controls:MetroWindow.Resources>
+    <Grid d:DataContext="{StaticResource DesignVM}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="2*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="8*" />
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <ContentControl Style="{StaticResource appbar_bug}" Width="32" Height="32" Margin="-2,-6" />
+            <ComboBox Grid.Column="1" ItemsSource="{Binding Trackers}" SelectedItem="{Binding Tracker, Mode=TwoWay}" Margin="1">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <ContentControl Style="{Binding Icon, Converter={StaticResource StringToResource}}" Width="32" Height="32" Margin="-4,-8" />
+                            <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" FontWeight="Bold" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Button Width="26" Height="26" Grid.Column="2" Margin="0,0,1,0" Command="{Binding AddNewTaskTrackerCommand}" >
+                <ContentControl Style="{StaticResource appbar_edit_add}"  Margin="-10" />
+            </Button>
+            <Button Width="26" Height="26" Grid.Column="3" Margin="0,0,1,0" Command="{Binding RemoveTaskTrackerCommand}" >
+                <ContentControl Style="{StaticResource appbar_delete}"  Margin="-10" />
+            </Button>
+        </Grid>
+
+        <Grid Grid.Row="2">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <TextBox Text="{Binding TitleTemplate}" Margin="1" MahApps:TextBoxHelper.Watermark="Issue Title" AcceptsReturn="True" />
+            </ScrollViewer>
+        </Grid>
+
+        <Grid Grid.Row="3">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <TextBox Text="{Binding BodyTemplate}" Margin="1" MahApps:TextBoxHelper.Watermark="Issue Summary" AcceptsReturn="True" />
+            </ScrollViewer>
+        </Grid>
+
+
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <ContentControl Style="{StaticResource appbar_disk_upload}" Width="32" Height="32" Margin="-2,-6,-3,-6" />
+            <ComboBox Grid.Column="1" ItemsSource="{Binding Storages}" SelectedItem="{Binding Storage, Mode=TwoWay}" Margin="1" HorizontalAlignment="Stretch">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <ContentControl Style="{Binding Icon, Converter={StaticResource StringToResource}}" Width="32" Height="32" Margin="-4,-8" />
+                            <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" FontWeight="Bold" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Button Width="26" Height="26" Grid.Column="2" Margin="0,0,1,0" Command="{Binding AddNewStorageCommand}">
+                <ContentControl Style="{StaticResource appbar_edit_add}"  Margin="-10" />
+            </Button>
+            <Button Width="26" Height="26" Grid.Column="3" Margin="0,0,1,0" Command="{Binding RemoveStorageCommand}" >
+                <ContentControl Style="{StaticResource appbar_delete}"  Margin="-10" />
+            </Button>
+        </Grid>
+        
+        <ScrollViewer Grid.Row="5" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Attachments}" Margin="1">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Expander Margin="1" IsExpanded="{Binding IsExpanded, Mode=TwoWay}" BorderThickness="0.5">
+                            <Expander.Header>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="1*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <CheckBox IsChecked="{Binding IsChecked, Mode=TwoWay}" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Attachment.Name}" FontWeight="Bold" VerticalAlignment="Center" Margin="2" />
+                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Opacity="0.75" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Status}" Margin="6,0" />
+                                        <MahApps:ProgressRing Height="20" Width="20" Margin="10,0" IsActive="{Binding IsUploading}" />
+                                        <TextBlock Text="Uploaded:" Margin="0,0,6,0"/>
+                                        <TextBlock Text="{Binding ProgressUploaded, StringFormat='### ### ### ##0'}" Margin="0,0,6,0"/>
+                                        <TextBlock Text="/" Margin="0"/>
+                                        <TextBlock Text="{Binding Size, StringFormat='### ### ### ##0'}" Margin="0,0,6,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Expander.Header>
+                            <Grid>
+                                <controls:AttachmentViewControl DataContext="{Binding Attachment}"/>
+                            </Grid>
+                        </Expander>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="6" Grid.ColumnSpan="4" Orientation="Horizontal" Visibility="{Binding Storage.IsPublic, Converter={StaticResource BooleanToVisibilityConverter}}" HorizontalAlignment="Center">
+            <StackPanel.Resources>
+                <SolidColorBrush x:Key="IconsColor">Orange</SolidColorBrush>
+            </StackPanel.Resources>
+            <ContentControl Style="{StaticResource appbar_warning}" Width="32" Height="32" Margin="-5" />
+            <TextBlock Text="Selected files will be uploaded to the external public storage!" VerticalAlignment="Center" Margin="6,0" FontSize="14" Foreground="{DynamicResource IconsColor}" />
+        </StackPanel>
+
+        <Grid Grid.Row="7" Visibility="{Binding IsUploading, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="2">
+            <ProgressBar Value="{Binding UploadProgress}" Minimum="0.0" Maximum="1.0" />
+            <TextBlock Text="{Binding UploadStatus}" HorizontalAlignment="Stretch" VerticalAlignment="Center" FontWeight="Bold" Margin="2" Foreground="Black" />
+        </Grid>
+        
+        <Grid Grid.Row="8">
+            <Button Content="Upload Selected Files and Edit New Issue in a Web Browser" Command="{Binding CreateIssueCommand}" MahApps:ButtonHelper.PreserveTextCase="True" IsEnabled="{Binding IsNotUploading, Converter={StaticResource BooleanToVisibilityConverter}}" />
+            <Button Content="Cancel" Command="{Binding CancelIssueCommand}" MahApps:ButtonHelper.PreserveTextCase="True" Visibility="{Binding IsUploading, Converter={StaticResource BooleanToVisibilityConverter}}" />
+        </Grid>
+        
+    </Grid>
+</Controls:MetroWindow>

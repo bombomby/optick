@@ -1,0 +1,91 @@
+﻿<UserControl x:Class="Profiler.Views.FunctionSummaryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:viewmodels="clr-namespace:Profiler.ViewModels"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <GroupBox>
+        <GroupBox.Header>
+            <StackPanel Orientation="Horizontal" TextBlock.FontWeight="Bold" Height="15">
+                <Rectangle Grid.Column="1" Width="16" Height="16" VerticalAlignment="Center" StrokeThickness="1" Stroke="Black" Fill="{Binding Stats.Description.ForceBrush}" Margin="0,-10" />
+                <TextBlock Grid.Column="2" Text="{Binding Stats.Description.Name}" FontSize="14" Padding="0" Margin="4,-2,2,0" />
+            </StackPanel>            
+        </GroupBox.Header>
+        <Grid Background="{StaticResource OptickContentBackground}" Margin="0,2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="1*"/>
+            </Grid.RowDefinitions>
+            <ItemsControl Grid.Row="1" ItemsSource="{Binding SummaryItems, Mode=OneWay}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.Resources>
+                    <DataTemplate DataType="{x:Type viewmodels:FunctionSummaryViewModel+MinMaxFunctionSummaryItem}">
+                        <Grid ToolTip="{Binding Description}" Margin="4,2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="1*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="55" />
+                            </Grid.ColumnDefinitions>
+                            <ContentControl Style="{Binding Icon}" Width="32" Height="32" Margin="-9,-6,0,-6" />
+                            <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" Opacity="0.5" />
+                            <!--<StackPanel Grid.Column="2" Orientation="Horizontal" TextBlock.Foreground="{Binding Foreground}">
+                            <TextBlock Text="[" />
+                            <TextBlock Text="{Binding MinValue, StringFormat={}{0:0.###}}" />
+                            <TextBlock Text="-" />
+                            <TextBlock Text="{Binding MaxValue, StringFormat={}{0:0.###}}" />
+                            <TextBlock Text="]" />
+                        </StackPanel>-->
+                            <!--<MahApps:RangeSlider Grid.Column="2" Minimum="{Binding MinValue}" Maximum="{Binding MaxValue}" LowerValue="{Binding P25Value}" UpperValue="{Binding P75Value}" Width="100" Height="10" Opacity="0.2" IsEnabled="False" VerticalAlignment="Center" />-->
+                            <TextBlock Grid.Column="3" Text="{Binding AvgValue, StringFormat={}{0:0.###}}" HorizontalAlignment="Right" FontWeight="Bold" Foreground="{Binding Foreground}" VerticalAlignment="Center" />
+                        </Grid>
+                    </DataTemplate>
+
+                    <DataTemplate DataType="{x:Type viewmodels:FunctionSummaryViewModel+HyperlinkFunctionSummaryItem}">
+                        <Grid ToolTip="{Binding Description}" Margin="4,2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="1*" />
+                            </Grid.ColumnDefinitions>
+                            <ContentControl Style="{Binding Icon}" Width="32" Height="32" Margin="-9,-6,0,-6" />
+                            <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" Opacity="0.5" />
+                            <TextBlock Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                            <Hyperlink NavigateUri="{Binding Path.File}">
+                                <TextBlock Text="{Binding Path=Path}"/>
+                            </Hyperlink>
+                        </TextBlock>
+                        </Grid>
+                    </DataTemplate>
+                    <!--<DataTemplate DataType="{x:Type viewmodels:FunctionSummaryViewModel+FunctionSummaryItem}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding Name}" />
+                        <TextBlock Text="{Binding Value, StringFormat={}{0:0.###}}" />
+                    </Grid>
+                </DataTemplate>-->
+                </ItemsControl.Resources>
+            </ItemsControl>
+
+            <Grid Grid.Row="2">
+                <!--<lvc:PieChart Grid.Column="0" LegendLocation="Right" DataTooltip="{x:Null}" DisableAnimations="True" Height="100" >
+                <lvc:PieChart.Series>
+                    <lvc:PieSeries Title="Work Time" Values="80" DataLabels="True" Fill="LimeGreen" />
+                    <lvc:PieSeries Title="Wait Time" Values="10" DataLabels="True" Fill="Tomato" />
+                </lvc:PieChart.Series>
+            </lvc:PieChart>-->
+            </Grid>
+        </Grid>
+    </GroupBox>
+</UserControl>

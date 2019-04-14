@@ -1,0 +1,25 @@
+{
+	"FileVersion" : 2,
+	"Version" : 2,
+	"VersionName" : "2.0",
+	"FriendlyName" : "Brofiler",
+	"Description" : "Performance Profiler",
+	"Category" : "Performance",
+	"CreatedBy" : "Vadim Slyusarev",
+	"CreatedByURL" : "http://brofiler.com",
+	"DocsURL" : "",
+	"MarketplaceURL" : "",
+	"SupportURL" : "",
+	"EnabledByDefault" : false,
+	"CanContainContent" : false,
+	"IsBetaVersion" : false,
+	"Installed" : false,
+	"Modules" :
+	[
+		{
+			"Name" : "BrofilerPlugin",
+			"Type" : "Developer",
+			"LoadingPhase" : "Default"
+		}
+	]
+}

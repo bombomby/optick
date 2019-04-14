@@ -1,0 +1,94 @@
+﻿<UserControl x:Class="Profiler.Views.SummaryViewer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity" 
+             mc:Ignorable="d" 
+             Visibility="{Binding Visible}"
+             d:DesignWidth="300">
+
+    <Grid VerticalAlignment="Top">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid HorizontalAlignment="Stretch" Width="Auto">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Border Width="24" Height="24" >
+                <ContentControl Style="{StaticResource appbar_image_multiple}" Margin="-6" />
+            </Border>
+            <ComboBox Grid.Column="1" Margin="1" x:Name="AttachmentsComboBox"
+                      ItemsSource="{Binding Attachments}"
+                      SelectedItem="{Binding CurrentAttachment,Mode=TwoWay}"
+                      MinHeight="{StaticResource DefaultButtonSize}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <Border>
+                            <Label Content="{Binding Name}" Margin="0" FontWeight="Bold" Padding="0" />
+                        </Border>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+                <!--
+                <ComboBox.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter TargetName="Fore"
+                    </Style>
+                </ComboBox.Resources>-->
+            </ComboBox>
+            <StackPanel Grid.Column="2" Height="24" Orientation="Horizontal">
+                <Button  ToolTip="Open Current Attachment in Default App" Margin="1,0,0,0" Padding="-6" 
+                         HorizontalAlignment="Left" VerticalAlignment="Center"
+                          Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}"
+                    Command="{Binding ExportCurrentAttachmentCommand}">
+                    <ContentControl Style="{StaticResource appbar_app}" />
+                </Button>
+                <!--<Button   ToolTip="Save Current Attachment" Margin="1,0,0,0" Padding="-4" 
+                         HorizontalAlignment="Left" VerticalAlignment="Center"
+                          Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}"
+                    Command="{Binding SaveCurrentAttachmentCommand}">
+                    <ContentControl Style="{StaticResource appbar_save}"/>
+                </Button>-->
+                <Button  ToolTip="Save All Attachments" Margin="1,0,0,0" Padding="-6" 
+                         HorizontalAlignment="Left" VerticalAlignment="Center"
+                          Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}"
+                    Command="{Binding SaveAllAttachmentCommand}">
+                    <ContentControl Style="{StaticResource appbar_disk_download}"/>
+                </Button>
+            </StackPanel>
+
+        </Grid>
+        <Border Grid.Row="1" BorderThickness="1" BorderBrush="Black" 
+                x:Name="AttachmentContentBorder" Margin="0,1,0,1" Height="200">
+            <ContentControl Content="{Binding AttachmentContent}">
+                <ContentControl.Resources>
+                    <Style TargetType="{x:Type ContentControl}">
+                        <Setter Property="Cursor" Value="Arrow"/>
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding RelativeSource={RelativeSource Self}, Path=IsMouseOver}" Value="True"/>
+                                    <Condition Binding="{Binding Path=IsEnableOpenScreenShotView}" Value="True"/>
+
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Cursor" Value="Hand" />
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ContentControl.Resources>
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="MouseLeftButtonUp" >
+                        <i:InvokeCommandAction Command="{Binding OpenScreenShotViewCommand}" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </ContentControl>
+        </Border>
+
+    </Grid>
+</UserControl>

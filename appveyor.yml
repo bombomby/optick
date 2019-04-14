@@ -1,12 +1,21 @@
-version: 1.0.{build}
+version: 2.0.{build}
 
+platform:
+  - x64
+
+configuration:
+  - Debug
+  - Release
+
+matrix:
+  fast_finish: true
+
+before_build:
+  - nuget restore gui/OptickApp_vs2017.sln
+  
 build_script:
-- genie.exe vs2015 genie.lua
-- cd Brofiler
-- MsBuild Brofiler_vs2015.sln /t:Rebuild /p:Configuration=Release
-- cd ..
-- cd Build/vs2015
-- MsBuild Brofiler.sln /t:Rebuild /p:Configuration=Release
-
-test_script:
-- echo Brofiler test
+  - tools\Windows\premake5.exe vs2015
+  - cd build/vs2015
+  - MsBuild Optick.sln /t:Rebuild /p:Configuration=%CONFIGURATION%
+  - cd ../../gui
+  - MsBuild OptickApp_vs2017.sln /t:Rebuild /p:Configuration=%CONFIGURATION%

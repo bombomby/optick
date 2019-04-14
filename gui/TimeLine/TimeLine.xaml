@@ -1,0 +1,191 @@
+﻿<UserControl
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
+	xmlns:local="clr-namespace:Profiler"
+    xmlns:Controls="clr-namespace:Profiler.Controls"
+	xmlns:Profiler_Data="clr-namespace:Profiler.Data"
+	xmlns:System="clr-namespace:System;assembly=mscorlib"
+	mc:Ignorable="d"
+	x:Class="Profiler.TimeLine"
+	x:Name="TimeLineControl" d:DesignWidth="822" d:DesignHeight="500"
+	d:DataContext="{d:DesignInstance {x:Type Profiler_Data:TestFrameCollection}, IsDesignTimeCreatable=True}" >
+
+
+    <UserControl.Resources>
+        <Style x:Key="ButtonFocusVisual">
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Rectangle Margin="2" SnapsToDevicePixels="true" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <local:FrameHeightConverter x:Key="FrameHeightConverter"/>
+        <LinearGradientBrush x:Key="ButtonNormalBackground" EndPoint="0,1" StartPoint="0,0">
+            <GradientStop Color="#F3F3F3" Offset="0"/>
+            <GradientStop Color="#EBEBEB" Offset="0.5"/>
+            <GradientStop Color="#DDDDDD" Offset="0.5"/>
+            <GradientStop Color="#CDCDCD" Offset="1"/>
+        </LinearGradientBrush>
+        <SolidColorBrush x:Key="ButtonNormalBorder" Color="#FF707070"/>
+        <ItemsPanelTemplate x:Key="TimeLaneLayoutTemplate">
+            <VirtualizingStackPanel IsItemsHost="True" Orientation="Horizontal" VerticalAlignment="Bottom" VirtualizationMode="Recycling" />
+        </ItemsPanelTemplate>
+        <DataTemplate x:Key="TimeLineItemTemplate">
+            <Grid x:Name="rect" Height="180" Width="14" Margin="0,0,0,0" >
+                <local:TimeLineItem x:Name="timeLineItem" Height="{Binding Duration, Converter={StaticResource FrameHeightConverter}}" Width="Auto" VerticalAlignment="Bottom" Padding="0" Margin="0" />
+                <Label Content="{Binding Description, Mode=OneTime}" Width="Auto" Foreground="Black" VerticalAlignment="Bottom" HorizontalAlignment="Left" Height="Auto" FontSize="12" Padding="0" Margin="-1,0,0,3" SnapsToDevicePixels="True" FontWeight="Bold" Grid.ColumnSpan="2" >
+                    <Label.LayoutTransform>
+				    <TransformGroup>
+					    <ScaleTransform/>
+					    <SkewTransform/>
+					    <RotateTransform Angle="-90"/>
+					    <TranslateTransform/>
+				    </TransformGroup>
+			    </Label.LayoutTransform>
+                </Label>
+
+                <Label Content="{Binding FilteredDescription, Mode=OneWay}" Height="Auto" VerticalAlignment="Top" Width="Auto" FontFamily="Consolas" FontSize="12" Padding="0" Margin="-1,0,0,3" SnapsToDevicePixels="True" Grid.ColumnSpan="2" >
+                    <Label.LayoutTransform>
+                        <TransformGroup>
+                            <ScaleTransform/>
+                            <SkewTransform/>
+                            <RotateTransform Angle="-90"/>
+                            <TranslateTransform/>
+                        </TransformGroup>
+                    </Label.LayoutTransform>
+                </Label>
+            </Grid>
+            <DataTemplate.Triggers>
+                <!--<DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}, Mode=FindAncestor}}" Value="true">
+          <Setter TargetName="timeLineItem" Property="BorderThickness" Value="2" />
+        </DataTrigger>-->
+            </DataTemplate.Triggers>
+        </DataTemplate>
+        <Storyboard x:Key="OnLoaded1" RepeatBehavior="Forever">
+            <PointAnimationUsingKeyFrames Storyboard.TargetProperty="(TextElement.Background).(LinearGradientBrush.StartPoint)" Storyboard.TargetName="StatusText">
+                <EasingPointKeyFrame KeyTime="0:0:1" Value="-12,-3"/>
+            </PointAnimationUsingKeyFrames>
+            <PointAnimationUsingKeyFrames Storyboard.TargetProperty="(TextElement.Background).(LinearGradientBrush.EndPoint)" Storyboard.TargetName="StatusText">
+                <EasingPointKeyFrame KeyTime="0:0:1" Value="0,0"/>
+            </PointAnimationUsingKeyFrames>
+        </Storyboard>
+    </UserControl.Resources>
+    <UserControl.Triggers>
+        <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+            <BeginStoryboard Storyboard="{StaticResource OnLoaded1}"/>
+        </EventTrigger>
+    </UserControl.Triggers>
+
+    <!--<UserControl.DataContext>
+		<Profiler_Data:FrameCollection/>
+	</UserControl.DataContext>-->
+
+    <Grid x:Name="LayoutRoot" VerticalAlignment="Top">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <ListView Height="200" x:Name="frameList" BorderThickness="0" ItemsPanel="{DynamicResource TimeLaneLayoutTemplate}" ItemTemplate="{DynamicResource TimeLineItemTemplate}" ItemsSource="{Binding Mode=OneWay}" DataContext="{Binding Mode=OneWay}" SelectionChanged="frameList_SelectionChanged" Grid.Row="2" Margin="0,2,0,0" Padding="0" d:LayoutOverrides="Width" TextOptions.TextFormattingMode="Display" SelectedIndex="-1">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Margin" Value="0"/>
+                    <Setter Property="Padding" Value="0"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.Resources>
+                <Style TargetType="{x:Type ListView}">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ListView">
+                                <Grid Name="Border">
+                                    <ScrollViewer HorizontalScrollBarVisibility="Visible">
+                                        <Grid>
+                                            <StackPanel Orientation="Vertical" VerticalAlignment="Bottom">
+                                                <StackPanel.Resources>
+                                                    <Style TargetType="{x:Type Border}">
+                                                        <Setter Property="Width" Value="Auto" />
+                                                        <Setter Property="HorizontalAlignment" Value="Stretch" />
+                                                        <Setter Property="Background">
+                                                            <Setter.Value>
+                                                                <!--<LinearGradientBrush EndPoint="0,0" StartPoint="0,1">
+                                                                    <GradientStop Color="{StaticResource WhiteColor}" Offset="0"/>
+                                                                    <GradientStop Color="{StaticResource AlternativeColor}" Offset="1"/>
+                                                                </LinearGradientBrush>-->
+                                                                <SolidColorBrush Color="{StaticResource ContentBackColor}" />
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                        <Setter Property="BorderThickness" Value="0.5" />
+                                                        <!--<Setter Property="BorderBrush" Value="" />-->
+                                                        <Setter Property="Height">
+                                                            <Setter.Value>
+                                                                <Binding Converter="{StaticResource FrameHeightConverter}">
+                                                                    <Binding.Source>
+                                                                        <System:Double>16.666</System:Double>
+                                                                    </Binding.Source>
+                                                                </Binding>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Style>
+                                                    <Style TargetType="{x:Type TextBlock}">
+                                                        <Setter Property="FontWeight" Value="Bold" />
+                                                        <Setter Property="FontSize" Value="14" />
+                                                        <Setter Property="VerticalAlignment" Value="Top" />
+                                                        <Setter Property="HorizontalAlignment" Value="Right" />
+                                                        <Setter Property="Opacity" Value="0.25" />
+                                                        <Setter Property="Margin" Value="0,-3,4,0" />
+                                                    </Style>
+                                                </StackPanel.Resources>
+                                                <!--<Border>
+                                                    <TextBlock Text="100.0 ms"  />
+                                                </Border>
+                                                <Border>
+                                                    <TextBlock Text="83.3 ms"  />
+                                                </Border>-->
+                                                <Border>
+                                                    <TextBlock Text="66.6 ms"  />
+                                                </Border>
+                                                <Border>
+                                                    <TextBlock Text="50.0 ms"  />
+                                                </Border>
+                                                <Border>
+                                                    <TextBlock Text="33.3 ms"  />
+                                                </Border>
+                                                <Border>
+                                                    <TextBlock Text="16.6 ms" />
+                                                </Border>
+                                            </StackPanel>
+                                            <ItemsPresenter />
+                                        </Grid>
+                                    </ScrollViewer>
+                                </Grid>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ListView.Resources>
+        </ListView>
+        <!--<Line Grid.Row="2" VerticalAlignment="Stretch" Stroke="Red" StrokeDashArray="2 2" StrokeThickness="2" X1="{Binding Value, ElementName=FrameFilterSlider, Converter={StaticResource FrameHeightConverter}}" X2="{Binding Value, ElementName=FrameFilterSlider, Converter={StaticResource FrameHeightConverter}}" Y1="5" Y2="{Binding ActualHeight, ElementName=frameList}" />-->
+        <!--<Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="1*" />
+            </Grid.RowDefinitions>
+            <Label Content="{Binding Value, ElementName=FrameFilterSlider}" ContentStringFormat="{}{0:0.0}" FontWeight="Bold" />
+            <Slider Grid.Row="1" x:Name="FrameFilterSlider" Maximum="100" Minimum="0" TickFrequency="1" VerticalAlignment="Stretch" HorizontalAlignment="Center" ValueChanged="FrameFilterSlider_ValueChanged" Orientation="Vertical" />
+        </Grid>-->
+        <TextBlock x:Name="StatusText" TextWrapping="Wrap" Text="Capturing Frame 34" FontSize="20" TextAlignment="Center" Margin="0,2,0,0" Grid.Row="1" FontStyle="Italic" TextDecorations="{x:Null}" TextOptions.TextHintingMode="Animated" FontWeight="SemiBold" Foreground="Black" Visibility="Collapsed">
+            <TextBlock.Background>
+                <LinearGradientBrush EndPoint="12,3" StartPoint="0,0" MappingMode="Absolute" SpreadMethod="Repeat" Opacity="0.405">
+                    <GradientStop Color="#FFFEAE31" Offset="0.487"/>
+                    <GradientStop Color="#FFFF9800" Offset="0.526"/>
+                </LinearGradientBrush>
+            </TextBlock.Background>
+        </TextBlock>
+    </Grid>
+</UserControl>

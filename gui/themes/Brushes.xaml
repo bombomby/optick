@@ -1,0 +1,19 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:options="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
+                    >
+    <Color x:Key="OptickBorderColor">#FF888888</Color>
+    <!--<Color x:Key="OptickBorderColor">Red</Color>-->
+ 
+    <SolidColorBrush x:Key="OptickBorder" Color="{StaticResource OptickBorderColor}" />
+    <SolidColorBrush x:Key="OptickForeground" Color="{StaticResource BlackColor}" options:Freeze="True" />
+    <SolidColorBrush x:Key="OptickBackground" Color="{StaticResource WhiteColor}" options:Freeze="True" />
+    <SolidColorBrush x:Key="OptickContentBackground" Color="{StaticResource ContentBackColor}" options:Freeze="True" />
+    <SolidColorBrush x:Key="OptickAlternative" Color="{StaticResource AlternativeColor}" options:Freeze="True" />
+    <SolidColorBrush x:Key="OptickFrameSelection" Color="Red" options:Freeze="True"/>
+    <SolidColorBrush x:Key="OptickFrameHover" Color="Black" options:Freeze="True"/>
+
+    <SolidColorBrush x:Key="WindowTitleColorBrush" Color="{StaticResource ContentBackColor}" options:Freeze="True"/>
+    <SolidColorBrush x:Key="CheckBoxBrush" Color="{StaticResource OptickBorderColor}" options:Freeze="True" />
+    <SolidColorBrush x:Key="TextBoxBorderBrush" Color="{StaticResource OptickBorderColor}" options:Freeze="True" />
+</ResourceDictionary>

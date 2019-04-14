@@ -1,0 +1,91 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Style x:Key="OptickWindow" TargetType="{x:Type Window}">
+            <Setter Property="WindowStyle" Value="None" />
+            <Setter Property="AllowsTransparency" Value="true" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="ResizeMode" Value="CanResizeWithGrip" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Window}">
+                    <Border x:Name="PART_Container" Padding="7,7,7,5">
+                        <Grid TextOptions.TextRenderingMode="ClearType" TextOptions.TextFormattingMode="Display">
+                                <Border x:Name="PART_ShadowBorder" 
+                                        Background="#EFEFF2"
+                                        BorderBrush="{StaticResource OptickAccent}"
+                                        BorderThickness="0.5"
+                                        Padding="0" />
+                                <Border x:Name="PART_Border" BorderThickness="0.5" Background="#EFEFF2">
+                                <AdornerDecorator>
+                                    <DockPanel HorizontalAlignment="Stretch" Background="Transparent" VerticalAlignment="Stretch" >
+                                        <Border x:Name="TitleBar" DockPanel.Dock="Top" Background="{StaticResource OptickBackground}" BorderThickness="0">
+                                            <Grid Height="32">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="36"/>
+                                                    <ColumnDefinition />
+                                                    <ColumnDefinition Width="34"/>
+                                                    <ColumnDefinition Width="34"/>
+                                                    <ColumnDefinition Width="34"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Image
+                                                    x:Name="Icon"
+                                                    Grid.Column="0"
+                                                    Source="{Binding Path=Icon, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" 
+                                                    HorizontalAlignment="Right"
+                                                    Width="32"
+                                                    Height="32"
+                                                />
+                                                <TextBlock
+                                                    x:Name="Caption"
+                                                    Grid.Column="1"
+                                                    HorizontalAlignment="Left"
+                                                    VerticalAlignment="Center"
+                                                    Margin="4,0,0,0"
+                                                    FontFamily="Segoe UI"
+                                                    FontSize="12"
+                                                    Opacity="0.66"
+                                                    Text="{Binding Path=Title, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                />
+                                                <Button Grid.Column="2" >
+                                                    <Viewbox Child="{StaticResource appbar_minus}" Margin="0,4,0,-4" />
+                                                </Button>
+                                                <Button Grid.Column="3" >
+                                                    <Viewbox Child="{StaticResource appbar_window_maximize}" />
+                                                </Button>
+                                                <Button Grid.Column="4" >
+                                                    <Viewbox Child="{StaticResource appbar_close}" />
+                                                </Button>
+                                            </Grid>
+                                        </Border>
+                                        <ContentPresenter />
+                                    </DockPanel>
+                                </AdornerDecorator>
+                            </Border>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="WindowState" Value="Maximized">
+                                <Setter TargetName="PART_Container" Property="Padding" Value="5,5,2,2"/>
+                            </Trigger>
+                            <Trigger Property="WindowState" Value="Normal">
+                                <Setter TargetName="PART_Container" Property="Padding" Value="7,7,7,5"/>
+                                <Setter TargetName="PART_ShadowBorder" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect
+                                        Color="{StaticResource OptickAccentColor}"
+                                        Opacity="0.75"
+                                        BlurRadius="7"
+                                        ShadowDepth="2"
+                                        Direction="315"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsActive" Value="False">
+                                <Setter TargetName="PART_ShadowBorder" Property="BorderBrush" Value="{StaticResource OptickBorderInactive}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+</ResourceDictionary>

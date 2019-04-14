@@ -1,0 +1,705 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{97F462A6-7E81-4AD1-AE48-602F79F70169}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Profiler</RootNamespace>
+    <AssemblyName>Optick</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <ApplicationIcon>Resources\icon.ico</ApplicationIcon>
+    <Utf8Output>true</Utf8Output>
+    <ExpressionBlendVersion>4.0.20525.0</ExpressionBlendVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.1.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\Bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;NDA_CODE_SECTION</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>1668</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\Bin\Release\</OutputPath>
+    <DefineConstants>TRACE;NDA_CODE_SECTION</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <NoWarn>1668</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\Bin\Debug\x64\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;NDA_CODE_SECTION</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <NoWarn>1668</NoWarn>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>..\Bin\Release\x64\</OutputPath>
+    <DefineConstants>TRACE;NDA_CODE_SECTION</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\Bin\Debug\Win32\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;NDA_CODE_SECTION</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>1668</NoWarn>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>..\Bin\Release\Win32\</OutputPath>
+    <DefineConstants>TRACE;NDA_CODE_SECTION</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>1668</NoWarn>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NoWin32Manifest>true</NoWin32Manifest>
+  </PropertyGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <ItemGroup>
+    <Reference Include="Autofac, Version=4.8.1.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>packages\Autofac.4.8.1\lib\net45\Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="ControlzEx, Version=3.0.2.4, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\ControlzEx.3.0.2.4\lib\net45\ControlzEx.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis, Version=1.37.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>packages\Google.Apis.1.37.0\lib\net45\Google.Apis.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Auth, Version=1.37.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>packages\Google.Apis.Auth.1.37.0\lib\net45\Google.Apis.Auth.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Auth.PlatformServices, Version=1.37.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>packages\Google.Apis.Auth.1.37.0\lib\net45\Google.Apis.Auth.PlatformServices.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Core, Version=1.37.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>packages\Google.Apis.Core.1.37.0\lib\net45\Google.Apis.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.Drive.v3, Version=1.37.0.1470, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>packages\Google.Apis.Drive.v3.1.37.0.1470\lib\net45\Google.Apis.Drive.v3.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Apis.PlatformServices, Version=1.37.0.0, Culture=neutral, PublicKeyToken=4b01fa6e34db77ab, processorArchitecture=MSIL">
+      <HintPath>packages\Google.Apis.1.37.0\lib\net45\Google.Apis.PlatformServices.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.AvalonEdit, Version=5.0.1.0, Culture=neutral, PublicKeyToken=9cc39be672370310, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>AutoEmbedLibs\ICSharpCode.AvalonEdit.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="LiveCharts, Version=0.9.7.0, Culture=neutral, PublicKeyToken=0bc1f845d1ebb8df, processorArchitecture=MSIL">
+      <HintPath>packages\LiveCharts.0.9.7\lib\net45\LiveCharts.dll</HintPath>
+    </Reference>
+    <Reference Include="LiveCharts.Wpf, Version=0.9.7.0, Culture=neutral, PublicKeyToken=0bc1f845d1ebb8df, processorArchitecture=MSIL">
+      <HintPath>packages\LiveCharts.Wpf.0.9.7\lib\net45\LiveCharts.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="MahApps.Metro, Version=1.6.5.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\MahApps.Metro.1.6.5\lib\net46\MahApps.Metro.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationFramework.Aero" />
+    <Reference Include="SharpDX">
+      <HintPath>AutoEmbedLibs\SharpDX.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.D3DCompiler">
+      <HintPath>AutoEmbedLibs\SharpDX.D3DCompiler.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Direct2D1">
+      <HintPath>AutoEmbedLibs\SharpDX.Direct2D1.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Direct3D11">
+      <HintPath>AutoEmbedLibs\SharpDX.Direct3D11.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.DXGI">
+      <HintPath>AutoEmbedLibs\SharpDX.DXGI.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Windows" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\ControlzEx.3.0.2.4\lib\net45\System.Windows.Interactivity.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Xaml">
+      <RequiredTargetFramework>4.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="UIAutomationTypes" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="WindowsFormsIntegration" />
+    <Reference Include="Xceed.Wpf.AvalonDock, Version=3.5.2.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <HintPath>packages\Dirkster.AvalonDock.Themes.VS2013.3.5.0.2\lib\net4\Xceed.Wpf.AvalonDock.dll</HintPath>
+    </Reference>
+    <Reference Include="Xceed.Wpf.AvalonDock.Themes.VS2013, Version=1.0.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Dirkster.AvalonDock.Themes.VS2013.3.5.0.2\lib\net4\Xceed.Wpf.AvalonDock.Themes.VS2013.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <Compile Include="AppBootStrapper.cs" />
+    <Compile Include="AutoEmbedLibs\EmbeddedAssembly.cs" />
+    <Compile Include="ColorToBrushConverter.cs" />
+    <Compile Include="Controls\AttachmentViewControl.xaml.cs">
+      <DependentUpon>AttachmentViewControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\ControlUtils.cs" />
+    <Compile Include="Controls\EditStorageListDialog.xaml.cs">
+      <DependentUpon>EditStorageListDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\EditTaskTrackerListDialog.xaml.cs">
+      <DependentUpon>EditTaskTrackerListDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Data\CaptureSettings.cs" />
+    <Compile Include="Data\Mode.cs" />
+    <Compile Include="InfrastructureMvvm\BoolToVisibilityConverter.cs" />
+    <Compile Include="InfrastructureMvvm\BootStrapperBase.cs" />
+    <Compile Include="InfrastructureMvvm\DialogManager.cs" />
+    <Compile Include="InfrastructureMvvm\DialogViewModel.cs" />
+    <Compile Include="InfrastructureMvvm\IDialogManager.cs" />
+    <Compile Include="InfrastructureMvvm\IDialogViewModel.cs" />
+    <Compile Include="Controls\CaptureStats.xaml.cs">
+      <DependentUpon>CaptureStats.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\CaptureThumbnail.xaml.cs">
+      <DependentUpon>CaptureThumbnail.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Converters.cs" />
+    <Compile Include="Controls\FileHistory.xaml.cs">
+      <DependentUpon>FileHistory.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\FrameCapture.xaml.cs">
+      <DependentUpon>FrameCapture.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\FunctionHistory.xaml.cs">
+      <DependentUpon>FunctionHistory.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\FunctionSearch.xaml.cs">
+      <DependentUpon>FunctionSearch.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\HamburgerMenuContentItem.cs" />
+    <Compile Include="InfrastructureMvvm\IOnClosingHandler.cs" />
+    <Compile Include="InfrastructureMvvm\IOnLoadedHandler.cs" />
+    <Compile Include="InfrastructureMvvm\RelayCommand.cs" />
+    <Compile Include="InfrastructureMvvm\RelayCommandAsync.cs" />
+    <Compile Include="InfrastructureMvvm\RelayCommandGeneric.cs" />
+    <Compile Include="Controls\RoutedEvents.cs" />
+    <Compile Include="Controls\SettingsControl.xaml.cs">
+      <DependentUpon>SettingsControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\SharedSettings.cs" />
+    <Compile Include="Controls\TagsControl.xaml.cs">
+      <DependentUpon>TagsControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="InfrastructureMvvm\IUiExecution.cs" />
+    <Compile Include="InfrastructureMvvm\IWindowManager.cs" />
+    <Compile Include="InfrastructureMvvm\RelayCommandGenericAsync.cs" />
+    <Compile Include="InfrastructureMvvm\ViewLocator.cs" />
+    <Compile Include="InfrastructureMvvm\ViewModelPresenter.cs" />
+    <Compile Include="InfrastructureMvvm\WindowManager.cs" />
+    <Compile Include="InfrastructureMvvm\BaseViewModel.cs" />
+    <Compile Include="ThreadView\EventThreadView.xaml.cs">
+      <DependentUpon>EventThreadView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ThreadView\SamplingThreadView.xaml.cs">
+      <DependentUpon>SamplingThreadView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ThreadView\ThreadNameView.xaml.cs">
+      <DependentUpon>ThreadNameView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModels\AddressBarViewModel.cs" />
+    <Compile Include="ViewModels\CaptureSettingsViewModel.cs" />
+    <Compile Include="ViewModels\FunctionSummaryViewModel.cs" />
+    <Compile Include="ViewModels\MainViewModel.cs" />
+    <Compile Include="ViewModels\MemoryStatsViewModel.cs" />
+    <Compile Include="ViewModels\ScreenShotViewModel.cs" />
+    <Compile Include="ViewModels\SummaryViewerModel.cs" />
+    <Compile Include="InfrastructureMvvm\ViewModelLocator.cs" />
+    <Compile Include="ViewModels\TaskTrackerViewModel.cs" />
+    <Compile Include="ViewModels\ThreadFilterViewModel.cs" />
+    <Compile Include="Views\AddressBarView.xaml.cs">
+      <DependentUpon>AddressBarView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CaptureSettingsView.xaml.cs">
+      <DependentUpon>CaptureSettingsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FunctionHistoryView.xaml.cs">
+      <DependentUpon>FunctionHistoryView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FunctionInstanceView.xaml.cs">
+      <DependentUpon>FunctionInstanceView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FunctionSummaryView.xaml.cs">
+      <DependentUpon>FunctionSummaryView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ScreenShotView.xaml.cs">
+      <DependentUpon>ScreenShotView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SummaryViewer.xaml.cs">
+      <DependentUpon>SummaryViewer.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Data\Callstack.cs" />
+    <Compile Include="Data\Capture.cs" />
+    <Compile Include="Data\Durationable.cs" />
+    <Compile Include="Data\EventBoard.cs" />
+    <Compile Include="Data\EventData.cs" />
+    <Compile Include="Data\EventFrame.cs" />
+    <Compile Include="Data\Frame.cs" />
+    <Compile Include="Data\FunctionStats.cs" />
+    <Compile Include="Data\SamplingFrame.cs" />
+    <Compile Include="Controls\Settings.cs" />
+    <Compile Include="Data\SourceView.cs" />
+    <Compile Include="Data\Summary.cs" />
+    <Compile Include="Data\Synchronization.cs" />
+    <Compile Include="Data\SysCall.cs" />
+    <Compile Include="Data\Tag.cs" />
+    <Compile Include="Data\Utils.cs" />
+    <Compile Include="DirectX\ComplexDynamicMesh.cs" />
+    <Compile Include="DirectX\DirectXCanvas.xaml.cs">
+      <DependentUpon>DirectXCanvas.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="DirectX\DynamicBuffer.cs" />
+    <Compile Include="DirectX\Fragment.cs" />
+    <Compile Include="DirectX\Mesh.cs" />
+    <Compile Include="DirectX\DynamicMesh.cs" />
+    <Compile Include="DirectX\RenderSettings.cs" />
+    <Compile Include="DirectX\ScrollableWinFormsHost.cs" />
+    <Compile Include="DirectX\TextManager.cs" />
+    <Compile Include="DirectX\TextureLoader.cs" />
+    <Compile Include="DirectX\Utils.cs" />
+    <Compile Include="InfrastructureMvvm\FileDialogService.cs" />
+    <Compile Include="InfrastructureMvvm\IFileDialogService.cs" />
+    <Compile Include="SettingsWindow.xaml.cs">
+      <DependentUpon>SettingsWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="TaskManager\AttachmentStorage.cs" />
+    <Compile Include="TaskManager\TaskTracker.cs" />
+    <Compile Include="ThreadView\ChartRow.cs" />
+    <Compile Include="ThreadView\EventsThreadRow.cs" />
+    <Compile Include="Frames\FrameDataTable.xaml.cs">
+      <DependentUpon>FrameDataTable.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Frames\SourceViewControl.xaml.cs">
+      <DependentUpon>SourceViewControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Platform\Platform.cs" />
+    <Compile Include="ProfilerClient.cs" />
+    <Compile Include="Data\EventTree.cs" />
+    <Compile Include="Data\FrameCollection.cs" />
+    <Compile Include="Message\Message.cs" />
+    <Compile Include="Frames\FrameInfo.xaml.cs">
+      <DependentUpon>FrameInfo.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SearchBox.xaml.cs">
+      <DependentUpon>SearchBox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="SourceWindow.xaml.cs">
+      <DependentUpon>SourceWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ThreadView\ThreadRow.cs" />
+    <Compile Include="ThreadView\ThreadView.xaml.cs">
+      <DependentUpon>ThreadView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="TimeLine\TimeLine.xaml.cs">
+      <DependentUpon>TimeLine.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="TimeLine\TimeLineItem.xaml.cs">
+      <DependentUpon>TimeLineItem.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\TaskTrackerView.xaml.cs">
+      <DependentUpon>TaskTrackerView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ThreadFilterView.xaml.cs">
+      <DependentUpon>ThreadFilterView.xaml</DependentUpon>
+    </Compile>
+    <Page Include="Controls\AttachmentViewControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\CaptureStats.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\CaptureThumbnail.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\EditStorageListDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\EditTaskTrackerListDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\FileHistory.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\FrameCapture.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\FunctionHistory.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\FunctionSearch.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\SettingsControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\TagsControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ThreadView\EventThreadView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ThreadView\SamplingThreadView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ThreadView\ThreadNameView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\AddressBarView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\CaptureSettingsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FunctionHistoryView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FunctionInstanceView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FunctionSummaryView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ScreenShotView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SummaryViewer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DirectX\DirectXCanvas.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Frames\FrameDataTable.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Frames\FrameInfo.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Frames\SourceViewControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\MainView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Data\EventDescription.cs" />
+    <Compile Include="Views\MainView.xaml.cs">
+      <DependentUpon>MainView.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Page Include="Properties\DesignTimeResources.xaml" Condition="'$(DesignTime)'=='true' OR ('$(SolutionPath)'!='' AND Exists('$(SolutionPath)') AND '$(BuildingInsideVisualStudio)'!='true' AND '$(BuildingInsideExpressionBlend)'!='true')">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+      <ContainsDesignTimeResources>true</ContainsDesignTimeResources>
+    </Page>
+    <Page Include="SearchBox.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SettingsWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SourceWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\TaskTrackerView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\ThreadFilterView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Resource Include="themes\Brushes.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Resource>
+    <Resource Include="themes\Controls.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Resource>
+    <Resource Include="themes\Icons.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Resource>
+    <Resource Include="themes\BaseDark.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Resource>
+    <Resource Include="themes\Steel.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Resource>
+    <Page Include="themes\Window.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ThreadView\ThreadView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="TimeLine\TimeLine.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="TimeLine\TimeLineItem.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_16_Normal.fnt" />
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_20_Normal.fnt" />
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_24_Normal.fnt" />
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_32_Normal.fnt" />
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_28_Normal.fnt" />
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <AppDesigner Include="Properties\" />
+    <EmbeddedResource Include="TaskManager\brofiler-github-07994fd14248.p12" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="TimeLine\Icons\ClearSampling-icon.png" />
+    <Resource Include="TimeLine\Icons\Filter-icon.png" />
+    <Resource Include="TimeLine\Icons\Pause-icon.png" />
+    <Resource Include="TimeLine\Icons\Percent-icon.png" />
+    <Resource Include="TimeLine\Icons\Play-icon.png" />
+    <Resource Include="TimeLine\Icons\Save-icon.png" />
+    <Resource Include="TimeLine\Icons\Source-icon.png" />
+    <Resource Include="TimeLine\Icons\Stop-icon.png" />
+    <Resource Include="TimeLine\Icons\Timer-icon.png" />
+    <Resource Include="TimeLine\Icons\Trash2-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4 Client Profile %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="TimeLine\Icons\Stop-icon.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="TimeLine\Icons\Hook-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="TimeLine\Icons\Warning-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="AutoEmbedLibs\ICSharpCode.AvalonEdit.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="TimeLine\Icons\Eye-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="TimeLine\Icons\Glasses-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="TimeLine\Icons\CallStack-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="TimeLine\Icons\Search-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="TimeLine\Icons\Clear-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="DirectX\Basic.fx" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="DirectX\Text.fx" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_16_Normal_0.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="AutoEmbedLibs\SharpDX.D3DCompiler.dll" />
+    <EmbeddedResource Include="AutoEmbedLibs\SharpDX.Direct2D1.dll" />
+    <EmbeddedResource Include="AutoEmbedLibs\SharpDX.Direct3D11.dll" />
+    <EmbeddedResource Include="AutoEmbedLibs\SharpDX.dll" />
+    <EmbeddedResource Include="AutoEmbedLibs\SharpDX.DXGI.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_20_Normal_0.png" />
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_24_Normal_0.png" />
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_32_Normal_0.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_28_Normal_0.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="AutoEmbedLibs\System.Windows.Interactivity.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="D3DCompiler_43.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Resource Include="Resources\Bug.ico" />
+  </ItemGroup>
+  <ItemGroup />
+</Project>

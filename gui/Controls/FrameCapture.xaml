@@ -1,0 +1,221 @@
+﻿<UserControl x:Class="Profiler.Controls.FrameCapture"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:xcad="http://schemas.xceed.com/wpf/xaml/avalondock"
+             xmlns:Profiler="clr-namespace:Profiler"
+             xmlns:Controls="clr-namespace:Profiler.Controls"
+             xmlns:ControlsViewModel="clr-namespace:Profiler.ViewModels"
+             xmlns:ControlsView="clr-namespace:Profiler.Views"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             mc:Ignorable="d" 
+             d:DesignHeight="900" d:DesignWidth="1400"
+             MinHeight="400">
+    
+    <UserControl.Resources>
+        <Profiler:MultiplyConverter x:Key="MultiplyConverter"/>
+        <Profiler:SubtractConverter x:Key="SubtractConverter"/>
+        <sys:Double x:Key="ThreadViewHeightRatio">0.5</sys:Double>
+         <DataTemplate DataType="{x:Type ControlsViewModel:SummaryViewerModel}">
+            <ControlsView:SummaryViewer />
+        </DataTemplate>
+        <ControlsViewModel:FunctionSummaryViewModel x:Key="FunctionSummaryVM" Origin="MainThread" Title="Per Frame Statistics" AreaOpacity="0.5" />
+        <ControlsViewModel:FunctionInstanceViewModel x:Key="FunctionInstanceVM" Origin="IndividualCalls" Title="Per Call Statistics" />
+        <ControlsViewModel:AddressBarViewModel x:Key="AddressBarVM" />
+        <ControlsViewModel:CaptureSettingsViewModel x:Key="CaptureSettingsVM" />
+    </UserControl.Resources>
+
+    <UserControl.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.Find" Executed="OnSearchCommandExecuted" />
+        <CommandBinding Command="ApplicationCommands.Open" Executed="OnOpenCommandExecuted" />
+        <CommandBinding Command="ApplicationCommands.Save" Executed="OnSaveCommandExecuted" />
+        <CommandBinding Command="ApplicationCommands.Print" Executed="OnShowDebugInfoCommandExecuted" />
+    </UserControl.CommandBindings>
+    <UserControl.InputBindings>
+        <KeyBinding Modifiers="Ctrl" Key="M" Command="{Binding ShowDebugCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" />
+    </UserControl.InputBindings>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="227"/>
+            <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid>
+                <StackPanel Orientation="Horizontal" Margin="2,2,0,-2" Grid.ColumnSpan="2" HorizontalAlignment="Left" VerticalAlignment="Top">
+                    <ToggleButton x:Name="StartButton" IsChecked="{Binding IsCapturing, Mode=TwoWay}" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" Unchecked="StartButton_Unchecked" Checked="StartButton_Checked" ToolTip="Start Profiling Session" Padding="-6">
+                        <ToggleButton.Resources>
+                            <Style TargetType="ToggleButton" BasedOn="{StaticResource SquareButtonStyle}">
+                                <Setter Property="BorderThickness" Value="1" />
+                                <Setter Property="BorderBrush" Value="{StaticResource OptickBorder}" />
+                                <Setter Property="MinHeight" Value="16" />
+                                <Style.Triggers>
+                                    <Trigger Property="IsChecked" Value="True">
+                                        <Setter Property="BorderBrush" Value="{StaticResource AccentBaseColorBrush}" />
+                                        <Setter Property="Background" Value="{StaticResource OptickAlternative}" />
+                                        <Setter Property="ContentTemplate">
+                                            <Setter.Value>
+                                                <DataTemplate>
+                                                    <DataTemplate.Resources>
+                                                        <SolidColorBrush x:Key="IconsColor">Red</SolidColorBrush>
+                                                    </DataTemplate.Resources>
+                                                    <ContentControl Style="{DynamicResource appbar_control_stop}" />
+                                                </DataTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ToggleButton.Resources>
+                        <ContentControl Style="{DynamicResource appbar_control_play}" />
+                    </ToggleButton>
+                    <ToggleButton x:Name="SettingsButton" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Open Capture Settings" Margin="1,0,0,0" Padding="-4">
+                        <ContentControl Style="{StaticResource appbar_settings}" />
+                    </ToggleButton>
+                    <Button x:Name="OpenButton" Command="ApplicationCommands.Open" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Open Saved Session" Margin="1,0,0,0" Padding="-6">
+                        <ContentControl Style="{StaticResource appbar_folder_open}" />
+                    </Button>
+                    <Button x:Name="SaveButton" Command="ApplicationCommands.Save" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Save Active Session" Margin="1,0,0,0" Padding="-6">
+                        <ContentControl Style="{StaticResource appbar_save}" />
+                    </Button>
+                    <Button x:Name="ClearButton" Click="ClearButton_Click" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Clear Active Session" Margin="1,0,0,0" Padding="-6">
+                        <ContentControl Style="{StaticResource appbar_delete}" />
+                    </Button>
+                    <ControlsView:AddressBarView DataContext="{StaticResource AddressBarVM}"
+                                    x:Name="PlatformCombo" Margin="4,0,0,0" VerticalAlignment="Center"
+                                    Height="{StaticResource DefaultButtonSize}"/>
+                    <StackPanel x:Name="warningBlock"  Orientation="Horizontal">
+                        <Image x:Name="warningIcon" Source="/Optick;component/TimeLine/Icons/Warning-icon.png" Margin="5,0,0,0" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" />
+                        <TextBlock VerticalAlignment="Center" TextTrimming="WordEllipsis" Width="Auto"><Hyperlink x:Name="warningUrl" RequestNavigate="Hyperlink_RequestNavigate"><Run x:Name="warningText" Text="ClickMe"/></Hyperlink></TextBlock>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+            <Border Grid.Row="1">
+                <Profiler:TimeLine Margin="1" x:Name="timeLine" />
+            </Border>
+            <Border Grid.RowSpan="2"  Grid.Column="1" 
+                    DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type UserControl}}}">
+                <ContentControl   Content="{Binding SummaryVM}" Margin="1"/> 
+            </Border>
+        </Grid>
+        <Grid Grid.Row="1" x:Name="BottomGrid">
+            <Grid.Resources>
+                <SolidColorBrush x:Key="TabBackground">Red</SolidColorBrush>
+            </Grid.Resources>
+            <xcad:DockingManager AllowMixedOrientation="True" BorderBrush="Black" BorderThickness="1">
+                <xcad:DockingManager.Theme>
+                    <xcad:Vs2013DarkTheme />
+                </xcad:DockingManager.Theme>
+                <xcad:DockingManager.DocumentHeaderTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{Binding IconSource}" Margin="0,0,4,0"/>
+                            <TextBlock Text="{Binding Title}" />
+                        </StackPanel>
+                    </DataTemplate>
+                </xcad:DockingManager.DocumentHeaderTemplate>
+                <xcad:LayoutRoot x:Name="_layoutRoot">
+                    <xcad:LayoutPanel Orientation="Vertical">
+                        <xcad:LayoutAnchorablePaneGroup DockHeight="2*">
+                            <xcad:LayoutAnchorablePane x:Name="LayoutDocumentPane">
+                                <xcad:LayoutAnchorable ContentId="document1" Title="Threads">
+                                    <Profiler:EventThreadView x:Name="EventThreadViewControl" MinHeight="1" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" />
+                                </xcad:LayoutAnchorable>
+                            </xcad:LayoutAnchorablePane>
+                        </xcad:LayoutAnchorablePaneGroup>
+                        <xcad:LayoutPanel Orientation="Horizontal" DockHeight="1*">
+                            <xcad:LayoutAnchorablePaneGroup DockWidth="1*">
+                                <xcad:LayoutAnchorablePane>
+                                    <!--<xcad:LayoutAnchorable ContentId="temp" Title="Temp" CanHide="False" CanClose="False" AutoHideWidth="240">
+                                        <Grid x:Name="CaptureSettings" >
+                                            <Border BorderThickness="1" BorderBrush="Black" Background="{StaticResource OptickBackground}">
+                                                <ControlsView:CaptureSettingsView DataContext="{StaticResource CaptureSettingsVM}" />
+                                            </Border>
+                                        </Grid>
+                                    </xcad:LayoutAnchorable>-->
+                                    <xcad:LayoutAnchorable ContentId="function_list" Title="Function Statistics (Frame)" CanClose="False">
+                                        <ControlsView:FunctionHistoryView x:Name="FunctionHistoryControl" DataContext="{StaticResource FunctionSummaryVM}" />
+                                    </xcad:LayoutAnchorable>
+                                    <xcad:LayoutAnchorable ContentId="properties" Title="Properties" CanHide="False" CanClose="False" AutoHideWidth="240">
+                                        <ControlsView:FunctionSummaryView x:Name="FunctionSummaryControl" DataContext="{StaticResource FunctionSummaryVM}" />
+                                    </xcad:LayoutAnchorable>
+                                </xcad:LayoutAnchorablePane>
+                            </xcad:LayoutAnchorablePaneGroup>
+                            <xcad:LayoutAnchorablePaneGroup DockWidth="5*">
+                                <xcad:LayoutAnchorablePane>
+                                    <xcad:LayoutAnchorable ContentId="function_tree" Title="Function Tree" CanClose="False">
+                                        <Profiler:FrameInfo x:Name="FrameInfoControl" />
+                                    </xcad:LayoutAnchorable>
+                                    <xcad:LayoutAnchorable ContentId="sampling_tree" Title="Function Callstacks" CanClose="False">
+                                        <Profiler:SampleInfo x:Name="SampleInfoControl" CallstackType="AutoSample" />
+                                    </xcad:LayoutAnchorable>
+                                    <xcad:LayoutAnchorable ContentId="syscalls_tree" Title="Function SysCalls" CanClose="False">
+                                        <Profiler:SampleInfo x:Name="SysCallInfoControl" CallstackType="SysCall" />
+                                    </xcad:LayoutAnchorable>
+                                    <xcad:LayoutAnchorable ContentId="instance_list" Title="Function Statistics (Call)" CanClose="False">
+                                        <ControlsView:FunctionInstanceView x:Name="InstanceHistoryControl" DataContext="{StaticResource FunctionInstanceVM}" Margin="0,0,1,0" />
+                                    </xcad:LayoutAnchorable>
+                                    <xcad:LayoutAnchorable ContentId="sampling_tree_sharpdx" Title="Function Callstacks" CanClose="False">
+                                        <Profiler:SamplingThreadView x:Name="SamplingTreeControl" />
+                                    </xcad:LayoutAnchorable>
+                                </xcad:LayoutAnchorablePane>
+                            </xcad:LayoutAnchorablePaneGroup>
+                        </xcad:LayoutPanel>
+                    </xcad:LayoutPanel>
+                </xcad:LayoutRoot>
+            </xcad:DockingManager>
+
+
+
+            <!--<Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="1*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+            <Expander Header="Thread Timeline (Block Info = Ctrl + LMB)" Margin="0" VerticalContentAlignment="Stretch" UseLayoutRounding="False" IsExpanded="True" MahApps:ButtonHelper.PreserveTextCase="True">
+                <Grid>
+                    <Profiler:ThreadView x:Name="ThreadView" MinHeight="1" Height="Auto" Margin="-4,-2,-4,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" />
+                </Grid>
+            </Expander>
+
+            <Grid Grid.Row="1">
+                <Controls:FunctionPanel x:Name="FunctionPanelControl" />
+            </Grid>-->
+
+       
+            <!--<local:FrameInfo x:Name="FrameInfoControl" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />-->
+            <!--<Expander Grid.Column="1" Header="Function Statistics" x:Name="SidePanelExpander" Grid.RowSpan="2" Margin="2,0,0,0" IsExpanded="True" MahApps:ButtonHelper.PreserveTextCase="True" ExpandDirection="Down" HorizontalAlignment="Stretch">
+                <Controls:FunctionHistory x:Name="FunctionHistoryControl" Margin="-1,-2,-2,-2"/>
+            </Expander>
+            <GridSplitter ResizeDirection="Columns" Width="4" Grid.Column="1" HorizontalAlignment="Left" Grid.RowSpan="2"/>-->
+        </Grid>
+
+        <Popup IsOpen="False" Placement="Center" Width="800" Height="600" x:Name="DebugInfoPopup" StaysOpen="False">
+            <Border BorderThickness="1" BorderBrush="{StaticResource OptickBorder}">
+                <StackPanel Orientation="Vertical">
+                    <StackPanel Orientation="Horizontal">
+                        <Label VerticalAlignment="Center" Content="Total Memory: " />
+                        <Label VerticalAlignment="Center" Content="{Binding TotalMemory, StringFormat={}{0:### ### ### ###}}" />
+                    </StackPanel>
+                    <DataGrid ItemsSource="{Binding Stats}" />
+                </StackPanel>
+            </Border>
+        </Popup>
+
+        <Popup Width="Auto" Height="Auto" Placement="Bottom" PlacementTarget="{Binding ElementName=SettingsButton}" IsOpen="{Binding IsChecked, ElementName=SettingsButton}">
+            <Border BorderThickness="1" BorderBrush="Black" Background="{StaticResource OptickBackground}">
+                <ControlsView:CaptureSettingsView DataContext="{StaticResource CaptureSettingsVM}" />
+            </Border>
+        </Popup>
+    </Grid>
+</UserControl>

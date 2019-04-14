@@ -1,0 +1,22 @@
+﻿<Controls:MetroWindow
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+	xmlns:local="clr-namespace:Profiler"
+	x:Class="Profiler.SourceWindow"
+	x:Name="Window"
+	Title="{Binding Description}"
+	Width="1400" Height="700" KeyDown="Window_KeyDown"
+    TitleCaps="False"
+    TitlebarHeight="28"
+    IconBitmapScalingMode="HighQuality"
+    BorderBrush="{DynamicResource AccentColorBrush}"
+    GlowBrush="{DynamicResource AccentColorBrush}"
+    BorderThickness="1"
+    ResizeMode="CanResizeWithGrip"
+    WindowTransitionsEnabled="False">
+
+  <Grid x:Name="LayoutRoot">
+		<local:SourceViewControl x:Name="source" />
+	</Grid>
+</Controls:MetroWindow>
