@@ -78,8 +78,8 @@ namespace Profiler.ViewModels
 
 		// Frame Limits
 		Numeric FrameCountLimit = new Numeric("Frame Count Limit", "Automatically stops capture after selected number of frames") { Value = 0 };
-		Numeric TimeLimit = new Numeric("Time Limit (sec)", "Automatically stops capture after selected number of seconds") { Value = 0 };
-		Numeric MaxSpikeLimit = new Numeric("Max Spike (ms)", "Automatically stops capture after selected spike") { Value = 0 };
+		Numeric TimeLimitSec = new Numeric("Time Limit (sec)", "Automatically stops capture after selected number of seconds") { Value = 0 };
+		Numeric MaxSpikeLimitMs = new Numeric("Max Spike (ms)", "Automatically stops capture after selected spike") { Value = 0 };
 		public ObservableCollection<Numeric> CaptureLimits { get; set; } = new ObservableCollection<Numeric>();
 
 		// Timeline Settings
@@ -89,8 +89,8 @@ namespace Profiler.ViewModels
 		public CaptureSettingsViewModel()
 		{
 			CaptureLimits.Add(FrameCountLimit);
-			CaptureLimits.Add(TimeLimit);
-			CaptureLimits.Add(MaxSpikeLimit);
+			CaptureLimits.Add(TimeLimitSec);
+			CaptureLimits.Add(MaxSpikeLimitMs);
 
 			TimelineSettings.Add(TimelineMaxThreadDepth);
 		}
@@ -106,8 +106,8 @@ namespace Profiler.ViewModels
 			settings.SamplingFrequencyHz = (uint)SamplingFrequencyHz;
 
 			settings.FrameLimit = (uint)FrameCountLimit.Value;
-			settings.TimeLimitUs = (uint)(TimeLimit.Value * 1000);
-			settings.MaxSpikeLimitUs = (uint)(MaxSpikeLimit.Value * 1000);
+			settings.TimeLimitUs = (uint)(TimeLimitSec.Value * 1000000);
+			settings.MaxSpikeLimitUs = (uint)(MaxSpikeLimitMs.Value * 1000);
 
 			settings.MemoryLimitMb = 0;
 

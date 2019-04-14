@@ -7,6 +7,7 @@
 #include <thread>
 
 #include "optick_common.h"
+
 #include "optick_memory.h"
 #include "optick_message.h"
 #include "optick_serialization.h"
@@ -101,7 +102,7 @@ struct OptickString
 {
 	char data[N];
 	OptickString() {}
-	OptickString<N>& operator=(const char* text) { strncpy(data, text, N - 1); data[N - 1] = 0; return *this; }
+	OptickString<N>& operator=(const char* text) { strncpy(data, text ? text : "null", N - 1); data[N - 1] = 0; return *this; }
 	OptickString(const char* text) { *this = text; }
 };
 #if defined(OPTICK_MSVC)
@@ -172,8 +173,6 @@ class EventDescriptionBoard
 	MemoryBuffer<64 * 1024> sharedNames;
 	std::mutex sharedLock;
 
-	// Singleton instance of the board
-	static EventDescriptionBoard instance;
 public:
 	EventDescription* CreateDescription(const char* name, const char* file = nullptr, uint32_t line = 0, uint32_t color = Color::Null, uint32_t filter = 0);
 	EventDescription* CreateSharedDescription(const char* name, const char* file = nullptr, uint32_t line = 0, uint32_t color = Color::Null, uint32_t filter = 0);
@@ -393,11 +392,11 @@ struct CaptureStatus
     };
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 class Core
 {
 	std::recursive_mutex coreLock;
     std::recursive_mutex threadsLock;
-	ThreadID mainThreadID;
 
 	ThreadList threads;
 	FiberList fibers;
@@ -556,7 +555,7 @@ public:
 	const EventDescription* GetFrameDescription(FrameType::Type frame) const;
 
 	// NOT Thread Safe singleton (performance)
-	static OPTICK_INLINE Core& Get() { return notThreadSafeInstance; }
+	static Core& Get();
 
 	// Main Update Function
 	static uint32_t NextFrame() { return Get().Update(); }

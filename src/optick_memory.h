@@ -31,7 +31,7 @@ namespace Optick
 		static void* (*allocate)(size_t);
 		static void  (*deallocate)(void* p);
 	public:
-		static OPTICK_NOINLINE void* Alloc(size_t size)
+		static OPTICK_INLINE void* Alloc(size_t size)
 		{
 			size_t totalSize = size + sizeof(Header);
 			void *ptr = allocate(totalSize);
@@ -44,12 +44,15 @@ namespace Optick
 			return (uint8_t*)ptr + sizeof(Header);
 		}
 
-		static OPTICK_NOINLINE void Free(void* p)
+		static OPTICK_INLINE void Free(void* p)
 		{
-			uint8_t* basePtr = (uint8_t*)p - sizeof(Header);
-			Header* header = (Header*)basePtr;
-			memAllocated -= header->size;
-			deallocate(basePtr);
+			if (p != nullptr)
+			{
+				uint8_t* basePtr = (uint8_t*)p - sizeof(Header);
+				Header* header = (Header*)basePtr;
+				memAllocated -= header->size;
+				deallocate(basePtr);
+			}
 		}
 
 		static OPTICK_INLINE size_t GetAllocatedSize()
@@ -99,12 +102,12 @@ namespace Optick
 			Allocator(const Allocator<U>&) {}
 			template<typename U> struct rebind { typedef Allocator<U> other; };
 
-			OPTICK_NOINLINE typename std::allocator<T>::pointer allocate(typename std::allocator<T>::size_type n, typename std::allocator<void>::const_pointer = 0)
+			typename std::allocator<T>::pointer allocate(typename std::allocator<T>::size_type n, typename std::allocator<void>::const_pointer = 0)
 			{
 				return reinterpret_cast<typename std::allocator<T>::pointer>(Memory::Alloc(n * sizeof(T)));
 			}
 
-			OPTICK_NOINLINE void deallocate(typename std::allocator<T>::pointer p, typename std::allocator<T>::size_type)
+			void deallocate(typename std::allocator<T>::pointer p, typename std::allocator<T>::size_type)
 			{
 				Memory::Free(p);
 			}
