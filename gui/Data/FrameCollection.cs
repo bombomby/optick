@@ -13,6 +13,7 @@ namespace Profiler.Data
 
 	public class ThreadData
 	{
+		public ThreadDescription Description { get; set; }
 		public List<EventFrame> Events { get; set; }
 		public List<Callstack> Callstacks { get; set; }
 		public List<SysCallEntry> SysCalls { get; set; }
@@ -21,8 +22,9 @@ namespace Profiler.Data
 		public TagsPack TagsPack { get; set; }
 		public bool IsDirty { get; set; }
 
-		public ThreadData()
+		public ThreadData(ThreadDescription desc)
 		{
+			Description = desc;
 			Events = new List<EventFrame>();
 		}
 
@@ -97,12 +99,15 @@ namespace Profiler.Data
 		public EventDescriptionBoard Board { get; set; }
 		public ISamplingBoard SamplingBoard { get; set; }
 		public List<ThreadData> Threads { get; set; }
+		public List<ThreadData> Cores { get; set; }
 		public List<ThreadData> Fibers { get; set; }
 		public ThreadData MainThread { get { return Threads[Board.MainThreadIndex]; } }
 		public SummaryPack Summary { get; set; }
 		public SynchronizationMap Synchronization { get; set; }
 
 		public List<DataResponse> Responses { get; set; }
+
+		public bool IsCoreDataGenerated { get; set; }
 
 		public List<ThreadData> GetThreads(ThreadDescription.Source origin)
 		{
@@ -125,7 +130,7 @@ namespace Profiler.Data
 
 			Threads = new List<ThreadData>(board.Threads.Count);
 			foreach (ThreadDescription desc in board.Threads)
-				Threads.Add(new ThreadData());
+				Threads.Add(new ThreadData(desc));
 
 			Fibers = new List<ThreadData>();
 			Responses = new List<DataResponse>();
@@ -143,7 +148,7 @@ namespace Profiler.Data
 			{
 				while (threadIndex >= Threads.Count)
 				{
-					Threads.Add(new ThreadData());
+					Threads.Add(new ThreadData(Board.Threads[threadIndex]));
 				}
 				Threads[threadIndex].Events.Add(frame);
 			}
@@ -154,53 +159,66 @@ namespace Profiler.Data
 				{
 					while (fiberIndex >= Fibers.Count)
 					{
-						Fibers.Add(new ThreadData());
+						Fibers.Add(new ThreadData(null));
 					}
 					Fibers[fiberIndex].Events.Add(frame);
 				}
 			}
-
-
 		}
 
-		void GenerateCoreThreads()
+		private void GenerateDummyCoreThreads()
 		{
-			List<KeyValuePair<ThreadDescription, ThreadData>> cores = new List<KeyValuePair<ThreadDescription, ThreadData>>(Board.CPUCoreCount);
-
-			foreach (KeyValuePair<UInt64, Synchronization> pair in Synchronization.SyncMap)
+			if (Cores == null)
 			{
-				ThreadDescription threadDesc = null;
-				Board.ThreadDescriptions.TryGetValue(pair.Key, out threadDesc);
+				Cores = new List<ThreadData>(Board.CPUCoreCount);
 
-                if (threadDesc != null && threadDesc.IsIdle)
-                    continue;
-
-				EventDescription eventDesc = new EventDescription(threadDesc != null ? String.Format("{0}:0x{1:X}", threadDesc.FullName, threadDesc.ThreadID) : pair.Key.ToString("X"));
-				if (threadDesc != null && threadDesc.ProcessID != Board.ProcessID)
-					eventDesc.Color = Colors.SlateGray;
-
-				foreach (SyncInterval interval in pair.Value)
+				foreach (KeyValuePair<UInt64, Synchronization> pair in Synchronization.SyncMap)
 				{
-                    byte core = interval.Core;
-
-                    while (cores.Count <= core)
-                    {
-                        ThreadDescription desc = new ThreadDescription() { Name = String.Format("CPU Core {0:00}", cores.Count), ThreadID = UInt64.MaxValue, Origin = ThreadDescription.Source.Core };
-                        cores.Add(new KeyValuePair<ThreadDescription, ThreadData>(desc, AddThread(desc)));
-                    }
-
-					Entry entry = new Entry(eventDesc, interval.Start, interval.Finish);
-
-					EventFrame frame = new EventFrame(new FrameHeader(interval, cores[interval.Core].Key.ThreadIndex), new List<Entry>() { entry }, this);
-					entry.Frame = frame;
-
-					cores[interval.Core].Value.Events.Add(frame);
+					foreach (SyncInterval interval in pair.Value)
+					{
+						while (Cores.Count <= interval.Core)
+						{
+							ThreadDescription desc = new ThreadDescription() { Name = String.Format("CPU Core {0:00}", Cores.Count), ThreadID = UInt64.MaxValue, Origin = ThreadDescription.Source.Core };
+							Cores.Add(AddThread(desc));
+						}
+					}
 				}
 			}
-
-			cores.ForEach(core => core.Value.Events.Sort());
 		}
 
+		public void GenerateRealCoreThreads()
+		{
+			if (Cores != null && !IsCoreDataGenerated)
+			{
+				foreach (KeyValuePair<UInt64, Synchronization> pair in Synchronization.SyncMap)
+				{
+					ThreadDescription threadDesc = null;
+					Board.ThreadDescriptions.TryGetValue(pair.Key, out threadDesc);
+
+					if (threadDesc != null && threadDesc.IsIdle)
+						continue;
+
+					EventDescription eventDesc = new EventDescription(threadDesc != null ? String.Format("{0}:0x{1:X}", threadDesc.FullName, threadDesc.ThreadID) : pair.Key.ToString("X"));
+					if (threadDesc != null && threadDesc.ProcessID != Board.ProcessID)
+						eventDesc.Color = Colors.SlateGray;
+
+					foreach (SyncInterval interval in pair.Value)
+					{
+						byte core = interval.Core;
+
+						Entry entry = new Entry(eventDesc, interval.Start, interval.Finish);
+
+						EventFrame frame = new EventFrame(new FrameHeader(interval, Cores[interval.Core].Description.ThreadIndex), new List<Entry>() { entry }, this);
+						entry.Frame = frame;
+
+						Cores[interval.Core].Events.Add(frame);
+					}
+				}
+
+				Cores.ForEach(core => core.Events.Sort());
+				IsCoreDataGenerated = true;
+			}
+		}
 
 		private void GenerateMiscThreads()
 		{
@@ -255,7 +273,7 @@ namespace Profiler.Data
 				}
 			}
 
-			GenerateCoreThreads();
+			GenerateDummyCoreThreads();
 			GenerateMiscThreads();
 		}
 
@@ -268,7 +286,7 @@ namespace Profiler.Data
 			int index = fiberSync.FiberIndex;
 			while (index >= Fibers.Count)
 			{
-				Fibers.Add(new ThreadData());
+				Fibers.Add(new ThreadData(null));
 			}
 			Fibers[index].FiberSync = fiberSync;
 
@@ -404,7 +422,7 @@ namespace Profiler.Data
 			desc.ThreadIndex = index;
 			if (desc.ThreadID != UInt64.MaxValue)
 				Board.ThreadID2ThreadIndex.Add(desc.ThreadID, index);
-			ThreadData threadData = new ThreadData();
+			ThreadData threadData = new ThreadData(desc);
 			Threads.Add(threadData);
 			Board.Threads.Add(desc);
 			return threadData;

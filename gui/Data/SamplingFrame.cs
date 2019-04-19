@@ -212,6 +212,9 @@ namespace Profiler.Data
 		public UInt64 Address { get; private set; }
 		public override String Name { get { return Description.Name; } }
 
+		private List<BaseTreeNode> shadowNodes = new List<BaseTreeNode>();
+		public override List<BaseTreeNode> ShadowNodes { get { return shadowNodes; } }
+
 		// Participated in sampling process
 		public uint Passed { get; private set; }
 
@@ -231,7 +234,7 @@ namespace Profiler.Data
 
 		//public SamplingNode Parent { get; private set; }
 
-		SamplingNode(SamplingNode root, SamplingDescription desc, UInt64 address, UInt32 passed)
+		SamplingNode(SamplingNode root, SamplingDescription desc, UInt32 passed)
 			: base(root, desc, passed)
 		{
 			Passed = passed;
@@ -247,7 +250,7 @@ namespace Profiler.Data
 
 			UInt32 passed = reader.ReadUInt32();
 
-			SamplingNode node = new SamplingNode(root, desc, address, passed);
+			SamplingNode node = new SamplingNode(root, desc, passed);
 
 			UInt32 childrenCount = reader.ReadUInt32();
 			for (UInt32 i = 0; i < childrenCount; ++i)
@@ -274,13 +277,15 @@ namespace Profiler.Data
 			{
 				if (IsSimilar(node.Description, desc))
 				{
+					node.shadowNodes.Add(new SamplingNode(rootNode, desc, 1) { Parent = this, ChildrenDuration = index == callstack.Count - 1 ? 0 : 1 });
 					++node.Passed;
 					node.AppendMerge(callstack, index + 1, rootNode);
 					return;
 				}
 			}
 
-			SamplingNode child = new SamplingNode(rootNode, desc, desc.Address, 1);
+			SamplingNode child = new SamplingNode(rootNode, desc, 1);
+			child.shadowNodes.Add(new SamplingNode(rootNode, desc, 1) { Parent = child, ChildrenDuration = index == callstack.Count - 1 ? 0 : 1 });
 			AddChild(child);
 			child.AppendMerge(callstack, index + 1, rootNode);
 		}
@@ -302,7 +307,7 @@ namespace Profiler.Data
 
 		public static SamplingNode Create(List<Callstack> callstacks)
 		{
-			SamplingNode node = new SamplingNode(null, null, 0, (uint)callstacks.Count);
+			SamplingNode node = new SamplingNode(null, null, (uint)callstacks.Count);
 			callstacks.ForEach(c => node.AppendMerge(c, 0, node));
 			node.Update();
 			node.Sort();

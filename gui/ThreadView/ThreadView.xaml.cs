@@ -64,6 +64,7 @@ namespace Profiler
 			ThreadList.Margin = new Thickness(0, 0, 3, 0);
 			double offset = 0.0;
 			bool isAlternative = false;
+			int rowCount = 0;
 			for (int threadIndex = 0; threadIndex < Rows.Count; ++threadIndex)
 			{
 				ThreadRow row = Rows[threadIndex];
@@ -87,12 +88,13 @@ namespace Profiler
 						
 					border.Child = row.Header;
 					border.Background = isAlternative ? OptickAlternativeBackground : OptickBackground;
-					Grid.SetRow(border, threadIndex);
+					Grid.SetRow(border, rowCount);
 
 					ThreadList.Children.Add(border);
 				}
 				isAlternative = !isAlternative;
 				offset += row.Height;
+				rowCount += 1;
 			}
 
 			surface.Height = offset;
@@ -112,10 +114,16 @@ namespace Profiler
 				Scroll.Width = surface.ActualWidth * RenderSettings.dpiScaleX;
 				rows.ForEach(row => row.BuildMesh(surface, Scroll));
 				rows.ForEach(row => row.ExpandChanged += Row_ExpandChanged);
-				rows.ForEach(row => row.VisibilityChanged += Row_ExpandChanged);
+				rows.ForEach(row => row.VisibilityChanged += Row_VisibilityChanged);
 			}
 
 			UpdateRows();
+		}
+
+		public void ReinitRows(List<ThreadRow> rows)
+		{
+			rows.ForEach(row => row.BuildMesh(surface, Scroll));
+			UpdateRowsAsync();
 		}
 
 		private void Row_ExpandChanged(ThreadRow row)
@@ -123,8 +131,18 @@ namespace Profiler
 			//Task.Run(()=>
 			//{
 				row.BuildMesh(surface, Scroll);
-				Application.Current.Dispatcher.BeginInvoke(new Action(() => UpdateRows() ));
+				UpdateRowsAsync();
 			//});
+		}
+
+		private void UpdateRowsAsync()
+		{
+			Application.Current.Dispatcher.BeginInvoke(new Action(() => UpdateRows()));
+		}
+
+		private void Row_VisibilityChanged(ThreadRow row)
+		{
+			//throw new NotImplementedException();
 		}
 
 		private void InitBackgroundMesh()

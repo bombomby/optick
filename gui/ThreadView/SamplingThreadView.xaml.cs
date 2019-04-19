@@ -67,7 +67,7 @@ namespace Profiler
 				BuildEntryList(entries, root, 0.0);
 
 				EventFrame eventFrame = new EventFrame(new FrameHeader() { Start = 0, Finish = Durable.MsToTick(root.Duration) }, entries, frame.Group);
-				ThreadData threadData = new ThreadData() { Events = new List<EventFrame> { eventFrame } };
+				ThreadData threadData = new ThreadData(null) { Events = new List<EventFrame> { eventFrame } };
 				EventsThreadRow row = new EventsThreadRow(frame.Group, new ThreadDescription() { Name = "Sampling Node" }, threadData);
 				row.EventNodeHover += Row_EventNodeHover;
 				rows.Add(row);

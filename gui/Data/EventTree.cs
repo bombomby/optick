@@ -15,7 +15,7 @@ namespace Profiler.Data
 		private bool isSelected;
 		private Visibility visible;
 
-		public BaseTreeNode Parent { get; private set; }
+		public BaseTreeNode Parent { get; set; }
 		public BaseTreeNode RootParent { get; private set; }
 		public List<BaseTreeNode> Children { get; private set; }
 
@@ -27,6 +27,7 @@ namespace Profiler.Data
 		public abstract String ToolTipName { get; }
 
 		public virtual List<Tag> Tags { get { return null; } set { } }
+		public virtual List<BaseTreeNode> ShadowNodes { get { return null; } }
 
 		public event PropertyChangedEventHandler PropertyChanged;
 		private void Raise(string propertyName)
@@ -45,7 +46,19 @@ namespace Profiler.Data
 		}
 
 		public double TotalPercent { get { return RootParent != null ? (100.0 * Duration / RootParent.Duration) : 100.0; } }
-		public double SelfPercent { get { return RootParent != null ? (100.0 * SelfDuration / RootParent.Duration) : (SelfDuration / Duration); } }
+		public double SelfPercent
+		{
+			get
+			{
+				if (RootParent != null)
+					return (100.0 * SelfDuration / RootParent.Duration);
+
+				if (Duration > 0.0)
+					return SelfDuration / Duration;
+
+				return 0.0;
+			}
+		}
 
 		public abstract String Path { get; }
 
@@ -177,7 +190,8 @@ namespace Profiler.Data
 		public override String Name { get { return Description.Name; } }
 		public override String ToolTipName { get { return String.Format("{0}\n{1}", Description.FullName, Description.Path); } }
 
-		public bool ExcludeFromTotal { get; private set; }
+		public bool ExcludeFromTotal { get; set; } = false;
+		public bool ExcludeFromSelf { get; set; } = false;
 
 		public TreeNode(TreeNode<TDescription> root, TDescription desc, double duration)
 		  : base(root, duration)

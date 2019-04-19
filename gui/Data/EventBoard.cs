@@ -134,8 +134,12 @@ namespace Profiler.Data
 		public override void Add(SamplingNode node)
 		{
 			base.Add(node);
-			Self += node.Sampled;
-			SelfPercent += node.SelfPercent;
+
+			if (!node.ExcludeFromSelf)
+			{
+				Self += node.Sampled;
+				SelfPercent += node.SelfPercent;
+			}
 
 			if (!node.ExcludeFromTotal)
 			{
@@ -157,14 +161,13 @@ namespace Profiler.Data
 			AddRange(items.Values);
 		}
 
-		void Add(Dictionary<Object, TItem> items, TNode node)
+		void AddInternal(Dictionary<Object, TItem> items, TNode node)
 		{
-			TDescription description = node.Description;
-			if (description != null)
+			if (node.Description != null)
 			{
 				TItem item;
 
-				Object key = description.GetSharedKey();
+				Object key = node.Description.GetSharedKey();
 
 				if (!items.TryGetValue(key, out item))
 				{
@@ -174,9 +177,16 @@ namespace Profiler.Data
 
 				item.Add(node);
 			}
+		}
 
-			foreach (TNode child in node.Children)
-				Add(items, child);
+		void Add(Dictionary<Object, TItem> items, TNode node)
+		{
+			if (node.ShadowNodes != null)
+				node.ShadowNodes.ForEach(shadow => AddInternal(items, shadow as TNode));
+			else
+				AddInternal(items, node);
+
+			node.Children?.ForEach(child => Add(items, child as TNode));
 		}
 	}
 }

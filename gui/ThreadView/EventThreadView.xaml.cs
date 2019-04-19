@@ -187,12 +187,11 @@ namespace Profiler
 
 			for (int i = 0; i < Math.Min(group.Board.Threads.Count, group.Threads.Count); ++i)
 			{
-				ThreadDescription thread = group.Board.Threads[i];
+				ThreadData data = group.Threads[i];
+				ThreadDescription thread = data.Description;
 
                 if (thread.IsIdle)
                     continue;
-
-				ThreadData data = group.Threads[i];
 
 				bool threadHasData = false;
 				if (data.Events != null)
@@ -208,6 +207,9 @@ namespace Profiler
 						}
 					}
 				}
+
+				if (thread.Origin == ThreadDescription.Source.Core)
+					threadHasData = true;
 
 				if (threadHasData)
 				{
@@ -231,6 +233,7 @@ namespace Profiler
 
 			return SortRows(eventThreads);
 		}
+
 
 		enum ProcessGroup
 		{
@@ -383,12 +386,14 @@ namespace Profiler
 			};
 
 			frames.Add(new EventFrame(header, entries, group));
-			ThreadData result = new ThreadData()
+			ThreadData result = new ThreadData(null)
 			{
 				Events = frames
 			};
 			return result;
 		}
+
+		List<ThreadRow> coreRows = new List<ThreadRow>();
 
 		void InitThreadList(FrameGroup group)
 		{
@@ -407,11 +412,48 @@ namespace Profiler
 
 				ThreadRow cpuCoreChart = GenerateCoreChart(group);
 				if (cpuCoreChart != null)
+				{
+					cpuCoreChart.IsExpanded = false;
+					cpuCoreChart.ExpandChanged += CpuCoreChart_ExpandChanged;
 					rows.Add(cpuCoreChart);
-				rows.AddRange(GenerateThreadRows(group));
+				}
+
+				List<EventsThreadRow> threadRows = GenerateThreadRows(group);
+				foreach (EventsThreadRow row in threadRows)
+				{
+					if (row.Description.Origin == ThreadDescription.Source.Core)
+					{
+						row.IsVisible = false;
+						coreRows.Add(row);
+					}
+				}
+				rows.AddRange(threadRows);
 			}
 
 			ThreadViewControl.InitRows(rows, group != null ? group.Board.TimeSlice : null);
+		}
+
+		private void CpuCoreChart_ExpandChanged(ThreadRow row)
+		{
+			if (row.IsExpanded)
+			{
+				if (!Group.IsCoreDataGenerated)
+				{
+					bool isVisible = row.IsExpanded;
+					Task.Run(() =>
+					{
+						row.SetBusy(true);
+						Group.GenerateRealCoreThreads();
+						ThreadViewControl.ReinitRows(coreRows);
+						row.SetBusy(false);
+						Application.Current.Dispatcher.Invoke(new Action(() => coreRows.ForEach(core => core.IsVisible = isVisible)));
+					});
+					return;
+				}
+			}
+
+			coreRows.ForEach(core => core.IsVisible = row.IsExpanded);
+			ThreadViewControl.UpdateRows();
 		}
 
 		public void Highlight(EventFrame frame, IDurable focus)
