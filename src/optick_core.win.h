@@ -614,7 +614,7 @@ public:
 	ETW();
 	~ETW();
 
-	virtual CaptureStatus::Type Start(Trace::Mode mode, const ThreadList& threads) override;
+	virtual CaptureStatus::Type Start(Mode::Type mode, int frequency, const ThreadList& threads) override;
 	virtual bool Stop() override;
 
 	DWORD GetProcessID() const { return currentProcessId; }
@@ -1106,7 +1106,7 @@ ETW::ETW()
 	currentProcessId = GetCurrentProcessId();
 }
 
-CaptureStatus::Type ETW::Start(Trace::Mode mode, const ThreadList& threads)
+CaptureStatus::Type ETW::Start(Mode::Type mode, int frequency, const ThreadList& threads)
 {
 	if (!isActive)
 	{
@@ -1137,22 +1137,22 @@ CaptureStatus::Type ETW::Start(Trace::Mode mode, const ThreadList& threads)
 		traceProperties->BufferSize = ETW_BUFFER_SIZE;
 		traceProperties->MinimumBuffers = ETW_BUFFER_COUNT;
 
-		if (mode & SWITCH_CONTEXTS)
+		if (mode & Mode::SWITCH_CONTEXT)
 		{
 			traceProperties->EnableFlags |= EVENT_TRACE_FLAG_CSWITCH;
 		}
 
-		if (mode & STACK_WALK)
+		if (mode & Mode::AUTOSAMPLING)
 		{
 			traceProperties->EnableFlags |= EVENT_TRACE_FLAG_PROFILE;
 		}
 
-		if (mode & SYS_CALLS)
+		if (mode & Mode::SYS_CALLS)
 		{
 			traceProperties->EnableFlags |= EVENT_TRACE_FLAG_SYSTEMCALL;
 		}
 
-		if (mode & PROCESSES)
+		if (mode & Mode::OTHER_PROCESSES)
 		{
 			traceProperties->EnableFlags |= EVENT_TRACE_FLAG_PROCESS;
 			traceProperties->EnableFlags |= EVENT_TRACE_FLAG_THREAD;
@@ -1210,14 +1210,14 @@ CaptureStatus::Type ETW::Start(Trace::Mode mode, const ThreadList& threads)
 		CLASSIC_EVENT_ID callstackSamples[4];
 		int callstackCountSamplesCount = 0;
 
-		if (mode & STACK_WALK)
+		if (mode & Mode::AUTOSAMPLING)
 		{
 			callstackSamples[callstackCountSamplesCount].EventGuid = SampledProfileGuid;
 			callstackSamples[callstackCountSamplesCount].Type = SampledProfile::OPCODE;
 			++callstackCountSamplesCount;
 		}
 
-		if (mode & SYS_CALLS)
+		if (mode & Mode::SYS_CALLS)
 		{
 			callstackSamples[callstackCountSamplesCount].EventGuid = SampledProfileGuid;
 			callstackSamples[callstackCountSamplesCount].Type = SysCallEnter::OPCODE;
@@ -1247,12 +1247,12 @@ CaptureStatus::Type ETW::Start(Trace::Mode mode, const ThreadList& threads)
 			}
 		}
 
-		bool highFrequencySampling = false;
-		if (highFrequencySampling)
+		if (mode & Mode::AUTOSAMPLING)
 		{
 			TRACE_PROFILE_INTERVAL itnerval = { 0 };
 			memset(&itnerval, 0, sizeof(TRACE_PROFILE_INTERVAL));
-			itnerval.Interval = highFrequencySampling ? 1221 : 10000;
+			int step = 10000 * 1000 / frequency; // 1ms = 10000 steps
+			itnerval.Interval = step; // std::max(1221, std::min(step, 10000));
 			// The SessionHandle is irrelevant for this information class and must be zero, else the function returns ERROR_INVALID_PARAMETER.
 			status = TraceSetInformation(0, TraceSampledProfileIntervalInfo, &itnerval, sizeof(TRACE_PROFILE_INTERVAL));
 			OPTICK_ASSERT(status == ERROR_SUCCESS, "TraceSetInformation - failed");

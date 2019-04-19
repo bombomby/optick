@@ -68,7 +68,8 @@ end
 	startproject "ConsoleApp"
     cppdialect "C++11"
 	location ( outputFolder )
-	flags { "NoManifest" }
+	flags { "NoManifest", "FatalWarnings" }
+	warnings "Extra"
     symbols "On"
 	optimization_flags = {}
 
@@ -93,9 +94,7 @@ end
 	}
 
 	local platform_list = {
-		"x32",
 		"x64",
-		"Native",
 	}
 
 	configurations(config_list)

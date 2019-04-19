@@ -8,7 +8,7 @@ namespace Profiler.Data
 {
     public class CaptureSettings
     {
-		public UInt32 Mode { get; set; }
+		public Mode	Mode { get; set; } = (Mode.INSTRUMENTATION_CATEGORIES | Mode.INSTRUMENTATION_EVENTS);
 		public UInt32 CategoryMask { get; set; } = UInt32.MaxValue;
 		public UInt32 SamplingFrequencyHz { get; set; } = 1000;
 		public UInt32 FrameLimit { get; set; } = 0;

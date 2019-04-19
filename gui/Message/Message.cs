@@ -209,7 +209,7 @@ namespace Profiler
 		public override void Write(BinaryWriter writer)
 		{
 			base.Write(writer);
-            writer.Write(Settings.Mode);
+            writer.Write((UInt32)Settings.Mode);
             writer.Write(Settings.CategoryMask);
             writer.Write(Settings.SamplingFrequencyHz);
             writer.Write(Settings.FrameLimit);

@@ -186,6 +186,7 @@ public:
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct EventStorage
 {
+	Mode::Type currentMode;
 	EventBuffer eventBuffer;
 	FiberSyncBuffer fiberSyncBuffer;
 
@@ -224,6 +225,7 @@ struct EventStorage
 	// Free all temporary memory
 	void Clear(bool preserveContent)
 	{
+		currentMode = Mode::OFF;
 		eventBuffer.Clear(preserveContent);
 		fiberSyncBuffer.Clear(preserveContent);
 		gpuStorage.Clear(preserveContent);
@@ -289,7 +291,7 @@ struct ThreadEntry
 	bool isAlive;
 
 	ThreadEntry(const ThreadDescription& desc, EventStorage** tls) : description(desc), threadTLS(tls), isAlive(true) {}
-	void Activate(bool isActive);
+	void Activate(Mode::Type mode);
 	void Sort();
 };
 
@@ -458,8 +460,8 @@ class Core
 
 	void GenerateCommonSummary();
 public:
-	void Activate(bool active);
-	bool isActive;
+	void Activate(Mode::Type mode);
+	volatile Mode::Type currentMode;
 
 	// Active Frame (is used as buffer)
 	static OPTICK_THREAD_LOCAL EventStorage* storage;

@@ -334,49 +334,43 @@ void FiberSyncData::DetachFromThread(EventStorage* storage)
 void Tag::Attach(const EventDescription& description, float val)
 {
 	if (EventStorage* storage = Core::storage)
-	{
-		storage->tagFloatBuffer.Add(TagFloat(description, val));
-	}
+		if (storage->currentMode & Mode::TAGS)
+			storage->tagFloatBuffer.Add(TagFloat(description, val));
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Tag::Attach(const EventDescription& description, int32_t val)
 {
 	if (EventStorage* storage = Core::storage)
-	{
-		storage->tagS32Buffer.Add(TagS32(description, val));
-	}
+		if (storage->currentMode & Mode::TAGS)
+			storage->tagS32Buffer.Add(TagS32(description, val));
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Tag::Attach(const EventDescription& description, uint32_t val)
 {
 	if (EventStorage* storage = Core::storage)
-	{
-		storage->tagU32Buffer.Add(TagU32(description, val));
-	}
+		if (storage->currentMode & Mode::TAGS)
+			storage->tagU32Buffer.Add(TagU32(description, val));
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Tag::Attach(const EventDescription& description, uint64_t val)
 {
 	if (EventStorage* storage = Core::storage)
-	{
-		storage->tagU64Buffer.Add(TagU64(description, val));
-	}
+		if (storage->currentMode & Mode::TAGS)
+			storage->tagU64Buffer.Add(TagU64(description, val));
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Tag::Attach(const EventDescription& description, float val[3])
 {
 	if (EventStorage* storage = Core::storage)
-	{
-		storage->tagPointBuffer.Add(TagPoint(description, val));
-	}
+		if (storage->currentMode & Mode::TAGS)
+			storage->tagPointBuffer.Add(TagPoint(description, val));
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Tag::Attach(const EventDescription& description, const char* val)
 {
 	if (EventStorage* storage = Core::storage)
-	{
-		storage->tagStringBuffer.Add(TagString(description, val));
-	}
+		if (storage->currentMode & Mode::TAGS)
+			storage->tagStringBuffer.Add(TagString(description, val));
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream & operator<<(OutputDataStream &stream, const EventDescription &ob)
@@ -1046,7 +1040,7 @@ Core::Core()
 	, stateCallback(nullptr)
 	, currentState(State::DUMP_CAPTURE)
 	, pendingState(State::DUMP_CAPTURE)
-	, isActive(false)
+	, currentMode(Mode::OFF)
 	, gpuProfiler(nullptr)
 	, tracer(nullptr)
 	, symbolEngine(nullptr)
@@ -1075,11 +1069,11 @@ bool Core::UpdateState()
 		switch (nextState)
 		{
 		case State::START_CAPTURE:
-			Activate(true);
+			Activate((Mode::Type)settings.mode);
 			break;
 
 		case State::STOP_CAPTURE:
-			Activate(false);
+			Activate(Mode::OFF);
 			break;
 
 		case State::DUMP_CAPTURE:
@@ -1097,7 +1091,7 @@ uint32_t Core::Update()
 {
 	std::lock_guard<std::recursive_mutex> lock(coreLock);
 	
-	if (isActive)
+	if (currentMode != Mode::OFF)
 	{
 		if (!frames.empty())
 			frames.back().Stop();
@@ -1125,7 +1119,7 @@ uint32_t Core::Update()
 
 	while (UpdateState()) {}
 
-	if (isActive)
+	if (currentMode != Mode::OFF)
 	{
 		frames.push_back(EventTime());
 		frames.back().Start();
@@ -1153,38 +1147,39 @@ bool Core::ReportStackWalk(const CallstackDesc& desc)
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void Core::Activate( bool active )
+void Core::Activate(Mode::Type mode)
 {
-	if (isActive != active)
+	if (mode != currentMode)
 	{
-		isActive = active;
+		Mode::Type prevMode = currentMode;
+		currentMode = mode;
 
         {
             std::lock_guard<std::recursive_mutex> lock(threadsLock);
             for(auto it = threads.begin(); it != threads.end(); ++it)
             {
                 ThreadEntry* entry = *it;
-                entry->Activate(active);
+                entry->Activate(mode);
             }
         }
 
 
-		if (active)
+		if (mode != Mode::OFF)
 		{
 			CaptureStatus::Type status = CaptureStatus::ERR_TRACER_FAILED;
 
-			if (tracer)
+			if (tracer && (mode & Mode::TRACER))
 			{
                 std::lock_guard<std::recursive_mutex> lock(threadsLock);
 				tracer->SetPassword(settings.password.c_str());
-				status = tracer->Start(Trace::ALL, threads);
+				status = tracer->Start(mode, settings.samplingFrequency, threads);
 				// Let's retry with more narrow setup
-				if (status != CaptureStatus::OK)
-					status = tracer->Start(Trace::SWITCH_CONTEXTS, threads);
+				if (status != CaptureStatus::OK && (mode & Mode::AUTOSAMPLING))
+					status = tracer->Start((Mode::Type)(mode & ~Mode::AUTOSAMPLING), settings.samplingFrequency, threads);
 			}
 
-			if (gpuProfiler)
-				gpuProfiler->Start(0);
+			if (gpuProfiler && (mode & Mode::GPU))
+				gpuProfiler->Start(mode);
 
 			SendHandshakeResponse(status);
 		}
@@ -1194,7 +1189,7 @@ void Core::Activate( bool active )
 				tracer->Stop();
 
 			if (gpuProfiler)
-				gpuProfiler->Stop(0);
+				gpuProfiler->Stop(prevMode);
 		}
 	}
 }
@@ -1203,7 +1198,7 @@ void Core::DumpCapturingProgress()
 {
 	stringstream stream;
 
-	if (isActive)
+	if (currentMode != Mode::OFF)
 	{
 		size_t memUsedKb = Memory::GetAllocatedSize() >> 10;
 		float memUsedMb = memUsedKb / 1024.0f;
@@ -1252,7 +1247,7 @@ ThreadEntry* Core::RegisterThread(const ThreadDescription& description, EventSto
 	ThreadEntry* entry = Memory::New<ThreadEntry>(description, slot);
 	threads.push_back(entry);
 
-	if (isActive && slot != nullptr)
+	if ((currentMode != Mode::OFF) && slot != nullptr)
 		*slot = &entry->storage;
 
 	return entry;
@@ -1267,7 +1262,7 @@ bool Core::UnRegisterThread(ThreadID threadID, bool keepAlive)
 		ThreadEntry* entry = *it;
 		if (entry->description.threadID == threadID && entry->isAlive)
 		{
-			if (!isActive && !keepAlive)
+			if ((currentMode == Mode::OFF) && !keepAlive)
 			{
 				Memory::Delete(entry);
 				threads.erase(it);
@@ -1494,9 +1489,9 @@ OPTICK_API uint32_t NextFrame()
 	return Core::NextFrame();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-OPTICK_API bool IsActive()
+OPTICK_API bool IsActive(Mode::Type mode /*= Mode::INSTRUMENTATION_EVENTS*/)
 {
-	return Core::Get().isActive;
+	return (Core::Get().currentMode & mode) != 0;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OPTICK_API EventStorage** GetEventStorageSlotForCurrentThread()
@@ -1562,22 +1557,23 @@ OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame)
 
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-EventStorage::EventStorage(): pushPopEventStackIndex(0), isFiberStorage(false)
+EventStorage::EventStorage(): currentMode(Mode::OFF), pushPopEventStackIndex(0), isFiberStorage(false)
 {
 	 
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void ThreadEntry::Activate(bool isActive)
+void ThreadEntry::Activate(Mode::Type mode)
 {
 	if (!isAlive)
 		return;
 
-	if (isActive)
+	if (mode != Mode::OFF)
 		storage.Clear(true);
 
 	if (threadTLS != nullptr)
 	{
-		*threadTLS = isActive ? &storage : nullptr;
+		storage.currentMode = mode;
+		*threadTLS = mode != Mode::OFF ? &storage : nullptr;
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

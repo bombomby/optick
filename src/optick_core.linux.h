@@ -127,7 +127,7 @@ public:
 	~FTrace();
 
 	virtual void SetPassword(const char* pwd) override { password = pwd; }
-	virtual CaptureStatus::Type Start(Trace::Mode mode, const ThreadList& threads) override;
+	virtual CaptureStatus::Type Start(Mode::Type mode, int frequency, const ThreadList& threads) override;
 	virtual bool Stop() override;
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -189,7 +189,7 @@ struct Parser
 	}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-CaptureStatus::Type FTrace::Start(Trace::Mode mode, const ThreadList& /*threads*/)
+CaptureStatus::Type FTrace::Start(Mode::Type mode, int /*frequency*/, const ThreadList& /*threads*/)
 {
 	if (!isActive)
 	{

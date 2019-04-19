@@ -42,21 +42,8 @@ namespace Optick
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	struct Trace
 	{
-		enum Mode
-		{
-			// Collect switch-contexts
-			SWITCH_CONTEXTS = 1 << 0,
-			// Collect callstacks
-			STACK_WALK = 1 << 1,
-			// Collect SysCalls 
-			SYS_CALLS = 1 << 2,
-			// Collect Process Stats
-			PROCESSES = 1 << 3,
-			// Collect Everything
-			ALL = 0xFFFFFFFF
-		};
 		virtual void SetPassword(const char* /*pwd*/) {};
-		virtual CaptureStatus::Type Start(Trace::Mode mode, const ThreadList& threads) = 0;
+		virtual CaptureStatus::Type Start(Mode::Type mode, int frequency, const ThreadList& threads) = 0;
 		virtual bool Stop() = 0;
 		virtual ~Trace() {};
 	};

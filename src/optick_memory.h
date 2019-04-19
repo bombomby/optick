@@ -57,7 +57,7 @@ namespace Optick
 
 		static OPTICK_INLINE size_t GetAllocatedSize()
 		{
-			return memAllocated;
+			return (size_t)memAllocated;
 		}
 
 		template<class T>

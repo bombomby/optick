@@ -55,12 +55,14 @@ namespace Profiler.ViewModels
 
 		public ObservableCollection<Flag> FlagSettings { get; set; } = new ObservableCollection<Flag>(new Flag[]
 		{
-			new Flag("Categories", "Collect OPTICK_CATEGORY events", Mode.INSTRUMENTATION_CATEGORIES, true),
-			new Flag("Events", "Collect OPTICK_EVENT events", Mode.INSTRUMENTATION_EVENTS, true),
+			//new Flag("Categories", "Collect OPTICK_CATEGORY events", Mode.INSTRUMENTATION_CATEGORIES, true),
+			//new Flag("Events", "Collect OPTICK_EVENT events", Mode.INSTRUMENTATION_EVENTS, true),
 			new Flag("Tags", "Collect OPTICK_TAG events", Mode.TAGS, true),
 			new Flag("Switch Contexts", "Collect Switch Context events (kernel)", Mode.SWITCH_CONTEXT, true),
 			new Flag("Autosampling", "Sample all threads (kernel)", Mode.AUTOSAMPLING, true),
+			new Flag("SysCalls", "Collect system calls ", Mode.SYS_CALLS, true),
 			new Flag("GPU", "Collect GPU events", Mode.GPU, true),
+			new Flag("All Processes", "Collects information about other processes (thread pre-emption)", Mode.OTHER_PROCESSES, true),
 		});
 
 		public Array SamplingFrequencyList
@@ -101,7 +103,7 @@ namespace Profiler.ViewModels
 
 			foreach (Flag flag in FlagSettings)
 				if (flag.IsEnabled)
-					settings.Mode = settings.Mode | (UInt32)flag.Mask;
+					settings.Mode = settings.Mode | flag.Mask;
 
 			settings.SamplingFrequencyHz = (uint)SamplingFrequencyHz;
 

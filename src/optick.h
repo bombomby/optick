@@ -342,15 +342,18 @@ struct Mode
 		RESERVED_2 = (1 << 13),
 		RESERVED_3 = (1 << 14),
 		RESERVED_4 = (1 << 15),
+		SYS_CALLS = (1 << 16),
+		OTHER_PROCESSES = (1 << 17),
 
-		DEFAULT = INSTRUMENTATION & AUTOSAMPLING & SWITCH_CONTEXT & IO & GPU,
+		TRACER = AUTOSAMPLING | SWITCH_CONTEXT | SYS_CALLS,
+		DEFAULT = INSTRUMENTATION | TAGS | AUTOSAMPLING | SWITCH_CONTEXT | IO | GPU | SYS_CALLS | OTHER_PROCESSES,
 	};
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OPTICK_API int64_t GetHighPrecisionTime();
 OPTICK_API int64_t GetHighPrecisionFrequency();
 OPTICK_API uint32_t NextFrame();
-OPTICK_API bool IsActive();
+OPTICK_API bool IsActive(Mode::Type mode = Mode::INSTRUMENTATION_EVENTS);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct EventStorage;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -534,11 +537,11 @@ struct OPTICK_API Event
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OPTICK_INLINE Optick::EventDescription* CreateDescription(const char* functionName, const char* fileName, int fileLine, const char* eventName = nullptr, const ::Optick::Category::Type category = ::Optick::Category::None)
 {
-	return ::Optick::EventDescription::Create(eventName != nullptr ? eventName : functionName, fileName, fileLine, ::Optick::Category::GetColor(category), ::Optick::Category::GetMask(category));
+	return ::Optick::EventDescription::Create(eventName != nullptr ? eventName : functionName, fileName, (unsigned long)fileLine, ::Optick::Category::GetColor(category), ::Optick::Category::GetMask(category));
 }
 OPTICK_INLINE Optick::EventDescription* CreateDescription(const char* functionName, const char* fileName, int fileLine, const ::Optick::Category::Type category)
 {
-	return ::Optick::EventDescription::Create(functionName, fileName, fileLine, ::Optick::Category::GetColor(category), ::Optick::Category::GetMask(category));
+	return ::Optick::EventDescription::Create(functionName, fileName, (unsigned long)fileLine, ::Optick::Category::GetColor(category), ::Optick::Category::GetMask(category));
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct OPTICK_API GPUEvent

@@ -96,7 +96,7 @@ public:
 	DTrace();
 
 	virtual void SetPassword(const char* pwd) override { password = pwd; }
-	virtual CaptureStatus::Type Start(Trace::Mode mode, const ThreadList& threads) override;
+	virtual CaptureStatus::Type Start(Mode::Type mode, int frequency, const ThreadList& threads) override;
 	virtual bool Stop() override;
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -113,9 +113,9 @@ bool DTrace::CheckRootAccess()
 	return system(cmd) == 0;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-CaptureStatus::Type DTrace::Start(Trace::Mode mode, const ThreadList& threads)
+CaptureStatus::Type DTrace::Start(Mode::Type mode, int /*frequency*/, const ThreadList& threads)
 {
-	if (state == STATE_IDLE)
+	if (state == STATE_IDLE && (mode & Mode::SWITH_CONTEXTS) != 0)
 	{
 		if (!CheckRootAccess())
 			return CaptureStatus::ERR_TRACER_INVALID_PASSWORD;

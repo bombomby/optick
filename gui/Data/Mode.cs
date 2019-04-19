@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Profiler.Data
 {
-	enum Mode
+	public enum Mode
 	{
 		OFF = 0x0,
 		INSTRUMENTATION_CATEGORIES = (1 << 0),
@@ -25,5 +25,7 @@ namespace Profiler.Data
 		RESERVED_2 = (1 << 13),
 		RESERVED_3 = (1 << 14),
 		RESERVED_4 = (1 << 15),
+		SYS_CALLS = (1 << 16),
+		OTHER_PROCESSES = (1 << 17),
 	}
 }
