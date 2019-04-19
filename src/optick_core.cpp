@@ -1041,9 +1041,9 @@ Core::Core()
 	, currentState(State::DUMP_CAPTURE)
 	, pendingState(State::DUMP_CAPTURE)
 	, currentMode(Mode::OFF)
-	, gpuProfiler(nullptr)
-	, tracer(nullptr)
 	, symbolEngine(nullptr)
+	, tracer(nullptr)
+	, gpuProfiler(nullptr)
 {
 #if OPTICK_ENABLE_TRACING
 	tracer = Platform::GetTrace();
@@ -1073,7 +1073,8 @@ bool Core::UpdateState()
 			break;
 
 		case State::STOP_CAPTURE:
-			Activate(Mode::OFF);
+		case State::CANCEL_CAPTURE:
+				Activate(Mode::OFF);
 			break;
 
 		case State::DUMP_CAPTURE:

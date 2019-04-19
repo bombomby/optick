@@ -143,7 +143,7 @@ struct Parser
 
 	bool Skip(size_t count)
 	{
-		if (finish - cursor > count)
+		if ((size_t)(finish - cursor) > count)
 		{
 			cursor += count;
 			return true;
@@ -202,7 +202,7 @@ CaptureStatus::Type FTrace::Start(Mode::Type mode, int /*frequency*/, const Thre
 		// Disable irq info
 		Set(FTRACE_OPTIONS_IRQ_INFO, false);
 		// Enable switch events
-		Set(FTRACE_SCHED_SWITCH, (mode & SWITCH_CONTEXTS) != 0);
+		Set(FTRACE_SCHED_SWITCH, (mode & Mode::SWITCH_CONTEXT) != 0);
 
 		// Enable tracing
 		Set(FTRACE_TRACING_ON, true);

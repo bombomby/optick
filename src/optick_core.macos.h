@@ -74,7 +74,7 @@ class DTrace : public Trace
 		ThreadID tid;
 		int prio;
 		bool IsValid() const { return tid != INVALID_THREAD_ID; }
-		CoreState() : pid(INVALID_THREAD_ID), tid(INVALID_THREAD_ID), prio(0) {}
+		CoreState() : pid(INVALID_PROCESS_ID), tid(INVALID_THREAD_ID), prio(0) {}
 	};
 	static const int MAX_CPU_CORES = 256;
 	array<CoreState, MAX_CPU_CORES> cores;
@@ -113,9 +113,9 @@ bool DTrace::CheckRootAccess()
 	return system(cmd) == 0;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-CaptureStatus::Type DTrace::Start(Mode::Type mode, int /*frequency*/, const ThreadList& threads)
+CaptureStatus::Type DTrace::Start(Mode::Type mode, int /*frequency*/, const ThreadList& /*threads*/)
 {
-	if (state == STATE_IDLE && (mode & Mode::SWITH_CONTEXTS) != 0)
+	if (state == STATE_IDLE && (mode & Mode::SWITH_CONTEXT) != 0)
 	{
 		if (!CheckRootAccess())
 			return CaptureStatus::ERR_TRACER_INVALID_PASSWORD;
@@ -245,7 +245,7 @@ DTrace::ParseResult DTrace::Parse(const char* line)
 		currState.prio = atoi(cmd);
 		cmd = strchr(cmd, ' ') + 1;
 
-		uint64_t timestamp = atoll(cmd);
+		int64_t timestamp = (int64_t)atoll(cmd);
 
 		if (timestamp > timeout)
 			return PARSE_TIMEOUT;

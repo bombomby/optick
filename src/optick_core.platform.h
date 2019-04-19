@@ -82,7 +82,7 @@ namespace Optick
 		virtual const vector<Module>& GetModules() = 0;
 
 		// Get Symbol from address
-		virtual const Symbol* const GetSymbol(uint64 dwAddress) = 0;
+		virtual const Symbol* GetSymbol(uint64 dwAddress) = 0;
 
 		virtual ~SymbolEngine() {};
 	};

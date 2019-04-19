@@ -1405,7 +1405,7 @@ public:
 	void Close();
 
 	// Get Symbol from PDB file
-	virtual const Symbol * const GetSymbol(uint64 dwAddress) override;
+	virtual const Symbol * GetSymbol(uint64 dwAddress) override;
 	virtual const vector<Module>& GetModules() override;
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1418,7 +1418,7 @@ WinSymbolEngine::~WinSymbolEngine()
 	Close();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-const Symbol * const WinSymbolEngine::GetSymbol(uint64 address)
+const Symbol* WinSymbolEngine::GetSymbol(uint64 address)
 {
 	if (address == 0)
 		return nullptr;

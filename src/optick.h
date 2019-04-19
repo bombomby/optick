@@ -392,6 +392,7 @@ struct State
 		// Useful for attaching summary and screenshot to the capture
 		DUMP_CAPTURE,
 
+		// Cancel current capture
 		CANCEL_CAPTURE,
 	};
 };
