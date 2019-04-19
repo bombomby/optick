@@ -115,7 +115,7 @@ bool DTrace::CheckRootAccess()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 CaptureStatus::Type DTrace::Start(Mode::Type mode, int /*frequency*/, const ThreadList& /*threads*/)
 {
-	if (state == STATE_IDLE && (mode & Mode::SWITH_CONTEXT) != 0)
+	if (state == STATE_IDLE && (mode & Mode::SWITCH_CONTEXT) != 0)
 	{
 		if (!CheckRootAccess())
 			return CaptureStatus::ERR_TRACER_INVALID_PASSWORD;

@@ -235,7 +235,7 @@ public:
 		FD_ZERO(&recieveSet);
 		FD_SET(acceptSocket, &recieveSet);
 
-		static timeval lim = { 0 };
+		static timeval lim = { 0, 0 };
 
 #if defined(USE_BERKELEY_SOCKETS)
 		if (::select(acceptSocket + 1, &recieveSet, nullptr, nullptr, &lim) == 1)
