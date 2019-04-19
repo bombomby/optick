@@ -7,7 +7,7 @@ This tool will be useful for any type of the game: from Indie to AAA.<br/>
 ## Build Status
 | Windows | Linux | MacOS |
 | ------- | ----- | ----- |
-| [![Windows Build status](https://ci.appveyor.com/api/projects/status/bu5smbuh1d2lcsf6?svg=true)](https://ci.appveyor.com/project/bombomby/brofiler) | [![Linux+MacOS Build Status](https://travis-ci.org/bombomby/brofiler.svg?branch=v2.0)](https://travis-ci.org/bombomby/brofiler) | [![Linux+MacOS Build Status](https://travis-ci.org/bombomby/brofiler.svg?branch=v2.0)](https://travis-ci.org/bombomby/brofiler) |
+| [![Windows Build status](https://ci.appveyor.com/api/projects/status/bu5smbuh1d2lcsf6?svg=true)](https://ci.appveyor.com/project/bombomby/brofiler) | [![Linux+MacOS Build Status](https://travis-ci.org/bombomby/optick.svg?branch=v2.0)](https://travis-ci.org/bombomby/optick) | [![Linux+MacOS Build Status](https://travis-ci.org/bombomby/optick.svg?branch=v2.0)](https://travis-ci.org/bombomby/optick) |
 
 ![](https://optick.dev/images/screenshots/optick/Optick.png)
 
