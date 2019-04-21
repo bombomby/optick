@@ -25,6 +25,9 @@ using Profiler.ViewModels;
 using System.Drawing;
 using System.Drawing.Imaging;
 using MahApps.Metro.Controls.Dialogs;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using Newtonsoft.Json;
 
 namespace Profiler.Views
 {
@@ -88,6 +91,7 @@ namespace Profiler.Views
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
 		{
 			ParseCommandLine();
+			CheckVersionOnGithub();
 		}
 
 		private void ParseCommandLine()
@@ -118,6 +122,54 @@ namespace Profiler.Views
 
 
 		Version CurrentVersion { get { return Assembly.GetExecutingAssembly().GetName().Version; } }
+
+
+		const String LatestVersionGithubURL = "http://api.github.com/repos/bombomby/optick/releases/latest";
+
+
+		class NewVersionVM : BaseViewModel
+		{
+			public String Version { get; set; }
+			public String Name { get; set; }
+			public String Body { get; set; }
+		}
+
+
+		public void CheckVersionOnGithub()
+		{
+			Task.Run(() =>
+			{
+				try
+				{
+					using (WebClient client = new WebClient())
+					{
+						client.Headers.Add("user-agent", "Optick");
+						String data = client.DownloadString(new Uri(LatestVersionGithubURL));
+
+						dynamic array = JsonConvert.DeserializeObject(data);
+
+						Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+						{
+							NewVersionVM vm = new NewVersionVM()
+							{
+								Version = array["tag_name"],
+								Name = array["name"],
+								Body = array["body"],
+							};
+							VersionTooltip.DataContext = vm;
+							NewVersionButtonTooltip.DataContext = vm;
+							Version version = Version.Parse(vm.Version);
+							if (version > CurrentVersion)
+								OpenLatestRelease.Visibility = Visibility.Visible;
+						}));
+					}
+				}
+				catch (Exception ex)
+				{
+					Debug.WriteLine(ex.Message);
+				}
+			});
+		}
 
 		String GetUniqueID()
 		{
@@ -151,62 +203,6 @@ namespace Profiler.Views
 			using (WebClient client = new WebClient())
 			{
 				client.UploadStringAsync(new Uri("http://www.google-analytics.com/collect"), "POST", text.ToString());
-			}
-		}
-
-		WebClient checkVersion;
-
-		void MainToolBar_Loaded(object sender, RoutedEventArgs e)
-		{
-			checkVersion = new WebClient();
-
-			checkVersion.CachePolicy = new RequestCachePolicy(RequestCacheLevel.NoCacheNoStore);
-			checkVersion.DownloadStringCompleted += new DownloadStringCompletedEventHandler(OnVersionDownloaded);
-
-			try
-			{
-				checkVersion.DownloadStringAsync(new Uri("https://optick.dev/update"));
-			}
-			catch (Exception ex)
-			{
-				Debug.Print(ex.Message);
-			}
-
-		}
-
-		void OnVersionDownloaded(object sender, DownloadStringCompletedEventArgs e)
-		{
-			if (e.Cancelled || e.Error != null || String.IsNullOrEmpty(e.Result))
-				return;
-
-			try
-			{
-				SendReportToGoogleAnalytics();
-
-				XmlDocument doc = new XmlDocument();
-				doc.LoadXml(e.Result);
-
-				XmlElement versionNode = doc.SelectSingleNode("//div[@id='version']") as XmlElement;
-
-				if (versionNode != null)
-				{
-					Version version = Version.Parse(versionNode.InnerText);
-
-					if (version != CurrentVersion)
-					{
-						XmlElement messageNode = doc.SelectSingleNode("//div[@id='message']") as XmlElement;
-						String message = messageNode != null ? messageNode.InnerText : String.Empty;
-
-						XmlElement urlNode = doc.SelectSingleNode("//div[@id='url']") as XmlElement;
-						String url = urlNode != null ? urlNode.InnerText : String.Empty;
-
-						FrameCaptureControl.ShowWarning(message, url);
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				Debug.Print(ex.Message);
 			}
 		}
 
@@ -263,6 +259,11 @@ namespace Profiler.Views
 		private void OpenWikiIcon_Click(object sender, RoutedEventArgs e)
 		{
 			Process.Start("https://github.com/bombomby/optick/wiki");
+		}
+
+		private void OpenLatestRelease_Click(object sender, RoutedEventArgs e)
+		{
+			Process.Start("https://github.com/bombomby/optick/releases");
 		}
 	}
 

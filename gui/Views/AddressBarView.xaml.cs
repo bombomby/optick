@@ -44,5 +44,12 @@ namespace Profiler.Views
             if (con != null && con.CanEdit)
                 PwdBox.Password = null;
         }
-    }
+
+		private void MenuItem_Remove(object sender, RoutedEventArgs e)
+		{
+			ConnectionVM connection = (e.Source as FrameworkElement).DataContext as ConnectionVM;
+			if (connection.CanDelete)
+				(DataContext as AddressBarViewModel).Connections.Remove(connection);
+		}
+	}
 }

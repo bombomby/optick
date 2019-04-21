@@ -7,7 +7,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:taskmanager="clr-namespace:Profiler.TaskManager"
-        mc:Ignorable="d" x:Class="Profiler.Views.MainView"
+    xmlns:views="clr-namespace:Profiler.Views"
+    mc:Ignorable="d" x:Class="Profiler.Views.MainView"
         Height="1000" Width="1600" 
         Drop="Window_Drop" DragEnter="Window_DragEnter" 
         AllowDrop="True"
@@ -24,7 +25,31 @@
     <MahApps:MetroWindow.RightWindowCommands>
         <MahApps:WindowCommands>
             <StackPanel Orientation="Horizontal">
-                <TextBlock Text="{Binding Version, Mode=OneTime, StringFormat={}v{0}}" FontWeight="Bold" FontSize="14" Opacity="0.3" VerticalAlignment="Center" Margin="10,0" />
+                <TextBlock Text="{Binding Version, Mode=OneTime, StringFormat={}v{0}}" FontWeight="Bold" FontSize="14" Opacity="0.3" VerticalAlignment="Center" Margin="10,0">
+                    <TextBlock.ToolTip>
+                        <Border x:Name="VersionTooltip">
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                <TextBlock Text="{Binding Body}" />
+                            </StackPanel>
+                        </Border>
+                    </TextBlock.ToolTip>
+                </TextBlock>
+                <Button x:Name="OpenLatestRelease" Click="OpenLatestRelease_Click" Visibility="Collapsed" Width="30" Margin="-8,0,2,0">
+                    <Button.ToolTip>
+                        <Border x:Name="NewVersionButtonTooltip">
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="New Version is available!" />
+                                <TextBlock Text="{Binding Name}" FontWeight="Bold" />
+                                <TextBlock Text="{Binding Body}" />
+                            </StackPanel>
+                        </Border>
+                    </Button.ToolTip>
+                    <Button.Resources>
+                        <SolidColorBrush x:Key="IconsColor">Gold</SolidColorBrush>
+                    </Button.Resources>
+                    <ContentControl Style="{StaticResource appbar_warning_circle}" Margin="-10" />
+                </Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal">
                 <Button Margin="-2" ToolTip="Navigate to the Wiki" x:Name="OpenWikiIcon" Click="OpenWikiIcon_Click">

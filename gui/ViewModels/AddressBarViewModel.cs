@@ -58,11 +58,11 @@ namespace Profiler.ViewModels
             set { SetProperty(ref _canEdit, value); }
         }
 
-        private bool _isStatic;
-        public bool IsStatic
+        private bool _canDelete;
+		public bool CanDelete
         {
-            get { return _isStatic; }
-            set { SetProperty(ref _isStatic, value); }
+            get { return _canDelete; }
+            set { SetProperty(ref _canDelete, value); }
         }
 
         public String Icon
@@ -132,7 +132,7 @@ namespace Profiler.ViewModels
         {
             List<IPAddress> addresses = Platform.GetPCAddresses();
             foreach (var ip in addresses)
-                Connections.Add(new ConnectionVM() { Name = Environment.MachineName, Address = ip.ToString(), Target = Platform.Type.Windows, IsStatic = true });
+                Connections.Add(new ConnectionVM() { Name = Environment.MachineName, Address = ip.ToString(), Target = Platform.Type.Windows, CanDelete = false });
 
             foreach (Platform.Connection con in Settings.LocalSettings.Data.Connections)
                 Connections.Add(new ConnectionVM(con));
@@ -161,7 +161,7 @@ namespace Profiler.ViewModels
             if (Connections.FirstOrDefault(c => c.CanEdit == true) == null)
             {
                 List<IPAddress> addresses = Platform.GetPCAddresses();
-                Connections.Add(new ConnectionVM() { Name = "Network", Address = addresses.Count > 0 ? addresses[0].ToString() : "127.0.0.1", Target = Platform.Type.Unknown, IsStatic = true, CanEdit = true });
+                Connections.Add(new ConnectionVM() { Name = "Network", Address = addresses.Count > 0 ? addresses[0].ToString() : "127.0.0.1", Target = Platform.Type.Unknown, CanDelete = false, CanEdit = true });
             }
         }
 
@@ -170,7 +170,7 @@ namespace Profiler.ViewModels
             var connectionList = Settings.LocalSettings.Data.Connections;
             connectionList.Clear();
             foreach (ConnectionVM con in Connections)
-                if (!con.IsStatic)
+                if (con.CanDelete)
                     connectionList.Add(con.GetConnection());
             Settings.LocalSettings.Data.LastConnection = Selection.GetConnection();
             Settings.LocalSettings.Save();
@@ -186,7 +186,7 @@ namespace Profiler.ViewModels
                 if (item.CanEdit)
                 {
                     item.CanEdit = false;
-                    item.IsStatic = false;
+                    item.CanDelete = true;
                 }
             }
             else

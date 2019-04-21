@@ -419,6 +419,9 @@ namespace Profiler.ViewModels
 
 		public void SetGroup(FrameGroup group)
 		{
+			if (group == null)
+				return;
+
 			// Attaching capture
 			AttachmentVM capture = new AttachmentVM(new FileAttachment() { FileType = FileAttachment.Type.CAPTURE });
 			if (!String.IsNullOrEmpty(group.Name) && File.Exists(group.Name) && false)

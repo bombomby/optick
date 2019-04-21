@@ -19,6 +19,15 @@
             <ComboBox.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal">
+                        <StackPanel.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Remove" Click="MenuItem_Remove">
+                                    <MenuItem.Icon>
+                                        <ContentControl Style="{StaticResource appbar_page_code}" Margin="-10" Width="26" Height="26"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                            </ContextMenu>
+                        </StackPanel.ContextMenu>
                         <Border Width="16" Height="16">
                             <ContentControl Style="{Binding Icon, Converter={StaticResource StringToResource}}" Margin="-8" />
                         </Border>
