@@ -137,11 +137,11 @@ namespace Profiler
 		public abstract void OnMouseClick(Point point, ThreadScroll scroll);
 		public abstract void ApplyFilter(DirectX.DirectXCanvas canvas, ThreadScroll scroll, HashSet<EventDescription> descriptions);
 
-		public Matrix GetWorldMatrix(ThreadScroll scroll)
+		public Matrix GetWorldMatrix(ThreadScroll scroll, bool useMargin = true)
 		{
-			return new Matrix(scroll.Zoom, 0.0, 0.0, (Height - 2.0 * RenderParams.BaseMargin) / scroll.Height,
+			return new Matrix(scroll.Zoom, 0.0, 0.0, (Height - (useMargin ? 2.0 * RenderParams.BaseMargin : 0.0)) / scroll.Height,
 							  -(scroll.ViewUnit.Left * scroll.Zoom),
-							  (Offset + 1.0 * RenderParams.BaseMargin) / scroll.Height);
+							  (Offset + (useMargin ? 1.0 * RenderParams.BaseMargin : 0.0)) / scroll.Height);
 		}
 
 		public delegate void OnVisibilityChangedHandler(ThreadRow row);
@@ -200,7 +200,6 @@ namespace Profiler
 
 		public Color GradientTop { get; set; }
 		public Color GradientBottom { get; set; }
-		public Color SplitLines { get; set; }
 		public Color TextColor { get; set; }
 		public Color TickColor { get; set; } = Colors.Gray;
 		public HeaderThreadRow(FrameGroup group)
@@ -218,14 +217,8 @@ namespace Profiler
 			DirectX.DynamicMesh builder = canvas.CreateMesh();
 			builder.Geometry = DirectX.Mesh.GeometryType.Lines;
 
-			double headerHeight = (Height - RenderParams.BaseMargin) / scroll.Height;
+			double headerHeight = 1.0;//(Height - RenderParams.BaseMargin) / scroll.Height;
 
-			// Adding Frame separators
-			foreach (EventFrame frame in Group.MainThread.Events)
-			{
-				double x = scroll.TimeToUnit(frame.Header).Left;
-				builder.AddLine(new Point(x, 0.0), new Point(x, 1.0), SplitLines);
-			}
 			// Adding Tickers
 			if (EnableTickers)
 			{
@@ -256,21 +249,29 @@ namespace Profiler
 		{
 			if (layer == DirectXCanvas.Layer.Foreground)
 			{
-				Matrix world = new Matrix(scroll.Zoom, 0.0, 0.0, 1.0, -scroll.ViewUnit.Left * scroll.Zoom, 0.0);
+				Matrix world = GetWorldMatrix(scroll, false);
 
-				BackgroundMeshLines.WorldTransform = world;
-				BackgroundMeshTris.WorldTransform = world;
+				//Matrix world = new Matrix(scroll.Zoom, 0.0, 0.0, 1.0, -scroll.ViewUnit.Left * scroll.Zoom, 0.0);
 
-				canvas.Draw(BackgroundMeshTris);
-				canvas.Draw(BackgroundMeshLines);
+				if (BackgroundMeshTris != null)
+				{
+					BackgroundMeshTris.WorldTransform = world;
+					canvas.Draw(BackgroundMeshTris);
+				}
+
+				if (BackgroundMeshLines != null)
+				{
+					BackgroundMeshLines.WorldTransform = world;
+					canvas.Draw(BackgroundMeshLines);
+				}
 
 				double yOffset = Offset + (Height - RenderParams.BaseHeight) * 0.5;
 
 				Data.Utils.ForEachInsideInterval(Group.MainThread.Events, scroll.ViewTime, (frame, index) =>
 				{
 					Interval interval = scroll.TimeToPixel(frame.Header);
-
-					String text = String.Format(System.Globalization.CultureInfo.InvariantCulture, "Frame {0} ({1:0.0}ms)", index, frame.Header.Duration);
+					uint? frameNumber = FrameGroup.GetFrameNumber(frame);
+					String text = String.Format(System.Globalization.CultureInfo.InvariantCulture, "Frame {0} ({1:0.0}ms)", frameNumber.HasValue ? frameNumber.Value : (uint)index, frame.Header.Duration);
 
 					// 2 times to emulate "bold"
 					for (int i = 0; i < 2; ++i)

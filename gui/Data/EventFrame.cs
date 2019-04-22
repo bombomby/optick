@@ -87,6 +87,14 @@ namespace Profiler.Data
 			}
 		}
 
+		public T FindTag<T>(String name) where T : Tag
+		{
+			foreach (Tag tag in Tags)
+				if ((tag is T) && (tag.Name == name))
+					return tag as T;
+			return null;
+		}
+
         public Entry RootEntry
         {
             get

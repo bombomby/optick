@@ -460,6 +460,14 @@ namespace Profiler.Data
         {
             return new SamplingFrame(GetCallstacks(desc, type), this);
         }
+
+		public static uint? GetFrameNumber(EventFrame frame)
+		{
+			TagUInt32 tag = frame.FindTag<TagUInt32>("Frame");
+			if (tag != null)
+				return tag.Value;
+			return null;
+		}
 	}
 
 	public class FrameCollection : ObservableCollection<Frame>

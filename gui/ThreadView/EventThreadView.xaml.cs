@@ -405,7 +405,6 @@ namespace Profiler
 				{
 					GradientTop = (ThreadViewControl.OptickAlternativeBackground as SolidColorBrush).Color,
 					GradientBottom = (ThreadViewControl.OptickBackground as SolidColorBrush).Color,
-					SplitLines = (ThreadViewControl.OptickBackground as SolidColorBrush).Color,
 					TextColor = Colors.Gray,
 					Header = new ThreadFilterView(),
 				});
@@ -431,6 +430,9 @@ namespace Profiler
 			}
 
 			ThreadViewControl.InitRows(rows, group != null ? group.Board.TimeSlice : null);
+
+			List<ITick> frames = Group?.MainThread.Events.ConvertAll(frame => frame.Header as ITick);
+			ThreadViewControl.InitForegroundLines(frames);
 		}
 
 		private void CpuCoreChart_ExpandChanged(ThreadRow row)

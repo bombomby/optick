@@ -53,8 +53,9 @@ namespace Profiler
 		public bool ShowThreadHeaders { get; set; } = true;
 
 		Mesh BackgroundMesh { get; set; }
+		Mesh ForegroundMesh { get; set; }
 
-        public delegate void HighlightFrameEventHandler(object sender, HighlightFrameEventArgs e);
+		public delegate void HighlightFrameEventHandler(object sender, HighlightFrameEventArgs e);
         public static readonly RoutedEvent HighlightFrameEvent = EventManager.RegisterRoutedEvent("HighlightFrameEvent", RoutingStrategy.Bubble, typeof(HighlightFrameEventHandler), typeof(ThreadView));
 
 		public void UpdateRows()
@@ -171,6 +172,27 @@ namespace Profiler
 			}
 
 			BackgroundMesh = backgroundBuilder.Freeze(surface.RenderDevice);
+		}
+
+		public void InitForegroundLines(List<ITick> lines)
+		{
+			if (ForegroundMesh != null)
+				ForegroundMesh.Dispose();
+
+			DynamicMesh builder = surface.CreateMesh();
+			builder.Geometry = Mesh.GeometryType.Lines;
+
+			// Adding Frame separators
+			if (lines != null)
+			{
+				foreach (ITick line in lines)
+				{
+					double x = Scroll.TimeToUnit(line);
+					builder.AddLine(new Point(x, 0.0), new Point(x, 1.0), OptickAlternativeBackground.Color);
+				}
+			}
+
+			ForegroundMesh = builder.Freeze(surface.RenderDevice);
 		}
 
 		DynamicMesh SelectionMesh;
@@ -533,6 +555,10 @@ namespace Profiler
 
 			if (layer == DirectXCanvas.Layer.Foreground)
 			{
+				Matrix world = new Matrix(Scroll.Zoom, 0.0, 0.0, 1.0, -Scroll.ViewUnit.Left * Scroll.Zoom, 0.0);
+				ForegroundMesh.WorldTransform = world;
+				canvas.Draw(ForegroundMesh);
+
 				DrawSelection(canvas);
 				DrawHover(canvas);
 				DrawMeasure(canvas);
