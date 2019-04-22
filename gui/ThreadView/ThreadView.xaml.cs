@@ -555,9 +555,12 @@ namespace Profiler
 
 			if (layer == DirectXCanvas.Layer.Foreground)
 			{
-				Matrix world = new Matrix(Scroll.Zoom, 0.0, 0.0, 1.0, -Scroll.ViewUnit.Left * Scroll.Zoom, 0.0);
-				ForegroundMesh.WorldTransform = world;
-				canvas.Draw(ForegroundMesh);
+				if (ForegroundMesh != null)
+				{
+					Matrix world = new Matrix(Scroll.Zoom, 0.0, 0.0, 1.0, -Scroll.ViewUnit.Left * Scroll.Zoom, 0.0);
+					ForegroundMesh.WorldTransform = world;
+					canvas.Draw(ForegroundMesh);
+				}
 
 				DrawSelection(canvas);
 				DrawHover(canvas);

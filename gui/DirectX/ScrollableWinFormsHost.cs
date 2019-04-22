@@ -11,47 +11,14 @@ using System.Windows.Media;
 
 namespace Profiler.DirectX
 {
-	public class WindowsFormsHostEx : WindowsFormsHost
+	class WindowsFormsHostEx : WindowsFormsHost
 	{
-		#region DllImports
-		[DllImport("User32.dll", SetLastError = true)]
-		static extern int SetWindowRgn(IntPtr hWnd, IntPtr hRgn, bool bRedraw);
-
-		[DllImport("gdi32.dll")]
-		static extern IntPtr CreateRectRgn(int nLeftRect, int nTopRect, int nRightRect, int nBottomRect);
-
-		#endregion
-
-		#region Events
-		public event EventHandler LocationChanged;
-		#endregion
-
-		#region Members
 		private PresentationSource _presentationSource;
-		#endregion
 
-		#region Properties
-		private ScrollViewer ParentScrollViewer { get; set; }
-		private bool Scrolling { get; set; }
-		public bool Resizing { get; set; }
-		private Visual RootVisual
-		{
-			get
-			{
-				_presentationSource = PresentationSource.FromVisual(this);
-				return _presentationSource.RootVisual;
-			}
-		}
-		#endregion
-
-		#region Constructors
 		public WindowsFormsHostEx()
 		{
 			PresentationSource.AddSourceChangedHandler(this, SourceChangedEventHandler);
 		}
-		#endregion
-
-		#region Methods
 
 		public class DpiScale
 		{
@@ -65,61 +32,29 @@ namespace Profiler.DirectX
 
 			base.OnWindowPositionChanged(rcBoundingBox);
 
+			if (ParentScrollViewer == null)
+				return;
+
 			Rect newRect = ScaleRectDownFromDPI(rcBoundingBox, dpiScale);
-			Rect finalRect;
-			if (ParentScrollViewer != null)
+			GeneralTransform tr = RootVisual.TransformToDescendant(ParentScrollViewer);
+			var scrollRect = new Rect(new Size(ParentScrollViewer.ViewportWidth, ParentScrollViewer.ViewportHeight));
+
+			var intersect = Rect.Intersect(scrollRect, tr.TransformBounds(newRect));
+			if (!intersect.IsEmpty)
 			{
-				ParentScrollViewer.ScrollChanged += ParentScrollViewer_ScrollChanged;
-				ParentScrollViewer.SizeChanged += ParentScrollViewer_SizeChanged;
-				ParentScrollViewer.Loaded += ParentScrollViewer_Loaded;
+				tr = ParentScrollViewer.TransformToDescendant(this);
+				intersect = tr.TransformBounds(intersect);
+				intersect = ScaleRectUpToDPI(intersect, dpiScale);
 			}
+			else
+				intersect = new Rect();
 
-			if (Scrolling || Resizing)
-			{
-				if (ParentScrollViewer == null)
-					return;
-				MatrixTransform tr = RootVisual.TransformToDescendant(ParentScrollViewer) as MatrixTransform;
+			int x1 = (int)Math.Round(intersect.Left);
+			int y1 = (int)Math.Round(intersect.Top);
+			int x2 = (int)Math.Round(intersect.Right);
+			int y2 = (int)Math.Round(intersect.Bottom);
 
-				var scrollRect = new Rect(new Size(ParentScrollViewer.ViewportWidth, ParentScrollViewer.ViewportHeight));
-				var c = tr.TransformBounds(newRect);
-
-				var intersect = Rect.Intersect(scrollRect, c);
-				if (!intersect.IsEmpty)
-				{
-					tr = ParentScrollViewer.TransformToDescendant(this) as MatrixTransform;
-					intersect = tr.TransformBounds(intersect);
-					finalRect = ScaleRectUpToDPI(intersect, dpiScale);
-				}
-				else
-					finalRect = intersect = new Rect();
-
-				int x1 = (int)Math.Round(finalRect.X);
-				int y1 = (int)Math.Round(finalRect.Y);
-				int x2 = (int)Math.Round(finalRect.Right);
-				int y2 = (int)Math.Round(finalRect.Bottom);
-
-				SetRegion(x1, y1, x2, y2);
-				this.Scrolling = false;
-				this.Resizing = false;
-
-			}
-			LocationChanged?.Invoke(this, new EventArgs());
-		}
-
-		private void ParentScrollViewer_Loaded(object sender, RoutedEventArgs e)
-		{
-			this.Resizing = true;
-		}
-
-		private void ParentScrollViewer_SizeChanged(object sender, SizeChangedEventArgs e)
-		{
-			this.Resizing = true;
-		}
-
-		private void ParentScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
-		{
-			if (e.VerticalChange != 0 || e.HorizontalChange != 0 || e.ExtentHeightChange != 0 || e.ExtentWidthChange != 0)
-				Scrolling = true;
+			SetRegion(x1, y1, x2, y2);
 		}
 
 		protected override void Dispose(bool disposing)
@@ -127,21 +62,13 @@ namespace Profiler.DirectX
 			base.Dispose(disposing);
 
 			if (disposing)
-			{
 				PresentationSource.RemoveSourceChangedHandler(this, SourceChangedEventHandler);
-				_presentationSource = null;
-			}
 		}
 
 		private void SourceChangedEventHandler(Object sender, SourceChangedEventArgs e)
 		{
-			if (ParentScrollViewer != null)
-			{
-				ParentScrollViewer.ScrollChanged -= ParentScrollViewer_ScrollChanged;
-				ParentScrollViewer.SizeChanged -= ParentScrollViewer_SizeChanged;
-				ParentScrollViewer.Loaded -= ParentScrollViewer_Loaded;
-			}
 			ParentScrollViewer = FindParentScrollViewer();
+			_presentationSource = null;
 		}
 
 		private ScrollViewer FindParentScrollViewer()
@@ -164,6 +91,19 @@ namespace Profiler.DirectX
 			SetWindowRgn(Handle, CreateRectRgn(x1, y1, x2, y2), true);
 		}
 
+		private Visual RootVisual
+		{
+			get
+			{
+				if (_presentationSource == null)
+					_presentationSource = PresentationSource.FromVisual(this);
+
+				return _presentationSource.RootVisual;
+			}
+		}
+
+		private ScrollViewer ParentScrollViewer { get; set; }
+
 		public static Rect ScaleRectDownFromDPI(Rect _sourceRect, DpiScale dpiScale)
 		{
 			double dpiX = dpiScale.DpiScaleX;
@@ -177,6 +117,11 @@ namespace Profiler.DirectX
 			double dpiY = dpiScale.DpiScaleY;
 			return new Rect(new Point(_toScaleUp.X * dpiX, _toScaleUp.Y * dpiY), new System.Windows.Size(_toScaleUp.Width * dpiX, _toScaleUp.Height * dpiY));
 		}
-		#endregion
+
+		[DllImport("User32.dll", SetLastError = true)]
+		static extern int SetWindowRgn(IntPtr hWnd, IntPtr hRgn, bool bRedraw);
+
+		[DllImport("gdi32.dll")]
+		static extern IntPtr CreateRectRgn(int nLeftRect, int nTopRect, int nRightRect, int nBottomRect);
 	}
 }

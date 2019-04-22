@@ -244,12 +244,6 @@ namespace Profiler.Controls
 			timeLine.StartCapture(address, platform.Port, settings, platform.Password);
 		}
 
-		private void SettingsButton_Click(object sender, RoutedEventArgs e)
-		{
-			SettingsWindow settingsWindow = new SettingsWindow();
-			settingsWindow.Show();
-		}
-
 		private void OnOpenCommandExecuted(object sender, ExecutedRoutedEventArgs args)
 		{
 			System.Windows.Forms.OpenFileDialog dlg = new System.Windows.Forms.OpenFileDialog();

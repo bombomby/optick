@@ -211,6 +211,7 @@ namespace Profiler.Data
 	{
 		public UInt64 Address { get; private set; }
 		public override String Name { get { return Description.Name; } }
+		public String NameWithModule { get { return String.Format("{0} [{1}]", Name, Description.ModuleShortName); } }
 
 		private List<BaseTreeNode> shadowNodes = new List<BaseTreeNode>();
 		public override List<BaseTreeNode> ShadowNodes { get { return shadowNodes; } }

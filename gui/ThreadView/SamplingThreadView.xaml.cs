@@ -41,7 +41,7 @@ namespace Profiler
 		void BuildEntryList(List<Entry> entries, SamplingNode node, double offset)
 		{
 			if (node.Description != null)
-				entries.Add(new Entry(new EventDescription(node.Name), Durable.MsToTick(offset), Durable.MsToTick(offset + node.Duration)));
+				entries.Add(new Entry(new EventDescription(node.NameWithModule), Durable.MsToTick(offset), Durable.MsToTick(offset + node.Duration)));
 
 			offset += node.SelfDuration * 0.5;
 
