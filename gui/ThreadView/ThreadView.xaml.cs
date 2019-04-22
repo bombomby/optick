@@ -97,9 +97,11 @@ namespace Profiler
 				rowCount += 1;
 			}
 
-			surface.Height = offset;
-			surface.MaxHeight = offset;
 			Scroll.Height = offset;
+
+			double controlHeight = offset / RenderSettings.dpiScaleY;
+			surface.Height = controlHeight;
+			surface.MaxHeight = controlHeight;
 
 			InitBackgroundMesh();
 		}

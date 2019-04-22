@@ -16,7 +16,7 @@ namespace Profiler
 	public static class RenderParams
 	{
 		private static double baseHeight = 16.0;
-		public static double BaseHeight { get { return baseHeight * DirectX.RenderSettings.dpiScaleX; } }
+		public static double BaseHeight { get { return baseHeight * DirectX.RenderSettings.dpiScaleY; } }
 		private static double baseMargin = 0.75;
 		public static double BaseMargin { get { return baseMargin * DirectX.RenderSettings.dpiScaleY; } }
 	}
@@ -194,6 +194,7 @@ namespace Profiler
 	public class HeaderThreadRow : ThreadRow
 	{
 		public static double DefaultHeaderHeight => RenderParams.BaseHeight * 1.25;
+		public static double DefaultHeaderHeightDPI => DefaultHeaderHeight / RenderSettings.dpiScaleY;
 		public override double Height { get { return DefaultHeaderHeight; } }
 		public override string Name { get { return String.Empty; } }
 

@@ -16,7 +16,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="1*" />
         </Grid.RowDefinitions>
-        <Border Height="{Binding Source={x:Static Profiler:HeaderThreadRow.DefaultHeaderHeight}}" Width="{Binding Source={x:Static Profiler:HeaderThreadRow.DefaultHeaderHeight}}">
+        <Border Height="{Binding Source={x:Static Profiler:HeaderThreadRow.DefaultHeaderHeightDPI}}" Width="{Binding Source={x:Static Profiler:HeaderThreadRow.DefaultHeaderHeightDPI}}">
             <ContentControl Style="{StaticResource appbar_filter_alphabetical}" Margin="-6,-9,-6,-6 " />
         </Border>
         <TextBox x:Name="ThreadSearchBox"
@@ -24,8 +24,8 @@
                     MahApps:TextBoxHelper.UseFloatingWatermark="False"
                     MahApps:TextBoxHelper.Watermark="Thread Name"
                     MahApps:TextBoxHelper.ClearTextButton="True"
-                    Height="{Binding Source={x:Static Profiler:HeaderThreadRow.DefaultHeaderHeight}}"
-                    MinHeight="{Binding Source={x:Static Profiler:HeaderThreadRow.DefaultHeaderHeight}}"
+                    Height="{Binding Source={x:Static Profiler:HeaderThreadRow.DefaultHeaderHeightDPI}}"
+                    MinHeight="{Binding Source={x:Static Profiler:HeaderThreadRow.DefaultHeaderHeightDPI}}"
                     Background="{StaticResource OptickContentBackground}"
                     FontSize="10">
         </TextBox>
