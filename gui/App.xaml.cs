@@ -14,13 +14,13 @@ namespace Profiler
 
         static App()
         {
-			AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
+			//AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
         }
 
-		static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
-		{
-			return AutoEmbedLibs.EmbeddedAssembly.Get(args.Name);
-		}
+		//static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
+		//{
+		//	return AutoEmbedLibs.EmbeddedAssembly.Get(args.Name);
+		//}
 
         protected override void OnStartup(StartupEventArgs e)
         {
