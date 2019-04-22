@@ -10,9 +10,9 @@ using System.Windows;
 [assembly: AssemblyTitle("Optick")]
 [assembly: AssemblyDescription("Super Lightweight C++ Profiler for Games")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("https://optick.dev")]
 [assembly: AssemblyProduct("Optick")]
-[assembly: AssemblyCopyright("Copyright © Vadim Syusarev 2019")]
+[assembly: AssemblyCopyright("Copyright © Vadim Slyusarev 2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
