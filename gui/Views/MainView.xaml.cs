@@ -162,6 +162,9 @@ namespace Profiler.Views
 							if (version > CurrentVersion)
 								OpenLatestRelease.Visibility = Visibility.Visible;
 						}));
+
+
+						SendReportToGoogleAnalytics();
 					}
 				}
 				catch (Exception ex)
