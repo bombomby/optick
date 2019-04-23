@@ -52,12 +52,60 @@ Open solution `build\vs2017\Optick.sln` with samples.
 
 ## API
 #### ```OPTICK_EVENT();```
-#### ```OPTICK_CATEGORY(NAME, COLOR);```
-#### ```OPTICK_THREAD(FRAME_NAME);```
-#### ```OPTICK_TAG(NAME, DATA);```
-#### ```OPTICK_PUSH(NAME);```				
-#### ```OPTICK_POP();```		
-#### ```OPTICK_SET_STATE_CHANGED_CALLBACK(CALLBACK);```
+Basic scoped performance counter. Use this counter 99% of the time.<br/>
+It automatically extracts the name of the current function.
+```c++
+void Function()
+{ 
+	OPTICK_EVENT();
+	...
+}
+```
+You could also pass an optional name for this macro to override the name - `OPTICK_EVENT("ScopeName");`.<br/>
+Useful for marking multiple scopes within one function.
+#### ```OPTICK_CATEGORY("UpdateLogic", Optick::Category::GameLogic);```
+Scoped performance counter with dedicated category.<br/>
+Categories always go with predefined set of colors.<br/>
+Use categories for high-level overview of the code.
+#### ```OPTICK_THREAD("ThreadName");```
+A macro for declaring a new thread.<br/>
+Required for collecting events from the current thread.
+#### ```OPTICK_TAG("ModelName", m_Name);```
+A macro for attaching any custom data to the current scope.<br/>
+Supported types: float, int32_t, uint32_t, uint64_t, float[3], const char*.
+#### ```OPTICK_SET_STATE_CHANGED_CALLBACK(CALLBACK_FUNCTION);```
+A macro for subscribing on state change event.<br/>
+Useful for attaching screenshots or any custom files and data to the capture.<br/>
+```c++
+bool OnOptickStateChanged(Optick::State::Type state)
+{
+	if (state == Optick::State::STOP_CAPTURE)
+	{
+		// Starting to save screenshot
+		g_TakingScreenshot = true;
+	}
+
+	if (state == Optick::State::DUMP_CAPTURE)
+	{
+		// Wait for screenshot to be ready
+		// Returning false from this function will force Optick to retry again the next frame
+		if (g_TakingScreenshot)
+			return false;
+
+		// Attach screenshot
+		Optick::AttachFile(Optick::File::OPTICK_IMAGE, "Screenshot.bmp", g_ScreenshotRequest.c_str());
+		
+		// Attach text file
+		const char* textFile = "You could attach custom text files!";
+		Optick::AttachFile(Optick::File::OPTICK_TEXT, "Test.txt", (uint8_t*)textFile, (uint32_t)strlen(textFile));
+		
+		// Attaching some custom data
+		Optick::AttachSummary("Build", __DATE__ " " __TIME__);
+	}
+	return true;
+}
+```
+## GPU API
 #### ```OPTICK_GPU_INIT_D3D12(DEVICE, CMD_QUEUES, NUM_CMD_QUEUS);```
 #### ```OPTICK_GPU_INIT_VULKAN(DEVICES, PHYSICAL_DEVICES, CMD_QUEUES, CMD_QUEUES_FAMILY, NUM_CMD_QUEUS);```
 #### ```OPTICK_GPU_CONTEXT(...);```
