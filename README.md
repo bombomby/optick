@@ -39,6 +39,7 @@ void SlowFunction()
 	...
 }
 ```
+4) Edit `optick.config.h` to enable/disable some of the features in specific configs or platforms.<br/>(e.g. disabling Optick in final builds)
 
 ## API
 All the available API calls are documented here:<br/>
