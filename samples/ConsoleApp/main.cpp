@@ -27,6 +27,8 @@ int main()
 
 	cout << "Starting main loop update." << endl;
 
+	OPTICK_SET_MEMORY_ALLOCATOR([](size_t size) -> void* { return operator new(size); }, [](void* p) { operator delete(p); });
+
 	while( true ) 
 	{
 		OPTICK_FRAME("MainThread");

@@ -29,7 +29,7 @@ class Server
 	bool InitConnection();
 
 public:
-	void Send(DataResponse::Type type, OutputDataStream& stream = OutputDataStream::Empty);
+	void Send(DataResponse::Type type, OutputDataStream& stream);
 	void Update();
 
 	string GetHostName() const;

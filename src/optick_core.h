@@ -443,8 +443,6 @@ class Core
 	Core();
 	~Core();
 
-	static Core notThreadSafeInstance;
-
 	void DumpCapturingProgress();
 	void SendHandshakeResponse(CaptureStatus::Type status);
 

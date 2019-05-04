@@ -32,9 +32,9 @@ namespace Optick
 		// CPU Time (Ticks)
 		static OPTICK_INLINE int64 GetTime();
 		// System Tracer
-		static OPTICK_INLINE Trace* GetTrace();
+		static OPTICK_INLINE Trace* CreateTrace();
 		// Symbol Resolver
-		static OPTICK_INLINE SymbolEngine* GetSymbolEngine();
+		static OPTICK_INLINE SymbolEngine* CreateSymbolEngine();
 	};
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

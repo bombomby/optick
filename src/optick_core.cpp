@@ -936,6 +936,11 @@ void Core::DumpFrames(uint32 mode)
 		callstackCollector.SerializeSymbols(symbolsStream);
 		Server::Get().Send(DataResponse::CallstackDescriptionBoard, symbolsStream);
 
+		// We can free some memory now to unlock space for callstack serialization
+		DumpProgress("Deallocating memory for SymbolEngine");
+		Memory::Free(symbolEngine);
+		symbolEngine = nullptr;
+
 		DumpProgress("Serializing callstacks");
 		OutputDataStream callstacksStream;
 		callstacksStream << boardNumber;
@@ -943,7 +948,8 @@ void Core::DumpFrames(uint32 mode)
 		Server::Get().Send(DataResponse::CallstackPack, callstacksStream);
 	}
 
-	Server::Get().Send(DataResponse::NullFrame, OutputDataStream::Empty);
+	OutputDataStream empty;
+	Server::Get().Send(DataResponse::NullFrame, empty);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpSummary()
@@ -1045,11 +1051,6 @@ Core::Core()
 	, tracer(nullptr)
 	, gpuProfiler(nullptr)
 {
-#if OPTICK_ENABLE_TRACING
-	tracer = Platform::GetTrace();
-	symbolEngine = Platform::GetSymbolEngine();
-#endif
-
 	frameDescriptions[FrameType::CPU] = EventDescription::Create("CPU Frame", __FILE__, __LINE__);
 	frameDescriptions[FrameType::GPU] = EventDescription::Create("GPU Frame", __FILE__, __LINE__);
 	frameDescriptions[FrameType::Render] = EventDescription::Create("Render Frame", __FILE__, __LINE__);
@@ -1169,15 +1170,29 @@ void Core::Activate(Mode::Type mode)
 		{
 			CaptureStatus::Type status = CaptureStatus::ERR_TRACER_FAILED;
 
-			if (tracer && (mode & Mode::TRACER))
+#if OPTICK_ENABLE_TRACING
+			if (mode & Mode::TRACER)
 			{
-                std::lock_guard<std::recursive_mutex> lock(threadsLock);
-				tracer->SetPassword(settings.password.c_str());
-				status = tracer->Start(mode, settings.samplingFrequency, threads);
-				// Let's retry with more narrow setup
-				if (status != CaptureStatus::OK && (mode & Mode::AUTOSAMPLING))
-					status = tracer->Start((Mode::Type)(mode & ~Mode::AUTOSAMPLING), settings.samplingFrequency, threads);
+				if (tracer == nullptr)
+					tracer = Platform::CreateTrace();
+
+				if (tracer)
+				{
+					tracer->SetPassword(settings.password.c_str());
+					{
+						std::lock_guard<std::recursive_mutex> lock(threadsLock);
+						status = tracer->Start(mode, settings.samplingFrequency, threads);
+					}
+					// Let's retry with more narrow setup
+					if (status != CaptureStatus::OK && (mode & Mode::AUTOSAMPLING))
+						status = tracer->Start((Mode::Type)(mode & ~Mode::AUTOSAMPLING), settings.samplingFrequency, threads);
+				}
 			}
+
+			if (mode & Mode::AUTOSAMPLING)
+				if (symbolEngine == nullptr)
+					symbolEngine = Platform::CreateSymbolEngine();
+#endif
 
 			if (gpuProfiler && (mode & Mode::GPU))
 				gpuProfiler->Start(mode);
@@ -1187,7 +1202,12 @@ void Core::Activate(Mode::Type mode)
 		else
 		{
 			if (tracer)
+			{
 				tracer->Stop();
+				Memory::Delete(tracer);
+				tracer = nullptr;
+			}
+				
 
 			if (gpuProfiler)
 				gpuProfiler->Stop(prevMode);
@@ -1555,7 +1575,11 @@ OPTICK_API GPUContext SetGpuContext(GPUContext context)
 OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame)
 {
 	return Core::Get().GetFrameDescription(frame);
-
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+OPTICK_API void SetAllocator(AllocateFn allocateFn, DeallocateFn deallocateFn)
+{
+	Memory::SetAllocator(allocateFn, deallocateFn);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventStorage::EventStorage(): currentMode(Mode::OFF), pushPopEventStackIndex(0), isFiberStorage(false)

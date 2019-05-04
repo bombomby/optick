@@ -19,7 +19,6 @@ namespace Optick
 	class OutputDataStream : private ostringstream 
 	{
 	public:
-		static OutputDataStream Empty;
 		// Move constructor rocks!
 		// Beware of one copy here(do not use it in performance critical parts)
 		string GetData();

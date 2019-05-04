@@ -19,8 +19,6 @@ namespace Optick
 		return *this;
 	}
 
-	OutputDataStream OutputDataStream::Empty;
-
 	OutputDataStream &operator << ( OutputDataStream &stream, const char* val )
 	{
 		uint32 length = val == nullptr ? 0 : (uint32)strlen(val);

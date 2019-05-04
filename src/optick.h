@@ -659,6 +659,11 @@ struct FrameType
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+typedef void* (*AllocateFn)(size_t);
+typedef void  (*DeallocateFn)(void*);
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+OPTICK_API void SetAllocator(AllocateFn allocateFn, DeallocateFn deallocateFn);
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 #define OPTICK_UNUSED(x) (void)(x)
@@ -827,8 +832,15 @@ OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame);
 #define OPTICK_SET_STATE_CHANGED_CALLBACK(CALLBACK)			::Optick::SetStateChangedCallback(CALLBACK);
 
 
+// Registers custom memory allocator within Optick core
+// Example:
+//		OPTICK_SET_MEMORY_ALLOCATOR([](size_t size) -> void* { return operator new(size); }, [](void* p) { operator delete(p); });
+// Notes:
+//		Should be called before the first call to OPTICK_FRAME
+#define OPTICK_SET_MEMORY_ALLOCATOR(ALLOCATE_FUNCTION, DEALLOCATE_FUNCTION)										::Optick::SetAllocator(ALLOCATE_FUNCTION, DEALLOCATE_FUNCTION);
+
 // GPU events
-#define (DEVICE, CMD_QUEUES, NUM_CMD_QUEUS)			::Optick::InitGpuD3D12(DEVICE, CMD_QUEUES, NUM_CMD_QUEUS);
+#define OPTICK_GPU_INIT_D3D12(DEVICE, CMD_QUEUES, NUM_CMD_QUEUS)												::Optick::InitGpuD3D12(DEVICE, CMD_QUEUES, NUM_CMD_QUEUS);
 #define OPTICK_GPU_INIT_VULKAN(DEVICES, PHYSICAL_DEVICES, CMD_QUEUES, CMD_QUEUES_FAMILY, NUM_CMD_QUEUS)			::Optick::InitGpuVulkan(DEVICES, PHYSICAL_DEVICES, CMD_QUEUES, CMD_QUEUES_FAMILY, NUM_CMD_QUEUS);
 
 // Setup GPU context:
@@ -866,6 +878,7 @@ OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame);
 #define OPTICK_STORAGE_PUSH(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START)
 #define OPTICK_STORAGE_POP(STORAGE, CPU_TIMESTAMP_FINISH)				
 #define OPTICK_SET_STATE_CHANGED_CALLBACK(CALLBACK)
+#define OPTICK_SET_MEMORY_ALLOCATOR(ALLOCATE_FUNCTION, DEALLOCATE_FUNCTION)	
 #define OPTICK_GPU_INIT_D3D12(DEVICE, CMD_QUEUES, NUM_CMD_QUEUS)
 #define OPTICK_GPU_INIT_VULKAN(DEVICES, PHYSICAL_DEVICES, CMD_QUEUES, CMD_QUEUES_FAMILY, NUM_CMD_QUEUS)
 #define OPTICK_GPU_CONTEXT(...)

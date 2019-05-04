@@ -126,10 +126,12 @@ IMessage* StartMessage::Create(InputDataStream& stream)
 			>> settings.frameLimit
 			>> settings.timeLimitUs
 			>> settings.spikeLimitUs
-			>> settings.memoryLimitMb;
-	string password;
-	stream >> settings.password;
-	settings.password = base64_decode(password);
+			>> settings.memoryLimitMb
+			>> settings.password;
+
+	if (!settings.password.empty())
+		settings.password = base64_decode(settings.password);
+
 	return msg;
 }
 

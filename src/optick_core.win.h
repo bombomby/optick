@@ -585,6 +585,27 @@ TraceQueryInformation(
 namespace Optick
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+const int MAX_CPU_CORES = 256;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct ETWRuntime
+{
+	array<ThreadID, MAX_CPU_CORES> activeCores;
+	vector<std::pair<uint8_t, SysCallData*>> activeSyscalls;
+	unordered_set<uint64> activeThreadsIDs;
+
+	ETWRuntime()
+	{
+		Reset();
+	}
+
+	void Reset()
+	{
+		activeCores.fill(INVALID_THREAD_ID);
+		activeSyscalls.resize(0);
+		activeThreadsIDs.clear();
+	}
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class ETW : public Trace
 {
 	static const int ETW_BUFFER_SIZE = 1024 << 10; // 1Mb
@@ -605,11 +626,9 @@ class ETW : public Trace
 	static void AdjustPrivileges();
 
 	unordered_map<uint64_t, const EventDescription*> syscallDescriptions;
-
-	void ResolveSysCalls();
 public:
 
-	unordered_set<uint64> activeThreadsIDs;
+	ETWRuntime runtime;
 
 	ETW();
 	~ETW();
@@ -881,33 +900,15 @@ DEFINE_GUID(ThreadGuid, 0x3d6fa8d1, 0xfe05, 0x11d0, 0x9d, 0xda, 0x00, 0xc0, 0x4f
 DEFINE_GUID(ProcessGuid, 0x3d6fa8d0, 0xfe05, 0x11d0, 0x9d, 0xda, 0x00, 0xc0, 0x4f, 0xd7, 0xba, 0x7c);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-const int MAX_CPU_CORES = 256;
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct ETWRuntime
-{
-	array<ThreadID, MAX_CPU_CORES> activeCores;
-	vector<std::pair<uint8_t, SysCallData*>> activeSyscalls;
-
-	ETWRuntime()
-	{
-		Reset();
-	}
-
-	void Reset()
-	{
-		activeCores.fill(INVALID_THREAD_ID);
-		activeSyscalls.resize(0);;
-	}
-};
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-ETWRuntime g_ETWRuntime;
-ETW g_ETW;
+ETW* g_ETW;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 {
 	//static uint8 cpuCoreIsExecutingThreadFromOurProcess[256] = { 0 };
 
 	const byte opcode = eventRecord->EventHeader.EventDescriptor.Opcode;
+
+	ETWRuntime& runtime = g_ETW->runtime;
 
 	if (opcode == CSwitch::OPCODE)
 	{
@@ -923,14 +924,15 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 			desc.timestamp = eventRecord->EventHeader.TimeStamp.QuadPart;
 			Core::Get().ReportSwitchContext(desc);
 
+
 			// Assign ThreadID to the cores
-			if (g_ETW.activeThreadsIDs.find(desc.newThreadId) != g_ETW.activeThreadsIDs.end())
+			if (runtime.activeThreadsIDs.find(desc.newThreadId) != runtime.activeThreadsIDs.end())
 			{
-				g_ETWRuntime.activeCores[desc.cpuId] = desc.newThreadId;
+				runtime.activeCores[desc.cpuId] = desc.newThreadId;
 			}
-			else if (g_ETW.activeThreadsIDs.find(desc.oldThreadId) != g_ETW.activeThreadsIDs.end())
+			else if (runtime.activeThreadsIDs.find(desc.oldThreadId) != runtime.activeThreadsIDs.end())
 			{
-				g_ETWRuntime.activeCores[desc.cpuId] = INVALID_THREAD_ID;
+				runtime.activeCores[desc.cpuId] = INVALID_THREAD_ID;
 			}
 		}
 	}
@@ -946,7 +948,7 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 
 			if (count && pStackWalkEvent->StackThread != 0)
 			{
-				if (pStackWalkEvent->StackProcess == g_ETW.GetProcessID())
+				if (pStackWalkEvent->StackProcess == g_ETW->GetProcessID())
 				{
 					CallstackDesc desc;
 					desc.threadID = pStackWalkEvent->StackThread;
@@ -971,7 +973,7 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 		if (eventRecord->UserDataLength >= sizeof(SysCallEnter))
 		{
 			uint8_t cpuId = eventRecord->BufferContext.ProcessorNumber;
-			uint64_t threadId = g_ETWRuntime.activeCores[cpuId];
+			uint64_t threadId = runtime.activeCores[cpuId];
 
 			if (threadId != INVALID_THREAD_ID)
 			{
@@ -984,7 +986,7 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 				sysCall.id = pEventEnter->SysCallAddress;
 				sysCall.description = nullptr;
 
-				g_ETWRuntime.activeSyscalls.push_back(std::make_pair(cpuId, &sysCall));
+				runtime.activeSyscalls.push_back(std::make_pair(cpuId, &sysCall));
 			}
 		}
 	}
@@ -993,14 +995,14 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 		if (eventRecord->UserDataLength >= sizeof(SysCallExit))
 		{
 			uint8_t cpuId = eventRecord->BufferContext.ProcessorNumber;
-			if (g_ETWRuntime.activeCores[cpuId] != INVALID_THREAD_ID)
+			if (runtime.activeCores[cpuId] != INVALID_THREAD_ID)
 			{
-				for (int i = (int)g_ETWRuntime.activeSyscalls.size() - 1; i >= 0; --i)
+				for (int i = (int)runtime.activeSyscalls.size() - 1; i >= 0; --i)
 				{
-					if (g_ETWRuntime.activeSyscalls[i].first == cpuId)
+					if (runtime.activeSyscalls[i].first == cpuId)
 					{
-						g_ETWRuntime.activeSyscalls[i].second->finish = eventRecord->EventHeader.TimeStamp.QuadPart;
-						g_ETWRuntime.activeSyscalls.erase(g_ETWRuntime.activeSyscalls.begin() + i);
+						runtime.activeSyscalls[i].second->finish = eventRecord->EventHeader.TimeStamp.QuadPart;
+						runtime.activeSyscalls.erase(runtime.activeSyscalls.begin() + i);
 						break;
 					}
 				}
@@ -1069,32 +1071,6 @@ void ETW::AdjustPrivileges()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void ETW::ResolveSysCalls()
-{
-	if (SymbolEngine* symEngine = Platform::GetSymbolEngine())
-	{
-		Core::Get().syscallCollector.syscallPool.ForEach([this, symEngine](SysCallData& data)
-		{
-			auto it = syscallDescriptions.find(data.id);
-			if (it == syscallDescriptions.end())
-			{
-				const Symbol* symbol = symEngine->GetSymbol(data.id);
-				if (symbol != nullptr)
-				{
-					string name(symbol->function.begin(), symbol->function.end());
-
-					data.description = EventDescription::CreateShared(name.c_str(), "SysCall", (long)data.id);
-					syscallDescriptions.insert(std::pair<const uint64_t, const EventDescription *>(data.id, data.description));
-				}
-			}
-			else
-			{
-				data.description = it->second;
-			}
-		});
-	}
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ETW::ETW()
 	: isActive(false)
@@ -1104,6 +1080,9 @@ ETW::ETW()
 	, traceProperties(nullptr)
 {
 	currentProcessId = GetCurrentProcessId();
+
+	OPTICK_ASSERT(g_ETW == nullptr, "Can't create more than one ETW session");
+	g_ETW = this;
 }
 
 CaptureStatus::Type ETW::Start(Mode::Type mode, int frequency, const ThreadList& threads)
@@ -1112,15 +1091,14 @@ CaptureStatus::Type ETW::Start(Mode::Type mode, int frequency, const ThreadList&
 	{
 		AdjustPrivileges();
 
-		g_ETWRuntime.Reset();
+		runtime.Reset();
 
-		activeThreadsIDs.clear();
 		for (auto it = threads.begin(); it != threads.end(); ++it)
 		{
 			ThreadEntry* entry = *it;
 			if (entry->isAlive)
 			{
-				activeThreadsIDs.insert(entry->description.threadID);
+				runtime.activeThreadsIDs.insert(entry->description.threadID);
 			}
 		}
 
@@ -1299,10 +1277,7 @@ bool ETW::Stop()
 
 	isActive = false;
 
-	//VS TODO: Disabling resolving of the syscalls - we can't use then as EventDescriptions at the moment
-	//ResolveSysCalls();
-
-	activeThreadsIDs.clear();
+	runtime.activeThreadsIDs.clear();
 
 	return wasThreadClosed && (closeTraceStatus == ERROR_SUCCESS) && (controlTraceResult == ERROR_SUCCESS);
 }
@@ -1312,11 +1287,12 @@ ETW::~ETW()
 	Stop();
 	Memory::Free(traceProperties);
 	traceProperties = nullptr;
+	g_ETW = nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Trace* Platform::GetTrace()
+Trace* Platform::CreateTrace()
 {
-	return &g_ETW;
+	return Memory::New<ETW>();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
@@ -1652,10 +1628,9 @@ void WinSymbolEngine::Close()
 	}
 }
 //////////////////////////////////////////////////////////////////////////
-SymbolEngine* Platform::GetSymbolEngine()
+SymbolEngine* Platform::CreateSymbolEngine()
 {
-	static WinSymbolEngine pdbSymbolEngine;
-	return &pdbSymbolEngine;
+	return Memory::New<WinSymbolEngine>();
 }
 //////////////////////////////////////////////////////////////////////////
 }

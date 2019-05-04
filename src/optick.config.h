@@ -5,7 +5,7 @@
 // [x] USE_OPTICK					- (Master Switch)
 // [x] OPTICK_ENABLE_TRACING		- (Enable Kernel-level tracing)
 // [x] OPTICK_ENABLE_GPU_D3D12		- (GPU D3D12)
-// [ ] OPTICK_ENABLE_GPU_VULKAN		- (GPU VULKAN)
+// [x] OPTICK_ENABLE_GPU_VULKAN		- (GPU VULKAN)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -42,6 +42,10 @@
 
 // VUKLAN
 #if !defined(OPTICK_ENABLE_GPU_VULKAN)
-#define OPTICK_ENABLE_GPU_VULKAN (OPTICK_ENABLE_GPU && 0)
+#if defined(_MSC_VER)
+#define OPTICK_ENABLE_GPU_VULKAN (OPTICK_ENABLE_GPU /*&& 0*/)
+#else
+#define OPTICK_ENABLE_GPU_VULKAN (0)
+#endif
 #endif
 
