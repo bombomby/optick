@@ -47,7 +47,6 @@ namespace Profiler.ViewModels
         {
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
-                //Series = GenerateSeries(stats);
                 Stats = stats;
                 IsLoading = false;
             }));

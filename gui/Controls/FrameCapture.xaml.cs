@@ -204,11 +204,11 @@ namespace Profiler.Controls
             SummaryVM.CaptureName = null;
 
 			FunctionSummaryVM.Load(null, null);
+			FunctionInstanceVM.Load(null, null);
 
 			FrameInfoControl.DataContext = null;
 			SampleInfoControl.DataContext = null; 
 			SysCallInfoControl.DataContext = null;
-			InstanceHistoryControl.DataContext = null;
 
 			SamplingTreeControl.SetDescription(null, null);
 
