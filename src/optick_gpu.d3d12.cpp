@@ -102,10 +102,10 @@ namespace Optick
 		}
 	}
 
-	void InitGpuD3D12(void* device, void** cmdQueues, uint32_t numQueues)
+	void InitGpuD3D12(ID3D12Device* device, ID3D12CommandQueue** cmdQueues, uint32_t numQueues)
 	{
 		GPUProfilerD3D12* gpuProfiler = Memory::New<GPUProfilerD3D12>();
-		gpuProfiler->InitDevice((ID3D12Device*)device, (ID3D12CommandQueue**)cmdQueues, numQueues);
+		gpuProfiler->InitDevice(device, cmdQueues, numQueues);
 		Core::Get().InitGPUProfiler(gpuProfiler);
 	}
 
@@ -372,7 +372,7 @@ namespace Optick
 
 namespace Optick
 {
-	void InitGpuD3D12(void* /*device*/, void** /*cmdQueues*/, uint32_t /*numQueues*/)
+	void InitGpuD3D12(ID3D12Device* /*device*/, ID3D12CommandQueue** /*cmdQueues*/, uint32_t /*numQueues*/)
 	{
 		OPTICK_FAILED("OPTICK_ENABLE_GPU_D3D12 is disabled! Can't initialize GPU Profiler!");
 	}

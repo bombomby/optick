@@ -84,9 +84,8 @@ void D3D12Multithreading::OnInit()
 	
 	ID3D12Device* pDevice = m_device.Get();
 	ID3D12CommandQueue* pCommandQueue = m_commandQueue.Get();
-	OPTICK_GPU_INIT_D3D12((void*)pDevice, (void**)&pCommandQueue, 1);
+	OPTICK_GPU_INIT_D3D12(pDevice, &pCommandQueue, 1);
 	OPTICK_SET_STATE_CHANGED_CALLBACK(OnOptickStateChanged);
-
 }
 
 // Load the rendering pipeline dependencies.

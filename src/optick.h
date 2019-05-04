@@ -69,6 +69,8 @@ OPTICK_DEFINE_HANDLE(VkCommandBuffer);
 
 // D3D12 Forward Declarations
 struct ID3D12CommandList;
+struct ID3D12Device;
+struct ID3D12CommandQueue;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace Optick
@@ -619,8 +621,8 @@ struct OPTICK_API GPUContext
 	GPUContext(void* c = nullptr, GPUQueueType q = GPU_QUEUE_GRAPHICS, int n = 0) : cmdBuffer(c), queue(q), node(n) {}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-OPTICK_API void InitGpuD3D12(void* device, void** cmdQueues, uint32_t numQueues);
-OPTICK_API void InitGpuVulkan(void* vkDevices, void* vkPhysicalDevices, void* vkQueues, uint32_t* cmdQueuesFamily, uint32_t numQueues);
+OPTICK_API void InitGpuD3D12(ID3D12Device* device, ID3D12CommandQueue** cmdQueues, uint32_t numQueues);
+OPTICK_API void InitGpuVulkan(VkDevice* vkDevices, VkPhysicalDevice* vkPhysicalDevices, VkQueue* vkQueues, uint32_t* cmdQueuesFamily, uint32_t numQueues);
 OPTICK_API void GpuFlip(void* swapChain);
 OPTICK_API GPUContext SetGpuContext(GPUContext context);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -738,7 +740,7 @@ OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame);
 
 // Thread registration macros.
 // Useful for integration with custom job-managers.
-#define OPTICK_START_THREAD(FRAME_NAME) ::Optick::RegisterThread(FRAME_NAME);
+#define OPTICK_START_THREAD(THREAD_NAME) ::Optick::RegisterThread(THREAD_NAME);
 #define OPTICK_STOP_THREAD() ::Optick::UnRegisterThread(false);
 
 // Attaches a custom data-tag.
@@ -826,7 +828,7 @@ OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame);
 
 
 // GPU events
-#define OPTICK_GPU_INIT_D3D12(DEVICE, CMD_QUEUES, NUM_CMD_QUEUS)			::Optick::InitGpuD3D12(DEVICE, CMD_QUEUES, NUM_CMD_QUEUS);
+#define (DEVICE, CMD_QUEUES, NUM_CMD_QUEUS)			::Optick::InitGpuD3D12(DEVICE, CMD_QUEUES, NUM_CMD_QUEUS);
 #define OPTICK_GPU_INIT_VULKAN(DEVICES, PHYSICAL_DEVICES, CMD_QUEUES, CMD_QUEUES_FAMILY, NUM_CMD_QUEUS)			::Optick::InitGpuVulkan(DEVICES, PHYSICAL_DEVICES, CMD_QUEUES, CMD_QUEUES_FAMILY, NUM_CMD_QUEUS);
 
 // Setup GPU context:
@@ -848,10 +850,10 @@ OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame);
 
 #else
 #define OPTICK_EVENT(...)
-#define OPTICK_CATEGORY(NAME, COLOR)
+#define OPTICK_CATEGORY(NAME, CATEGORY)
 #define OPTICK_FRAME(NAME)
-#define OPTICK_THREAD(FRAME_NAME)
-#define OPTICK_START_THREAD(FRAME_NAME)
+#define OPTICK_THREAD(THREAD_NAME)
+#define OPTICK_START_THREAD(THREAD_NAME)
 #define OPTICK_STOP_THREAD()
 #define OPTICK_TAG(NAME, DATA)
 #define OPTICK_EVENT_DYNAMIC(NAME)	

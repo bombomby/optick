@@ -17,6 +17,9 @@ namespace Profiler.ViewModels
 {
     public class FunctionViewModel : BaseViewModel
     {
+		private FrameGroup Group { get; set; }
+		private EventDescription Description { get; set; }
+
         private String _title;
         public String Title
         {
@@ -52,6 +55,12 @@ namespace Profiler.ViewModels
 
         public void Load(FrameGroup group, EventDescription desc)
         {
+			if (Group == group && Description == desc)
+				return;
+
+			Group = group;
+			Description = desc;
+
             Task.Run(() =>
             {
                 Application.Current.Dispatcher.BeginInvoke(new Action(() =>
@@ -144,7 +153,7 @@ namespace Profiler.ViewModels
             //    SeriesWait = GenerateFunctionHistogram(frameStats, (s => s.Wait), Colors.Tomato, range);
             //}));
 
-            base.OnLoaded(frameStats);
+			base.OnLoaded(frameStats);
         }
     }
 
