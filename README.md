@@ -7,6 +7,7 @@ instrumentation, switch-contexts, sampling, GPU counters.<br/>
 ## Build Status
 | Windows | Linux | MacOS | Code Quality |
 | ------- | ----- | ----- | ------------ |
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/601e878cd10b4794b207bd5faa8ef423)](https://app.codacy.com/app/bombomby/optick?utm_source=github.com&utm_medium=referral&utm_content=bombomby/optick&utm_campaign=Badge_Grade_Settings)
 | [![Windows Build status](https://ci.appveyor.com/api/projects/status/bu5smbuh1d2lcsf6?svg=true)](https://ci.appveyor.com/project/bombomby/brofiler) | [![Linux+MacOS Build Status](https://travis-ci.org/bombomby/optick.svg)](https://travis-ci.org/bombomby/optick) | [![Linux+MacOS Build Status](https://travis-ci.org/bombomby/optick.svg)](https://travis-ci.org/bombomby/optick) | [![Total alerts](https://img.shields.io/lgtm/alerts/g/bombomby/optick.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bombomby/optick/alerts/) [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/bombomby/optick.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bombomby/optick/context:cpp) |
 
 ![](https://optick.dev/images/screenshots/optick/Optick.png)
