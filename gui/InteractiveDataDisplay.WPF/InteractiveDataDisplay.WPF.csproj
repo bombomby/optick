@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{2D34544C-2DF2-4B20-A43A-6C8D2DF3DD82}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>InteractiveDataDisplay.WPF</RootNamespace>
+    <AssemblyName>InteractiveDataDisplay.WPF</AssemblyName>
+    <TargetFrameworks>net452;net46</TargetFrameworks>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;NETFRAMEWORK;NETFRAMEWORK;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;RELEASE;NETFRAMEWORK;;RELEASE;NETFRAMEWORK;RELEASE;NETFRAMEWORK;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup>
+    <LanguageTargets Condition="Exists('$(MSBuildExtensionsPath)\$(VisualStudioVersion)\Bin\Microsoft.CSharp.targets')">$(MSBuildExtensionsPath)\$(VisualStudioVersion)\Bin\Microsoft.CSharp.targets</LanguageTargets>
+    <Version>1.1.0</Version>
+    <Company>Microsoft; MSU ITIS Lab</Company>
+    <Authors>Sergey Berezin, Vassily Lyutsarev, Nikita Skoblov, Natalia Stepanova</Authors>
+    <Description>Interactive Data Display for WPF is a set of controls for adding interactive visualization of dynamic data to your application.</Description>
+    <Copyright>Copyright 2017 Microsoft Corporation</Copyright>
+    <PackageTags>idd wpf visualization plot plots plotting chart charting data interactive datavisualization</PackageTags>
+    <PackageProjectUrl>https://github.com/Microsoft/InteractiveDataDisplay.WPF</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/Microsoft/InteractiveDataDisplay.WPF/blob/master/LICENSE</PackageLicenseUrl>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Windows" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+    <!-- XAML elements -->
+    <!-- Workaround to make xamls appear in the VS solution explorer -->
+    <None Include="**\*.xaml" />
+    <Page Include="**\*.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Compile Update="**\*.xaml.cs" SubType="Code" DependentUpon="%(Filename)" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maps.MapControl.WPF" Version="1.0.0.3" />
+    <PackageReference Include="System.Reactive" Version="3.1.1" Condition=" '$(TargetFramework)' == 'net452' " />
+    <PackageReference Include="System.Reactive" Version="4.0.0" Condition=" '$(TargetFramework)' == 'net46' " />
+  </ItemGroup>
+</Project>

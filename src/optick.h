@@ -6,6 +6,7 @@
 
 #if USE_OPTICK
 #include <stdint.h>
+#include <stddef.h>
 
 #if defined(__clang__) || defined(__GNUC__)
 #	define OPTICK_GCC (1)

@@ -10,20 +10,7 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <GroupBox MahApps:ButtonHelper.PreserveTextCase="True" Background="{StaticResource OptickBackground}">
         <GroupBox.Header>
-            <Grid x:Name="HeaderGrid">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="1*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <Rectangle Grid.Column="0" Width="16" Height="16" VerticalAlignment="Center" StrokeThickness="1" Stroke="Black" Fill="{Binding Stats.Description.ForceBrush}" Margin="0,0,3,0" />
-                <TextBlock Grid.Column="1" Text="{Binding Stats.Description}" FontWeight="Bold" />
-                <StackPanel Grid.Column="2" Orientation="Horizontal" TextBlock.FontWeight="Bold">
-                    <TextBlock Text="{Binding Stats.AvgTotal, StringFormat={}{0:0.###}ms, Mode=OneWay}" Margin="6,0,0,0" ToolTip="Average Time" />
-                    <TextBlock Text="{Binding Stats.AvgWork, StringFormat={}{0:0.###}ms, Mode=OneWay}" Margin="6,0,0,0" Foreground="LimeGreen" ToolTip="Average Work Time" />
-                    <TextBlock Text="{Binding Stats.AvgWait, StringFormat={}{0:0.###}ms, Mode=OneWay}" Margin="6,0,0,0" Foreground="Tomato" ToolTip="Average Wait Time" />
-                </StackPanel>
-            </Grid>
+            <local:FunctionDescriptionView />
         </GroupBox.Header>
 
         <Grid Background="{StaticResource OptickBackground}" Margin="0,2">
@@ -36,7 +23,8 @@
                     AutoGenerateColumns="False" 
                     HeadersVisibility="Column" 
                     ClipboardCopyMode="ExcludeHeader"
-                    ItemsSource="{Binding Stats.Samples, Mode=OneWay}">
+                    ItemsSource="{Binding Stats.Samples, Mode=OneWay}"
+                    SelectionChanged="FunctionInstanceDataGrid_SelectionChanged">
                 <DataGrid.Resources>
                     <Style TargetType="{x:Type TextBlock}" x:Key="RightCell">
                         <Setter Property="HorizontalAlignment" Value="Stretch"/>

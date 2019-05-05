@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Profiler.Data;
+using Profiler.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,5 +26,16 @@ namespace Profiler.Views
         {
             InitializeComponent();
         }
-    }
+
+		private void FunctionInstanceDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			FunctionStats.Sample sample = FunctionInstanceDataGrid.SelectedItem as FunctionStats.Sample;
+			if (sample != null)
+			{
+				FunctionViewModel vm = DataContext as FunctionViewModel;
+				if (vm != null)
+					vm.OnDataClick(this, sample.Index);
+			}
+		}
+	}
 }

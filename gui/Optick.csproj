@@ -258,9 +258,6 @@
     <Compile Include="Controls\FrameCapture.xaml.cs">
       <DependentUpon>FrameCapture.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\FunctionHistory.xaml.cs">
-      <DependentUpon>FunctionHistory.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Controls\FunctionSearch.xaml.cs">
       <DependentUpon>FunctionSearch.xaml</DependentUpon>
     </Compile>
@@ -310,8 +307,14 @@
     <Compile Include="Views\CaptureSettingsView.xaml.cs">
       <DependentUpon>CaptureSettingsView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\FunctionHistoryView.xaml.cs">
-      <DependentUpon>FunctionHistoryView.xaml</DependentUpon>
+    <Compile Include="Views\FunctionDescriptionView.xaml.cs">
+      <DependentUpon>FunctionDescriptionView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FunctionHistoryTableView.xaml.cs">
+      <DependentUpon>FunctionHistoryTableView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FunctionHistoryChartView.xaml.cs">
+      <DependentUpon>FunctionHistoryChartView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\FunctionInstanceView.xaml.cs">
       <DependentUpon>FunctionInstanceView.xaml</DependentUpon>
@@ -424,10 +427,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Controls\FunctionHistory.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Controls\FunctionSearch.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -460,9 +459,17 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\FunctionHistoryView.xaml">
+    <Page Include="Views\FunctionDescriptionView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FunctionHistoryTableView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FunctionHistoryChartView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\FunctionInstanceView.xaml">
       <SubType>Designer</SubType>
@@ -685,6 +692,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="costura64\D3DCompiler_43.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\IDD\InteractiveDataDisplay.WPF\src\InteractiveDataDisplay.WPF.csproj">
+      <Project>{2d34544c-2df2-4b20-a43a-6c8d2df3dd82}</Project>
+      <Name>InteractiveDataDisplay.WPF</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="packages\Fody.4.0.2\build\Fody.targets" Condition="Exists('packages\Fody.4.0.2\build\Fody.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

@@ -1,0 +1,138 @@
+<!-- Copyright © Microsoft Corporation, All Rights Reserved.
+ -->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d3="clr-namespace:InteractiveDataDisplay.WPF">
+
+    <d3:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
+    
+    <Style TargetType="d3:PlotAxis">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="d3:PlotAxis">
+                    <Grid>
+                        <d3:Axis x:Name="PART_Axis" 
+                                 AxisOrientation="{Binding AxisOrientation, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                 IsReversed="{Binding IsReversed, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                 Ticks="{Binding Ticks, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                 Foreground="{Binding Foreground, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"/>
+                        <ContentPresenter/>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="IsTabStop" Value="False"/>
+    </Style>
+
+    <Style TargetType="d3:Chart">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="d3:Chart">
+                    <Grid>
+                        <d3:Figure x:Name="PART_figure" Margin="1"
+                                   PlotHeight="{Binding PlotHeight, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                   PlotWidth="{Binding PlotWidth, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                   PlotOriginX="{Binding PlotOriginX, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                   PlotOriginY="{Binding PlotOriginY, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                   IsXAxisReversed = "{Binding IsXAxisReversed, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                   IsYAxisReversed = "{Binding IsXAxisReversed, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                   IsAutoFitEnabled="{Binding IsAutoFitEnabled, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                   AspectRatio="{Binding AspectRatio, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                   ExtraPadding="{TemplateBinding BorderThickness}"
+                                   Background="{TemplateBinding Background}">
+                            <d3:MouseNavigation IsVerticalNavigationEnabled="{TemplateBinding IsVerticalNavigationEnabled}"
+                                                IsHorizontalNavigationEnabled="{TemplateBinding IsHorizontalNavigationEnabled}"
+                                                x:Name="PART_mouseNavigation"/>
+                            <d3:KeyboardNavigation IsVerticalNavigationEnabled="{TemplateBinding IsVerticalNavigationEnabled}"
+                                                   IsHorizontalNavigationEnabled="{TemplateBinding IsHorizontalNavigationEnabled}"
+                                                   x:Name="PART_keyboardNavigation"/>
+                            <d3:VerticalContentControl d3:Figure.Placement="Left"
+                                                       Content="{TemplateBinding LeftTitle}"
+                                                       VerticalAlignment="Center"
+                                                       IsTabStop="False"/>
+                            <d3:PlotAxis x:Name="PART_verticalAxis"
+                                         d3:Figure.Placement="Left" 
+                                         AxisOrientation="Left"
+                                         IsReversed = "{Binding IsYAxisReversed, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                         Foreground="{TemplateBinding Foreground}">
+                                <d3:MouseNavigation IsHorizontalNavigationEnabled="False"/>
+                            </d3:PlotAxis>
+                            <d3:AxisGrid x:Name="PART_axisGrid"
+                                         VerticalTicks="{Binding Ticks,ElementName=PART_verticalAxis, Mode=OneWay}"
+                                         HorizontalTicks="{Binding Ticks,ElementName=PART_horizontalAxis, Mode=OneWay}"
+                                         IsXAxisReversed = "{Binding IsXAxisReversed, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                         IsYAxisReversed = "{Binding IsXAxisReversed, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                         Stroke="{TemplateBinding Foreground}" Opacity="0.25"/>
+                            <ContentControl d3:Figure.Placement="Top" 
+                                            HorizontalAlignment="Center"
+                                            FontSize="16"
+                                            Content="{TemplateBinding Title}"
+                                            Foreground="{TemplateBinding Foreground}"
+                                            IsTabStop="False"/>
+                            <ContentControl d3:Figure.Placement="Bottom" 
+                                            HorizontalAlignment="Center"
+                                            Content="{TemplateBinding BottomTitle}"
+                                            Foreground="{TemplateBinding Foreground}"
+                                            IsTabStop="False"/>
+                            <d3:VerticalContentControl d3:Figure.Placement="Right"
+                                                       Content="{TemplateBinding RightTitle}"
+                                                       VerticalAlignment="Center"
+                                                       IsTabStop="False"/>
+                            <d3:PlotAxis x:Name="PART_horizontalAxis"
+                                         d3:Figure.Placement="Bottom" 
+                                         AxisOrientation="Bottom"
+                                         IsReversed = "{Binding IsXAxisReversed, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                         Foreground="{TemplateBinding Foreground}">
+                                <d3:MouseNavigation IsVerticalNavigationEnabled="False"/>
+                            </d3:PlotAxis>
+                            <ContentPresenter/>
+                            <Border BorderThickness="{TemplateBinding BorderThickness}"
+                                    BorderBrush="{TemplateBinding Foreground}" d3:Figure.Placement="Center"/>
+                            <d3:Legend x:Name="PART_legend" 
+                                       Foreground="Black" Content="{TemplateBinding LegendContent}"
+                                       Visibility="{TemplateBinding LegendVisibility}"/>
+                        </d3:Figure>
+                        <Rectangle x:Name="FocusVisualElement" RadiusX="2" RadiusY="2" Stroke="#FF6DBDD1" StrokeThickness="1" Opacity="0" IsHitTestVisible="false" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="IsTabStop" Value="False"/>
+    </Style>
+
+    <Style TargetType="d3:Legend">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="d3:Legend">
+                    <Grid Background="Transparent" Margin="10,10,10,10" VerticalAlignment="Top" 
+                          HorizontalAlignment="Right">
+                        <Rectangle x:Name="legendBorder" Stroke="Black" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" 
+                            RadiusX="10" RadiusY="10" Fill="White" Opacity="0.75"
+                            Visibility="{Binding ItemsCount, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource CountToVisibilityConverter}}"/>
+                        <ScrollViewer x:Name="scrollViewer"
+                                      Margin="10,10,10,10" VerticalScrollBarVisibility="Auto" 
+                                      HorizontalScrollBarVisibility="Auto" IsTabStop="False"
+                                      BorderThickness="0">
+                            <ContentPresenter/>
+                        </ScrollViewer>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="d3:VerticalContentControl">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="d3:VerticalContentControl">
+                    <ContentPresenter
+                        x:Name="Presenter"
+                        Content="{TemplateBinding Content}"
+                        ContentTemplate="{TemplateBinding ContentTemplate}"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>
+

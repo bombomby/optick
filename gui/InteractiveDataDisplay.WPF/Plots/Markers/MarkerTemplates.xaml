@@ -1,0 +1,756 @@
+<!-- Copyright © Microsoft Corporation, All Rights Reserved.
+ -->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d3="clr-namespace:InteractiveDataDisplay.WPF">
+    
+    <d3:NullToDefaultConverter x:Key="NullToDefaultConverter"/>
+    
+    <d3:DoubleToTrianglePointsConverter x:Key="DoubleToTrianglePointsConverter"/>
+    
+    <d3:ValueScaleConverter x:Key="ValueScaleConverter"/>
+    <d3:PaletteConverter x:Key="ColorConverter"/>
+    <d3:TranslateConverter x:Key="TranslateConverter"/>
+
+    <d3:BarGraphTopConverter x:Key="BarGraphTopConverter"/>
+    <d3:BarGraphLeftConverter x:Key="BarGraphLeftConverter"/>
+    <d3:BarGraphBottomConverter x:Key="BarGraphBottomConverter"/>
+    <d3:BarGraphRightConverter x:Key="BarGraphRightConverter"/>
+
+    <d3:ErrorBarTopConverter x:Key="ErrorBarTopConverter"/>
+    <d3:ErrorBarBottomConverter x:Key="ErrorBarBottomConverter"/>
+
+    <d3:VerticalIntervalTopConverter x:Key="VerticalIntervalTopConverter"/>
+    <d3:VerticalIntervalBottomConverter x:Key="VerticalIntervalBottomConverter"/>
+
+    <!-- Default legend template -->
+    <DataTemplate x:Key="DefaultLegendTemplate">
+        <TextBlock Text="{Binding Path=Y.Description, StringFormat='Default legend: \{0\}', FallbackValue='(No Y data series found)'}"/>
+    </DataTemplate>
+
+    <!-- Default tooltip template -->
+    <DataTemplate x:Key="DefaultTooltipTemplate">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <TextBlock HorizontalAlignment="Right" 
+                           Text="{Binding Series.X.Description, StringFormat='\{0\}:', FallbackValue='X:', Converter={StaticResource NullToDefaultConverter}, ConverterParameter='X'}"/>
+            <TextBlock HorizontalAlignment="Right" Grid.Row="1"
+                           Text="{Binding Series.Y.Description, StringFormat='\{0\}:', FallbackValue='Y:', Converter={StaticResource NullToDefaultConverter}, ConverterParameter='Y'}"/>
+            <TextBlock Grid.Column="1" Margin="5,0,0,0"
+                    Text="{Binding Path=X, FallbackValue='(No X data series found)'}"/>
+            <TextBlock Grid.Row="1" Margin="5,0,0,0" Grid.Column="1"
+                    Text="{Binding Path=Y, FallbackValue='(No Y data series found)'}"/>
+        </Grid>
+    </DataTemplate>
+
+    <!--Box markers template-->
+    <DataTemplate x:Key="Box">
+        <Rectangle  d3:Plot.X1="{Binding X}" 
+                    d3:Plot.Y1="{Binding Y, FallbackValue=0, TargetNullValue=0}" 
+                    Fill="{Binding C, FallbackValue=Black, TargetNullValue=Black}"
+                    Width="{Binding D, FallbackValue=10, TargetNullValue=10}" 
+                    Height="{Binding D, FallbackValue=10, TargetNullValue=10}"
+                    Stroke="{Binding Stroke, FallbackValue=Black}" 
+                    StrokeThickness="{Binding StrokeThickness, FallbackValue=1}">
+            <Rectangle.RenderTransform>
+                <TranslateTransform X="{Binding D, Converter={StaticResource ValueScaleConverter}, ConverterParameter=-0.5,
+                                            FallbackValue=-5, TargetNullValue=-5}" 
+                                        Y="{Binding D, Converter={StaticResource ValueScaleConverter}, ConverterParameter=-0.5,
+                                            FallbackValue=-5, TargetNullValue=-5}" />
+            </Rectangle.RenderTransform>
+        </Rectangle>
+    </DataTemplate>
+
+    <!-- Simple legend template for box markers -->
+    <DataTemplate x:Key="BoxLegend">
+        <StackPanel Orientation="Horizontal">
+            <Rectangle Fill="{Binding C.First, FallbackValue=Black, TargetNullValue=Black}"
+                           Width="{Binding D.First, FallbackValue=10, TargetNullValue=10}" 
+                           Height="{Binding D.First, FallbackValue=10, TargetNullValue=10}"/>
+            <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Text="{Binding Y.Description, FallbackValue='(No Y data series found)'}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Legend template for box markers with color -->
+    <DataTemplate x:Key="BoxColorLegend">
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal">
+                <Rectangle Stroke="Black" Width="15" Height="15" Grid.Column="0"/>
+                <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Text="{Binding Y.Description, FallbackValue='(No Y data series found)'}"/>
+            </StackPanel>
+            <TextBlock Text="{Binding C.Description, StringFormat=\{0\}:, FallbackValue='(No C data series found)',
+                                  TargetNullValue='(No C data series found)'}"/>
+            <d3:PaletteControl Width="150"
+                                   Palette="{Binding C.Palette}"
+                                   Range="{Binding C.PaletteRange}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Legend template for box markers with size -->
+    <DataTemplate x:Key="BoxSizeLegend">
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal">
+                <Rectangle Stroke="Black" Fill="{Binding C.First, FallbackValue=Black, TargetNullValue=Black}" 
+                               Width="15" Height="15" Grid.Column="0"/>
+                <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Text="{Binding Y.Description, FallbackValue='(No Y data series found)'}"/>
+            </StackPanel>
+            <TextBlock Text="{Binding D.Description, StringFormat=\{0\}:, FallbackValue='(No D data series found)',
+                                  TargetNullValue='(No D data series found)'}"/>
+            <d3:SizeLegendControl Width="150"
+                                   Range="{Binding D.Range}"
+                                   Min="{Binding D.Min, FallbackValue=10, TargetNullValue=10}"
+                                   Max="{Binding D.Max, FallbackValue=10, TargetNullValue=10}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Legend template for box markers with size and color -->
+    <DataTemplate x:Key="BoxColorSizeLegend">
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal">
+                <Rectangle Stroke="Black" Width="15" Height="15" Grid.Column="0"/>
+                <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Text="{Binding Y.Description, FallbackValue='(No Y data series found)'}"/>
+            </StackPanel>
+            <TextBlock Text="{Binding C.Description, StringFormat=\{0\}:, FallbackValue='(No C data series found)',
+                                  TargetNullValue='(No C data series found)'}"/>
+            <d3:PaletteControl Width="150"
+                                   Palette="{Binding C.Palette}"
+                                   Range="{Binding C.PaletteRange}"/>
+            <TextBlock Text="{Binding D.Description, StringFormat=\{0\}:, FallbackValue='(No D data series found)',
+                                  TargetNullValue='(No D data series found)'}"/>
+            <d3:SizeLegendControl Width="150"
+                                   Range="{Binding D.Range}"
+                                   Min="{Binding D.Min, FallbackValue=10, TargetNullValue=10}"
+                                   Max="{Binding D.Max, FallbackValue=10, TargetNullValue=10}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Circle markers template -->
+    <DataTemplate x:Key="Circle">
+        <Ellipse d3:Plot.X1="{Binding X}" 
+                 d3:Plot.Y1="{Binding Y}" 
+                 Fill="{Binding C, FallbackValue=Black, TargetNullValue=Black}"
+                 Width="{Binding D, FallbackValue=10, TargetNullValue=10}" 
+                 Height="{Binding D, FallbackValue=10, TargetNullValue=10}"
+                 Stroke="{Binding Stroke, FallbackValue=Black}" 
+                 StrokeThickness="{Binding StrokeThickness, FallbackValue=1}">
+            <Ellipse.RenderTransform>
+                <TranslateTransform X="{Binding D, Converter={StaticResource ValueScaleConverter}, ConverterParameter=-0.5,
+                                            FallbackValue=-5, TargetNullValue=-5}" 
+                                    Y="{Binding D, Converter={StaticResource ValueScaleConverter}, ConverterParameter=-0.5,
+                                            FallbackValue=-5, TargetNullValue=-5}" />
+            </Ellipse.RenderTransform>
+        </Ellipse>
+    </DataTemplate>
+
+    <!-- Simple legend template for circle markers -->
+    <DataTemplate x:Key="CircleLegend">
+        <StackPanel Orientation="Horizontal">
+            <Ellipse Fill="{Binding C.First, FallbackValue=Black, TargetNullValue=Black}"
+                         Width="{Binding D.First, FallbackValue=10, TargetNullValue=10}" 
+                         Height="{Binding D.First, FallbackValue=10, TargetNullValue=10}"/>
+            <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Text="{Binding Y.Description, FallbackValue='(No Y data series found)'}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Legend template for circle markers with color -->
+    <DataTemplate x:Key="CircleColorLegend">
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal">
+                <Ellipse Stroke="Black" Width="15" Height="15" Grid.Column="0"/>
+                <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Text="{Binding Y.Description, FallbackValue='(No Y data series found)'}"/>
+            </StackPanel>
+            <TextBlock Text="{Binding C.Description, StringFormat=\{0\}:, FallbackValue='(No C data series found)', TargetNullValue='(No C data series found)'}"/>
+            <d3:PaletteControl Width="150"
+                                   Palette="{Binding C.Palette}"
+                                   Range="{Binding C.PaletteRange}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Legend template for circle markers with size -->
+    <DataTemplate x:Key="CircleSizeLegend">
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal">
+                <Ellipse Stroke="Black" Fill="{Binding C.First, FallbackValue=Black, TargetNullValue=Black}" 
+                             Width="15" Height="15" Grid.Column="0"/>
+                <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Text="{Binding Y.Description, FallbackValue='(No Y data series found)'}"/>
+            </StackPanel>
+            <TextBlock Text="{Binding D.Description, StringFormat=\{0\}:, FallbackValue='(No D data series found)'}"/>
+            <d3:SizeLegendControl Width="150"
+                                   Range="{Binding D.Range}"
+                                   Min="{Binding D.Min, FallbackValue=10, TargetNullValue=10}"
+                                   Max="{Binding D.Max, FallbackValue=10, TargetNullValue=10}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Legend template for circle markers with size and color -->
+    <DataTemplate x:Key="CircleColorSizeLegend">
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal">
+                <Ellipse Stroke="Black" Width="15" Height="15" Grid.Column="0"/>
+                <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Text="{Binding Y.Description, FallbackValue='(No Y data series found)'}"/>
+            </StackPanel>
+            <TextBlock Text="{Binding C.Description, StringFormat=\{0\}:, FallbackValue='(No C data series found)'}"/>
+            <d3:PaletteControl Width="150"
+                                   Palette="{Binding C.Palette}"
+                                   Range="{Binding C.PaletteRange}"/>
+            <TextBlock Text="{Binding D.Description, StringFormat=\{0\}:, FallbackValue='(No D data series found)'}"/>
+            <d3:SizeLegendControl Width="150"
+                                   Range="{Binding D.Range}"
+                                   Min="{Binding D.Min, FallbackValue=10, TargetNullValue=10}"
+                                   Max="{Binding D.Max, FallbackValue=10, TargetNullValue=10}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Diamond markers template -->
+    <DataTemplate x:Key="Diamond">
+        <Rectangle d3:Plot.X1="{Binding X}" 
+                    d3:Plot.Y1="{Binding Y}" 
+                    Fill="{Binding C, FallbackValue=Black, TargetNullValue=Black}"
+                    Width="{Binding D, FallbackValue=10, TargetNullValue=10}"
+                    Height="{Binding D, FallbackValue=10, TargetNullValue=10}"
+                   Stroke="{Binding Stroke, FallbackValue=Black}" 
+                   StrokeThickness="{Binding StrokeThickness, FallbackValue=1}">
+            <Rectangle.RenderTransform>
+                <TransformGroup>
+                    <TranslateTransform X="{Binding D, Converter={StaticResource ValueScaleConverter}, ConverterParameter=-0.5,
+                                            FallbackValue=-5, TargetNullValue=-5}" 
+                                            Y="{Binding D, Converter={StaticResource ValueScaleConverter}, ConverterParameter=-0.5,
+                                            FallbackValue=-5, TargetNullValue=-5}" />
+                    <RotateTransform Angle="45"/>
+                </TransformGroup>
+            </Rectangle.RenderTransform>
+        </Rectangle>
+    </DataTemplate>
+
+    <!-- Simple legend template for diamond markers -->
+    <DataTemplate x:Key="DiamondLegend">
+        <StackPanel Orientation="Horizontal">
+            <ContentControl Width="{Binding D.First, Converter={StaticResource ValueScaleConverter}, ConverterParameter=1.5, 
+                                        FallbackValue=15, TargetNullValue=15}"
+                                Height="{Binding D.First, Converter={StaticResource ValueScaleConverter}, ConverterParameter=1.5, 
+                                        FallbackValue=15, TargetNullValue=15}" IsTabStop="False">
+                <Rectangle Fill="{Binding C.First, FallbackValue=Black, TargetNullValue=Black}"
+                               Width="1" Height="1">
+                    <Rectangle.RenderTransform>
+                        <TransformGroup>
+                            <RotateTransform Angle="45"/>
+                            <TranslateTransform X="0.7"/>
+                            <ScaleTransform ScaleX="{Binding D.First, FallbackValue=10, TargetNullValue=10}" 
+                                                ScaleY="{Binding D.First, FallbackValue=10, TargetNullValue=10}"/>
+                        </TransformGroup>
+                    </Rectangle.RenderTransform>
+                </Rectangle>
+            </ContentControl>
+            <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Text="{Binding Y.Description, FallbackValue='(No Y data series found)'}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Legend template for diamond markers with color-->
+    <DataTemplate x:Key="DiamondColorLegend">
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal">
+                <Rectangle Stroke="Black" Width="12" Height="12">
+                    <Rectangle.RenderTransform>
+                        <TransformGroup>
+                            <RotateTransform Angle="45" CenterX="7" CenterY="8.5"/>
+                        </TransformGroup>
+                    </Rectangle.RenderTransform>
+                </Rectangle>
+                <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Text="{Binding Y.Description, FallbackValue='(No Y data series found)'}"/>
+            </StackPanel>
+            <TextBlock Text="{Binding C.Description, StringFormat=\{0\}:, FallbackValue='(No C data series found)', TargetNullValue='(No C data series found)'}"/>
+            <d3:PaletteControl Width="150"
+                                   Palette="{Binding C.Palette}"
+                                   Range="{Binding C.PaletteRange}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Legend template for diamond markers with size -->
+    <DataTemplate x:Key="DiamondSizeLegend">
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal">
+                <Rectangle Stroke="Black" Fill="{Binding C.First, FallbackValue=Black, TargetNullValue=Black}" 
+                               Width="12" Height="12">
+                    <Rectangle.RenderTransform>
+                        <TransformGroup>
+                            <RotateTransform Angle="45" CenterX="7" CenterY="8.5"/>
+                        </TransformGroup>
+                    </Rectangle.RenderTransform>
+                </Rectangle>
+                <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Text="{Binding Y.Description, FallbackValue='(No Y data series found)'}"/>
+            </StackPanel>
+            <TextBlock Text="{Binding D.Description, StringFormat=\{0\}:, FallbackValue='(No D data series found)', TargetNullValue='(No D data series found)'}"/>
+            <d3:SizeLegendControl Width="150"
+                                   Range="{Binding D.Range}"
+                                   Min="{Binding D.Min, FallbackValue=10, TargetNullValue=10}"
+                                   Max="{Binding D.Max, FallbackValue=10, TargetNullValue=10}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Legend template for diamond markers with size and color -->
+    <DataTemplate x:Key="DiamondColorSizeLegend">
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal">
+                <Rectangle Stroke="Black" Width="12" Height="12">
+                    <Rectangle.RenderTransform>
+                        <TransformGroup>
+                            <RotateTransform Angle="45" CenterX="7" CenterY="8.5"/>
+                        </TransformGroup>
+                    </Rectangle.RenderTransform>
+                </Rectangle>
+                <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Text="{Binding Y.Description, FallbackValue='(No Y data series found)'}"/>
+            </StackPanel>
+            <TextBlock Text="{Binding C.Description, StringFormat=\{0\}:, FallbackValue='(No C data series found)', TargetNullValue='(No C data series found)'}"/>
+            <d3:PaletteControl Width="150"
+                               Palette="{Binding C.Palette}"
+                               Range="{Binding C.PaletteRange}"/>
+            <TextBlock Text="{Binding D.Description, StringFormat=\{0\}:, FallbackValue='(No D data series found)', TargetNullValue='(No D data series found)'}"/>
+            <d3:SizeLegendControl Width="150"
+                               Range="{Binding D.Range}"
+                               Min="{Binding D.Min, FallbackValue=10, TargetNullValue=10}"
+                               Max="{Binding D.Max, FallbackValue=10, TargetNullValue=10}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Triangle markers template -->
+    <DataTemplate x:Key="Triangle">
+        <Polygon d3:Plot.X1="{Binding X}" 
+                 d3:Plot.Y1="{Binding Y}" 
+                 Fill="{Binding C, FallbackValue=Black, TargetNullValue=Black}"
+                 Points="{Binding D, Converter={StaticResource DoubleToTrianglePointsConverter}}"
+                 Stroke="{Binding Stroke}" StrokeThickness="{Binding StrokeThickness}"/>
+    </DataTemplate>
+
+    <!-- Simple legend template for triangle markers -->
+    <DataTemplate x:Key="TriangleLegend">
+        <StackPanel Orientation="Horizontal">
+            <ContentControl Width="{Binding D.First, FallbackValue=10, TargetNullValue=10}"
+                                Height="{Binding D.First, FallbackValue=10, TargetNullValue=10}" IsTabStop="False">
+                <Polygon Fill="{Binding C.First, FallbackValue=Black, TargetNullValue=Black}"
+                             Points="0 1, 0.5 0, 1 1">
+                    <Polygon.RenderTransform>
+                        <ScaleTransform ScaleX="{Binding D.First, FallbackValue=10, TargetNullValue=10}" 
+                                            ScaleY="{Binding D.First, FallbackValue=10, TargetNullValue=10}"/>
+                    </Polygon.RenderTransform>
+                </Polygon>
+            </ContentControl>
+            <TextBlock Margin="5,0,0,0" VerticalAlignment="Center"
+                           Text="{Binding Y.Description, FallbackValue='(No Y data series found)'}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Legend template for triangle markers with color-->
+    <DataTemplate x:Key="TriangleColorLegend">
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal">
+                <Polygon Stroke="Black" Points="0 15, 7.5 0, 15 15"/>
+                <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Text="{Binding Y.Description, FallbackValue='(No Y data series found)'}"/>
+            </StackPanel>
+            <TextBlock Text="{Binding C.Description, StringFormat=\{0\}:, FallbackValue='(No C data series found)', TargetNullValue='(No C data series found)'}"/>
+            <d3:PaletteControl Width="150"
+                                   Palette="{Binding C.Palette}"
+                                   Range="{Binding C.PaletteRange}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Legend template for triangle markers with size -->
+    <DataTemplate x:Key="TriangleSizeLegend">
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal">
+                <Polygon Stroke="Black" Points="0 15, 7.5 0, 15 15" 
+                             Fill="{Binding C.First, FallbackValue=Black, TargetNullValue=Black}"/>
+                <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Text="{Binding Y.Description, FallbackValue='(No Y data series found)'}"/>
+            </StackPanel>
+            <TextBlock Text="{Binding D.Description, StringFormat=\{0\}:, FallbackValue='(No D data series found)', TargetNullValue='(No D data series found)'}"/>
+            <d3:SizeLegendControl Width="150"
+                                   Range="{Binding D.Range}"
+                                   Min="{Binding D.Min, FallbackValue=10, TargetNullValue=10}"
+                                   Max="{Binding D.Max, FallbackValue=10, TargetNullValue=10}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Legend template for triangle markers with size and color -->
+    <DataTemplate x:Key="TriangleColorSizeLegend">
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal">
+                <Polygon Stroke="Black" Points="0 15, 7.5 0, 15 15"/>
+                <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Text="{Binding Y.Description, FallbackValue='(No Y data series found)'}"/>
+            </StackPanel>
+            <TextBlock Text="{Binding C.Description, StringFormat=\{0\}:, FallbackValue='(No C data series found)', TargetNullValue='(No C data series found)'}"/>
+            <d3:PaletteControl Width="150"
+                                   Palette="{Binding C.Palette}"
+                                   Range="{Binding C.PaletteRange}"/>
+            <TextBlock Text="{Binding D.Description, StringFormat=\{0\}:, FallbackValue='(No D data series found)', TargetNullValue='(No D data series found)'}"/>
+            <d3:SizeLegendControl Width="150"
+                                   Range="{Binding D.Range}"
+                                   Min="{Binding D.Min, FallbackValue=10, TargetNullValue=10}"
+                                   Max="{Binding D.Max, FallbackValue=10, TargetNullValue=10}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Cross markers template -->
+    <DataTemplate x:Key="Cross">
+        <StackPanel d3:Plot.X1="{Binding X}"
+                    d3:Plot.Y1="{Binding Y}"
+                        Orientation="Vertical">
+            <Line Stroke="{Binding C, FallbackValue=Black, TargetNullValue=Black}" StrokeThickness="1" 
+                          X1="0" X2="{Binding D, FallbackValue=10, TargetNullValue=10}" Y1="0" Y2="0">
+                <Line.RenderTransform>
+                    <TranslateTransform X="{Binding D, Converter={StaticResource TranslateConverter}, ConverterParameter='0',
+                                                FallbackValue=-5, TargetNullValue=-5}"/>
+                </Line.RenderTransform>
+            </Line>
+            <Line Stroke="{Binding [C], FallbackValue=Black, TargetNullValue=Black}" StrokeThickness="1"
+                      X1="0" X2="0" Y1="0" Y2="{Binding D, FallbackValue=10, TargetNullValue=10}">
+                <Line.RenderTransform>
+                    <TranslateTransform Y="{Binding D, Converter={StaticResource TranslateConverter}, ConverterParameter='0',
+                                                FallbackValue=-5, TargetNullValue=-5}"/>
+                </Line.RenderTransform>
+            </Line>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Simple legend template for cross markers -->
+    <DataTemplate x:Key="CrossLegend">
+        <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Vertical" VerticalAlignment="Center">
+                <Line Stroke="{Binding C.First, FallbackValue=Black, TargetNullValue=Black}" StrokeThickness="1" 
+                          X1="0" X2="{Binding D.First, FallbackValue=12, TargetNullValue=12}" Y1="0" Y2="0">
+                    <Line.RenderTransform>
+                        <TranslateTransform Y="{Binding D.First, Converter={StaticResource ValueScaleConverter}, ConverterParameter='0.5',
+                                                FallbackValue=6, TargetNullValue=6}"/>
+                    </Line.RenderTransform>
+                </Line>
+                <Line Stroke="{Binding C.First, FallbackValue=Black, TargetNullValue=Black}" StrokeThickness="1"
+                      X1="0" X2="0" Y1="0" Y2="{Binding D.First, FallbackValue=12, TargetNullValue=12}">
+                    <Line.RenderTransform>
+                        <TranslateTransform X="{Binding D.First, Converter={StaticResource ValueScaleConverter}, ConverterParameter='0.5', 
+                                                FallbackValue=6, TargetNullValue=6}"/>
+                    </Line.RenderTransform>
+                </Line>
+            </StackPanel>
+            <TextBlock Margin="5,0,0,0" VerticalAlignment="Center"
+                           Text="{Binding Y.Description, FallbackValue='(No Y data series found)'}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Legend template for cross markers with color -->
+    <DataTemplate x:Key="CrossColorLegend">
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal">
+                <StackPanel Orientation="Vertical" Margin="0,0,5,0">
+                    <Line Stroke="Black" StrokeThickness="1" X1="0" X2="15" Y1="0" Y2="0">
+                        <Line.RenderTransform>
+                            <TranslateTransform Y="7.5"/>
+                        </Line.RenderTransform>
+                    </Line>
+                    <Line Stroke="Black" StrokeThickness="1" X1="0" X2="0" Y1="0" Y2="15">
+                        <Line.RenderTransform>
+                            <TranslateTransform X="7.5"/>
+                        </Line.RenderTransform>
+                    </Line>
+                </StackPanel>
+                <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Text="{Binding Y.Description, FallbackValue='(No Y data series found)'}"/>
+            </StackPanel>
+            <TextBlock Text="{Binding C.Description, StringFormat=\{0\}:, FallbackValue='(No C data series found)', TargetNullValue='(No C data series found)'}"/>
+            <d3:PaletteControl Width="150"
+                                   Palette="{Binding C.Palette}"
+                                   Range="{Binding C.PaletteRange}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Legend template for cross markers with size -->
+    <DataTemplate x:Key="CrossSizeLegend">
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal">
+                <StackPanel Orientation="Vertical" Margin="0,0,5,0">
+                    <Line Stroke="{Binding C.First, FallbackValue=Black, TargetNullValue=Black}" StrokeThickness="1" X1="0" X2="15" Y1="0" Y2="0">
+                        <Line.RenderTransform>
+                            <TranslateTransform Y="7.5"/>
+                        </Line.RenderTransform>
+                    </Line>
+                    <Line Stroke="{Binding C.First, FallbackValue=Black, TargetNullValue=Black}" StrokeThickness="1" X1="0" X2="0" Y1="0" Y2="15">
+                        <Line.RenderTransform>
+                            <TranslateTransform X="7.5"/>
+                        </Line.RenderTransform>
+                    </Line>
+                </StackPanel>
+                <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Text="{Binding Y.Description, FallbackValue='(No Y data series found)'}"/>
+            </StackPanel>
+            <TextBlock Text="{Binding D.Description, StringFormat=\{0\}:, FallbackValue='(No D data series found)', TargetNullValue='(No D data series found)'}"/>
+            <d3:SizeLegendControl Width="150"
+                                   Range="{Binding D.Range}"
+                                   Min="{Binding D.Min, FallbackValue=10, TargetNullValue=10}"
+                                   Max="{Binding D.Max, FallbackValue=10, TargetNullValue=10}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Legend template for cross markers with size and color -->
+    <DataTemplate x:Key="CrossColorSizeLegend">
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal">
+                <StackPanel Orientation="Vertical" Margin="0,0,5,0">
+                    <Line Stroke="Black" StrokeThickness="1" X1="0" X2="15" Y1="0" Y2="0">
+                        <Line.RenderTransform>
+                            <TranslateTransform Y="7.5"/>
+                        </Line.RenderTransform>
+                    </Line>
+                    <Line Stroke="Black" StrokeThickness="1" X1="0" X2="0" Y1="0" Y2="15">
+                        <Line.RenderTransform>
+                            <TranslateTransform X="7.5"/>
+                        </Line.RenderTransform>
+                    </Line>
+                </StackPanel>
+                <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Text="{Binding Y.Description, FallbackValue='(No Y data series found)'}"/>
+            </StackPanel>
+            <TextBlock Text="{Binding C.Description, StringFormat=\{0\}:, FallbackValue='(No C data series found)', TargetNullValue='(No C data series found)'}"/>
+            <d3:PaletteControl Width="150"
+                                   Palette="{Binding C.Palette}"
+                                   Range="{Binding C.PaletteRange}"/>
+            <TextBlock Text="{Binding D.Description, StringFormat=\{0\}:, FallbackValue='(No D data series found)', TargetNullValue='(No D data series found)'}"/>
+            <d3:SizeLegendControl Width="150"
+                                   Range="{Binding D.Range}"
+                                   Min="{Binding D.Min, FallbackValue=10, TargetNullValue=10}"
+                                   Max="{Binding D.Max, FallbackValue=10, TargetNullValue=10}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Errorbar markers template -->
+    <DataTemplate x:Key="ErrorBar">
+        <Grid d3:Plot.X1="{Binding X}"
+              d3:Plot.Y1="{Binding This, Converter={StaticResource ErrorBarTopConverter}}"
+              Width="{Binding W}"
+              d3:Plot.Y2="{Binding This, Converter={StaticResource ErrorBarBottomConverter}}">
+            <Grid.Resources>
+                <d3:ErrorBarDataBoundsConverter x:Key="DataBoundsFunc"/>
+                <d3:ErrorBarScreenThicknessConverter x:Key="ScreenBoundsFunc"/>
+            </Grid.Resources>
+            <Rectangle Fill="{Binding C}" HorizontalAlignment="Stretch" Height="{Binding StrokeThickness}" VerticalAlignment="Top"/>
+            <Rectangle Fill="{Binding C}" HorizontalAlignment="Center" Width="{Binding StrokeThickness}" VerticalAlignment="Stretch"/>
+            <Rectangle Fill="{Binding C}" HorizontalAlignment="Stretch" Height="{Binding StrokeThickness}" VerticalAlignment="Bottom"/>
+            <Grid.RenderTransform>
+                <TranslateTransform X="{Binding W, Converter={StaticResource ValueScaleConverter}, ConverterParameter=-0.5}"/>
+            </Grid.RenderTransform>
+        </Grid>
+    </DataTemplate>
+
+    <!-- Simple legend template for errorbar markers -->
+    <DataTemplate x:Key="ErrorBarLegend">
+        <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Vertical">
+                <Line Stroke="{Binding C.First, FallbackValue=Black, TargetNullValue=Black}" 
+                          StrokeThickness="1" X1="0" X2="10" Y1="0" Y2="0"/>
+                <Line X1="5" X2="5" Y1="0" Y2="15" Stroke="{Binding C.First, FallbackValue=Black, TargetNullValue=Black}" 
+                          StrokeThickness="1"/>
+                <Line Stroke="{Binding C.First, FallbackValue=Black, TargetNullValue=Black}" StrokeThickness="1" 
+                          X1="0" X2="10" Y1="0" Y2="0"/>
+            </StackPanel>
+            <TextBlock Text="{Binding H.Description, FallbackValue='(No H data series found)'}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- VerticalInterval markers template -->
+    <DataTemplate x:Key="VerticalInterval">
+        <Grid d3:Plot.X1="{Binding X}"
+              d3:Plot.Y1="{Binding This, Converter={StaticResource VerticalIntervalTopConverter}}"
+              Width="{Binding W}"
+              d3:Plot.Y2="{Binding This, Converter={StaticResource VerticalIntervalBottomConverter}}">
+            <Grid.Resources>
+                <d3:VerticalIntervalDataBoundsConverter x:Key="DataBoundsFunc"/>
+                <!--Same converter as ErrorBar has--> 
+                <d3:ErrorBarScreenThicknessConverter x:Key="ScreenBoundsFunc"/>
+            </Grid.Resources>
+            <Rectangle Fill="{Binding C}" HorizontalAlignment="Stretch" Height="{Binding StrokeThickness}" VerticalAlignment="Top"/>
+            <Rectangle Fill="{Binding C}" HorizontalAlignment="Center" Width="{Binding StrokeThickness}" VerticalAlignment="Stretch"/>
+            <Rectangle Fill="{Binding C}" HorizontalAlignment="Stretch" Height="{Binding StrokeThickness}" VerticalAlignment="Bottom"/>
+            <Grid.RenderTransform>
+                <TranslateTransform X="{Binding W, Converter={StaticResource ValueScaleConverter}, ConverterParameter=-0.5}"/>
+            </Grid.RenderTransform>
+        </Grid>
+    </DataTemplate>
+
+    <!-- Simple legend tepmlate for VerticalInterval markers -->
+    <DataTemplate x:Key="VerticalIntervalLegend">
+        <StackPanel Orientation="Horizontal">
+            <StackPanel Orientation="Vertical">
+                <Line Stroke="{Binding C.First, FallbackValue=Black, TargetNullValue=Black}" 
+                          StrokeThickness="1" X1="0" X2="10" Y1="0" Y2="0"/>
+                <Line X1="5" X2="5" Y1="0" Y2="15" Stroke="{Binding C.First, FallbackValue=Black, TargetNullValue=Black}" 
+                          StrokeThickness="1"/>
+                <Line Stroke="{Binding C.First, FallbackValue=Black, TargetNullValue=Black}" StrokeThickness="1" 
+                          X1="0" X2="10" Y1="0" Y2="0"/>
+            </StackPanel>
+            <TextBlock Text="{Binding Y1.Description}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Tooltip template showing information about VerticalInterval graph -->
+    <DataTemplate x:Key="VerticalIntervalTooltip">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <TextBlock HorizontalAlignment="Right" 
+                           Text="{Binding Series.X.Description, StringFormat='\{0\}:', FallbackValue='X:', Converter={StaticResource NullToDefaultConverter}, ConverterParameter='X'}"/>
+            <TextBlock HorizontalAlignment="Right" Grid.Row="1"
+                           Text="{Binding Series.Y1.Description, StringFormat='\{0\}:', FallbackValue='Y1:', Converter={StaticResource NullToDefaultConverter}, ConverterParameter='Y1'}"/>
+            <TextBlock HorizontalAlignment="Right" Grid.Row="1"
+                           Text="{Binding Series.Y2.Description, StringFormat='\{0\}:', FallbackValue='Y2:', Converter={StaticResource NullToDefaultConverter}, ConverterParameter='Y2'}"/>
+            <TextBlock Grid.Column="1" Margin="5,0,0,0"
+                    Text="{Binding Path=X, FallbackValue='(No X data series found)'}"/>
+            <StackPanel Grid.Row="1" Margin="5,0,0,0" Grid.Column="1" Orientation="Horizontal">
+                <TextBlock Grid.Row="1" Margin="5,0,0,0" Grid.Column="1"
+                        Text="{Binding Path=This, StringFormat='[\{0\},', Converter={StaticResource VerticalIntervalTopConverter}}"/>
+                <TextBlock Grid.Row="2" Grid.Column="1"
+                        Text="{Binding Path=This, StringFormat='\{0\}]', Converter={StaticResource VerticalIntervalBottomConverter}}"/>
+            </StackPanel>                
+        </Grid>
+    </DataTemplate>
+
+    <!-- Bar graph template-->
+    <DataTemplate x:Key="BarGraph">
+        <Rectangle d3:Plot.X1="{Binding This, Converter={StaticResource BarGraphLeftConverter}}" 
+                   d3:Plot.Y1="{Binding Y, Converter={StaticResource BarGraphTopConverter}, FallbackValue=0, TargetNullValue=0}"
+                   d3:Plot.Y2="{Binding Y, Converter={StaticResource BarGraphBottomConverter}, FallbackValue=10, TargetNullValue=10}" 
+                   d3:Plot.X2="{Binding This, Converter={StaticResource BarGraphRightConverter}, FallbackValue=10, TargetNullValue=10}"
+                   Fill="{Binding C, FallbackValue=Black, TargetNullValue=Black}" 
+                   Stroke="{Binding Stroke, FallbackValue=Black}" 
+                   StrokeThickness="{Binding StrokeThickness, FallbackValue=1}">
+            <Rectangle.Resources>
+                <d3:BarGraphDataBoundsConverter x:Key="DataBoundsFunc"/>
+            </Rectangle.Resources>
+        </Rectangle>
+    </DataTemplate>
+
+    <!-- Simple legend template for bar graph -->
+    <DataTemplate x:Key="BarGraphLegend">
+        <StackPanel Orientation="Horizontal">
+            <Rectangle Fill="{Binding C.First, FallbackValue=Black, TargetNullValue=Black}"
+                           Width="5" Height="20" Stroke="Black" StrokeThickness="1"/>
+            <TextBlock Margin="5,0,0,0" VerticalAlignment="Center" Text="{Binding Y.Description, FallbackValue='(No Y data series found)'}"/>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- Tooltip template showing information about bar graph -->
+    <DataTemplate x:Key="BarGraphTooltip">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <TextBlock HorizontalAlignment="Right" 
+                           Text="{Binding Series.X.Description, StringFormat='\{0\}:', FallbackValue='X:', Converter={StaticResource NullToDefaultConverter}, ConverterParameter='X'}"/>
+            <TextBlock HorizontalAlignment="Right" Grid.Row="1"
+                           Text="{Binding Series.Y.Description, StringFormat='\{0\}:', FallbackValue='Y:', Converter={StaticResource NullToDefaultConverter}, ConverterParameter='Y'}"/>
+            <TextBlock Grid.Column="1" Margin="5,0,0,0"
+                    Text="{Binding Path=X, FallbackValue='(No X data series found)'}"/>
+            <TextBlock Grid.Row="1" Margin="5,0,0,0" Grid.Column="1"
+                    Text="{Binding Path=Y, 
+                    FallbackValue='(No Y data series found)', TargetNullValue='(No Y data series found)'}"/>
+        </Grid>
+    </DataTemplate>
+
+    <!-- Tooltip template showing information about color -->
+    <DataTemplate x:Key="ColorTooltip">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <TextBlock HorizontalAlignment="Right" 
+                           Text="{Binding Series.X.Description, StringFormat='\{0\}:', FallbackValue='X:', Converter={StaticResource NullToDefaultConverter}, ConverterParameter='X'}"/>
+            <TextBlock HorizontalAlignment="Right" Grid.Row="1"
+                           Text="{Binding Series.Y.Description, StringFormat='\{0\}:', FallbackValue='Y:', Converter={StaticResource NullToDefaultConverter}, ConverterParameter='Y'}"/>
+            <TextBlock HorizontalAlignment="Right" Grid.Row="2"
+                           Text="{Binding Series.C.Description, StringFormat='\{0\}:', FallbackValue='C:', Converter={StaticResource NullToDefaultConverter}, ConverterParameter='C'}"/>
+            <TextBlock Grid.Column="1" Margin="5,0,0,0"
+                    Text="{Binding Path=X, FallbackValue='(No X data series found)', TargetNullValue='(No X data series found)'}"/>
+            <TextBlock Grid.Row="1" Margin="5,0,0,0" Grid.Column="1"
+                    Text="{Binding Path=Y, FallbackValue='(No Y data series found)', TargetNullValue='(No Y data series found)'}"/>
+            <TextBlock Grid.Row="2" Margin="5,0,0,0" Grid.Column="1"
+                    Text="{Binding Path=OriginalC, FallbackValue='(No C data series found)', TargetNullValue='(No C data series found)'}"/>
+        </Grid>
+    </DataTemplate>
+
+    <!-- Tooltip template showing information about size -->
+    <DataTemplate x:Key="SizeTooltip">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <TextBlock HorizontalAlignment="Right" 
+                           Text="{Binding Series.X.Description, StringFormat='\{0\}:', FallbackValue='X:', Converter={StaticResource NullToDefaultConverter}, ConverterParameter='X'}"/>
+            <TextBlock HorizontalAlignment="Right" Grid.Row="1"
+                           Text="{Binding Series.Y.Description, StringFormat='\{0\}:', FallbackValue='Y:', Converter={StaticResource NullToDefaultConverter}, ConverterParameter='Y'}"/>
+            <TextBlock HorizontalAlignment="Right" Grid.Row="2"
+                           Text="{Binding Series.D.Description, StringFormat='\{0\}:', FallbackValue='D:', Converter={StaticResource NullToDefaultConverter}, ConverterParameter='D'}"/>
+            <TextBlock Grid.Column="1" Margin="5,0,0,0"
+                    Text="{Binding Path=X, FallbackValue='(No X data series found)', TargetNullValue='(No X data series found)'}"/>
+            <TextBlock Grid.Row="1" Margin="5,0,0,0" Grid.Column="1"
+                    Text="{Binding Path=Y, FallbackValue='(No Y data series found)', TargetNullValue='(No Y data series found)'}"/>
+            <TextBlock Grid.Row="2" Margin="5,0,0,0" Grid.Column="1"
+                    Text="{Binding Path=OriginalD, FallbackValue='(No D data series found)', TargetNullValue='(No D data series found)'}"/>
+        </Grid>
+    </DataTemplate>
+
+    <!-- Tooltip template showing information about color and size -->
+    <DataTemplate x:Key="ColorSizeTooltip">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <TextBlock HorizontalAlignment="Right" 
+                           Text="{Binding Series.X.Description, StringFormat='\{0\}:', FallbackValue='X:', Converter={StaticResource NullToDefaultConverter}, ConverterParameter='X'}"/>
+            <TextBlock HorizontalAlignment="Right" Grid.Row="1"
+                           Text="{Binding Series.Y.Description, StringFormat='\{0\}:', FallbackValue='Y:', Converter={StaticResource NullToDefaultConverter}, ConverterParameter='Y'}"/>
+            <TextBlock HorizontalAlignment="Right" Grid.Row="2"
+                           Text="{Binding Series.C.Description, StringFormat='\{0\}:', FallbackValue='C:', Converter={StaticResource NullToDefaultConverter}, ConverterParameter='C'}"/>
+            <TextBlock HorizontalAlignment="Right" Grid.Row="3"
+                           Text="{Binding Series.D.Description, StringFormat='\{0\}:', FallbackValue='D:', Converter={StaticResource NullToDefaultConverter}, ConverterParameter='D'}"/>
+            <TextBlock Grid.Column="1" Margin="5,0,0,0"
+                    Text="{Binding Path=X, FallbackValue='(No X data series found)', TargetNullValue='(No X data series found)'}"/>
+            <TextBlock Grid.Row="1" Margin="5,0,0,0" Grid.Column="1"
+                    Text="{Binding Path=Y, FallbackValue='(No Y data series found)', TargetNullValue='(No Y data series found)'}"/>
+            <TextBlock Grid.Row="2" Margin="5,0,0,0" Grid.Column="1"
+                    Text="{Binding Path=OriginalC, FallbackValue='(No C data series found)', TargetNullValue='(No C data series found)'}"/>
+            <TextBlock Grid.Row="3" Margin="5,0,0,0" Grid.Column="1"
+                    Text="{Binding Path=OriginalD, FallbackValue='(No D data series found)', TargetNullValue='(No D data series found)'}"/>
+        </Grid>
+    </DataTemplate>
+</ResourceDictionary>
+

@@ -20,7 +20,7 @@
          <DataTemplate DataType="{x:Type ControlsViewModel:SummaryViewerModel}">
             <ControlsView:SummaryViewer />
         </DataTemplate>
-        <ControlsViewModel:FunctionSummaryViewModel x:Key="FunctionSummaryVM" Origin="MainThread" Title="Per Frame Statistics" AreaOpacity="0.5" />
+        <ControlsViewModel:FunctionSummaryViewModel x:Key="FunctionSummaryVM" Origin="MainThread" Title="Per Frame Statistics" StrokeOpacity="0.75" StrokeThickness="2" />
         <ControlsViewModel:FunctionInstanceViewModel x:Key="FunctionInstanceVM" Origin="IndividualCalls" Title="Per Call Statistics" />
         <ControlsViewModel:AddressBarViewModel x:Key="AddressBarVM" />
         <ControlsViewModel:CaptureSettingsViewModel x:Key="CaptureSettingsVM" />
@@ -132,7 +132,7 @@
                             </xcad:LayoutAnchorablePane>
                         </xcad:LayoutAnchorablePaneGroup>
                         <xcad:LayoutPanel Orientation="Horizontal" DockHeight="1*">
-                            <xcad:LayoutAnchorablePaneGroup DockWidth="1*">
+                            <xcad:LayoutAnchorablePaneGroup DockWidth="2*">
                                 <xcad:LayoutAnchorablePane>
                                     <!--<xcad:LayoutAnchorable ContentId="temp" Title="Temp" CanHide="False" CanClose="False" AutoHideWidth="240">
                                         <Grid x:Name="CaptureSettings" >
@@ -141,8 +141,11 @@
                                             </Border>
                                         </Grid>
                                     </xcad:LayoutAnchorable>-->
-                                    <xcad:LayoutAnchorable ContentId="function_list" Title="Function Statistics (Frame)" CanClose="False">
-                                        <ControlsView:FunctionHistoryView x:Name="FunctionHistoryControl" DataContext="{StaticResource FunctionSummaryVM}" />
+                                    <xcad:LayoutAnchorable ContentId="function_list" Title="Function Chart (Frame)" CanClose="False">
+                                        <ControlsView:FunctionHistoryChartView x:Name="FunctionHistoryControlNew" DataContext="{StaticResource FunctionSummaryVM}" />
+                                    </xcad:LayoutAnchorable>
+                                    <xcad:LayoutAnchorable ContentId="function_list" Title="Function Table (Frame)" CanClose="False">
+                                        <ControlsView:FunctionHistoryTableView x:Name="FunctionHistoryControl" DataContext="{StaticResource FunctionSummaryVM}" />
                                     </xcad:LayoutAnchorable>
                                     <xcad:LayoutAnchorable ContentId="properties" Title="Properties" CanHide="False" CanClose="False" AutoHideWidth="240">
                                         <ControlsView:FunctionSummaryView x:Name="FunctionSummaryControl" DataContext="{StaticResource FunctionSummaryVM}" />
@@ -163,7 +166,7 @@
                                     <xcad:LayoutAnchorable ContentId="syscalls_tree" Title="Function SysCalls" CanClose="False">
                                         <Profiler:SampleInfo x:Name="SysCallInfoControl" CallstackType="SysCall" />
                                     </xcad:LayoutAnchorable>
-                                    <xcad:LayoutAnchorable ContentId="instance_list" Title="Function Statistics (Call)" CanClose="False">
+                                    <xcad:LayoutAnchorable ContentId="instance_list" Title="Function Table (Instances)" CanClose="False">
                                         <ControlsView:FunctionInstanceView x:Name="InstanceHistoryControl" DataContext="{StaticResource FunctionInstanceVM}" Margin="0,0,1,0" />
                                     </xcad:LayoutAnchorable>
                                 </xcad:LayoutAnchorablePane>
@@ -172,32 +175,6 @@
                     </xcad:LayoutPanel>
                 </xcad:LayoutRoot>
             </xcad:DockingManager>
-
-
-
-            <!--<Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="1*" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*" />
-            </Grid.ColumnDefinitions>
-            <Expander Header="Thread Timeline (Block Info = Ctrl + LMB)" Margin="0" VerticalContentAlignment="Stretch" UseLayoutRounding="False" IsExpanded="True" MahApps:ButtonHelper.PreserveTextCase="True">
-                <Grid>
-                    <Profiler:ThreadView x:Name="ThreadView" MinHeight="1" Height="Auto" Margin="-4,-2,-4,0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" />
-                </Grid>
-            </Expander>
-
-            <Grid Grid.Row="1">
-                <Controls:FunctionPanel x:Name="FunctionPanelControl" />
-            </Grid>-->
-
-       
-            <!--<local:FrameInfo x:Name="FrameInfoControl" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />-->
-            <!--<Expander Grid.Column="1" Header="Function Statistics" x:Name="SidePanelExpander" Grid.RowSpan="2" Margin="2,0,0,0" IsExpanded="True" MahApps:ButtonHelper.PreserveTextCase="True" ExpandDirection="Down" HorizontalAlignment="Stretch">
-                <Controls:FunctionHistory x:Name="FunctionHistoryControl" Margin="-1,-2,-2,-2"/>
-            </Expander>
-            <GridSplitter ResizeDirection="Columns" Width="4" Grid.Column="1" HorizontalAlignment="Left" Grid.RowSpan="2"/>-->
         </Grid>
 
         <Popup IsOpen="False" Placement="Center" Width="800" Height="600" x:Name="DebugInfoPopup" StaysOpen="False">

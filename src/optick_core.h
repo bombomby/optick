@@ -502,6 +502,7 @@ public:
 
 	// Serialize and send current profiling progress
 	void DumpProgress(const char* message = "");
+	void DumpProgressFormatted(const char* format, ...);
 
 	// Too much time from last report
 	bool IsTimeToReportProgress() const;

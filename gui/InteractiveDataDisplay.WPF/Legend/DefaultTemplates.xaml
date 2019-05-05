@@ -1,0 +1,29 @@
+<!-- Copyright © Microsoft Corporation, All Rights Reserved.
+ -->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d3="clr-namespace:InteractiveDataDisplay.WPF">
+           
+    <!-- Default legend item for LineGraph -->
+    <DataTemplate x:Key="InteractiveDataDisplay.WPF.LineGraph">
+        <StackPanel Orientation="Horizontal">
+            <Line Width="15" Height="15" X1="0" Y1="0" X2="15" Y2="15" Stroke="{Binding Stroke}" StrokeThickness="{Binding StrokeThickness}" StrokeDashArray="{Binding StrokeDashArray}"/>
+            <TextBlock Margin="5,0,0,0" Text="{Binding Path=Description}"/>
+        </StackPanel>
+    </DataTemplate>
+    
+    <!-- Default legend item for Heatmap -->
+    <DataTemplate x:Key="InteractiveDataDisplay.WPF.HeatmapGraph">
+        <d3:PaletteControl Range="{Binding Path=PaletteRange}" Palette="{Binding Path=Palette}" Width="150"/>
+    </DataTemplate>
+    
+    <!-- Default legend item for MarkerGraph -->
+    <DataTemplate x:Key="InteractiveDataDisplay.WPF.MarkerGraph">
+        <ContentControl Content="{Binding Sources.Emitted}" 
+                        ContentTemplate="{Binding LegendTemplate}" 
+                        VerticalContentAlignment="Center"
+                        IsTabStop="False"/>
+    </DataTemplate>
+</ResourceDictionary>
+

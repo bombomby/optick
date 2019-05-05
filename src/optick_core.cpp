@@ -745,8 +745,16 @@ void Core::DumpProgress(const char* message)
 
 	Server::Get().Send(DataResponse::ReportProgress, stream);
 }
-
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Core::DumpProgressFormatted(const char* format, ...)
+{
+	va_list arglist;
+	char buffer[256] = { 0 };
+	va_start(arglist, format);
+	vsprintf(buffer, format, arglist);
+	va_end(arglist);
+	DumpProgress(buffer);
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpEvents(EventStorage& entry, const EventTime& timeSlice, ScopeData& scope)
 {
@@ -819,6 +827,7 @@ void Core::DumpThread(ThreadEntry& entry, const EventTime& timeSlice, ScopeData&
 		entry.Sort();
 
 	// Events
+	DumpProgressFormatted("Serializing %s", entry.description.name.c_str());
 	DumpEvents(entry.storage, timeSlice, scope);
 	DumpTags(entry.storage, scope);
 	OPTICK_ASSERT(entry.storage.fiberSyncBuffer.IsEmpty(), "Fiber switch events in native threads?");
