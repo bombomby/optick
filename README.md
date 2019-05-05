@@ -54,6 +54,16 @@ Open solution `build\vs2017\Optick.sln` with samples.
 | ![WindowsD3D12](https://optick.dev/images/screenshots/optick/WindowsD3D12.png) | ![WindowsVulkan](https://optick.dev/images/screenshots/optick/WindowsVulkan.png) | ![ConsoleApp](https://optick.dev/images/screenshots/optick/ConsoleApp2.png) |
 | DirectX12 multithreading sample with Optick integration | SaschaWillems's vulkan multithreading sample with Optick integration | Basic ConsoleApp with Optick integration  (Windows, Linux, MacOS) |
 
+## Brofiler
+Brofiler has been renamed into Optick since version 1.2.0.<br/>
+All the future development is going under the new name.<br/>
+Upgrade to the new version should be quite easy:
+* `BROFILER_FRAME("MainThread");` => `OPTICK_FRAME("MainThread");`
+* `BROFILER_THREAD("WorkerThread");` => `OPTICK_THREAD("WorkerThread");`
+* `BROFILER_CATEGORY("Physics", Brofiler::Color::Green);` => `OPTICK_CATEGORY("Physics", Optick::Category::Physics);`
+* `BROFILER_EVENT(NAME);` => `OPTICK_EVENT(NAME);`
+* `PROFILE;` => `OPTICK_EVENT();`
+
 ## How To Start?
 You can find a short instruction here:<br/>
 https://github.com/bombomby/optick/wiki/How-to-start%3F-(Programmers-Setup)
