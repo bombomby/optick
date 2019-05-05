@@ -618,11 +618,8 @@ bool CallstackCollector::SerializeSymbols(OutputDataStream& stream)
 
 	if (symEngine)
 	{
-		size_t callstackIndex = 0;
 		for (auto it = symbolSet.begin(); it != symbolSet.end(); ++it)
 		{
-			callstackIndex++;
-
 			uint64 address = *it;
 			if (const Symbol* symbol = symEngine->GetSymbol(address))
 			{
@@ -1459,7 +1456,8 @@ OPTICK_THREAD_LOCAL EventStorage* Core::storage = nullptr;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ScopeHeader::ScopeHeader() : boardNumber(0), threadNumber(0), fiberNumber(0)
 {
-
+	event.start = EventTime::INVALID_TIMESTAMP;
+	event.finish = EventTime::INVALID_TIMESTAMP;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const ScopeHeader& header)
