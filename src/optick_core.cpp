@@ -13,15 +13,14 @@
 //////////////////////////////////////////////////////////////////////////
 #if defined(OPTICK_MSVC)
 #include "optick_core.win.h"
-#endif
-#if defined(OPTICK_LINUX)
+#elif defined(OPTICK_LINUX)
 #include "optick_core.linux.h"
-#endif
-#if defined(OPTICK_OSX)
+#elif defined(OPTICK_OSX)
 #include "optick_core.macos.h"
-#endif
-#if defined(OPTICK_PS4)
+#elif defined(OPTICK_PS4)
 #include "optick_core.ps4.h"
+#elif defined(OPTICK_FREEBSD)
+#include "optick_core.freebsd.h"
 #endif
 //////////////////////////////////////////////////////////////////////////
 // End of the Platform-specific stuff
@@ -40,8 +39,9 @@ extern "C" Optick::EventData* NextEvent()
 namespace Optick
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void* (*Memory::allocate)(size_t) = operator new;
-void  (*Memory::deallocate)(void* p) = operator delete;
+void* (*Memory::allocate)(size_t) = [](size_t size)->void* { return operator new(size); };
+void (*Memory::deallocate)(void* p) = [](void* p) { operator delete(p); };
+void (*Memory::initThread)(void) = nullptr;
 std::atomic<uint64_t> Memory::memAllocated;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 uint64_t MurmurHash64A(const void * key, int len, uint64_t seed)
@@ -417,6 +417,13 @@ EventDescriptionBoard& EventDescriptionBoard::Get()
 const EventDescriptionList& EventDescriptionBoard::GetEvents() const
 {
 	return boardDescriptions;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void EventDescriptionBoard::Shutdown()
+{
+	boardDescriptions.Clear(false);
+	sharedNames.Clear(false);
+	sharedDescriptions.clear();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventDescription* EventDescriptionBoard::CreateDescription(const char* name, const char* file /*= nullptr*/, uint32_t line /*= 0*/, uint32_t color /*= Color::Null*/, uint32_t filter /*= 0*/)
@@ -1177,7 +1184,7 @@ void Core::Activate(Mode::Type mode)
 
 		if (mode != Mode::OFF)
 		{
-			CaptureStatus::Type status = CaptureStatus::ERR_TRACER_FAILED;
+			CaptureStatus::Type status = CaptureStatus::ERR_TRACER_NOT_IMPLEMENTED;
 
 #if OPTICK_ENABLE_TRACING
 			if (mode & Mode::TRACER)
@@ -1418,7 +1425,7 @@ const EventDescription* Core::GetFrameDescription(FrameType::Type frame) const
 	return frameDescriptions[frame];
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Core::~Core()
+void Core::Shutdown()
 {
 	std::lock_guard<std::recursive_mutex> lock(threadsLock);
 
@@ -1433,6 +1440,13 @@ Core::~Core()
 		Memory::Delete(*it);
 	}
 	fibers.clear();
+
+	EventDescriptionBoard::Get().Shutdown();
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Core::~Core()
+{
+	Shutdown();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const vector<ThreadEntry*>& Core::GetThreads() const
@@ -1586,9 +1600,14 @@ OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame)
 	return Core::Get().GetFrameDescription(frame);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-OPTICK_API void SetAllocator(AllocateFn allocateFn, DeallocateFn deallocateFn)
+OPTICK_API void SetAllocator(AllocateFn allocateFn, DeallocateFn deallocateFn, InitThreadCb initThreadCb)
 {
-	Memory::SetAllocator(allocateFn, deallocateFn);
+	Memory::SetAllocator(allocateFn, deallocateFn, initThreadCb);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+OPTICK_API void Shutdown()
+{
+	Core::Get().Shutdown();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventStorage::EventStorage(): currentMode(Mode::OFF), pushPopEventStackIndex(0), isFiberStorage(false)

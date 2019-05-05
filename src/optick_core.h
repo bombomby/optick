@@ -181,6 +181,8 @@ public:
 
 	const EventDescriptionList& GetEvents() const;
 
+	void Shutdown();
+
 	friend OutputDataStream& operator << (OutputDataStream& stream, const EventDescriptionBoard& ob);
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -391,6 +393,7 @@ struct CaptureStatus
 		ERR_TRACER_ACCESS_DENIED = 2,
 		ERR_TRACER_FAILED = 3,
         ERR_TRACER_INVALID_PASSWORD = 4,
+		ERR_TRACER_NOT_IMPLEMENTED = 5,
     };
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -554,6 +557,9 @@ public:
 
 	// Returns Frame Description
 	const EventDescription* GetFrameDescription(FrameType::Type frame) const;
+
+	// Full Destruction
+	void Shutdown();
 
 	// NOT Thread Safe singleton (performance)
 	static Core& Get();

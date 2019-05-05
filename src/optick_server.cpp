@@ -309,7 +309,7 @@ string Server::GetHostName() const
 #if defined(OPTICK_LINUX) || defined(OPTICK_OSX)
 	gethostname(hostname, HOST_NAME_LENGTH);
 #endif
-#elif defined(OPTICK_PC)
+#elif OPTICK_PC
     DWORD length = HOST_NAME_LENGTH;
 	GetComputerNameA(hostname, &length);
 #endif

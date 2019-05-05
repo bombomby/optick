@@ -14,13 +14,13 @@
 #		define OPTICK_OSX (1)
 #	elif defined(__linux__)
 #		define OPTICK_LINUX (1)
-#	elif defined(__ORBIS__)
-#		define OPTICK_PS4 (1)
+#	elif defined(__FreeBSD__)
+#		define OPTICK_FREEBSD (1)
 #	endif
 #elif defined(_MSC_VER)
 #	define OPTICK_MSVC (1)
 #	if defined(_DURANGO)
-#		define OPTICK_XBOX (1)
+#		define OPTICK_PC (0)
 #	else
 #		define OPTICK_PC (1)
 #endif
@@ -662,8 +662,10 @@ OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef void* (*AllocateFn)(size_t);
 typedef void  (*DeallocateFn)(void*);
+typedef void  (*InitThreadCb)(void);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-OPTICK_API void SetAllocator(AllocateFn allocateFn, DeallocateFn deallocateFn);
+OPTICK_API void SetAllocator(AllocateFn allocateFn, DeallocateFn deallocateFn, InitThreadCb initThreadCb);
+OPTICK_API void Shutdown();
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
@@ -835,10 +837,19 @@ OPTICK_API void SetAllocator(AllocateFn allocateFn, DeallocateFn deallocateFn);
 
 // Registers custom memory allocator within Optick core
 // Example:
-//		OPTICK_SET_MEMORY_ALLOCATOR([](size_t size) -> void* { return operator new(size); }, [](void* p) { operator delete(p); });
+//		OPTICK_SET_MEMORY_ALLOCATOR([](size_t size) -> void* { return operator new(size); }, [](void* p) { operator delete(p); }, nullptr);
+// Params:
+//		INIT_THREAD_CALLBACK - callback for internal Optick threads (useful if you need to setup some TLS variables related to the memory allocator for your thread)
 // Notes:
 //		Should be called before the first call to OPTICK_FRAME
-#define OPTICK_SET_MEMORY_ALLOCATOR(ALLOCATE_FUNCTION, DEALLOCATE_FUNCTION)										::Optick::SetAllocator(ALLOCATE_FUNCTION, DEALLOCATE_FUNCTION);
+//		Allocation and deallocation functions should be thread-safe - Optick doesn't do any synchronization for these calls
+#define OPTICK_SET_MEMORY_ALLOCATOR(ALLOCATE_FUNCTION, DEALLOCATE_FUNCTION, INIT_THREAD_CALLBACK)				::Optick::SetAllocator(ALLOCATE_FUNCTION, DEALLOCATE_FUNCTION, INIT_THREAD_CALLBACK);
+
+// Shutdown
+// Clears all the internal buffers allocated by Optick
+// Notes:
+//		You shouldn't call any Optick functions after shutting down the system (it might lead to the undefined behaviour)
+#define OPTICK_SHUTDOWN()																						::Optick::Shutdown();
 
 // GPU events
 #define OPTICK_GPU_INIT_D3D12(DEVICE, CMD_QUEUES, NUM_CMD_QUEUS)												::Optick::InitGpuD3D12(DEVICE, CMD_QUEUES, NUM_CMD_QUEUS);
@@ -880,6 +891,7 @@ OPTICK_API void SetAllocator(AllocateFn allocateFn, DeallocateFn deallocateFn);
 #define OPTICK_STORAGE_POP(STORAGE, CPU_TIMESTAMP_FINISH)				
 #define OPTICK_SET_STATE_CHANGED_CALLBACK(CALLBACK)
 #define OPTICK_SET_MEMORY_ALLOCATOR(ALLOCATE_FUNCTION, DEALLOCATE_FUNCTION)	
+#define OPTICK_SHUTDOWN()
 #define OPTICK_GPU_INIT_D3D12(DEVICE, CMD_QUEUES, NUM_CMD_QUEUS)
 #define OPTICK_GPU_INIT_VULKAN(DEVICES, PHYSICAL_DEVICES, CMD_QUEUES, CMD_QUEUES_FAMILY, NUM_CMD_QUEUS)
 #define OPTICK_GPU_CONTEXT(...)

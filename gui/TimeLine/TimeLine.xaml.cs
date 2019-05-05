@@ -57,14 +57,13 @@ namespace Profiler
 			this.InitializeComponent();
 			this.DataContext = frames;
 
-			statusToError.Add(ETWStatus.ETW_ERROR_ACCESS_DENIED, new KeyValuePair<string, string>("ETW can't start: launch your game (or Visual Studio) as administrator to collect context switches", "https://github.com/bombomby/optick/wiki/Event-Tracing-for-Windows"));
+			statusToError.Add(TracerStatus.TRACER_ERROR_ACCESS_DENIED, new KeyValuePair<string, string>("ETW can't start: launch your game (or Visual Studio) as administrator to collect context switches", "https://github.com/bombomby/optick/wiki/Event-Tracing-for-Windows"));
+			statusToError.Add(TracerStatus.TRACER_ERROR_ALREADY_EXISTS, new KeyValuePair<string, string>("ETW session already started (Reboot should help)", "https://github.com/bombomby/optick/wiki/Event-Tracing-for-Windows"));
+			statusToError.Add(TracerStatus.TRACER_FAILED, new KeyValuePair<string, string>("ETW session failed (Run your Game or Visual Studio as Administrator to get ETW data)", "https://github.com/bombomby/optick/wiki/Event-Tracing-for-Windows"));
+			statusToError.Add(TracerStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, string>("Tracing session failed: invalid root password. Run the game as a root or pass a valid password through Optick GUI", "https://github.com/bombomby/optick/wiki/Event-Tracing-for-Windows"));
+            statusToError.Add(TracerStatus.TRACER_NOT_IMPLEMENTED, new KeyValuePair<string, string>("Tracing sessions are not supported yet on the selected platform! Stay tuned!", "https://github.com/bombomby/optick"));
 
-
-			statusToError.Add(ETWStatus.ETW_ERROR_ALREADY_EXISTS, new KeyValuePair<string, string>("ETW session already started (Reboot should help)", "https://github.com/bombomby/optick/wiki/Event-Tracing-for-Windows"));
-			statusToError.Add(ETWStatus.ETW_FAILED, new KeyValuePair<string, string>("ETW session failed (Run your Game or Visual Studio as Administrator to get ETW data)", "https://github.com/bombomby/optick/wiki/Event-Tracing-for-Windows"));
-			statusToError.Add(ETWStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, string>("Tracing session failed: invalid root password. Run the game as a root or pass a valid password through Optick GUI", "https://github.com/bombomby/optick/wiki/Event-Tracing-for-Windows"));
-
-			ProfilerClient.Get().ConnectionChanged += TimeLine_ConnectionChanged;
+            ProfilerClient.Get().ConnectionChanged += TimeLine_ConnectionChanged;
 
 			socketThread = new Thread(RecieveMessage);
 			socketThread.Start();
@@ -148,16 +147,17 @@ namespace Profiler
 			}
 		}
 
-		enum ETWStatus
+		enum TracerStatus
 		{
-			ETW_OK = 0,
-			ETW_ERROR_ALREADY_EXISTS = 1,
-			ETW_ERROR_ACCESS_DENIED = 2,
-			ETW_FAILED = 3,
+			TRACER_OK = 0,
+            TRACER_ERROR_ALREADY_EXISTS = 1,
+            TRACER_ERROR_ACCESS_DENIED = 2,
+            TRACER_FAILED = 3,
             TRACER_INVALID_PASSWORD = 4,
+            TRACER_NOT_IMPLEMENTED = 5,
 		}
 
-		Dictionary<ETWStatus, KeyValuePair<String, String>> statusToError = new Dictionary<ETWStatus, KeyValuePair<String, String>>();
+		Dictionary<TracerStatus, KeyValuePair<String, String>> statusToError = new Dictionary<TracerStatus, KeyValuePair<String, String>>();
 
 		private bool ApplyResponse(DataResponse response)
 		{
@@ -183,7 +183,7 @@ namespace Profiler
 						break;
 
 					case DataResponse.Type.Handshake:
-						ETWStatus status = (ETWStatus)response.Reader.ReadUInt32();
+						TracerStatus status = (TracerStatus)response.Reader.ReadUInt32();
 
 						KeyValuePair<string, string> warning;
 						if (statusToError.TryGetValue(status, out warning))

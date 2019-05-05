@@ -29,7 +29,8 @@ namespace Optick
 		static std::atomic<uint64_t> memAllocated;
 
 		static void* (*allocate)(size_t);
-		static void  (*deallocate)(void* p);
+		static void  (*deallocate)(void*);
+		static void  (*initThread)(void);
 	public:
 		static OPTICK_INLINE void* Alloc(size_t size)
 		{
@@ -88,10 +89,17 @@ namespace Optick
 			}
 		}
 
-		static void SetAllocator(void* (*allocateFn)(size_t), void(*deallocateFn)(void*))
+		static void SetAllocator(AllocateFn allocateFn, DeallocateFn deallocateFn, InitThreadCb initThreadCb)
 		{
 			allocate = allocateFn;
 			deallocate = deallocateFn;
+			initThread = initThreadCb;
+		}
+
+		static void InitThread()
+		{
+			if (initThread != nullptr)
+				initThread();
 		}
 
 		template<typename T> 
@@ -411,6 +419,11 @@ namespace Optick
 		T* Add(const T& val, bool allowOverlap = true)
 		{
 			return static_cast<T*>(Add(&val, sizeof(T), allowOverlap));
+		}
+
+		void Clear(bool preserveMemory)
+		{
+			MemoryPool<uint8, CHUNK_SIZE>::Clear(preserveMemory);
 		}
 	};
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

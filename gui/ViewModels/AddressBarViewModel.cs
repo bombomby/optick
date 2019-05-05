@@ -97,6 +97,7 @@ namespace Profiler.ViewModels
             Target = con.Target;
             Port = con.Port;
             Password = con.Password;
+            CanDelete = true;
         }
 
         public Platform.Connection GetConnection()

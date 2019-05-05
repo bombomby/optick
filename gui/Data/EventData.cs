@@ -49,8 +49,12 @@ namespace Profiler.Data
 			set
 			{
 				fullName = value;
-				name = StripFunctionArguments(fullName);
-				name = StripReturnValue(name);
+
+                String shortName = StripFunctionArguments(fullName);
+                if (shortName.Length != fullName.Length)
+                    name = StripReturnValue(shortName);
+                else
+                    name = fullName;
 			}
 		}
 
@@ -86,24 +90,29 @@ namespace Profiler.Data
 			return name;
 		}
 
-		static String[] callConventions = { "__thiscall", "__fastcall", "__cdecl", "__clrcall", "__stdcall", "__vectorcall" };
 		static String StripReturnValue(String name)
 		{
-			if (name.Length == 0)
-				return name;
+            int bracketsDepth = 0;
 
-			foreach (String functionCall in callConventions)
-			{
-				int index = name.IndexOf(functionCall);
-				if (index != -1)
-				{
-					int cutIndex = index + functionCall.Length + 1;
-					if (cutIndex < name.Length)
-						return name.Substring(cutIndex);
-				}
-			}
+            for (int i = name.Length - 1; i >= 0; --i)
+            {
+                switch (name[i])
+                {
+                    case '>':
+                        ++bracketsDepth;
+                        break;
 
-			return name;
+                    case '<':
+                        --bracketsDepth;
+                        break;
+
+                    case ' ':
+                        if (bracketsDepth == 0)
+                            return name.Substring(i + 1);
+                        break;
+                }
+            }
+            return name;
 		}
 
 		public override string ToString()

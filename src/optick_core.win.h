@@ -11,7 +11,7 @@ namespace Optick
 {
 	const char* Platform::GetName()
 	{
-	#if defined(OPTICK_PC)
+	#if OPTICK_PC
 		return "Windows";
 	#else
 		return "XBox";
@@ -1044,6 +1044,7 @@ const TRACEHANDLE INVALID_TRACEHANDLE = (TRACEHANDLE)-1;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 DWORD WINAPI ETW::RunProcessTraceThreadFunction(LPVOID parameter)
 {
+	Memory::InitThread();
 	Core::Get().RegisterThreadDescription(ThreadDescription("[Optick] ETW", GetCurrentThreadId(), GetCurrentProcessId()));
 	ETW* etw = (ETW*)parameter;
 	ULONG status = ProcessTrace(&etw->openedHandle, 1, 0, 0);
@@ -1109,11 +1110,12 @@ CaptureStatus::Type ETW::Start(Mode::Type mode, int frequency, const ThreadList&
 		ZeroMemory(traceProperties, bufferSize);
 		traceProperties->Wnode.BufferSize = bufferSize;
 		traceProperties->LoggerNameOffset = sizeof(EVENT_TRACE_PROPERTIES);
-		StringCchCopyW((LPWSTR)((PCHAR)traceProperties + traceProperties->LoggerNameOffset), ETW_MAXIMUM_SESSION_NAME, KERNEL_LOGGER_NAMEW);
 		traceProperties->EnableFlags = 0;
 
+#if OPTICK_PC
 		traceProperties->BufferSize = ETW_BUFFER_SIZE;
 		traceProperties->MinimumBuffers = ETW_BUFFER_COUNT;
+#endif
 
 		if (mode & Mode::SWITCH_CONTEXT)
 		{

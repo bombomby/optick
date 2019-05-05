@@ -27,9 +27,13 @@ int main()
 
 	cout << "Starting main loop update." << endl;
 
-	OPTICK_SET_MEMORY_ALLOCATOR([](size_t size) -> void* { return operator new(size); }, [](void* p) { operator delete(p); });
-
-	while( true ) 
+	OPTICK_SET_MEMORY_ALLOCATOR(
+		[](size_t size) -> void* { return operator new(size); }, 
+		[](void* p) { operator delete(p); }, 
+		[]() { /* Do some TLS initialization here if needed */ });
+	
+	bool needExit = false;
+	while( !needExit ) 
 	{
 		OPTICK_FRAME("MainThread");
 		
@@ -38,6 +42,8 @@ int main()
 
 		cout<<'.'<<flush; 
 	}
+
+	OPTICK_SHUTDOWN();
 
 	return 0;
 }
