@@ -5,9 +5,9 @@ It provides access for all the necessary tools required for efficient performanc
 instrumentation, switch-contexts, sampling, GPU counters.<br/>
 
 ## Build Status
-| Windows | Linux | MacOS | Code Quality |
-| ------- | ----- | ----- | ------------ |
-| [![Windows Build status](https://ci.appveyor.com/api/projects/status/bu5smbuh1d2lcsf6?svg=true)](https://ci.appveyor.com/project/bombomby/brofiler) | [![Linux+MacOS Build Status](https://travis-ci.org/bombomby/optick.svg)](https://travis-ci.org/bombomby/optick) | [![Linux+MacOS Build Status](https://travis-ci.org/bombomby/optick.svg)](https://travis-ci.org/bombomby/optick) | [![Total alerts](https://img.shields.io/lgtm/alerts/g/bombomby/optick.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bombomby/optick/alerts/) [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/bombomby/optick.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bombomby/optick/context:cpp) |
+| Windows | Linux | MacOS | Static Code Analysis |
+| ------- | ----- | ----- | --------------------- |
+| [![Windows Build status](https://ci.appveyor.com/api/projects/status/bu5smbuh1d2lcsf6?svg=true)](https://ci.appveyor.com/project/bombomby/brofiler) | [![Linux+MacOS Build Status](https://travis-ci.org/bombomby/optick.svg)](https://travis-ci.org/bombomby/optick) | [![Linux+MacOS Build Status](https://travis-ci.org/bombomby/optick.svg)](https://travis-ci.org/bombomby/optick) | [![Total alerts](https://img.shields.io/lgtm/alerts/g/bombomby/optick.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bombomby/optick/alerts/) [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/bombomby/optick.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bombomby/optick/context:cpp) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/3195c1fa7d554dc1bb9d45dd30454b48)](https://www.codacy.com/app/bombomby/optick?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bombomby/optick&amp;utm_campaign=Badge_Grade) |
 
 ![](https://optick.dev/images/screenshots/optick/Optick.png)
 
