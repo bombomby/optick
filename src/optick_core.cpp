@@ -614,12 +614,11 @@ bool CallstackCollector::SerializeSymbols(OutputDataStream& stream)
 	vector<const Symbol*> symbols;
 	symbols.reserve(symbolSet.size());
 
-	size_t callstackIndex = 0;
-
 	Core::Get().DumpProgress("Resolving addresses... ");
 
 	if (symEngine)
 	{
+		size_t callstackIndex = 0;
 		for (auto it = symbolSet.begin(); it != symbolSet.end(); ++it)
 		{
 			callstackIndex++;
@@ -1458,7 +1457,7 @@ OPTICK_THREAD_LOCAL EventStorage* Core::storage = nullptr;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-ScopeHeader::ScopeHeader() : boardNumber(0), threadNumber(0)
+ScopeHeader::ScopeHeader() : boardNumber(0), threadNumber(0), fiberNumber(0)
 {
 
 }

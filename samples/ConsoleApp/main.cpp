@@ -30,7 +30,8 @@ int main()
 	OPTICK_SET_MEMORY_ALLOCATOR(
 		[](size_t size) -> void* { return operator new(size); }, 
 		[](void* p) { operator delete(p); }, 
-		[]() { /* Do some TLS initialization here if needed */ });
+		[]() { /* Do some TLS initialization here if needed */ }
+	);
 	
 	bool needExit = false;
 	while( !needExit ) 

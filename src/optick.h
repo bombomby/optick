@@ -500,7 +500,6 @@ struct OPTICK_API EventDescription
 	uint32_t index;
 	uint32_t color;
 	uint32_t filter;
-	float budget;
 
 	static EventDescription* Create(const char* eventName, const char* fileName, const unsigned long fileLine, const unsigned long eventColor = Color::Null, const unsigned long filter = 0);
 	static EventDescription* CreateShared(const char* eventName, const char* fileName = nullptr, const unsigned long fileLine = 0, const unsigned long eventColor = Color::Null, const unsigned long filter = 0);

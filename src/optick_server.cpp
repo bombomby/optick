@@ -174,14 +174,8 @@ public:
 	bool Bind(short startPort, short portRange)
 	{
 		for (short port = startPort; port < startPort + portRange; ++port)
-		{
-			int result = Bind(port);
-
-			if (result == false)
-				continue;
-
-			return true;
-		}
+			if (Bind(port))
+				return true;
 
 		return false;
 	}
