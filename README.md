@@ -56,8 +56,7 @@ Open solution `build\vs2017\Optick.sln` with samples.
 | DirectX12 multithreading sample with Optick integration | SaschaWillems's vulkan multithreading sample with Optick integration | Basic ConsoleApp with Optick integration  (Windows, Linux, MacOS) |
 
 ## Brofiler
-The previous version of the profiler was called Brofiler.<br/>
-Brofiler has been renamed into Optick since v1.2.0.<br/>
+Brofiler has been renamed into Optick starting from v1.2.0.<br/>
 All the future development is going under the new name.<br/>
 Cheatsheet for upgrading to the new version:
 * `BROFILER_FRAME("MainThread");` => `OPTICK_FRAME("MainThread");`
