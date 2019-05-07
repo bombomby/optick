@@ -65,34 +65,25 @@ namespace Profiler.DirectX
 		{
 			Fragment result = new Fragment();
 
-			CompilationResult vertexShaderByteCode = null;
-			CompilationResult pixelShaderByteCode = null;
+			ShaderBytecode vertexShaderByteCode = null;
+			ShaderBytecode pixelShaderByteCode = null;
 
 			Assembly assembly = Assembly.GetExecutingAssembly();
-			using (Stream stream = assembly.GetManifestResourceStream("Profiler.DirectX." + fileName))
-			{
-				using (StreamReader reader = new StreamReader(stream))
-				{
-					//string data = reader.ReadToEnd();
-					byte[] data = new byte[stream.Length];
-					stream.Read(data, 0, data.Length);
 
-					vertexShaderByteCode = ShaderBytecode.Compile(data, "VS", "vs_4_0", ShaderFlags.None, EffectFlags.None);
-					pixelShaderByteCode = ShaderBytecode.Compile(data, "PS", "ps_4_0", ShaderFlags.None, EffectFlags.None);
-				}
+			using (Stream streamPS = assembly.GetManifestResourceStream("Profiler.DirectX.Shaders." + fileName + "_ps.fxo"))
+			{
+				pixelShaderByteCode = ShaderBytecode.FromStream(streamPS);
 			}
 
-			if (!String.IsNullOrEmpty(vertexShaderByteCode.Message))
-				Debug.WriteLine(vertexShaderByteCode.Message);
+			using (Stream streamVS = assembly.GetManifestResourceStream("Profiler.DirectX.Shaders." + fileName + "_vs.fxo"))
+			{
+				vertexShaderByteCode = ShaderBytecode.FromStream(streamVS);
+			}
 
-			result.VS = new VertexShader(RenderDevice, vertexShaderByteCode);
+			result.VS = new VertexShader(RenderDevice, vertexShaderByteCode.Data);
+			result.PS = new PixelShader(RenderDevice, pixelShaderByteCode.Data);
 
-			if (!String.IsNullOrEmpty(pixelShaderByteCode.Message))
-				Debug.WriteLine(pixelShaderByteCode.Message);
-
-			result.PS = new PixelShader(RenderDevice, pixelShaderByteCode);
-
-			result.Layout = new InputLayout(RenderDevice, ShaderSignature.GetInputSignature(vertexShaderByteCode), inputElements);
+			result.Layout = new InputLayout(RenderDevice, vertexShaderByteCode, inputElements);
 
 			vertexShaderByteCode.Dispose();
 			pixelShaderByteCode.Dispose();
@@ -161,13 +152,13 @@ namespace Profiler.DirectX
 
 			WPConstantBuffer = SharpDX.Direct3D11.Buffer.Create(RenderDevice, BindFlags.ConstantBuffer, ref WP);
 
-			DefaultFragment = LoadFragment(@"Basic.fx", new[]
+			DefaultFragment = LoadFragment(@"Basic", new[]
 			{
 				new InputElement("POSITION", 0, Format.R32G32_Float, 0, 0),
 				new InputElement("COLOR", 0, Format.R8G8B8A8_UNorm, 8, 0)
 			});
 
-			TextFragment = LoadFragment(@"Text.fx", new[]
+			TextFragment = LoadFragment(@"Text", new[]
 			{
 				new InputElement("POSITION", 0, Format.R32G32_Float, 0, 0),
 				new InputElement("TEXCOORD", 0, Format.R32G32_Float, 8, 0),

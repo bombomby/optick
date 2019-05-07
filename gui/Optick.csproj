@@ -592,6 +592,11 @@
     <EmbeddedResource Include="DirectX\Fonts\SegoeUI_24_Normal.fnt" />
     <EmbeddedResource Include="DirectX\Fonts\SegoeUI_32_Normal.fnt" />
     <EmbeddedResource Include="DirectX\Fonts\SegoeUI_28_Normal.fnt" />
+    <EmbeddedResource Include="DirectX\Shaders\Basic_ps.fxo" />
+    <EmbeddedResource Include="DirectX\Shaders\Basic_vs.fxo" />
+    <EmbeddedResource Include="DirectX\Shaders\Text_ps.fxo" />
+    <EmbeddedResource Include="DirectX\Shaders\Text_vs.fxo" />
+    <None Include="DirectX\Shaders\Compile.bat" />
     <None Include="packages.config" />
     <AppDesigner Include="Properties\" />
     <EmbeddedResource Include="TaskManager\brofiler-github-07994fd14248.p12" />
@@ -661,12 +666,6 @@
     <Resource Include="TimeLine\Icons\Clear-icon.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="DirectX\Basic.fx" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="DirectX\Text.fx" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="DirectX\Fonts\SegoeUI_16_Normal_0.png" />
   </ItemGroup>
   <ItemGroup>
@@ -691,13 +690,14 @@
     <Resource Include="Resources\Bug.ico" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="costura64\D3DCompiler_43.dll" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\..\IDD\InteractiveDataDisplay.WPF\src\InteractiveDataDisplay.WPF.csproj">
       <Project>{2d34544c-2df2-4b20-a43a-6c8d2df3dd82}</Project>
       <Name>InteractiveDataDisplay.WPF</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="DirectX\Shaders\Basic.fx" />
+    <Content Include="DirectX\Shaders\Text.fx" />
   </ItemGroup>
   <Import Project="packages\Fody.4.0.2\build\Fody.targets" Condition="Exists('packages\Fody.4.0.2\build\Fody.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
