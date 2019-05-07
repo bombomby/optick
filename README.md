@@ -56,9 +56,9 @@ Open solution `build\vs2017\Optick.sln` with samples.
 | DirectX12 multithreading sample with Optick integration | SaschaWillems's vulkan multithreading sample with Optick integration | Basic ConsoleApp with Optick integration  (Windows, Linux, MacOS) |
 
 ## Brofiler
-Brofiler has been renamed into Optick since version 1.2.0.<br/>
+Brofiler has been renamed into Optick starting from v1.2.0.<br/>
 All the future development is going under the new name.<br/>
-Upgrade to the new version should be quite easy:
+Cheatsheet for upgrading to the new version:
 * `BROFILER_FRAME("MainThread");` => `OPTICK_FRAME("MainThread");`
 * `BROFILER_THREAD("WorkerThread");` => `OPTICK_THREAD("WorkerThread");`
 * `BROFILER_CATEGORY("Physics", Brofiler::Color::Green);` => `OPTICK_CATEGORY("Physics", Optick::Category::Physics);`
