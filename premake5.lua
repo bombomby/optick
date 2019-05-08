@@ -144,12 +144,8 @@ if _ACTION == "vs2017" then
 	systemversion "10.0.15063.0"
 end
 
--- if _OPTIONS['platform'] ~= "orbis" then
--- 	kind "SharedLib"
--- 	defines { "OPTICK_EXPORTS" }
--- else
-	kind "StaticLib"
--- end
+ 	kind "SharedLib"
+ 	defines { "OPTICK_EXPORTS" }
 
 	includedirs
 	{
@@ -161,10 +157,10 @@ end
 	--	{
 	--		"$(DXSDK_DIR)Include",
 	--	}
-	--	links { 
-	--		"d3d12", 
-	--		"dxgi",
-	--	}
+		links { 
+			"d3d12", 
+			"dxgi",
+		}
 	else
 		defines { "OPTICK_ENABLE_GPU_D3D12=0" }
 	end
@@ -173,6 +169,12 @@ end
 		includedirs
 		{
 			"$(VULKAN_SDK)/Include",
+		}
+		libdirs {
+			"$(VULKAN_SDK)/Lib",
+		}
+		links { 
+			"vulkan-1",
 		}
 	else
 		defines { "OPTICK_ENABLE_GPU_VULKAN=0" }
@@ -258,7 +260,6 @@ else
             "TaskScheduler"
         }
         end
-		
 end
 
 if isDX12 then
