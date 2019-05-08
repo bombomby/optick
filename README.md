@@ -42,6 +42,12 @@ void SlowFunction()
 ```
 4) Edit `optick.config.h` to enable/disable some of the features in specific configs or platforms.<br/>(e.g. disabling Optick in final builds)
 
+> :warning: If your Game is uses dynamic linking and you are planning to use Optick from multiple dlls within the same executable - please make sure that Optick code is added to the common **Shared Library** (Static Library won't work).<br/>
+> You could also use precompiled **OptickCore.dll** which is packaged with every release:
+> - Add `include` folder to the extra include dirs of your project
+> - Add `lib/x64/debug` and `lib/x64/release` to the extra library dirs of your project
+> - Copy `lib/x64/debug/OptickCore.dll` and `lib/x64/release/OptickCore.dll` to the debug and release output folders of your project respectively
+
 ## API
 All the available API calls are documented here:<br/>
 https://github.com/bombomby/optick/wiki/Optick-API
