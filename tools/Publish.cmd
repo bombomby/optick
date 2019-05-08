@@ -34,4 +34,4 @@ xcopy /Y src\*.* publish\Optick_%VERSION%\src\*
 rem License
 xcopy /Y LICENSE publish\Optick_%VERSION%\*
 
-rem powershell "Compress-Archive -Path .\publish\Optick_%VERSION%\* -DestinationPath .\publish\Optick_%VERSION%.zip"
+powershell "Compress-Archive -Path .\publish\Optick_%VERSION%\* -DestinationPath .\publish\Optick_%VERSION%.zip"
