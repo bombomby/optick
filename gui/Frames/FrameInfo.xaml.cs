@@ -16,6 +16,7 @@ using System.Threading;
 using System.Windows.Threading;
 using System.Diagnostics;
 using System.Globalization;
+using Profiler.ViewModels;
 
 namespace Profiler
 {
@@ -322,7 +323,34 @@ namespace Profiler
     {
         public CallStackReason CallstackType { get; set; }
 
-        public Data.Frame SourceFrame { get; set; }
+		public SampleInfo()
+		{
+			IsVisibleChanged += SampleInfo_IsVisibleChanged;
+		}
+
+		private void SampleInfo_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+		{
+			VM.SetActive(IsVisible);
+		}
+
+		private SamplingViewModel vm = null;
+		public SamplingViewModel VM
+		{
+			get { return vm; }
+			set
+			{
+				vm = value;
+				if (vm != null)
+					vm.OnLoaded += VM_OnLoaded;
+			}
+		}
+
+		private void VM_OnLoaded(SamplingFrame frame)
+		{
+			SetFrame(frame, null);
+		}
+
+		public Data.Frame SourceFrame { get; set; }
 
         public override void SetFrame(Data.Frame frame, IDurable node)
         {

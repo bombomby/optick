@@ -82,6 +82,9 @@ namespace Profiler.Controls
             FunctionSummaryVM = (FunctionSummaryViewModel)FindResource("FunctionSummaryVM");
 			FunctionInstanceVM = (FunctionInstanceViewModel)FindResource("FunctionInstanceVM");
 			CaptureSettingsVM = (CaptureSettingsViewModel)FindResource("CaptureSettingsVM");
+
+			FunctionSamplingVM = (SamplingViewModel)FindResource("FunctionSamplingVM");
+			SysCallsSamplingVM = (SamplingViewModel)FindResource("SysCallsSamplingVM");
 		}
 
 		private void CancelConnection()
@@ -96,6 +99,9 @@ namespace Profiler.Controls
 
 		FunctionSummaryViewModel FunctionSummaryVM { get; set; }
 		FunctionInstanceViewModel FunctionInstanceVM { get; set; }
+
+		SamplingViewModel FunctionSamplingVM { get; set; }
+		SamplingViewModel SysCallsSamplingVM { get; set; }
 
 		public bool LoadFile(string path)
 		{
@@ -138,14 +144,20 @@ namespace Profiler.Controls
 			if (frame is EventFrame)
 			{
 				EventFrame eventFrame = frame as EventFrame;
-				FunctionSummaryVM.Load(eventFrame.Group, eventFrame.RootEntry.Description);
-				FunctionInstanceVM.Load(eventFrame.Group, eventFrame.RootEntry.Description);
+				FrameGroup group = eventFrame.Group;
+				EventDescription desc = eventFrame.RootEntry.Description;
+
+				FunctionSummaryVM.Load(group, desc);
+				FunctionInstanceVM.Load(group, desc);
+
+				FunctionSamplingVM.Load(group, desc);
+				SysCallsSamplingVM.Load(group, desc);
 
 				FrameInfoControl.SetFrame(frame, null);
-				SampleInfoControl.SetFrame(frame, null);
-				SysCallInfoControl.SetFrame(frame, null);
+				//SampleInfoControl.SetFrame(frame, null);
+				//SysCallInfoControl.SetFrame(frame, null);
 
-				SamplingTreeControl.SetDescription(frame.Group, eventFrame.RootEntry.Description);
+				//SamplingTreeControl.SetDescription(frame.Group, eventFrame.RootEntry.Description);
 			}
 
 			if (frame != null && frame.Group != null)
@@ -206,11 +218,14 @@ namespace Profiler.Controls
 			FunctionSummaryVM.Load(null, null);
 			FunctionInstanceVM.Load(null, null);
 
+			FunctionSamplingVM.Load(null, null);
+			SysCallsSamplingVM.Load(null, null);
+
 			FrameInfoControl.DataContext = null;
 			SampleInfoControl.DataContext = null; 
 			SysCallInfoControl.DataContext = null;
 
-			SamplingTreeControl.SetDescription(null, null);
+			//SamplingTreeControl.SetDescription(null, null);
 
 			MainViewModel vm = DataContext as MainViewModel;
 			if (vm.IsCapturing)

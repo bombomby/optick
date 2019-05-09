@@ -1,4 +1,5 @@
 ﻿using Profiler.Data;
+using Profiler.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,18 +25,27 @@ namespace Profiler
 		public SamplingThreadView()
 		{
 			InitializeComponent();
+
+			DataContextChanged += SamplingThreadView_DataContextChanged;
+			IsVisibleChanged += SamplingThreadView_IsVisibleChanged;
 		}
 
-		public void SetDescription(FrameGroup group, EventDescription description)
+		private void VM_OnLoaded(SamplingFrame frame)
 		{
-			if (Group != group || Description != description)
-			{
-				SamplingFrame samplingFrame = (group != null && description != null) ? group.CreateSamplingFrame(description) : null;
-				InitThreadList(samplingFrame);
+			InitThreadList(frame);
+		}
 
-				Group = group;
-				Description = description;
-			}
+		private void SamplingThreadView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+		{
+			VM = DataContext as SamplingViewModel;
+			VM.OnLoaded += VM_OnLoaded;
+		}
+
+		SamplingViewModel VM { get; set; }
+
+		private void SamplingThreadView_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+		{
+			VM?.SetActive(IsVisible);
 		}
 
 		void BuildEntryList(List<Entry> entries, SamplingNode node, double offset)

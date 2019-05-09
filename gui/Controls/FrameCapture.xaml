@@ -24,6 +24,8 @@
         <ControlsViewModel:FunctionInstanceViewModel x:Key="FunctionInstanceVM" Origin="IndividualCalls" Title="Per Call Statistics" />
         <ControlsViewModel:AddressBarViewModel x:Key="AddressBarVM" />
         <ControlsViewModel:CaptureSettingsViewModel x:Key="CaptureSettingsVM" />
+        <ControlsViewModel:SamplingViewModel x:Key="FunctionSamplingVM" Reason="AutoSample" />
+        <ControlsViewModel:SamplingViewModel x:Key="SysCallsSamplingVM" Reason="SysCall" />
     </UserControl.Resources>
 
     <UserControl.CommandBindings>
@@ -126,7 +128,7 @@
                     <xcad:LayoutPanel Orientation="Vertical">
                         <xcad:LayoutAnchorablePaneGroup DockHeight="2*">
                             <xcad:LayoutAnchorablePane x:Name="LayoutDocumentPane">
-                                <xcad:LayoutAnchorable ContentId="document1" Title="Threads">
+                                <xcad:LayoutAnchorable ContentId="document1" Title="Threads" >
                                     <Profiler:EventThreadView x:Name="EventThreadViewControl" MinHeight="1" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" />
                                 </xcad:LayoutAnchorable>
                             </xcad:LayoutAnchorablePane>
@@ -158,13 +160,13 @@
                                         <Profiler:FrameInfo x:Name="FrameInfoControl" />
                                     </xcad:LayoutAnchorable>
                                     <xcad:LayoutAnchorable ContentId="sampling_tree" Title="Function Callstacks" CanClose="False">
-                                        <Profiler:SampleInfo x:Name="SampleInfoControl" CallstackType="AutoSample" />
+                                        <Profiler:SampleInfo x:Name="SampleInfoControl" CallstackType="AutoSample" VM="{StaticResource FunctionSamplingVM}" />
                                     </xcad:LayoutAnchorable>
                                     <xcad:LayoutAnchorable ContentId="sampling_tree_sharpdx" Title="Function Flamegraph" CanClose="False">
-                                        <Profiler:SamplingThreadView x:Name="SamplingTreeControl" />
+                                        <Profiler:SamplingThreadView x:Name="SamplingTreeControl" DataContext="{StaticResource FunctionSamplingVM}" />
                                     </xcad:LayoutAnchorable>
                                     <xcad:LayoutAnchorable ContentId="syscalls_tree" Title="Function SysCalls" CanClose="False">
-                                        <Profiler:SampleInfo x:Name="SysCallInfoControl" CallstackType="SysCall" />
+                                        <Profiler:SampleInfo x:Name="SysCallInfoControl" CallstackType="SysCall" VM="{StaticResource SysCallsSamplingVM}" />
                                     </xcad:LayoutAnchorable>
                                     <xcad:LayoutAnchorable ContentId="instance_list" Title="Function Table (Instances)" CanClose="False">
                                         <ControlsView:FunctionInstanceView x:Name="InstanceHistoryControl" DataContext="{StaticResource FunctionInstanceVM}" Margin="0,0,1,0" />
