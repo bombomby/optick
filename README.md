@@ -3,7 +3,7 @@
 Optick is a super-lightweight C++ profiler for Games.<br/>
 It provides access for all the necessary tools required for efficient performance analysis and optimization:<br/>
 instrumentation, switch-contexts, sampling, GPU counters.<br/>
-
+> Looking for 'Brofiler'? It has been renamed to 'Optick', so you are in the right place.
 ## Build Status
 | Windows | Linux | MacOS | Static Code Analysis |
 | ------- | ----- | ----- | --------------------- |
