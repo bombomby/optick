@@ -3,7 +3,7 @@
 Optick is a super-lightweight C++ profiler for Games.<br/>
 It provides access for all the necessary tools required for efficient performance analysis and optimization:<br/>
 instrumentation, switch-contexts, sampling, GPU counters.<br/>
-
+> Looking for 'Brofiler'? It has been renamed to 'Optick', so you are in the right place.
 ## Build Status
 | Windows | Linux | MacOS | Static Code Analysis |
 | ------- | ----- | ----- | --------------------- |
@@ -19,6 +19,12 @@ instrumentation, switch-contexts, sampling, GPU counters.<br/>
 | GPU | :heavy_check_mark: D3D12, Vulkan | :heavy_check_mark: Vulkan | :heavy_check_mark: Vulkan | | |
 
 :heavy_check_mark: - works out of the box, :hourglass_flowing_sand: - in progress, :grey_question: - will be available soon for the certified developers
+
+## List of Games and Studios using Optick(Brofiler)
+![Allods Team](https://optick.dev/images/studios/AllodsTeam_thumb2.png "Allods Team") ![4A Games](https://optick.dev/images/studios/4A_Games_thumb2.png "4A Gaemes") ![CryEngine](https://optick.dev/images/studios/CryEngine_thumb.png "CryEngine") ![Larian Studios](https://optick.dev/images/studios/Larian_png.png "Larian Studios")
+![Skyforge](https://optick.dev/images/studios/Skyforge_thumb.jpg "Skyforge") ![Metro Exodus](https://optick.dev/images/studios/Metro_thumb.jpg "Metro Exodus")  ![Warface](https://optick.dev/images/studios/Warface_thumb.jpg "Metro Exodus") ![Armored Warfare](https://optick.dev/images/studios/ArmoredWarfare_thumb.jpg "Metro Exodus")
+
+
 
 ## Basic Integration (one line of code)
 1) Copy 'src' folder from the repository or latest release to your game project
