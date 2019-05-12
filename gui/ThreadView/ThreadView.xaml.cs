@@ -390,8 +390,20 @@ namespace Profiler
 
 			if (e.Button == System.Windows.Forms.MouseButtons.Left)
 			{
+				if (!(Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl)) && !IsMeasuring())
+				{
+					Input.IsSelect = true;
+					Input.SelectStartPosition = e.Location;
+					MouseClickLeft(e);
+				}
 				Input.IsMeasure = false;
 			}
+		}
+
+		private bool IsMeasuring()
+		{
+			Interval interval = Scroll.TimeToPixel(Input.MeasureInterval);
+			return Math.Abs(interval.Right - interval.Left) > 3;
 		}
 
 		private void RenderCanvas_MouseDown(object sender, System.Windows.Forms.MouseEventArgs e)
@@ -414,10 +426,6 @@ namespace Profiler
 					long time = Scroll.PixelToTime(e.X).Start;
 					Input.MeasureInterval.Start = time;
 					Input.MeasureInterval.Finish = time;
-
-					Input.IsSelect = true;
-					Input.SelectStartPosition = e.Location;
-					MouseClickLeft(e);
 				}
 			}
 		}
@@ -498,7 +506,7 @@ namespace Profiler
 
 		void DrawMeasure(DirectX.DirectXCanvas canvas)
 		{
-			if (Input.MeasureInterval.Start != Input.MeasureInterval.Finish)
+			if (IsMeasuring())
 			{
 				Durable activeInterval = Input.MeasureInterval.Normalize();
 				Interval pixelInterval = Scroll.TimeToPixel(activeInterval);
@@ -515,6 +523,9 @@ namespace Profiler
 
 		void DrawHover(DirectXCanvas canvas)
 		{
+			if (Input.IsDrag)
+				return;
+
 			if (ToolTipPanel != null && !String.IsNullOrWhiteSpace(ToolTipPanel.Text))
 			{
 				Size size = surface.Text.Measure(ToolTipPanel.Text);

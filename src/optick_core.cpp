@@ -574,6 +574,8 @@ bool CallstackCollector::SerializeSymbols(OutputDataStream& stream)
 	typedef unordered_set<uint64> SymbolSet;
 	SymbolSet symbolSet;
 
+	Core::Get().DumpProgress("Collecting Callstacks...");
+
 	for (CallstacksPool::const_iterator it = callstacksPool.begin(); it != callstacksPool.end();)
 	{
 		CallstacksPool::const_iterator startIt = it;
@@ -614,16 +616,23 @@ bool CallstackCollector::SerializeSymbols(OutputDataStream& stream)
 	vector<const Symbol*> symbols;
 	symbols.reserve(symbolSet.size());
 
-	Core::Get().DumpProgress("Resolving addresses... ");
+	Core::Get().DumpProgress("Resolving addresses ... ");
 
 	if (symEngine)
 	{
+		int total = (int)symbolSet.size();
+		const int progressBatchSize = 100;
 		for (auto it = symbolSet.begin(); it != symbolSet.end(); ++it)
 		{
 			uint64 address = *it;
 			if (const Symbol* symbol = symEngine->GetSymbol(address))
 			{
 				symbols.push_back(symbol);
+
+				if ((symbols.size() % progressBatchSize == 0) && Core::Get().IsTimeToReportProgress())
+				{
+					Core::Get().DumpProgressFormatted("Resolving addresses %d / %d", (int)symbols.size(), total);
+				}
 			}
 		}
 	}
@@ -759,11 +768,21 @@ void Core::DumpProgressFormatted(const char* format, ...)
 	DumpProgress(buffer);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool IsFrameDescription(const EventDescription* desc)
+{
+	for (int i = 0; i < FrameType::COUNT; ++i)
+		if (GetFrameDescription((FrameType::Type)i) == desc)
+			return true;
+
+	return false;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpEvents(EventStorage& entry, const EventTime& timeSlice, ScopeData& scope)
 {
 	if (!entry.eventBuffer.IsEmpty())
 	{
 		const EventData* rootEvent = nullptr;
+		const int64 batchLimitMs = 3;
 
 		entry.eventBuffer.ForEach([&](const EventData& data)
 		{
@@ -776,7 +795,9 @@ void Core::DumpEvents(EventStorage& entry, const EventTime& timeSlice, ScopeData
 				} 
 				else if (rootEvent->finish < data.finish)
 				{
-					scope.Send();
+					// Batching together small buckets
+					if (IsFrameDescription(rootEvent->description) || TicksToMs(scope.header.event.finish - scope.header.event.start) > batchLimitMs)
+						scope.Send();
 
 					rootEvent = &data;
 					scope.InitRootEvent(*rootEvent);
@@ -821,7 +842,6 @@ void Core::DumpTags(EventStorage& entry, ScopeData& scope)
 		entry.ClearTags(false);
 	}
 }
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpThread(ThreadEntry& entry, const EventTime& timeSlice, ScopeData& scope)
 {
@@ -941,9 +961,9 @@ void Core::DumpFrames(uint32 mode)
 
 	if (!callstackCollector.IsEmpty())
 	{
-		DumpProgress("Resolving callstacks");
 		OutputDataStream symbolsStream;
 		symbolsStream << boardNumber;
+		DumpProgress("Serializing Modules");
 		callstackCollector.SerializeModules(symbolsStream);
 		callstackCollector.SerializeSymbols(symbolsStream);
 		Server::Get().Send(DataResponse::CallstackDescriptionBoard, symbolsStream);
@@ -1666,8 +1686,15 @@ void ScopeData::Send()
 	Clear();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void ScopeData::ResetHeader()
+{
+	header.event.start = INT64_MAX;
+	header.event.finish = INT64_MIN;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ScopeData::Clear()
 {
+	ResetHeader();
 	events.clear();
 	categories.clear();
 }

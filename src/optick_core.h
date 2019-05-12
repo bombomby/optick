@@ -74,6 +74,11 @@ struct ScopeData
 	vector<EventData> categories;
 	vector<EventData> events;
 
+	ScopeData()
+	{
+		ResetHeader();
+	}
+
 	void AddEvent(const EventData& data)
 	{
 		events.push_back(data);
@@ -85,10 +90,12 @@ struct ScopeData
 
 	void InitRootEvent(const EventData& data)
 	{
-		header.event = data;
+		header.event.start = std::min(data.start, header.event.start);
+		header.event.finish = std::max(data.finish, header.event.finish);
 		AddEvent(data);
 	}
 
+	void ResetHeader();
 	void Send();
 	void Clear();
 };
