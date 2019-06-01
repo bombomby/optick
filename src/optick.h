@@ -490,10 +490,6 @@ struct TagData
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct OPTICK_API EventDescription
 {
-	// HOT  \\
-	// Have to place "hot" variables at the beginning of the class (here will be some padding)
-	// COLD //
-
 	const char* name;
 	const char* file;
 	uint32_t line;

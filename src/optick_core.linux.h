@@ -380,7 +380,8 @@ void FTrace::Exec(const char* cmd)
 {
 	char buffer[256] = { 0 };
 	sprintf_s(buffer, "echo \'%s\' | sudo -S sh -c \'%s\'", password.c_str(), cmd);
-	std::system(buffer);
+	int res = std::system(buffer);
+	(void)res;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FTrace::FTrace() : isActive(false)

@@ -231,7 +231,7 @@ EventData* Event::Start(const EventDescription& description)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Event::Stop(EventData& data)
 {
-	if (EventStorage* storage = Core::storage)
+	if (Core::storage != nullptr)
 	{
 		data.Stop();
 	}
@@ -261,7 +261,7 @@ void Event::Push(const char* name)
 	if (EventStorage* storage = Core::storage)
 	{
 		EventDescription* desc = EventDescription::CreateShared(name);
-		Push(*desc);
+		PushEvent(storage, desc, GetHighPrecisionTime());
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
