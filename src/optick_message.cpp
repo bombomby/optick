@@ -66,7 +66,7 @@ public:
 		str >> applicationID;
 		str >> messageType;
 
-		OPTICK_VERIFY( 0 <= messageType && messageType < IMessage::COUNT && factory[messageType] != nullptr, "Unknown message type!", return nullptr )
+		OPTICK_VERIFY( messageType < IMessage::COUNT && factory[messageType] != nullptr, "Unknown message type!", return nullptr )
 
 		IMessage* result = factory[messageType](str);
 
