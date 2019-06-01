@@ -18,10 +18,12 @@
       "remoteCopySourcesExclusionList": [
         ".vs",
         ".git",
-        "bin",
+        "Bin",
         "build",
+        "gui",
         "stc",
         "tools",
+        "publish",
         "samples/DurangoUWP",
         "samples/UnrealEnginePlugin",
         "samples/WindowsVulkan",
