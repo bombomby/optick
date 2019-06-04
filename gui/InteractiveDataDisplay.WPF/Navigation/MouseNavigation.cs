@@ -63,8 +63,8 @@ namespace InteractiveDataDisplay.WPF
 
             MouseLeave += new MouseEventHandler(MouseNavigationLayer_MouseLeave);
             MouseMove += new MouseEventHandler(MouseNavigationLayer_MouseMove);
-            MouseLeftButtonUp += new MouseButtonEventHandler(MouseNavigationLayer_MouseLeftButtonUp);
-            MouseLeftButtonDown += new MouseButtonEventHandler(MouseNavigationLayer_MouseLeftButtonDown);
+            MouseRightButtonUp += new MouseButtonEventHandler(MouseNavigationLayer_MouseRightButtonUp);
+            MouseRightButtonDown += new MouseButtonEventHandler(MouseNavigationLayer_MouseRightButtonDown);
             MouseWheel += new MouseWheelEventHandler(MouseNavigationLayer_MouseWheel);
 
             LayoutUpdated += (s, a) => transformChangeRequested = false;
@@ -102,8 +102,8 @@ namespace InteractiveDataDisplay.WPF
             {
                 masterPlot.MouseLeave -= MouseNavigationLayer_MouseLeave;
                 masterPlot.MouseMove -= MouseNavigationLayer_MouseMove;
-                masterPlot.MouseLeftButtonUp -= MouseNavigationLayer_MouseLeftButtonUp;
-                masterPlot.MouseLeftButtonDown -= MouseNavigationLayer_MouseLeftButtonDown;
+                masterPlot.MouseRightButtonUp -= MouseNavigationLayer_MouseRightButtonUp;
+                masterPlot.MouseRightButtonDown -= MouseNavigationLayer_MouseRightButtonDown;
                 masterPlot.MouseWheel -= MouseNavigationLayer_MouseWheel;
             }
 
@@ -119,8 +119,8 @@ namespace InteractiveDataDisplay.WPF
             {
                 masterPlot.MouseLeave += MouseNavigationLayer_MouseLeave;
                 masterPlot.MouseMove += MouseNavigationLayer_MouseMove;
-                masterPlot.MouseLeftButtonUp += MouseNavigationLayer_MouseLeftButtonUp;
-                masterPlot.MouseLeftButtonDown += MouseNavigationLayer_MouseLeftButtonDown;
+                masterPlot.MouseRightButtonUp += MouseNavigationLayer_MouseRightButtonUp;
+                masterPlot.MouseRightButtonDown += MouseNavigationLayer_MouseRightButtonDown;
                 masterPlot.MouseWheel += MouseNavigationLayer_MouseWheel;
             }
 
@@ -371,12 +371,12 @@ namespace InteractiveDataDisplay.WPF
             wasInside = false;
         }
 
-        private void MouseNavigationLayer_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void MouseNavigationLayer_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
             e.Handled = HandleMouseDown(e);
         }
 
-        private void MouseNavigationLayer_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        private void MouseNavigationLayer_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
             e.Handled = HandleMouseUp();
         }

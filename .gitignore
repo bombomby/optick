@@ -6,6 +6,7 @@ OptickApp/packages/
 OptickApp/.vs/
 gui/obj/
 gui/packages/
+gui/InteractiveDataDisplay.WPF/obj/
 gui/.vs/
 Build/
 Tools/Publish/

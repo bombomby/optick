@@ -691,7 +691,7 @@
     <Resource Include="Resources\Bug.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\IDD\InteractiveDataDisplay.WPF\src\InteractiveDataDisplay.WPF.csproj">
+    <ProjectReference Include="InteractiveDataDisplay.WPF\InteractiveDataDisplay.WPF.csproj">
       <Project>{2d34544c-2df2-4b20-a43a-6c8d2df3dd82}</Project>
       <Name>InteractiveDataDisplay.WPF</Name>
     </ProjectReference>
