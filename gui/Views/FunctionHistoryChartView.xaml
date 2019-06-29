@@ -6,6 +6,8 @@
              xmlns:d3="clr-namespace:InteractiveDataDisplay.WPF;assembly=InteractiveDataDisplay.WPF"
              xmlns:MahApps="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:views="clr-namespace:Profiler.Views"
+
+             xmlns:Profiler="clr-namespace:Profiler"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <GroupBox MahApps:ButtonHelper.PreserveTextCase="True"  Background="{StaticResource ControlBackgroundBrush}">
@@ -15,9 +17,21 @@
         <d3:Figure x:Name="Chart" IsAutoFitEnabled="True" >
             <d3:PlotAxis x:Name="PART_verticalAxis" AxisOrientation="Left" d3:Figure.Placement="Left" Foreground="{StaticResource OptickForeground}" />
             <d3:AxisGrid x:Name="PART_axisGrid" VerticalTicks="{Binding Ticks,ElementName=PART_verticalAxis, Mode=OneWay}" Stroke="{StaticResource OptickForeground}" Opacity="0.25"/>
-            <d3:MouseNavigation x:Name="MouseNav" IsVerticalNavigationEnabled="False"/>
+            <d3:MouseNavigation x:Name="MouseNav" IsVerticalNavigationEnabled="False" />
             <d3:LineGraph x:Name="WorkChart" Description="Work Time" Stroke="LimeGreen" StrokeThickness="{Binding StrokeThickness}" Opacity="{Binding StrokeOpacity}" />
             <d3:LineGraph x:Name="WaitChart" Description="Wait Time" Stroke="Tomato" StrokeThickness="{Binding StrokeThickness}" Opacity="{Binding StrokeOpacity}" />
+            <views:HoverTooltipLayer x:Name="HoverTooltip">
+                <Grid Width="{Binding ActualWidth, ElementName=HoverTooltip}" Height="{Binding ActualHeight, ElementName=HoverTooltip}">
+                    <Border DataContext="{Binding HoverSample}" HorizontalAlignment="Right" Background="#40101010" VerticalAlignment="Top">
+                        <StackPanel Orientation="Vertical" TextBlock.FontWeight="Bold" TextBlock.FontSize="10" Margin="2,2,2,2" Opacity="0.66">
+                            <TextBlock Text="{Binding Total, StringFormat={}{0:0.000} ms, Mode=OneWay}" ToolTip="Total Time" HorizontalAlignment="Right" />
+                            <TextBlock Text="{Binding Work, StringFormat={}{0:0.000} ms, Mode=OneWay}" Foreground="LimeGreen" HorizontalAlignment="Right" ToolTip="Work Time" />
+                            <TextBlock Text="{Binding Wait, StringFormat={}{0:0.000} ms, Mode=OneWay}" Foreground="Tomato" HorizontalAlignment="Right" ToolTip="Wait Time" />
+                            <TextBlock Text="{Binding Entries.Count, StringFormat={}{0} calls, Mode=OneWay}" Foreground="Gray" HorizontalAlignment="Right" ToolTip="Wait Time" />
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </views:HoverTooltipLayer>
         </d3:Figure>
     </GroupBox>
 </UserControl>

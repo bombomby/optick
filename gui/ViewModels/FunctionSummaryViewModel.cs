@@ -41,7 +41,14 @@ namespace Profiler.ViewModels
             set { SetProperty(ref _stats, value); }
         }
 
-        public FunctionStats.Origin Origin { get; set; }
+		private FunctionStats.Sample _hoverSample;
+		public FunctionStats.Sample HoverSample
+		{
+			get { return _hoverSample; }
+			set { SetProperty(ref _hoverSample, value); }
+		}
+
+		public FunctionStats.Origin Origin { get; set; }
 
         public virtual void OnLoaded(FunctionStats stats)
         {
@@ -97,6 +104,19 @@ namespace Profiler.ViewModels
 				}
 			}
 		}
+
+		public void OnDataHover(FrameworkElement parent, int index)
+		{
+			if (Stats != null && 0 <= index && index < Stats.Samples.Count)
+			{
+				HoverSample = Stats.Samples[index];
+			}
+			else
+			{
+				HoverSample = null;
+			}
+		}
+
 
 		public delegate void OnChangedHandler();
 		public event OnChangedHandler OnChanged;
