@@ -261,7 +261,7 @@ namespace Profiler
 
 		ChartRow GenerateCoreChart(FrameGroup group)
 		{
-			if (group.Synchronization.Events.Count == 0)
+			if (group.Synchronization == null || group.Synchronization.Events.Count == 0)
 				return null;
 
 			group.Synchronization.Events.Sort();

@@ -123,7 +123,7 @@ namespace Profiler.Data
 		{
 			get
 			{
-				return (Finish > Start) && (Finish != Tick.INVALID_TIMESTAMP) && (Start != Tick.INVALID_TIMESTAMP);
+				return (Finish >= Start) && (Finish != Tick.INVALID_TIMESTAMP) && (Start != Tick.INVALID_TIMESTAMP);
 			}
 		}
 

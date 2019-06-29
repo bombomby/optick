@@ -114,13 +114,14 @@ class FTrace : public Trace
 {
 	bool isActive;
 	string password;
+	unordered_set<pid_t> pidCache;
 
 	bool Parse(const char* line);
 	bool ProcessEvent(const ft::base_event& ev);
 
-	void Set(const char* name, bool value);
-	void Set(const char* name, const char* value);
-	void Exec(const char* cmd);
+	bool Set(const char* name, bool value);
+	bool Set(const char* name, const char* value);
+	bool Exec(const char* cmd);
 public:
 
 	FTrace();
@@ -192,7 +193,9 @@ CaptureStatus::Type FTrace::Start(Mode::Type mode, int /*frequency*/, const Thre
 	if (!isActive)
 	{
 		// Disable tracing
-		Set(FTRACE_TRACING_ON, false);
+		if (!Set(FTRACE_TRACING_ON, false)) 
+			return CaptureStatus::ERR_TRACER_INVALID_PASSWORD;
+
 		// Cleanup old data
 		Set(FTRACE_TRACE, "");
 		// Set clock type
@@ -236,6 +239,8 @@ bool FTrace::Stop()
 
 	// Cleanup data
 	Set(FTRACE_TRACE, "");
+
+	pidCache.clear();
 
 	isActive = false;
 
@@ -356,6 +361,13 @@ bool FTrace::ProcessEvent(const ft::base_event& ev)
 		desc.newThreadId = (uint64)switchEv.next_pid;
 		desc.timestamp = switchEv.timestamp;
 		Core::Get().ReportSwitchContext(desc);
+
+		if (pidCache.find(switchEv.next_pid) == pidCache.end())
+		{
+			pidCache.insert(switchEv.next_pid);
+			Core::Get().RegisterThreadDescription(ThreadDescription(switchEv.next_comm, (ThreadID)switchEv.next_pid, (ProcessID)switchEv.next_pid, switchEv.next_prio));
+		}
+
 		return true;
 	}
 	break;
@@ -364,24 +376,23 @@ bool FTrace::ProcessEvent(const ft::base_event& ev)
 	return false;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void FTrace::Set(const char * name, bool value)
+bool FTrace::Set(const char * name, bool value)
 {
-	Set(name, value ? "1" : "0");
+	return Set(name, value ? "1" : "0");
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void FTrace::Set(const char* name, const char* value)
+bool FTrace::Set(const char* name, const char* value)
 {
 	char buffer[256] = { 0 };
 	sprintf_s(buffer, "echo %s > %s/%s", value, KERNEL_TRACING_PATH, name);
-	Exec(buffer);
+	return Exec(buffer);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void FTrace::Exec(const char* cmd)
+bool FTrace::Exec(const char* cmd)
 {
 	char buffer[256] = { 0 };
-	sprintf_s(buffer, "echo \'%s\' | sudo -S sh -c \'%s\'", password.c_str(), cmd);
-	int res = std::system(buffer);
-	(void)res;
+	sprintf_s(buffer, "echo \'%s\' | sudo -S sh -c \'%s\' 2> /dev/null", password.c_str(), cmd);
+	return std::system(buffer) == 0;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 FTrace::FTrace() : isActive(false)
