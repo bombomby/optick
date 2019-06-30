@@ -1,12 +1,12 @@
 {
-	"FileVersion" : 2,
-	"Version" : 2,
-	"VersionName" : "2.0",
-	"FriendlyName" : "Brofiler",
+	"FileVersion" : 1,
+	"Version" : 1,
+	"VersionName" : "1.2.3",
+	"FriendlyName" : "Optick",
 	"Description" : "Performance Profiler",
 	"Category" : "Performance",
 	"CreatedBy" : "Vadim Slyusarev",
-	"CreatedByURL" : "http://brofiler.com",
+	"CreatedByURL" : "https://optick.dev",
 	"DocsURL" : "",
 	"MarketplaceURL" : "",
 	"SupportURL" : "",
@@ -17,7 +17,7 @@
 	"Modules" :
 	[
 		{
-			"Name" : "BrofilerPlugin",
+			"Name" : "OptickPlugin",
 			"Type" : "Developer",
 			"LoadingPhase" : "Default"
 		}

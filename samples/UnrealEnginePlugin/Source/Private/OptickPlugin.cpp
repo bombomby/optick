@@ -8,7 +8,7 @@
 #include "Modules/ModuleManager.h"
 #include "Stats/StatsData.h"
 #include "DesktopPlatformModule.h"
-#include "IBrofilerPlugin.h"
+#include "IOptickPlugin.h"
 
 // Engine
 #include "UnrealClient.h"
@@ -17,9 +17,9 @@
 #include "Editor/EditorPerformanceSettings.h"
 #endif
 
-#include <BrofilerCore/Brofiler.h>
+#include <OptickCore/Optick.h>
 
-DEFINE_LOG_CATEGORY(BrofilerLog);
+DEFINE_LOG_CATEGORY(OptickLog);
 
 static FName NAME_STATGROUP_CPUStalls(FStatGroup_STATGROUP_CPUStalls::GetGroupName());
 static FName NAME_Wait[] =
@@ -29,10 +29,10 @@ static FName NAME_Wait[] =
 };
 static FName NAME_STAT_ROOT("STAT_FEngineLoop_Tick_CallAllConsoleVariableSinks");
 static FName NAME_STAT_ROOT_RAW = FName();
-static FString BROFILER_SCREENSHOT_NAME(TEXT("UE4_Brofiler_Screenshot.png"));
+static FString Optick_SCREENSHOT_NAME(TEXT("UE4_Optick_Screenshot.png"));
 
 
-class FBrofilerPlugin : public IBrofilerPlugin
+class FOptickPlugin : public IOptickPlugin
 {
 	bool IsCapturing;
 
@@ -44,8 +44,8 @@ class FBrofilerPlugin : public IBrofilerPlugin
 	FDelegateHandle TickDelegateHandle;
 	FDelegateHandle StatFrameDelegateHandle;
 
-	TMap<uint32, Brofiler::EventStorage*> StorageMap;
-	TMap<FName, Brofiler::EventDescription*> DescriptionMap;
+	TMap<uint32, Optick::EventStorage*> StorageMap;
+	TMap<FName, Optick::EventDescription*> DescriptionMap;
 
 	TAtomic<bool> WaitingForScreenshot;
 
@@ -75,46 +75,45 @@ public:
 	bool IsReadyToDumpCapture() const;
 };
 
-IMPLEMENT_MODULE( FBrofilerPlugin, BlankPlugin )
+IMPLEMENT_MODULE( FOptickPlugin, BlankPlugin )
 DECLARE_DELEGATE_OneParam(FStatFrameDelegate, int64);
 
 
-bool FBrofilerPlugin::Tick(float DeltaTime)
+bool FOptickPlugin::Tick(float DeltaTime)
 {
-	Brofiler::NextFrame();
-	//BROFILER_FRAME("FBrofilerPlugin");
+	Optick::NextFrame();
+	//Optick_FRAME("FOptickPlugin");
 
 	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool OnBrofilerStateChanged(Brofiler::BroState state)
+bool OnOptickStateChanged(Optick::State::Type state)
 {
-	FBrofilerPlugin& plugin = (FBrofilerPlugin&)IBrofilerPlugin::Get();
+	FOptickPlugin& plugin = (FOptickPlugin&)IOptickPlugin::Get();
 
-	UE_LOG(BrofilerLog, Display, TEXT("State => %d"), state);
+	UE_LOG(OptickLog, Display, TEXT("State => %d"), state);
 
 	switch (state)
 	{
-	case Brofiler::BRO_START_CAPTURE:
+	case Optick::State::START_CAPTURE:
 		plugin.StartCapture();
 		break;
 
-	case Brofiler::BRO_STOP_CAPTURE:
+	case Optick::State::STOP_CAPTURE:
 		plugin.RequestScreenshot();
 		plugin.StopCapture();
 		break;
 
-	case Brofiler::BRO_DUMP_CAPTURE:
+	case Optick::State::DUMP_CAPTURE:
 		if (!plugin.IsReadyToDumpCapture())
 			return false;
 
-		Brofiler::AttachSummary("Platform", FPlatformProperties::PlatformName());
-		Brofiler::AttachSummary("Build", __DATE__ " " __TIME__);
-		Brofiler::AttachSummary("UnrealVersion", TCHAR_TO_ANSI(*FEngineVersion::Current().ToString(EVersionComponent::Changelist)));
-		Brofiler::AttachSummary("GPU", TCHAR_TO_ANSI(*FPlatformMisc::GetPrimaryGPUBrand()));
+		Optick::AttachSummary("Platform", FPlatformProperties::PlatformName());
+		Optick::AttachSummary("UnrealVersion", TCHAR_TO_ANSI(*FEngineVersion::Current().ToString(EVersionComponent::Changelist)));
+		Optick::AttachSummary("GPU", TCHAR_TO_ANSI(*FPlatformMisc::GetPrimaryGPUBrand()));
 
-		FString FullName = BROFILER_SCREENSHOT_NAME;
+		FString FullName = Optick_SCREENSHOT_NAME;
 		FScreenshotRequest::CreateViewportScreenShotFilename(FullName);
 
 		IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
@@ -132,7 +131,7 @@ bool OnBrofilerStateChanged(Brofiler::BroState state)
 				delete FileHandle;
 			}
 
-			Brofiler::AttachFile(Brofiler::BroFile::BRO_IMAGE, "Screenshot.png", Image.GetData(), (uint32_t)FileSize);
+			Optick::AttachFile(Optick::File::OPTICK_IMAGE, "Screenshot.png", Image.GetData(), (uint32_t)FileSize);
 
 			//PlatformFile.DeleteFile(*FullName);
 		}
@@ -140,26 +139,26 @@ bool OnBrofilerStateChanged(Brofiler::BroState state)
 
 		// Attach text file
 		//char* textFile = "Hello World!";
-		//Brofiler::AttachFile(Brofiler::BroFile::BRO_OTHER, "Test.txt", (uint8_t*)textFile, strlen(textFile));
+		//Optick::AttachFile(Optick::BroFile::BRO_OTHER, "Test.txt", (uint8_t*)textFile, strlen(textFile));
 
 		break;
 	}
 	return true;
 }
 
-void FBrofilerPlugin::StartupModule()
+void FOptickPlugin::StartupModule()
 {
-	UE_LOG(BrofilerLog, Display, TEXT("BrofilerPlugin Loaded!"));
+	UE_LOG(OptickLog, Display, TEXT("OptickPlugin Loaded!"));
 
 	// Subscribing for Ticker
-	TickDelegateHandle = FTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateRaw(this, &FBrofilerPlugin::Tick));
+	TickDelegateHandle = FTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateRaw(this, &FOptickPlugin::Tick));
 
-	// Register Brofiler callback
-	Brofiler::SetStateChangedCallback(OnBrofilerStateChanged);
+	// Register Optick callback
+	Optick::SetStateChangedCallback(OnOptickStateChanged);
 }
 
 
-void FBrofilerPlugin::ShutdownModule()
+void FOptickPlugin::ShutdownModule()
 {
 	// Remove delegate
 	FTicker::GetCoreTicker().RemoveTicker(TickDelegateHandle);
@@ -167,10 +166,10 @@ void FBrofilerPlugin::ShutdownModule()
 	// Stop capture if needed
 	StopCapture();
 
-	UE_LOG(BrofilerLog, Display, TEXT("BrofilerPlugin UnLoaded!"));
+	UE_LOG(OptickLog, Display, TEXT("OptickPlugin UnLoaded!"));
 }
 
-void FBrofilerPlugin::StartCapture()
+void FOptickPlugin::StartCapture()
 {
 	if (!IsCapturing)
 	{
@@ -192,11 +191,11 @@ void FBrofilerPlugin::StartCapture()
 		FStatsThreadState& Stats = FStatsThreadState::GetLocalState();
 
 		// Set up our delegate to gather data from the stats thread for safe consumption on game thread.
-		StatFrameDelegateHandle = Stats.NewFrameDelegate.Add(FStatFrameDelegate::CreateRaw(this, &FBrofilerPlugin::GetDataFromStatsThread));
+		StatFrameDelegateHandle = Stats.NewFrameDelegate.Add(FStatFrameDelegate::CreateRaw(this, &FOptickPlugin::GetDataFromStatsThread));
 	}
 }
 
-void FBrofilerPlugin::StopCapture()
+void FOptickPlugin::StopCapture()
 {
 	if (IsCapturing)
 	{
@@ -216,34 +215,34 @@ void FBrofilerPlugin::StopCapture()
 		Settings->PostEditChange();
 		Settings->SaveConfig();
 #endif
-	}^
+	}
 	
 }
 
-void FBrofilerPlugin::RequestScreenshot()
+void FOptickPlugin::RequestScreenshot()
 {
 	// Requesting screenshot
-	UE_LOG(BrofilerLog, Display, TEXT("Screenshot requested!"));
+	UE_LOG(OptickLog, Display, TEXT("Screenshot requested!"));
 	WaitingForScreenshot = true;
-	FScreenshotRequest::OnScreenshotRequestProcessed().AddRaw(this, &FBrofilerPlugin::OnScreenshotProcessed);
-	FScreenshotRequest::RequestScreenshot(BROFILER_SCREENSHOT_NAME, true, false);
+	FScreenshotRequest::OnScreenshotRequestProcessed().AddRaw(this, &FOptickPlugin::OnScreenshotProcessed);
+	FScreenshotRequest::RequestScreenshot(Optick_SCREENSHOT_NAME, true, false);
 }
 
-bool FBrofilerPlugin::IsReadyToDumpCapture() const
+bool FOptickPlugin::IsReadyToDumpCapture() const
 {
 	return WaitingForScreenshot == false;
 }
 
-void FBrofilerPlugin::OnScreenshotProcessed()
+void FOptickPlugin::OnScreenshotProcessed()
 {
-	UE_LOG(BrofilerLog, Display, TEXT("Screenshot processed!"));
+	UE_LOG(OptickLog, Display, TEXT("Screenshot processed!"));
 	WaitingForScreenshot = false;
 	FScreenshotRequest::OnScreenshotRequestProcessed().RemoveAll(this);
 }
 
-void FBrofilerPlugin::GetDataFromStatsThread(int64 CurrentFrame)
+void FOptickPlugin::GetDataFromStatsThread(int64 CurrentFrame)
 {
-	QUICK_SCOPE_CYCLE_COUNTER(STAT_FBrofilerPlugin_Upd);
+	QUICK_SCOPE_CYCLE_COUNTER(STAT_FOptickPlugin_Upd);
 
 #if STATS
 	const FStatsThreadState& Stats = FStatsThreadState::GetLocalState();
@@ -254,15 +253,15 @@ void FBrofilerPlugin::GetDataFromStatsThread(int64 CurrentFrame)
 		FStatPacket const& Packet = *Frame.Packets[PacketIndex];
 		const FName ThreadName = Stats.GetStatThreadName(Packet);
 
-		Brofiler::EventStorage* Storage = nullptr;
+		Optick::EventStorage* Storage = nullptr;
 
-		if (Brofiler::EventStorage** ppStorage = StorageMap.Find(Packet.ThreadId))
+		if (Optick::EventStorage** ppStorage = StorageMap.Find(Packet.ThreadId))
 		{
 			Storage = *ppStorage;
 		}
 		else
 		{
-			Storage = Brofiler::RegisterStorage(TCHAR_TO_ANSI(*ThreadName.ToString()), Packet.ThreadId);
+			Storage = Optick::RegisterStorage(TCHAR_TO_ANSI(*ThreadName.ToString()), Packet.ThreadId);
 			StorageMap.Add(Packet.ThreadId, Storage);
 		}
 
@@ -281,9 +280,9 @@ void FBrofilerPlugin::GetDataFromStatsThread(int64 CurrentFrame)
 
 				if (Op == EStatOperation::CycleScopeStart)
 				{
-					Brofiler::EventDescription* Description = nullptr;
+					Optick::EventDescription* Description = nullptr;
 
-					if (Brofiler::EventDescription** ppDescription = DescriptionMap.Find(name))
+					if (Optick::EventDescription** ppDescription = DescriptionMap.Find(name))
 					{
 						Description = *ppDescription;
 					}
@@ -298,13 +297,13 @@ void FBrofilerPlugin::GetDataFromStatsThread(int64 CurrentFrame)
 							NAME_STAT_ROOT_RAW = name;
 
 						if (NAME_STATGROUP_CPUStalls == groupName)
-							color = Brofiler::Color::White;
+							color = Optick::Color::White;
 
 						for (int i = 0; i < sizeof(NAME_Wait) / sizeof(NAME_Wait[0]); ++i)
 							if (NAME_Wait[i] == shortName)
-								color = Brofiler::Color::White;
+								color = Optick::Color::White;
 
-						Description = Brofiler::EventDescription::CreateShared(TCHAR_TO_ANSI(*shortName.ToString()), nullptr, 0, color);
+						Description = Optick::EventDescription::CreateShared(TCHAR_TO_ANSI(*shortName.ToString()), nullptr, 0, color);
 
 						DescriptionMap.Add(name, Description);
 					}
@@ -312,18 +311,18 @@ void FBrofilerPlugin::GetDataFromStatsThread(int64 CurrentFrame)
 					// Processing root event of the frame
 					if (name == NAME_STAT_ROOT_RAW)
 					{
-						const Brofiler::EventDescription* cpuFrameDescription = Brofiler::GetFrameDescription(Brofiler::FrameType::CPU);
+						const Optick::EventDescription* cpuFrameDescription = Optick::GetFrameDescription(Optick::FrameType::CPU);
 						// Pop the previous frame event
-						BROFILER_STORAGE_POP(Storage, Timestamp);
+						OPTICK_STORAGE_POP(Storage, Timestamp);
 						// Push the new one
-						BROFILER_STORAGE_PUSH(Storage, cpuFrameDescription, Timestamp);
+						OPTICK_STORAGE_PUSH(Storage, cpuFrameDescription, Timestamp);
 					}
 					
-					BROFILER_STORAGE_PUSH(Storage, Description, Timestamp);
+					OPTICK_STORAGE_PUSH(Storage, Description, Timestamp);
 				}
 				else
 				{
-					BROFILER_STORAGE_POP(Storage, Timestamp);
+					OPTICK_STORAGE_POP(Storage, Timestamp);
 				}
 					
 			}

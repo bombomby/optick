@@ -2,9 +2,9 @@
 
 namespace UnrealBuildTool.Rules
 {
-	public class BrofilerPlugin : ModuleRules
+	public class OptickPlugin : ModuleRules
 	{
-		public BrofilerPlugin(ReadOnlyTargetRules Target) : base(Target)
+		public OptickPlugin(ReadOnlyTargetRules Target) : base(Target)
 		{
 			PublicIncludePaths.AddRange(
 				new string[] {
@@ -15,7 +15,7 @@ namespace UnrealBuildTool.Rules
 			PrivateIncludePaths.AddRange(
 				new string[] {
 					"Private",
-					"Private/BrofilerCore",
+					"Private/OptickCore",
 					// ... add other private include paths required here ...
 				}
 				);
@@ -49,8 +49,8 @@ namespace UnrealBuildTool.Rules
 			PublicDefinitions.AddRange(
 				new string[]
 				{
-					"BRO_ENABLE_GPU_VULKAN=0",
-					"BRO_ENABLE_GPU_D3D12=0",
+					"OPTICK_ENABLE_GPU_VULKAN=0",
+					"OPTICK_ENABLE_GPU_D3D12=0",
 				}
 				);
 				

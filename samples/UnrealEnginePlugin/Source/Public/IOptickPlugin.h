@@ -6,13 +6,13 @@
 #include "Modules/ModuleInterface.h"
 #include "Modules/ModuleManager.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(BrofilerLog, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(OptickLog, Log, All);
 
 /**
  * The public interface to this module.  In most cases, this interface is only public to sibling modules 
  * within this plugin.
  */
-class IBrofilerPlugin : public IModuleInterface
+class IOptickPlugin : public IModuleInterface
 {
 
 public:
@@ -23,9 +23,9 @@ public:
 	 *
 	 * @return Returns singleton instance, loading the module on demand if needed
 	 */
-	static inline IBrofilerPlugin& Get()
+	static inline IOptickPlugin& Get()
 	{
-		return FModuleManager::LoadModuleChecked< IBrofilerPlugin >( "BrofilerPlugin" );
+		return FModuleManager::LoadModuleChecked< IOptickPlugin >( "OptickPlugin" );
 	}
 
 	/**
@@ -35,7 +35,7 @@ public:
 	 */
 	static inline bool IsAvailable()
 	{
-		return FModuleManager::Get().IsModuleLoaded( "BrofilerPlugin" );
+		return FModuleManager::Get().IsModuleLoaded( "OptickPlugin" );
 	}
 };
 
