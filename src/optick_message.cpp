@@ -1,9 +1,8 @@
-#include "optick.config.h"
+#include "optick_message.h"
 
 #if USE_OPTICK
 #include "optick_common.h"
 #include "optick_core.h"
-#include "optick_message.h"
 #include "optick_server.h"
 
 namespace Optick

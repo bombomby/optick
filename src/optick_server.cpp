@@ -1,7 +1,6 @@
-#include "optick.config.h"
+#include "optick_server.h"
 
 #if USE_OPTICK
-#include "optick_server.h"
 #include "optick_common.h"
 
 #if defined(OPTICK_MSVC)

@@ -1,9 +1,8 @@
-#include "optick.config.h"
+#include "optick_serialization.h"
 
 #if USE_OPTICK
 
 #include "optick_common.h"
-#include "optick_serialization.h"
 
 namespace Optick
 {

@@ -1,7 +1,6 @@
-#include "optick.config.h"
+#include "optick_gpu.h"
 
 #if USE_OPTICK
-#include "optick_gpu.h"
 #include "optick_core.h"
 #include "optick_memory.h"
 

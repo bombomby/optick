@@ -1,8 +1,7 @@
-#include "optick.config.h"
+#include "optick_core.h"
 
 #if USE_OPTICK
 
-#include "optick_core.h"
 #include "optick_server.h"
 
 #include <algorithm>
@@ -777,6 +776,30 @@ bool IsFrameDescription(const EventDescription* desc)
 	return false;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool IsSleepDescription(const EventDescription* desc)
+{
+	return desc->color == Color::White;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool IsSleepOnlyScope(const ScopeData& scope)
+{
+	//if (!scope.categories.empty())
+	//	return false;
+
+	const vector<EventData>& events = scope.events;
+	for (auto it = events.begin(); it != events.end(); ++it)
+	{
+		const EventData& data = *it;
+
+		if (!IsSleepDescription(data.description))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpEvents(EventStorage& entry, const EventTime& timeSlice, ScopeData& scope)
 {
 	if (!entry.eventBuffer.IsEmpty())
@@ -796,7 +819,11 @@ void Core::DumpEvents(EventStorage& entry, const EventTime& timeSlice, ScopeData
 				else if (rootEvent->finish < data.finish)
 				{
 					// Batching together small buckets
-					if (IsFrameDescription(rootEvent->description) || TicksToMs(scope.header.event.finish - scope.header.event.start) > batchLimitMs)
+					// Flushing if we hit the following conditions:
+					// * Frame Description - don't batch frames together
+					// * SleepOnly scope - we ignore them
+					// * Sleep Event - flush the previous batch
+					if (IsFrameDescription(rootEvent->description) || TicksToMs(scope.header.event.finish - scope.header.event.start) > batchLimitMs || IsSleepDescription(data.description) || IsSleepOnlyScope(scope))
 						scope.Send();
 
 					rootEvent = &data;
@@ -1650,25 +1677,6 @@ void ThreadEntry::Activate(Mode::Type mode)
 void ThreadEntry::Sort()
 {
 	SortMemoryPool(storage.eventBuffer);
-}
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool IsSleepOnlyScope(const ScopeData& scope)
-{
-	//if (!scope.categories.empty())
-	//	return false;
-
-	const vector<EventData>& events = scope.events;
-	for(auto it = events.begin(); it != events.end(); ++it)
-	{
-		const EventData& data = *it;
-
-		if (data.description->color != Color::White)
-		{
-			return false;
-		}
-	}
-
-	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void ScopeData::Send()
