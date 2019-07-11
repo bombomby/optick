@@ -38,7 +38,7 @@ extern "C" Optick::EventData* NextEvent()
 namespace Optick
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void* (*Memory::allocate)(size_t) = [](size_t size)->void* { return operator new(size); };
+void* (*Memory::allocate)(size_t) = [](size_t size)->void* { return operator new(size, std::align_val_t(64)); };
 void (*Memory::deallocate)(void* p) = [](void* p) { operator delete(p); };
 void (*Memory::initThread)(void) = nullptr;
 std::atomic<uint64_t> Memory::memAllocated;

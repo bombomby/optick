@@ -69,7 +69,7 @@ end
 if isVisualStudio then
     	cppdialect "C++11"
 else
-	cppdialect "gnu++11"
+	cppdialect "gnu++17"
 end
 	location ( outputFolder )
 	flags { "NoManifest", "FatalWarnings" }

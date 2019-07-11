@@ -34,7 +34,7 @@ namespace Optick
 	public:
 		static OPTICK_INLINE void* Alloc(size_t size)
 		{
-			size_t totalSize = size + sizeof(Header);
+			size_t totalSize = size + 64;//sizeof(Header);
 			void *ptr = allocate(totalSize);
 			OPTICK_VERIFY(ptr, "Can't allocate memory", return nullptr);
 
@@ -42,14 +42,14 @@ namespace Optick
 			header->size = totalSize;
 			memAllocated += totalSize;
 
-			return (uint8_t*)ptr + sizeof(Header);
+			return (uint8_t*)ptr + 64;//sizeof(Header);
 		}
 
 		static OPTICK_INLINE void Free(void* p)
 		{
 			if (p != nullptr)
 			{
-				uint8_t* basePtr = (uint8_t*)p - sizeof(Header);
+				uint8_t* basePtr = (uint8_t*)p - 64;//sizeof(Header);
 				Header* header = (Header*)basePtr;
 				memAllocated -= header->size;
 				deallocate(basePtr);
