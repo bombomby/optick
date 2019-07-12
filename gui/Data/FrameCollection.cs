@@ -525,7 +525,8 @@ namespace Profiler.Data
 
 						if (group.Board.MainThreadIndex == frame.Header.ThreadIndex)
 						{
-							Add(frame);
+							if (frame.Header.Duration > 0.0)
+								Add(frame);
 						}
 
 						break;
