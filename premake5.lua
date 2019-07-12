@@ -67,9 +67,9 @@ if _ACTION == "vs2017" then
 end
 	startproject "ConsoleApp"
 if isVisualStudio then
-    	cppdialect "C++11"
+	cppdialect "C++11"
 else
-	cppdialect "gnu++17"
+	cppdialect "gnu++11"
 end
 	location ( outputFolder )
 	flags { "NoManifest", "FatalWarnings" }
