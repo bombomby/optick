@@ -24,7 +24,7 @@ namespace Optick
 	{
 		struct Header
 		{
-            void *basePtr;
+			void *basePtr;
 			size_t size;
 		};
 
@@ -36,22 +36,22 @@ namespace Optick
 	public:
 		static OPTICK_INLINE void* Alloc(size_t size, size_t alignment = sizeof(max_align_t))
 		{
-            size_t totalSize = size + alignment + sizeof(Header);
-            void *basePtr = allocate(totalSize);
-            OPTICK_VERIFY(basePtr, "Can't allocate memory", return nullptr);
-            
-            void *ptr = (uint8_t*)basePtr + sizeof(Header);
-            size_t usable_size = totalSize - sizeof(Header);
-            ptr=std::align( alignment, size, ptr /*out*/, usable_size /*out*/);
-            
-            
+			size_t totalSize = size + alignment + sizeof(Header);
+			void *basePtr = allocate(totalSize);
+			OPTICK_VERIFY(basePtr, "Can't allocate memory", return nullptr);
+			
+			void *ptr = (uint8_t*)basePtr + sizeof(Header);
+			size_t usable_size = totalSize - sizeof(Header);
+			ptr=std::align( alignment, size, ptr /*out*/, usable_size /*out*/);
+			
+			
 			Header* header = (Header*)((uint8_t*)ptr - sizeof(Header)) ;
 			header->size = totalSize;
-            header->basePtr = basePtr;
+			header->basePtr = basePtr;
 			memAllocated += totalSize;
 
 			return ptr;
-            
+			
 		}
 
 		static OPTICK_INLINE void Free(void* p)
