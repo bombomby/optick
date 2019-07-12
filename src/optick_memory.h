@@ -140,7 +140,7 @@ namespace Optick
 	template<class T, uint32 SIZE>
 	struct MemoryChunk
 	{
-		OPTICK_ALIGN_CACHE T data[SIZE];
+		T data[SIZE];
 		MemoryChunk* next;
 		MemoryChunk* prev;
 

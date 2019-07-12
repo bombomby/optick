@@ -63,8 +63,6 @@ static const ProcessID INVALID_PROCESS_ID = (ProcessID)-1;
 #else
 #error Can not define OPTICK_ALIGN. Unknown platform.
 #endif
-#define OPTICK_CACHE_LINE_SIZE 64
-#define OPTICK_ALIGN_CACHE OPTICK_ALIGN(OPTICK_CACHE_LINE_SIZE)
 #define OPTICK_ARRAY_SIZE(ARR) (sizeof(ARR)/sizeof((ARR)[0]))
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #if defined(OPTICK_MSVC)
