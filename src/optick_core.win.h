@@ -1239,7 +1239,7 @@ CaptureStatus::Type ETW::Start(Mode::Type mode, int frequency, const ThreadList&
 		}
 
 		ZeroMemory(&logFile, sizeof(EVENT_TRACE_LOGFILE));
-		logFile.LoggerName = KERNEL_LOGGER_NAME;
+		logFile.LoggerName = const_cast<decltype(logFile.LoggerName)>(KERNEL_LOGGER_NAME);
 		logFile.ProcessTraceMode = (PROCESS_TRACE_MODE_REAL_TIME | PROCESS_TRACE_MODE_EVENT_RECORD | PROCESS_TRACE_MODE_RAW_TIMESTAMP);
 		logFile.EventRecordCallback = OnRecordEvent;
 		logFile.BufferCallback = OnBufferRecord;
