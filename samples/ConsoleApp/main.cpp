@@ -28,7 +28,7 @@ int main()
 	cout << "Starting main loop update." << endl;
 
 	OPTICK_SET_MEMORY_ALLOCATOR(
-		[](size_t size) -> void* { return operator new(size, std::align_val_t(64)); }, 
+		[](size_t size) -> void* { return operator new(size); }, 
 		[](void* p) { operator delete(p); }, 
 		[]() { /* Do some TLS initialization here if needed */ }
 	);

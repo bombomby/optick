@@ -6,6 +6,7 @@
 
 #include <cstring>
 #include <new>
+#include <memory>
 #include <stdlib.h>
 #include <atomic>
 
@@ -23,7 +24,8 @@ namespace Optick
 	{
 		struct Header
 		{
-			uint64_t size;
+            void *basePtr;
+			size_t size;
 		};
 
 		static std::atomic<uint64_t> memAllocated;
@@ -32,27 +34,33 @@ namespace Optick
 		static void  (*deallocate)(void*);
 		static void  (*initThread)(void);
 	public:
-		static OPTICK_INLINE void* Alloc(size_t size)
+		static OPTICK_INLINE void* Alloc(size_t size, size_t alignment = sizeof(max_align_t))
 		{
-			size_t totalSize = size + 64;//sizeof(Header);
-			void *ptr = allocate(totalSize);
-			OPTICK_VERIFY(ptr, "Can't allocate memory", return nullptr);
-
-			Header* header = (Header*)ptr;
+            size_t totalSize = size + alignment + sizeof(Header);
+            void *basePtr = allocate(totalSize);
+            OPTICK_VERIFY(basePtr, "Can't allocate memory", return nullptr);
+            
+            void *ptr = (uint8_t*)basePtr + sizeof(Header);
+            size_t usable_size = totalSize - sizeof(Header);
+            ptr=std::align( alignment, size, ptr /*out*/, usable_size /*out*/);
+            
+            
+			Header* header = (Header*)((uint8_t*)ptr - sizeof(Header)) ;
 			header->size = totalSize;
+            header->basePtr = basePtr;
 			memAllocated += totalSize;
 
-			return (uint8_t*)ptr + 64;//sizeof(Header);
+			return ptr;
+            
 		}
 
 		static OPTICK_INLINE void Free(void* p)
 		{
 			if (p != nullptr)
 			{
-				uint8_t* basePtr = (uint8_t*)p - 64;//sizeof(Header);
-				Header* header = (Header*)basePtr;
+				Header* header = (Header*)((uint8_t*)p - sizeof(Header));
 				memAllocated -= header->size;
-				deallocate(basePtr);
+				deallocate(header->basePtr);
 			}
 		}
 
@@ -64,19 +72,19 @@ namespace Optick
 		template<class T>
 		static T* New()
 		{
-			return new (Memory::Alloc(sizeof(T))) T();
+			return new (Memory::Alloc(sizeof(T), alignof(T))) T();
 		}
 
 		template<class T, class P1>
 		static T* New(P1 p1)
 		{
-			return new (Memory::Alloc(sizeof(T))) T(p1);
+			return new (Memory::Alloc(sizeof(T), alignof(T))) T(p1);
 		}
 
 		template<class T, class P1, class P2>
 		static T* New(P1 p1, P2 p2)
 		{
-			return new (Memory::Alloc(sizeof(T))) T(p1, p2);
+			return new (Memory::Alloc(sizeof(T), alignof(T))) T(p1, p2);
 		}
 
 		template<class T>
