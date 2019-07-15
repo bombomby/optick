@@ -36,7 +36,9 @@ namespace Profiler.DirectX
 
 		public virtual void AddRect(Rect rect, System.Windows.Media.Color color)
 		{
-			rect = new Rect(InverseLocalTransform.Transform(rect.Location), new Size(InverseLocalTransform.M11 * rect.Size.Width, InverseLocalTransform.M22 * rect.Size.Height));
+            double width = (rect.Size.Width < 0) ? 0 : rect.Size.Width;
+            double height = (rect.Size.Height < 0) ? 0 : rect.Size.Height;
+            rect = new Rect(InverseLocalTransform.Transform(rect.Location), new Size(InverseLocalTransform.M11 * width, InverseLocalTransform.M22 * height));
 
 			int index = Vertices.Count;
 			SharpDX.Color c = Utils.Convert(color);
