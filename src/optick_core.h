@@ -183,6 +183,8 @@ class EventDescriptionBoard
 public:
 	EventDescription* CreateDescription(const char* name, const char* file = nullptr, uint32_t line = 0, uint32_t color = Color::Null, uint32_t filter = 0);
 	EventDescription* CreateSharedDescription(const char* name, const char* file = nullptr, uint32_t line = 0, uint32_t color = Color::Null, uint32_t filter = 0);
+	EventDescription* CreateSharedDescription(unsigned long long hash,
+		const char* name, const char* file = nullptr, uint32_t line = 0, uint32_t color = Color::Null, uint32_t filter = 0);
 
 	static EventDescriptionBoard& Get();
 

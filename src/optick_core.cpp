@@ -206,6 +206,11 @@ EventDescription* EventDescription::CreateShared(const char* eventName, const ch
 	return EventDescriptionBoard::Get().CreateSharedDescription(eventName, fileName, fileLine, eventColor, filter);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+EventDescription* EventDescription::CreateShared(unsigned long long hash, const char* eventName, const char* fileName, const unsigned long fileLine, const unsigned long eventColor /*= Color::Null*/, const unsigned long filter /*= 0*/)
+{
+	return EventDescriptionBoard::Get().CreateSharedDescription(hash, eventName, fileName, fileLine, eventColor, filter);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventDescription::EventDescription() : name(""), file(""), line(0), color(0)
 {
 }
@@ -444,7 +449,27 @@ EventDescription* EventDescriptionBoard::CreateDescription(const char* name, con
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventDescription* EventDescriptionBoard::CreateSharedDescription(const char* name, const char* file /*= nullptr*/, uint32_t line /*= 0*/, uint32_t color /*= Color::Null*/, uint32_t filter /*= 0*/)
 {
-	StringHash nameHash(name);
+	char hashBuf[256] = { 0 };
+	snprintf(hashBuf, 256, "%s-%s-%d", name, file, line);
+	StringHash nameHash(hashBuf);
+
+	std::lock_guard<std::mutex> lock(sharedLock);
+
+	std::pair<DescriptionMap::iterator, bool> cached = sharedDescriptions.insert({ nameHash, nullptr });
+
+	if (cached.second)
+	{
+		const char* nameCopy = sharedNames.Add(name, strlen(name) + 1, false);
+		cached.first->second = CreateDescription(nameCopy, file, line, color, filter);
+	}
+
+	return cached.first->second;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+EventDescription* EventDescriptionBoard::CreateSharedDescription(unsigned long long hash,
+	const char* name, const char* file /*= nullptr*/, uint32_t line /*= 0*/, uint32_t color /*= Color::Null*/, uint32_t filter /*= 0*/)
+{
+	StringHash nameHash(hash);
 
 	std::lock_guard<std::mutex> lock(sharedLock);
 
