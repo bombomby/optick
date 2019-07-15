@@ -18,3 +18,4 @@ Publish/
 .DS_Store
 /Samples/UnrealEnginePlugin/Binaries
 /.vs
+/.idea

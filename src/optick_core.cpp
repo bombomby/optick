@@ -450,7 +450,7 @@ EventDescription* EventDescriptionBoard::CreateDescription(const char* name, con
 EventDescription* EventDescriptionBoard::CreateSharedDescription(const char* name, const char* file /*= nullptr*/, uint32_t line /*= 0*/, uint32_t color /*= Color::Null*/, uint32_t filter /*= 0*/)
 {
 	char hashBuf[256] = { 0 };
-	snprintf(hashBuf, 256, "%s-%s-%d", name, file, line);
+	snprintf(hashBuf, 256, "%s-%s-%u", name, file, line);
 	StringHash nameHash(hashBuf);
 
 	std::lock_guard<std::mutex> lock(sharedLock);
