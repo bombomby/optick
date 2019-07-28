@@ -62,6 +62,10 @@ else()
 	target_compile_definitions(OptickCore PRIVATE OPTICK_ENABLE_GPU=0)
 endif()
 
+if(MSVC)
+	# temporary solution to unblock C++17 users
+	target_compile_definitions(OptickCore PRIVATE _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS)
+endif()
 
 set(EXTRA_LIBS ${EXTRA_LIBS} OptickCore)
 if(NOT MSVC)

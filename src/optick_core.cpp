@@ -763,6 +763,10 @@ void Core::DumpProgress(const char* message)
 	Server::Get().Send(DataResponse::ReportProgress, stream);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#if defined(OPTICK_MSVC)
+#pragma warning( push )
+#pragma warning( disable : 4996)
+#endif
 void Core::DumpProgressFormatted(const char* format, ...)
 {
 	va_list arglist;
@@ -776,6 +780,9 @@ void Core::DumpProgressFormatted(const char* format, ...)
 	va_end(arglist);
 	DumpProgress(buffer);
 }
+#if defined(OPTICK_MSVC)
+#pragma warning( pop )
+#endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool IsFrameDescription(const EventDescription* desc)
 {
