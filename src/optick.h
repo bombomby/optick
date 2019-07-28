@@ -270,7 +270,7 @@ namespace Optick
 		};
 	};
 
-	#define OPTICK_MAKE_CATEGORY(filter, color) (((uint64_t)(1ull) << (filter + 32)) | (uint64_t)color)
+	#define OPTICK_MAKE_CATEGORY(filter, color) ((Optick::Category::Type)(((uint64_t)(1ull) << (filter + 32)) | (uint64_t)color))
 
 	struct Category
 	{
@@ -353,9 +353,23 @@ struct Mode
 	};
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct FrameType
+{
+	enum Type
+	{
+		CPU,
+		GPU,
+		Render,
+		Custom,
+		COUNT,
+	};
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OPTICK_API int64_t GetHighPrecisionTime();
 OPTICK_API int64_t GetHighPrecisionFrequency();
-OPTICK_API uint32_t NextFrame();
+OPTICK_API void Update();
+OPTICK_API uint32_t BeginFrame(FrameType::Type type = FrameType::CPU, int64_t timestamp = -1);
+OPTICK_API uint32_t EndFrame(FrameType::Type type = FrameType::CPU, int64_t timestamp = -1);
 OPTICK_API bool IsActive(Mode::Type mode = Mode::INSTRUMENTATION_EVENTS);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct EventStorage;
@@ -486,6 +500,7 @@ struct TagData
 	T data;
 	TagData() {}
 	TagData(const EventDescription& desc, T d) : description(&desc), timestamp(Optick::GetHighPrecisionTime()), data(d) {}
+	TagData(const EventDescription& desc, T d, int64_t t) : description(&desc), timestamp(t), data(d) {}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct OPTICK_API EventDescription
@@ -642,18 +657,7 @@ struct OPTICK_API GPUContextScope
 	}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-struct FrameType
-{
-	enum Type
-	{
-		CPU,
-		GPU,
-		Render,
-		COUNT,
-	};
-};
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame);
+OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame = FrameType::CPU);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef void* (*AllocateFn)(size_t);
 typedef void  (*DeallocateFn)(void*);
@@ -720,11 +724,16 @@ OPTICK_API void Shutdown();
 //			OPTICK_FRAME("MainThread");
 //			... code ...
 //		}
-#define OPTICK_FRAME(FRAME_NAME)	static ::Optick::ThreadScope mainThreadScope(FRAME_NAME);		\
-									OPTICK_UNUSED(mainThreadScope);									\
-									uint32_t frameNumber = ::Optick::NextFrame();					\
-									::Optick::Event OPTICK_CONCAT(autogen_event_, __LINE__)(*::Optick::GetFrameDescription(::Optick::FrameType::CPU)); \
-									OPTICK_TAG("Frame", frameNumber);
+#define OPTICK_FRAME(FRAME_NAME, ...)	static ::Optick::ThreadScope mainThreadScope(FRAME_NAME);		\
+										OPTICK_UNUSED(mainThreadScope);									\
+										::Optick::EndFrame(__VA_ARGS__);								\
+										::Optick::Update();												\
+										uint32_t frameNumber = ::Optick::BeginFrame(__VA_ARGS__);		\
+										::Optick::Event OPTICK_CONCAT(autogen_event_, __LINE__)(*::Optick::GetFrameDescription(__VA_ARGS__)); \
+										OPTICK_TAG("Frame", frameNumber);
+
+#define OPTICK_UPDATE()					::Optick::Update();
+#define OPTICK_FRAME_FLIP(...)			::Optick::EndFrame(__VA_ARGS__); ::Optick::BeginFrame(__VA_ARGS__);
 
 
 // Thread registration macro.
@@ -892,4 +901,6 @@ OPTICK_API void Shutdown();
 #define OPTICK_GPU_CONTEXT(...)
 #define OPTICK_GPU_EVENT(NAME)
 #define OPTICK_GPU_FLIP(SWAP_CHAIN)
+#define OPTICK_UPDATE()
+#define OPTICK_FRAME_FLIP(...)
 #endif

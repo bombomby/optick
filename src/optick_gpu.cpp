@@ -113,7 +113,7 @@ namespace Optick
 		TagData<uint32>& tag = nodes[currentNode]->gpuEventStorage[GPU_QUEUE_GRAPHICS]->tagU32Buffer.Add();
 		tag.description = FrameTagDescription;
 		tag.timestamp = EventTime::INVALID_TIMESTAMP;
-		tag.data = Core::Get().GetCurrentFrame();
+		tag.data = Core::Get().GetCurrentFrame(FrameType::CPU);
 		return tag;
 	}
 

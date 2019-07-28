@@ -290,7 +290,7 @@ namespace Profiler.Data
 			return result;
 		}
 
-		List<Entry> ReadEventList(BinaryReader reader, EventDescriptionBoard board)
+		public List<Entry> ReadEventList(BinaryReader reader, EventDescriptionBoard board)
 		{
 			int count = reader.ReadInt32();
 			List<Entry> result = new List<Entry>(count);
@@ -383,6 +383,45 @@ namespace Profiler.Data
 			node.ForEach((n, level) => { entries.Add((n as EventNode).Entry); return true; });
 			Init(new FrameHeader(new Durable(node.Entry.Start, node.Entry.Finish), frame.Header.ThreadIndex, frame.Header.FiberIndex), entries);
 			Synchronization = frame.Synchronization;
+		}
+	}
+
+	public class FrameList
+	{
+		public enum Type
+		{
+			CPU,
+			GPU,
+			Render,
+			Custom,
+		}
+
+		public List<EventData> Events { get; set; } = new List<EventData>();
+		public Type FrameType { get; set; }
+	}
+
+	public class FramePack
+	{
+		public DataResponse Response { get; set; }
+		public List<FrameList> Frames { get; set; } = new List<FrameList>();
+
+		public static FramePack Create(DataResponse response, EventDescriptionBoard board)
+		{
+			FramePack pack = new FramePack();
+
+			pack.Response = response;
+
+			int frameCount = response.Reader.ReadInt32();
+			for (int frame = 0; frame < frameCount; ++frame)
+			{
+				FrameList list = new FrameList();
+				list.FrameType = (FrameList.Type)frame;
+				int count = response.Reader.ReadInt32();
+				for (int i = 0; i < count; ++i)
+					list.Events.Add(Entry.Read(response.Reader, board));
+				pack.Frames.Add(list);
+			}
+			return pack;
 		}
 	}
 }

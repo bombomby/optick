@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "Containers/Ticker.h"
 #include "HAL/PlatformFilemanager.h"
+#include "HAL/PlatformProcess.h"
 #include "Misc/EngineVersion.h"
 #include "Modules/ModuleManager.h"
 #include "Stats/StatsData.h"
@@ -13,8 +14,19 @@
 // Engine
 #include "UnrealClient.h"
 
+#define LOCTEXT_NAMESPACE "FOptickModule"
+
 #if WITH_EDITOR
+#include "EditorStyleSet.h"
+#include "Framework/Commands/Commands.h"
 #include "Editor/EditorPerformanceSettings.h"
+#include "Editor/LevelEditor/Public/LevelEditor.h"
+#include "Editor/UnrealEd/Public/SEditorViewportToolBarMenu.h"
+#include "Projects/Public/Interfaces/IPluginManager.h"
+#include "Windows/WindowsPlatformProcess.h"
+
+#include "OptickStyle.h"
+#include "OptickCommands.h"
 #endif
 
 #include <OptickCore/Optick.h>
@@ -27,14 +39,20 @@ static FName NAME_Wait[] =
 	FName("STAT_FQueuedThread_Run_WaitForWork"),
 	FName("STAT_TaskGraph_OtherStalls"),
 };
-static FName NAME_STAT_ROOT("STAT_FEngineLoop_Tick_CallAllConsoleVariableSinks");
-static FName NAME_STAT_ROOT_RAW = FName();
 static FString Optick_SCREENSHOT_NAME(TEXT("UE4_Optick_Screenshot.png"));
+
+
+struct ThreadStorage
+{
+	Optick::EventStorage* EventStorage;
+	uint64 LastTimestamp;
+	ThreadStorage(Optick::EventStorage* storage = nullptr) : EventStorage(storage), LastTimestamp(0) {}
+};
 
 
 class FOptickPlugin : public IOptickPlugin
 {
-	bool IsCapturing;
+	volatile bool IsCapturing;
 
 	const uint64 LowMask =  0x00000000FFFFFFFFULL;
 	const uint64 HighMask = 0xFFFFFFFF00000000ULL;
@@ -44,7 +62,7 @@ class FOptickPlugin : public IOptickPlugin
 	FDelegateHandle TickDelegateHandle;
 	FDelegateHandle StatFrameDelegateHandle;
 
-	TMap<uint32, Optick::EventStorage*> StorageMap;
+	TMap<uint32, ThreadStorage*> StorageMap;
 	TMap<FName, Optick::EventDescription*> DescriptionMap;
 
 	TAtomic<bool> WaitingForScreenshot;
@@ -60,9 +78,18 @@ class FOptickPlugin : public IOptickPlugin
 		EditorSettings() : bCPUThrottleEnabled(true) {}
 	};
 	EditorSettings BaseSettings;
+
+	TSharedPtr<const FExtensionBase> ToolbarExtension;
+	TSharedPtr<FExtensibilityManager> ExtensionManager;
+	TSharedPtr<FExtender> ToolbarExtender;
+
+	TSharedPtr<class FUICommandList> PluginCommands;
+
+	void AddToolbarExtension(FToolBarBuilder& ToolbarBuilder);
 #endif
 
 	void OnScreenshotProcessed();
+
 public:
 	/** IModuleInterface implementation */
 	virtual void StartupModule() override;
@@ -71,21 +98,49 @@ public:
 	void StartCapture();
 	void StopCapture();
 
+	void OnOpenGUI();
+
 	void RequestScreenshot();
 	bool IsReadyToDumpCapture() const;
 };
 
-IMPLEMENT_MODULE( FOptickPlugin, BlankPlugin )
+IMPLEMENT_MODULE( FOptickPlugin, OptickPlugin )
 DECLARE_DELEGATE_OneParam(FStatFrameDelegate, int64);
 
 
 bool FOptickPlugin::Tick(float DeltaTime)
 {
-	Optick::NextFrame();
-	//Optick_FRAME("FOptickPlugin");
-
+	Optick::Update();
 	return true;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+#if WITH_EDITOR
+
+void FOptickPlugin::OnOpenGUI()
+{
+	UE_LOG(OptickLog, Display, TEXT("OnOpenGUI!"));
+
+	const FString OptickPath = IPluginManager::Get().FindPlugin("OptickPlugin")->GetBaseDir() / TEXT("GUI/Optick.exe");
+	const FString OptickFullPath = FPaths::ConvertRelativePathToFull(OptickPath);
+	const FString OptickArgs;
+	FPlatformProcess::CreateProc(*OptickFullPath, *OptickArgs, true, false, false, NULL, 0, NULL, NULL);
+}
+
+void FOptickPlugin::AddToolbarExtension(FToolBarBuilder& ToolbarBuilder)
+{
+	UE_LOG(OptickLog, Log, TEXT("Attaching toolbar extension..."));
+
+	ToolbarBuilder.BeginSection("Optick");
+	{
+		ToolbarBuilder.AddToolBarButton(FOptickCommands::Get().PluginAction);
+	}
+	ToolbarBuilder.EndSection();
+}
+
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool OnOptickStateChanged(Optick::State::Type state)
@@ -132,14 +187,7 @@ bool OnOptickStateChanged(Optick::State::Type state)
 			}
 
 			Optick::AttachFile(Optick::File::OPTICK_IMAGE, "Screenshot.png", Image.GetData(), (uint32_t)FileSize);
-
-			//PlatformFile.DeleteFile(*FullName);
 		}
-
-
-		// Attach text file
-		//char* textFile = "Hello World!";
-		//Optick::AttachFile(Optick::BroFile::BRO_OTHER, "Test.txt", (uint8_t*)textFile, strlen(textFile));
 
 		break;
 	}
@@ -155,6 +203,26 @@ void FOptickPlugin::StartupModule()
 
 	// Register Optick callback
 	Optick::SetStateChangedCallback(OnOptickStateChanged);
+
+
+#if WITH_EDITOR
+	FOptickStyle::Initialize();
+	FOptickStyle::ReloadTextures();
+	FOptickCommands::Register();
+
+	PluginCommands = MakeShareable(new FUICommandList);
+
+	PluginCommands->MapAction(
+		FOptickCommands::Get().PluginAction,
+		FExecuteAction::CreateRaw(this, &FOptickPlugin::OnOpenGUI),
+		FCanExecuteAction());
+
+	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
+	ExtensionManager = LevelEditorModule.GetToolBarExtensibilityManager();
+	ToolbarExtender = MakeShareable(new FExtender);
+	ToolbarExtension = ToolbarExtender->AddToolBarExtension("Game", EExtensionHook::After, PluginCommands, FToolBarExtensionDelegate::CreateLambda([this](FToolBarBuilder& ToolbarBuilder) { AddToolbarExtension(ToolbarBuilder); })	);
+	ExtensionManager->AddExtender(ToolbarExtender);
+#endif
 }
 
 
@@ -165,6 +233,14 @@ void FOptickPlugin::ShutdownModule()
 
 	// Stop capture if needed
 	StopCapture();
+
+#if WITH_EDITOR
+	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
+	// we call this function before unloading the module.
+	FOptickStyle::Shutdown();
+
+	FOptickCommands::Unregister();
+#endif
 
 	UE_LOG(OptickLog, Display, TEXT("OptickPlugin UnLoaded!"));
 }
@@ -244,6 +320,9 @@ void FOptickPlugin::GetDataFromStatsThread(int64 CurrentFrame)
 {
 	QUICK_SCOPE_CYCLE_COUNTER(STAT_FOptickPlugin_Upd);
 
+	if (!IsCapturing)
+		return;
+
 #if STATS
 	const FStatsThreadState& Stats = FStatsThreadState::GetLocalState();
 	const FStatPacketArray& Frame = Stats.GetStatPacketArray(CurrentFrame);
@@ -253,15 +332,15 @@ void FOptickPlugin::GetDataFromStatsThread(int64 CurrentFrame)
 		FStatPacket const& Packet = *Frame.Packets[PacketIndex];
 		const FName ThreadName = Stats.GetStatThreadName(Packet);
 
-		Optick::EventStorage* Storage = nullptr;
+		ThreadStorage* Storage = nullptr;
 
-		if (Optick::EventStorage** ppStorage = StorageMap.Find(Packet.ThreadId))
+		if (ThreadStorage** ppStorage = StorageMap.Find(Packet.ThreadId))
 		{
 			Storage = *ppStorage;
 		}
 		else
 		{
-			Storage = Optick::RegisterStorage(TCHAR_TO_ANSI(*ThreadName.ToString()), Packet.ThreadId);
+			Storage = new ThreadStorage(Optick::RegisterStorage(TCHAR_TO_ANSI(*ThreadName.ToString()), Packet.ThreadId));
 			StorageMap.Add(Packet.ThreadId, Storage);
 		}
 
@@ -293,9 +372,6 @@ void FOptickPlugin::GetDataFromStatsThread(int64 CurrentFrame)
 
 						uint32 color = 0;
 
-						if (shortName == NAME_STAT_ROOT)
-							NAME_STAT_ROOT_RAW = name;
-
 						if (NAME_STATGROUP_CPUStalls == groupName)
 							color = Optick::Color::White;
 
@@ -308,25 +384,44 @@ void FOptickPlugin::GetDataFromStatsThread(int64 CurrentFrame)
 						DescriptionMap.Add(name, Description);
 					}
 
-					// Processing root event of the frame
-					if (name == NAME_STAT_ROOT_RAW)
-					{
-						const Optick::EventDescription* cpuFrameDescription = Optick::GetFrameDescription(Optick::FrameType::CPU);
-						// Pop the previous frame event
-						OPTICK_STORAGE_POP(Storage, Timestamp);
-						// Push the new one
-						OPTICK_STORAGE_PUSH(Storage, cpuFrameDescription, Timestamp);
-					}
-					
-					OPTICK_STORAGE_PUSH(Storage, Description, Timestamp);
+					OPTICK_STORAGE_PUSH(Storage->EventStorage, Description, Timestamp);
 				}
 				else
 				{
-					OPTICK_STORAGE_POP(Storage, Timestamp);
+					Storage->LastTimestamp = FMath::Max<uint64>(Storage->LastTimestamp, Timestamp);
+					OPTICK_STORAGE_POP(Storage->EventStorage, Timestamp);
 				}
 					
+			}
+			else if (Op == EStatOperation::AdvanceFrameEventGameThread)
+			{
+				if (Storage->LastTimestamp != 0)
+				{
+					const Optick::EventDescription* cpuFrameDescription = Optick::GetFrameDescription(Optick::FrameType::CPU);
+					// Pop the previous frame event
+					OPTICK_STORAGE_POP(Storage->EventStorage, Storage->LastTimestamp);
+					// Push the new one
+					OPTICK_STORAGE_PUSH(Storage->EventStorage, cpuFrameDescription, Storage->LastTimestamp);
+
+					OPTICK_FRAME_FLIP(Optick::FrameType::CPU, Storage->LastTimestamp);
+				}
+			}
+			else if (Op == EStatOperation::AdvanceFrameEventRenderThread)
+			{
+				if (Storage->LastTimestamp != 0)
+				{
+					const Optick::EventDescription* renderFrameDescription = Optick::GetFrameDescription(Optick::FrameType::Render);
+					// Pop the previous frame event
+					OPTICK_STORAGE_POP(Storage->EventStorage, Storage->LastTimestamp);
+					// Push the new one
+					OPTICK_STORAGE_PUSH(Storage->EventStorage, renderFrameDescription, Storage->LastTimestamp);
+
+					OPTICK_FRAME_FLIP(Optick::FrameType::Render, Storage->LastTimestamp);
+				}
 			}
 		}
 	}
 #endif
 }
+
+#undef LOCTEXT_NAMESPACE

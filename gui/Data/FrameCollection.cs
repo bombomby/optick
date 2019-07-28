@@ -103,6 +103,7 @@ namespace Profiler.Data
 		public List<ThreadData> Fibers { get; set; }
 		public ThreadData MainThread { get { return Threads[Board.MainThreadIndex]; } }
 		public SummaryPack Summary { get; set; }
+		public FramePack Frames { get; set; }
 		public SynchronizationMap Synchronization { get; set; }
 
 		public List<DataResponse> Responses { get; set; }
@@ -337,6 +338,12 @@ namespace Profiler.Data
 		{
 			Responses.Insert(0, summary.Response);
 			Summary = summary;
+		}
+
+		public void AddFramePack(FramePack pack)
+		{
+			Responses.Add(pack.Response);
+			Frames = pack;
 		}
 
 		private void SplitFiber(int fiberIndex)
@@ -602,6 +609,18 @@ namespace Profiler.Data
 							TagsPack pack = new TagsPack(response, group);
 							group.Add(pack);
 						}
+						break;
+					}
+
+
+				case DataResponse.Type.FramesPack:
+					{
+						int id = response.Reader.ReadInt32();
+						FrameGroup group = groups[id];
+
+						FramePack pack = FramePack.Create(response, group.Board);
+						group.AddFramePack(pack);
+
 						break;
 					}
 

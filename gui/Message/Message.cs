@@ -64,6 +64,7 @@ namespace Profiler
 			FiberSynchronizationData = 1 << 8,
 			SyscallPack,
 			SummaryPack,
+			FramesPack,
 		}
 		public UInt16 ApplicationID { get; set; }
 		public Type ResponseType { get; set; }

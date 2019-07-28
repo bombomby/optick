@@ -51,13 +51,27 @@ namespace UnrealBuildTool.Rules
 				{
 					"OPTICK_ENABLE_GPU_VULKAN=0",
 					"OPTICK_ENABLE_GPU_D3D12=0",
+					"OPTICK_UE4=1",
 				}
 				);
 				
 				
 			if (Target.bBuildEditor == true)
 			{
-				PrivateDependencyModuleNames.Add("UnrealEd");
+				PublicDependencyModuleNames.AddRange(
+					new string[]
+					{
+						"Slate",
+						"SlateCore",
+						"EditorStyle",
+						"UnrealEd",
+						"MainFrame",
+						"GameProjectGeneration",
+						"Projects",
+						"InputCore",
+						"LevelEditor",
+					}
+				);
 			}
 			//PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		}

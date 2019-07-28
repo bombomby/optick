@@ -13,12 +13,31 @@
 #include <stdlib.h>
 
 #if defined(OPTICK_MSVC)
+
+#ifdef OPTICK_UE4
+#include "Core/Public/Windows/AllowWindowsPlatformTypes.h"
+#endif
+
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
 #define NOMINMAX
 #include <windows.h>
+
+#ifdef OPTICK_UE4
+#include "Core/Public/Windows/HideWindowsPlatformTypes.h"
 #endif
+
+#ifndef TRUE
+#define TRUE 1
+#endif
+
+#ifndef FALSE
+#define FALSE 0
+#endif
+
+#endif
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Types

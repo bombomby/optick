@@ -57,7 +57,7 @@ namespace Profiler
 			this.InitializeComponent();
 			this.DataContext = frames;
 
-			statusToError.Add(TracerStatus.TRACER_ERROR_ACCESS_DENIED, new KeyValuePair<string, string>("ETW can't start: launch your game (or Visual Studio) as administrator to collect context switches", "https://github.com/bombomby/optick/wiki/Event-Tracing-for-Windows"));
+			statusToError.Add(TracerStatus.TRACER_ERROR_ACCESS_DENIED, new KeyValuePair<string, string>("ETW can't start: launch your Game/VisualStudio/UE4Editor as administrator to collect context switches", "https://github.com/bombomby/optick/wiki/Event-Tracing-for-Windows"));
 			statusToError.Add(TracerStatus.TRACER_ERROR_ALREADY_EXISTS, new KeyValuePair<string, string>("ETW session already started (Reboot should help)", "https://github.com/bombomby/optick/wiki/Event-Tracing-for-Windows"));
 			statusToError.Add(TracerStatus.TRACER_FAILED, new KeyValuePair<string, string>("ETW session failed (Run your Game or Visual Studio as Administrator to get ETW data)", "https://github.com/bombomby/optick/wiki/Event-Tracing-for-Windows"));
 			statusToError.Add(TracerStatus.TRACER_INVALID_PASSWORD, new KeyValuePair<string, string>("Tracing session failed: invalid root password. Run the game as a root or pass a valid password through Optick GUI", "https://github.com/bombomby/optick/wiki/Event-Tracing-for-Windows"));

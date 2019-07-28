@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <iomanip>
 
 //////////////////////////////////////////////////////////////////////////
 // Start of the Platform-specific stuff
@@ -42,6 +43,7 @@ void* (*Memory::allocate)(size_t) = [](size_t size)->void* { return operator new
 void (*Memory::deallocate)(void* p) = [](void* p) { operator delete(p); };
 void (*Memory::initThread)(void) = nullptr;
 std::atomic<uint64_t> Memory::memAllocated;
+std::recursive_mutex Memory::memCS;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 uint64_t MurmurHash64A(const void * key, int len, uint64_t seed)
 {
@@ -240,11 +242,14 @@ void OPTICK_INLINE PushEvent(EventStorage* pStorage, const EventDescription* des
 {
 	if (EventStorage* storage = pStorage)
 	{
-		EventData& result = storage->NextEvent();
-		result.description = description;
-		result.start = timestampStart;
-		result.finish = EventTime::INVALID_TIMESTAMP;
-		storage->pushPopEventStack[storage->pushPopEventStackIndex++] = &result;
+		if (storage->pushPopEventStackIndex++ < storage->pushPopEventStack.size())
+		{
+			EventData& result = storage->NextEvent();
+			result.description = description;
+			result.start = timestampStart;
+			result.finish = EventTime::INVALID_TIMESTAMP;
+			storage->pushPopEventStack[storage->pushPopEventStackIndex - 1] = &result;
+		}
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -252,7 +257,8 @@ void OPTICK_INLINE PopEvent(EventStorage* pStorage, int64_t timestampFinish)
 {
 	if (EventStorage* storage = pStorage)
 		if (storage->pushPopEventStackIndex > 0)
-			storage->pushPopEventStack[--storage->pushPopEventStackIndex]->finish = timestampFinish;
+			if (--(storage->pushPopEventStackIndex) < storage->pushPopEventStack.size())
+				storage->pushPopEventStack[storage->pushPopEventStackIndex]->finish = timestampFinish;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Event::Push(const char* name)
@@ -762,7 +768,11 @@ void Core::DumpProgressFormatted(const char* format, ...)
 	va_list arglist;
 	char buffer[256] = { 0 };
 	va_start(arglist, format);
+#ifdef OPTICK_MSVC
+	vsprintf_s(buffer, format, arglist);
+#else
 	vsprintf(buffer, format, arglist);
+#endif
 	va_end(arglist);
 	DumpProgress(buffer);
 }
@@ -913,6 +923,17 @@ EventTime CalculateRange(const ThreadEntry& entry, const EventDescription* rootD
 	return timeSlice;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+EventTime CalculateRange(FrameStorage& frameStorage)
+{
+	EventTime timeSlice = { INT64_MAX, INT64_MIN };
+	frameStorage.m_Frames.ForEach([&](const EventData& data)
+	{
+		timeSlice.start = std::min(timeSlice.start, data.start);
+		timeSlice.finish = std::max(timeSlice.finish, data.finish);
+	});
+	return timeSlice;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpFrames(uint32 mode)
 {
     std::lock_guard<std::recursive_mutex> lock(threadsLock);
@@ -936,14 +957,19 @@ void Core::DumpFrames(uint32 mode)
 		if (threads[i]->description.threadID == mainThreadID)
 			mainThreadIndex = (uint32)i;
 
-	EventTime timeSlice = CalculateRange(*threads[mainThreadIndex], GetFrameDescription(FrameType::CPU)); 
-	if (timeSlice.start >= timeSlice.finish)
-	{
-		timeSlice.start = frames.front().start;
-		timeSlice.finish = frames.back().finish;
-	}
+	EventTime timeSlice = CalculateRange(frames[FrameType::CPU]); 
 
 	DumpBoard(mode, timeSlice, mainThreadIndex);
+
+	{
+		DumpProgress("Serializing Frames");
+		OutputDataStream framesStream;
+		framesStream << boardNumber;
+		framesStream << (uint32)frames.size();
+		for (size_t i = 0; i < frames.size(); ++i)
+			framesStream << frames[i].m_Frames;
+		Server::Get().Send(DataResponse::FramesPack, framesStream);
+	}
 
 	ScopeData threadScope;
 	threadScope.header.boardNumber = boardNumber;
@@ -967,7 +993,9 @@ void Core::DumpFrames(uint32 mode)
 		DumpFiber(*fibers[i], timeSlice, fiberScope);
 	}
 
-	frames.clear();
+	for (int i = 0; i < FrameType::COUNT; ++i)
+		frames[i].Clear(false);
+
 	CleanupThreadsAndFibers();
 
 	{
@@ -1020,8 +1048,8 @@ void Core::DumpSummary()
 
 	// Frames
 	double frequency = (double)Platform::GetFrequency();
-	stream << (uint32_t)frames.size();
-	for (const EventTime& frame : frames)
+	stream << (uint32_t)frames[FrameType::CPU].m_Frames.Size();
+	for (const EventTime& frame : frames[FrameType::CPU].m_Frames)
 	{
 		double frameTimeMs = 1000.0 * (frame.finish - frame.start) / frequency;
 		stream << (float)frameTimeMs;
@@ -1101,7 +1129,6 @@ void Core::GenerateCommonSummary()
 Core::Core()
 	: progressReportedLastTimestampMS(0)
 	, boardNumber(0)
-	, frameNumber(0)
 	, stateCallback(nullptr)
 	, currentState(State::DUMP_CAPTURE)
 	, pendingState(State::DUMP_CAPTURE)
@@ -1110,9 +1137,9 @@ Core::Core()
 	, tracer(nullptr)
 	, gpuProfiler(nullptr)
 {
-	frameDescriptions[FrameType::CPU] = EventDescription::Create("CPU Frame", __FILE__, __LINE__);
-	frameDescriptions[FrameType::GPU] = EventDescription::Create("GPU Frame", __FILE__, __LINE__);
-	frameDescriptions[FrameType::Render] = EventDescription::Create("Render Frame", __FILE__, __LINE__);
+	frames[FrameType::CPU].m_Description = EventDescription::Create("CPU Frame", __FILE__, __LINE__);
+	frames[FrameType::GPU].m_Description = EventDescription::Create("GPU Frame", __FILE__, __LINE__);
+	frames[FrameType::Render].m_Description = EventDescription::Create("Render Frame", __FILE__, __LINE__);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::UpdateState()
@@ -1148,45 +1175,60 @@ bool Core::UpdateState()
 }
 
 
-uint32_t Core::Update()
+void Core::Update()
 {
 	std::lock_guard<std::recursive_mutex> lock(coreLock);
-	
+
 	if (currentMode != Mode::OFF)
 	{
-		if (!frames.empty())
-			frames.back().Stop();
+		FrameBuffer frameBuffer = frames[FrameType::CPU].m_Frames;
 
-		if (settings.frameLimit > 0 && frames.size() >= settings.frameLimit)
+		if (settings.frameLimit > 0 && frameBuffer.Size() >= settings.frameLimit)
 			DumpCapture();
 
 		if (settings.timeLimitUs > 0)
 		{
-			if (TicksToUs(frames.back().finish - frames.front().start) >= settings.timeLimitUs)
+			if (TicksToUs(frameBuffer.Back()->finish - frameBuffer.Front()->start) >= settings.timeLimitUs)
 				DumpCapture();
 		}
 
 		if (settings.spikeLimitUs > 0)
 		{
-			if (TicksToUs(frames.back().finish - frames.back().start) >= settings.spikeLimitUs)
+			if (TicksToUs(frameBuffer.Back()->finish - frameBuffer.Front()->start) >= settings.spikeLimitUs)
 				DumpCapture();
 		}
 
 		if (IsTimeToReportProgress())
-			DumpCapturingProgress();		
+			DumpCapturingProgress();
 	}
 
 	UpdateEvents();
-
 	while (UpdateState()) {}
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+uint32_t Core::BeginUpdateFrame(FrameType::Type frameType, int64_t timestamp)
+{
+	std::lock_guard<std::recursive_mutex> lock(coreLock);
 
 	if (currentMode != Mode::OFF)
 	{
-		frames.push_back(EventTime());
-		frames.back().Start();
+		EventData& time = frames[frameType].m_Frames.Add();
+		time.description = frames[frameType].m_Description;
+		time.start = timestamp;
+		time.finish = timestamp;
 	}
 
-	return ++frameNumber;
+	return ++frames[frameType].m_FrameNumber;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+uint32_t Core::EndUpdateFrame(FrameType::Type frameType, int64_t timestamp)
+{
+	std::lock_guard<std::recursive_mutex> lock(coreLock);
+
+	if (EventData* lastFrame = frames[frameType].m_Frames.Back())
+		lastFrame->finish = timestamp;
+
+	return frames[frameType].m_FrameNumber;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::UpdateEvents()
@@ -1238,10 +1280,11 @@ void Core::Activate(Mode::Type mode)
 				if (tracer)
 				{
 					tracer->SetPassword(settings.password.c_str());
-					{
-						std::lock_guard<std::recursive_mutex> lock(threadsLock);
-						status = tracer->Start(mode, settings.samplingFrequency, threads);
-					}
+
+					std::lock_guard<std::recursive_mutex> lock(threadsLock);
+
+					status = tracer->Start(mode, settings.samplingFrequency, threads);
+					
 					// Let's retry with more narrow setup
 					if (status != CaptureStatus::OK && (mode & Mode::AUTOSAMPLING))
 						status = tracer->Start((Mode::Type)(mode & ~Mode::AUTOSAMPLING), settings.samplingFrequency, threads);
@@ -1282,8 +1325,8 @@ void Core::DumpCapturingProgress()
 	{
 		size_t memUsedKb = Memory::GetAllocatedSize() >> 10;
 		float memUsedMb = memUsedKb / 1024.0f;
-		// VS TODO: Format to 3 digits
-		stream << "Capturing Frame " << (uint32)frames.size() << "..." << std::endl << "Memory Used: " << memUsedMb << " Mb";
+
+		stream << "Capturing Frame " << (uint32)frames[FrameType::CPU].m_Frames.Size() << "..." << std::endl << "Memory Used: " << std::fixed << std::setprecision(3) << memUsedMb << " Mb";
 	}
 
 	DumpProgress(stream.str().c_str());
@@ -1323,6 +1366,9 @@ bool Core::IsRegistredThread(ThreadID id)
 ThreadEntry* Core::RegisterThread(const ThreadDescription& description, EventStorage** slot)
 {
 	std::lock_guard<std::recursive_mutex> lock(threadsLock);
+
+	if (description.processID > 30000)
+		__debugbreak();
 
 	ThreadEntry* entry = Memory::New<ThreadEntry>(description, slot);
 	threads.push_back(entry);
@@ -1465,7 +1511,7 @@ bool Core::SetSettings(const CaptureSettings& captureSettings)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const EventDescription* Core::GetFrameDescription(FrameType::Type frame) const
 {
-	return frameDescriptions[frame];
+	return frames[frame].m_Description;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::Shutdown()
@@ -1572,9 +1618,19 @@ OutputDataStream& operator<<(OutputDataStream& stream, const Point& ob)
 	return stream << ob.x << ob.y << ob.z;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-OPTICK_API uint32_t NextFrame()
+OPTICK_API void Update()
 {
-	return Core::NextFrame();
+	return Core::Get().Update();
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+OPTICK_API uint32_t BeginFrame(Optick::FrameType::Type frameType, int64_t timestamp)
+{
+	return Core::BeginFrame(frameType, timestamp != EventTime::INVALID_TIMESTAMP ? timestamp : Optick::GetHighPrecisionTime());
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+OPTICK_API uint32_t EndFrame(Optick::FrameType::Type frameType, int64_t timestamp)
+{
+	return Core::EndFrame(frameType, timestamp != EventTime::INVALID_TIMESTAMP ? timestamp : Optick::GetHighPrecisionTime());
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OPTICK_API bool IsActive(Mode::Type mode /*= Mode::INSTRUMENTATION_EVENTS*/)

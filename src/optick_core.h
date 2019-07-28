@@ -242,7 +242,8 @@ struct EventStorage
 
 		while (pushPopEventStackIndex)
 		{
-			pushPopEventStack[--pushPopEventStackIndex] = nullptr;
+			if (--pushPopEventStackIndex < pushPopEventStack.size())
+				pushPopEventStack[pushPopEventStackIndex] = nullptr;
 		}
 	}
 
@@ -404,7 +405,24 @@ struct CaptureStatus
     };
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+typedef MemoryPool<EventData, 128> FrameBuffer;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct FrameStorage
+{
+	const EventDescription* m_Description;
+	FrameBuffer m_Frames;
+	std::atomic<uint32_t> m_FrameNumber;
 
+	void Clear(bool preserveMemory = true)
+	{
+		m_Frames.Clear(preserveMemory);
+	}
+
+	FrameStorage() : m_Description(nullptr) {}
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 class Core
 {
 	std::recursive_mutex coreLock;
@@ -415,15 +433,13 @@ class Core
 
 	int64 progressReportedLastTimestampMS;
 
-	vector<EventTime> frames;
+	array<FrameStorage, FrameType::COUNT> frames;
 	uint32 boardNumber;
 
 	CallstackCollector callstackCollector;
 	SwitchContextCollector switchContextCollector;
 
 	vector<std::pair<string, string>> summary;
-
-	std::atomic<uint32_t> frameNumber;
 
 	struct Attachment
 	{
@@ -439,16 +455,16 @@ class Core
 	vector<ProcessDescription> processDescs;
 	vector<ThreadDescription> threadDescs;
 
-	array<const EventDescription*, FrameType::COUNT> frameDescriptions;
-
 	State::Type currentState;
 	State::Type pendingState;
 
 	CaptureSettings settings;
 
 	void UpdateEvents();
-	uint32_t Update();
 	bool UpdateState();
+
+	uint32_t BeginUpdateFrame(FrameType::Type frame, int64_t timestamp);
+	uint32_t EndUpdateFrame(FrameType::Type frame, int64_t timestamp);
 
 	Core();
 	~Core();
@@ -560,19 +576,23 @@ public:
 	bool SetSettings(const CaptureSettings& settings);
 
 	// Current Frame Number (since the game started)
-	uint32_t GetCurrentFrame() const { return frameNumber; }
+	uint32_t GetCurrentFrame(FrameType::Type frameType) const { return frames[frameType].m_FrameNumber; }
 
 	// Returns Frame Description
 	const EventDescription* GetFrameDescription(FrameType::Type frame) const;
 
+	// Main Update Function
+	void Update();
+
 	// Full Destruction
 	void Shutdown();
 
+	// Frame Flip functions
+	static uint32_t BeginFrame(FrameType::Type frame, int64_t timestamp) { return Get().BeginUpdateFrame(frame, timestamp); }
+	static uint32_t EndFrame(FrameType::Type frame, int64_t timestamp) { return Get().EndUpdateFrame(frame, timestamp); }
+
 	// NOT Thread Safe singleton (performance)
 	static Core& Get();
-
-	// Main Update Function
-	static uint32_t NextFrame() { return Get().Update(); }
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }

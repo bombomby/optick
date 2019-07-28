@@ -1074,11 +1074,12 @@ void ETW::AdjustPrivileges()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ETW::ETW()
-	: isActive(false)
+	: traceProperties(nullptr)
 	, traceSessionHandle(INVALID_TRACEHANDLE)
 	, openedHandle(INVALID_TRACEHANDLE)
 	, processThreadHandle(INVALID_HANDLE_VALUE)
-	, traceProperties(nullptr)
+	, currentProcessId((DWORD)-1)
+	, isActive(false)
 {
 	currentProcessId = GetCurrentProcessId();
 
@@ -1387,7 +1388,7 @@ public:
 	virtual const vector<Module>& GetModules() override;
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-WinSymbolEngine::WinSymbolEngine() : isInitialized(false), hProcess(GetCurrentProcess()), needRestorePreviousSettings(false), previousOptions(0)
+WinSymbolEngine::WinSymbolEngine() : hProcess(GetCurrentProcess()), isInitialized(false), needRestorePreviousSettings(false), previousOptions(0)
 {
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

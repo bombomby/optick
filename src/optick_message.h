@@ -37,6 +37,7 @@ struct DataResponse
 		FiberSynchronizationData = 1 << 8, // Synchronization Data for the Fibers
 		SyscallPack,
 		SummaryPack,
+		FramesPack,
 	};
 
 	uint32 version;
