@@ -266,6 +266,11 @@ namespace Optick
 			return nullptr;
 		}
 
+		OPTICK_INLINE T* Front()
+		{
+			return !IsEmpty() ? &root->data[0] : nullptr;
+		}
+
 		OPTICK_INLINE size_t Size() const
 		{
 			if (root == nullptr)

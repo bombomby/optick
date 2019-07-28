@@ -43,7 +43,6 @@ void* (*Memory::allocate)(size_t) = [](size_t size)->void* { return operator new
 void (*Memory::deallocate)(void* p) = [](void* p) { operator delete(p); };
 void (*Memory::initThread)(void) = nullptr;
 std::atomic<uint64_t> Memory::memAllocated;
-std::recursive_mutex Memory::memCS;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 uint64_t MurmurHash64A(const void * key, int len, uint64_t seed)
 {
