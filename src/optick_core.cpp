@@ -1373,9 +1373,6 @@ ThreadEntry* Core::RegisterThread(const ThreadDescription& description, EventSto
 {
 	std::lock_guard<std::recursive_mutex> lock(threadsLock);
 
-	if (description.processID > 30000)
-		__debugbreak();
-
 	ThreadEntry* entry = Memory::New<ThreadEntry>(description, slot);
 	threads.push_back(entry);
 
