@@ -327,26 +327,42 @@ struct Mode
 {
 	enum Type
 	{
+		// OFF
 		OFF = 0x0,
+		// Collect Categories (top-level events)
 		INSTRUMENTATION_CATEGORIES = (1 << 0),
+		// Collect Events
 		INSTRUMENTATION_EVENTS = (1 << 1),
+		// Collect Events + Categories
 		INSTRUMENTATION = (INSTRUMENTATION_CATEGORIES | INSTRUMENTATION_EVENTS),
+		// Legacy (keep for compatibility reasons)
 		SAMPLING = (1 << 2),
+		// Collect Data Tags
 		TAGS = (1 << 3),
+		// Enable Autosampling Events (automatic callstacks)
 		AUTOSAMPLING = (1 << 4),
+		// Enable Switch-Contexts Events
 		SWITCH_CONTEXT = (1 << 5),
+		// Collect I/O Events
 		IO = (1 << 6),
+		// Collect GPU Events
 		GPU = (1 << 7),
 		END_SCREENSHOT = (1 << 8),
 		RESERVED_0 = (1 << 9),
 		RESERVED_1 = (1 << 10),
+		// Collect HW Events
 		HW_COUNTERS = (1 << 11),
+		// Collect Events in Live mode
 		LIVE = (1 << 12),
 		RESERVED_2 = (1 << 13),
 		RESERVED_3 = (1 << 14),
 		RESERVED_4 = (1 << 15),
+		// Collect System Calls
 		SYS_CALLS = (1 << 16),
+		// Collect Events from Other Processes
 		OTHER_PROCESSES = (1 << 17),
+		// Automation
+		NOGUI = (1 << 18),
 
 		TRACER = AUTOSAMPLING | SWITCH_CONTEXT | SYS_CALLS,
 		DEFAULT = INSTRUMENTATION | TAGS | AUTOSAMPLING | SWITCH_CONTEXT | IO | GPU | SYS_CALLS | OTHER_PROCESSES,
@@ -666,6 +682,20 @@ typedef void  (*InitThreadCb)(void);
 OPTICK_API void SetAllocator(AllocateFn allocateFn, DeallocateFn deallocateFn, InitThreadCb initThreadCb);
 OPTICK_API void Shutdown();
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+typedef void(*CaptureSaveChunkCb)(const char*,size_t);
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+OPTICK_API bool StartCapture(Mode::Type mode = Mode::DEFAULT, int samplingFrequency = 1000, bool force = true);
+OPTICK_API bool StopCapture(bool force = true);
+OPTICK_API bool SaveCapture(CaptureSaveChunkCb dataCb, bool force = true);
+OPTICK_API bool SaveCapture(const char* path, bool force = true);
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct OptickApp
+{
+	const char* m_Name;
+	OptickApp(const char* name) : m_Name(name) { StartCapture(); }
+	~OptickApp() { StopCapture(); SaveCapture(m_Name); }
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 }
 
 #define OPTICK_UNUSED(x) (void)(x)
@@ -876,6 +906,41 @@ OPTICK_API void Shutdown();
 
 #define OPTICK_GPU_FLIP(SWAP_CHAIN)		::Optick::GpuFlip(SWAP_CHAIN);
 
+/////////////////////////////////////////////////////////////////////////////////
+// [Automation][Startup]
+/////////////////////////////////////////////////////////////////////////////////
+
+// Starts a new capture
+// Params:
+//		[Optional] Mode::Type mode /*= Mode::DEFAULT*/
+//		[Optional] int samplingFrequency /*= 1000*/
+#define OPTICK_START_CAPTURE(...)				::Optick::StartCapture(__VA_ARGS__);
+
+// Stops a new capture (Keeps data intact in the local buffers)
+#define OPTICK_STOP_CAPTURE(...)				::Optick::StopCapture(__VA_ARGS__);
+
+// Saves capture
+// Params:
+//		const char* FilePath - path to the capture
+// or
+//		CaptureSaveChunkCb dataCb - callback for saving chunks of data
+// Example:
+//		OPTICK_SAVE_CAPTURE("ConsoleApp.opt");
+#define OPTICK_SAVE_CAPTURE(...)				::Optick::SaveCapture(__VA_ARGS__);
+
+// Generate a capture for the whole scope
+// Params:
+//		NAME - name of the application
+// Examples:
+//		int main() {
+//			OPTICK_APP("MyGame"); //Optick will automatically save a capture in the working directory with the name "MyGame(2019-09-08.14-30-19).opt"	
+//			...
+//		}
+#define OPTICK_APP(NAME)			OPTICK_THREAD(NAME); \
+									::Optick::OptickApp _optickApp(NAME); \
+									OPTICK_UNUSED(_optickApp);
+
+
 #else
 #define OPTICK_EVENT(...)
 #define OPTICK_CATEGORY(NAME, CATEGORY)
@@ -903,4 +968,8 @@ OPTICK_API void Shutdown();
 #define OPTICK_GPU_FLIP(SWAP_CHAIN)
 #define OPTICK_UPDATE()
 #define OPTICK_FRAME_FLIP(...)
+#define OPTICK_START_CAPTURE(...)
+#define OPTICK_STOP_CAPTURE()
+#define OPTICK_SAVE_CAPTURE(...)
+#define OPTICK_APP(NAME)
 #endif

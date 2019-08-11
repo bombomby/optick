@@ -2,6 +2,7 @@
 
 #if USE_OPTICK
 #include "optick_common.h"
+#include "optick_miniz.h"
 
 #if defined(OPTICK_MSVC)
 #define USE_WINDOWS_SOCKETS (1)
@@ -245,7 +246,24 @@ public:
 	}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-Server::Server(short port) : socket(Memory::New<Socket>())
+struct OptickHeader
+{
+	uint32_t magic;
+	uint16_t version;
+	uint16_t flags;
+
+	static const uint32_t OPTICK_MAGIC = 0xB50FB50Fu;
+	static const uint16_t OPTICK_VERSION = 0;
+	enum Flags : uint16_t
+	{
+		IsZip = 1 << 0,
+		IsMiniz = 1 << 1,
+	};
+
+	OptickHeader() : magic(OPTICK_MAGIC), version(OPTICK_VERSION), flags(0) {}
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Server::Server(short port) : socket(Memory::New<Socket>()), saveCb(nullptr)
 {
 	if (!socket->Bind(port, 4))
 	{
@@ -277,6 +295,110 @@ void Server::Update()
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Server::SetSaveCallback(CaptureSaveChunkCb cb)
+{
+	saveCb = cb;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct ZLibCompressor
+{
+	static const int BUFFER_SIZE = 1024 << 10; // 1Mb
+	static const int COMPRESSION_LEVEL = Z_BEST_SPEED;
+
+	z_stream stream;
+	vector<uint8> buffer;
+
+	void Init()
+	{
+		buffer.resize(BUFFER_SIZE);
+
+		memset(&stream, 0, sizeof(stream));
+		stream.next_in = nullptr;
+		stream.avail_in = 0;
+		stream.next_out = &buffer[0];
+		stream.avail_out = (uint32)buffer.size();
+
+		if (deflateInit(&stream, COMPRESSION_LEVEL) != Z_OK)
+		{
+			OPTICK_FAILED("deflateInit failed!");
+		}
+	}
+
+	typedef void(*CompressCb)(const char* data, size_t size);
+
+	void Compress(const char* data, size_t size, CompressCb cb, bool finish = false)
+	{
+		stream.next_in = (const unsigned char*)data;
+		stream.avail_in = (uint32)size;
+
+		while (stream.avail_in || finish)
+		{
+			int status = deflate(&stream, finish ? MZ_FINISH : MZ_NO_FLUSH);
+
+			if ((status == Z_STREAM_END) || (stream.avail_out != buffer.size()))
+			{
+				uint32 copmressedSize = (uint32)(buffer.size() - stream.avail_out);
+
+				cb((const char*)&buffer[0], copmressedSize);
+
+				stream.next_out = &buffer[0];
+				stream.avail_out = (uint32)buffer.size();
+			}
+
+			if (status == Z_STREAM_END)
+				break;
+
+			if (status != Z_OK)
+			{
+				OPTICK_FAILED("Copmression failed!");
+				break;
+			}
+		}
+	}
+
+	void Finish(CompressCb cb)
+	{
+		Compress(nullptr, 0, cb, true);
+
+		int status = deflateEnd(&stream);
+		if (status != Z_OK)
+		{
+			OPTICK_FAILED("deflateEnd failed!");
+		}
+		buffer.clear();
+		buffer.shrink_to_fit();
+	}
+
+	static ZLibCompressor& Get()
+	{
+		static ZLibCompressor compressor;
+		return compressor;
+	}
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Server::SendStart()
+{
+	if (saveCb != nullptr)
+	{
+		OptickHeader header;
+		header.flags |= OptickHeader::IsMiniz;
+		saveCb((const char*)&header, sizeof(header));
+		ZLibCompressor::Get().Init();
+	}
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Server::Send(const char* data, size_t size)
+{
+	if (saveCb)
+	{
+		ZLibCompressor::Get().Compress(data, size, saveCb);
+	}
+	else
+	{
+		socket->Send(data, size);
+	}
+}
+
 void Server::Send(DataResponse::Type type, OutputDataStream& stream)
 {
 	std::lock_guard<std::recursive_mutex> lock(socketLock);
@@ -284,8 +406,22 @@ void Server::Send(DataResponse::Type type, OutputDataStream& stream)
 	string data = stream.GetData();
 
 	DataResponse response(type, (uint32)data.size());
-	socket->Send((char*)&response, sizeof(response));
-	socket->Send(data.c_str(), data.size());
+
+	Send((char*)&response, sizeof(response));
+	Send(data.c_str(), data.size());
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Server::SendFinish()
+{
+	OutputDataStream empty;
+	Send(DataResponse::NullFrame, empty);
+
+	if (saveCb != nullptr)
+	{
+		ZLibCompressor::Get().Finish(saveCb);
+		saveCb(nullptr, 0);
+		saveCb = nullptr;
+	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Server::InitConnection()

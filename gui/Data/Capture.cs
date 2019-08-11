@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 
 namespace Profiler.Data
 {
-    public class Capture
-    {
+	public class Capture
+	{
 		public class OptickHeader
 		{
 			const UInt32 OPTICK_MAGIC = 0xB50FB50F;
@@ -17,6 +17,7 @@ namespace Profiler.Data
 			public enum Flags : UInt16
 			{
 				IsZip = 1 << 0,
+				IsMiniz = 1 << 1,
 			}
 
 			public UInt32 Magic { get; set; }
@@ -48,6 +49,11 @@ namespace Profiler.Data
 				get { return (Settings & Flags.IsZip) != 0; }
 			}
 
+			public bool IsMiniz
+			{
+				get { return (Settings & Flags.IsMiniz) != 0; }
+			}
+
 			public void Write(Stream stream)
 			{
 				BinaryWriter writer = new BinaryWriter(stream);
@@ -65,7 +71,21 @@ namespace Profiler.Data
 				OptickHeader header = new OptickHeader(stream);
 				if (header.IsValid)
 				{
-					return (header.IsZip ? (Stream)new GZipStream(stream, CompressionMode.Decompress, false) : stream);
+					if (header.IsZip)
+						return new GZipStream(stream, CompressionMode.Decompress, false);
+
+					if (header.IsMiniz)
+					{
+						// Workaround for RFC 1950 vs RFC 1951 mismatch
+						// http://george.chiramattel.com/blog/2007/09/deflatestream-block-length-does-not-match.html
+						stream.ReadByte();
+						stream.ReadByte();
+
+						return new DeflateStream(stream, CompressionMode.Decompress);
+					}
+
+					return stream;
+
 				}
 				else
 				{

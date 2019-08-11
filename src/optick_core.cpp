@@ -750,7 +750,6 @@ void Core::DumpCapture()
 {
 	pendingState = State::DUMP_CAPTURE;
 }
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpProgress(const char* message)
 {
@@ -949,6 +948,8 @@ void Core::DumpFrames(uint32 mode)
 
 	++boardNumber;
 
+	Server::Get().SendStart();
+
 	DumpProgress("Generating summary...");
 
 	GenerateCommonSummary();
@@ -1041,8 +1042,7 @@ void Core::DumpFrames(uint32 mode)
 		Server::Get().Send(DataResponse::CallstackPack, callstacksStream);
 	}
 
-	OutputDataStream empty;
-	Server::Get().Send(DataResponse::NullFrame, empty);
+	Server::Get().SendFinish();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpSummary()
@@ -1139,6 +1139,7 @@ Core::Core()
 	, currentState(State::DUMP_CAPTURE)
 	, pendingState(State::DUMP_CAPTURE)
 	, currentMode(Mode::OFF)
+	, previousMode(Mode::OFF)
 	, symbolEngine(nullptr)
 	, tracer(nullptr)
 	, gpuProfiler(nullptr)
@@ -1167,11 +1168,11 @@ bool Core::UpdateState()
 
 		case State::STOP_CAPTURE:
 		case State::CANCEL_CAPTURE:
-				Activate(Mode::OFF);
+			Activate(Mode::OFF);
 			break;
 
 		case State::DUMP_CAPTURE:
-			DumpFrames();
+			DumpFrames(previousMode);
 			break;
 		}
 		currentState = nextState;
@@ -1209,6 +1210,7 @@ void Core::Update()
 	}
 
 	UpdateEvents();
+
 	while (UpdateState()) {}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1260,7 +1262,7 @@ void Core::Activate(Mode::Type mode)
 {
 	if (mode != currentMode)
 	{
-		Mode::Type prevMode = currentMode;
+		previousMode = currentMode;
 		currentMode = mode;
 
         {
@@ -1318,7 +1320,7 @@ void Core::Activate(Mode::Type mode)
 				
 
 			if (gpuProfiler)
-				gpuProfiler->Stop(prevMode);
+				gpuProfiler->Stop(previousMode);
 		}
 	}
 }
@@ -1366,8 +1368,6 @@ bool Core::IsRegistredThread(ThreadID id)
 	}
 	return false;
 }
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ThreadEntry* Core::RegisterThread(const ThreadDescription& description, EventStorage** slot)
 {
@@ -1706,6 +1706,109 @@ OPTICK_API const EventDescription* GetFrameDescription(FrameType::Type frame)
 OPTICK_API void SetAllocator(AllocateFn allocateFn, DeallocateFn deallocateFn, InitThreadCb initThreadCb)
 {
 	Memory::SetAllocator(allocateFn, deallocateFn, initThreadCb);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+OPTICK_API bool StartCapture(Mode::Type mode /*= Mode::DEFAULT*/, int samplingFrequency /*= 1000*/, bool force /*= true*/)
+{
+	if (IsActive())
+		return false;
+
+	CaptureSettings settings;
+	settings.mode = mode | Mode::NOGUI;
+	settings.samplingFrequency = samplingFrequency;
+
+	Core& core = Core::Get();
+	core.SetSettings(settings);
+
+	if (!core.IsRegistredThread(Platform::GetThreadID()))
+		RegisterThread("MainThread");
+
+	core.StartCapture();
+
+	if (force)
+	{
+		core.Update();
+		core.BeginFrame(FrameType::CPU, GetHighPrecisionTime());
+	}
+	
+	return true;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+OPTICK_API bool StopCapture(bool force /*= true*/)
+{
+	if (!IsActive())
+		return false;
+
+	Core& core = Core::Get();
+	core.StopCapture();
+
+	if (force)
+	{
+		core.EndFrame(FrameType::CPU, GetHighPrecisionTime());
+		core.Update();
+	}
+
+	return true;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+struct SaveHelper
+{
+	static void Init(const char* path)
+	{
+		GetOutputFile().open(path, std::ios::out | std::ios::binary);
+	}
+
+	static void Write(const char* data, size_t size)
+	{
+		if (data)
+			GetOutputFile().write(data, size);
+		else
+			GetOutputFile().close();
+	}
+
+	static fstream& GetOutputFile()
+	{
+		static fstream file;
+		return file;
+	}
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+bool EndsWith(const char* str, const char* substr)
+{
+	size_t strLength = strlen(str);
+	size_t substrLength = strlen(substr);
+	return strLength >= substrLength && strcmp(substr, &str[strLength - substrLength]) == 0;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+OPTICK_API bool SaveCapture(const char* path, bool force /*= true*/)
+{
+	char filePath[512] = { 0 };
+	strcpy_s(filePath, path);
+	
+	if (path == nullptr || !EndsWith(path, ".opt"))
+	{
+		time_t now = time(0);
+		struct tm tstruct;
+		tstruct = *localtime(&now);
+		char timeStr[80] = { 0 };
+		strftime(timeStr, sizeof(timeStr), "(%Y-%m-%d.%H-%M-%S).opt", &tstruct);
+		strcat_s(filePath, timeStr);
+	}
+
+	SaveHelper::Init(filePath);
+	return SaveCapture(SaveHelper::Write, force);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+OPTICK_API bool SaveCapture(CaptureSaveChunkCb dataCb /*= nullptr*/, bool force /*= true*/)
+{
+	Server::Get().SetSaveCallback(dataCb);
+
+	Core& core = Core::Get();
+	core.DumpCapture();
+	if (force)
+		core.Update();
+
+	return true;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OPTICK_API void Shutdown()

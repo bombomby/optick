@@ -23,13 +23,22 @@ class Server
 
 	std::recursive_mutex socketLock;
 
+	CaptureSaveChunkCb saveCb;
+
 	Server( short port );
 	~Server();
 
 	bool InitConnection();
 
+	void Send(const char* data, size_t size);
+
 public:
+	void SetSaveCallback(CaptureSaveChunkCb cb);
+
+	void SendStart();
 	void Send(DataResponse::Type type, OutputDataStream& stream);
+	void SendFinish();
+
 	void Update();
 
 	string GetHostName() const;

@@ -486,6 +486,7 @@ class Core
 public:
 	void Activate(Mode::Type mode);
 	volatile Mode::Type currentMode;
+	volatile Mode::Type previousMode;
 
 	// Active Frame (is used as buffer)
 	static OPTICK_THREAD_LOCAL EventStorage* storage;

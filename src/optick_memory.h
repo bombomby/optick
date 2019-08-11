@@ -136,6 +136,8 @@ namespace Optick
 	using ostringstream = std::basic_ostringstream<char, std::char_traits<char>, Memory::Allocator<char>>;
 	using stringstream = std::basic_stringstream<char, std::char_traits<char>, Memory::Allocator<char>>;
 
+	using fstream = std::basic_fstream<char, std::char_traits<char>>;
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	template<class T, uint32 SIZE>
 	struct MemoryChunk
@@ -351,7 +353,7 @@ namespace Optick
 
 		const_iterator begin() const
 		{
-			return const_iterator(root, 0);
+			return const_iterator(root, root ? 0 : SIZE);
 		}
 
 		const_iterator end() const
