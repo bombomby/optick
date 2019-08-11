@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Windows;
@@ -239,4 +241,24 @@ namespace Profiler
             return validationResult;
         }
     }
+
+
+	public class TagListConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			if (value is List<Data.Tag>)
+			{
+				List<Data.Tag> tags = value as List<Data.Tag>;
+				return tags.OrderBy(tag => tag.Name);
+			}
+			return null;
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			return null;
+		}
+	}
+
 }

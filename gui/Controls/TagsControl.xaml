@@ -4,10 +4,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:Data="clr-namespace:Profiler.Data"
+             xmlns:Profiler="clr-namespace:Profiler"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <Profiler:TagListConverter x:Key="TagListConverter" />
+    </UserControl.Resources>
     <Grid>
-        <ItemsControl ItemsSource="{Binding Mode=OneTime}" Margin="0" >
+        <ItemsControl ItemsSource="{Binding Mode=OneTime, Converter={StaticResource TagListConverter}}" Margin="0" >
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <WrapPanel Orientation="Horizontal" />
