@@ -4891,7 +4891,7 @@ mz_zip_reader_extract_iter_state* mz_zip_reader_extract_iter_new(mz_zip_archive 
         if (!((flags & MZ_ZIP_FLAG_COMPRESSED_DATA) || (!pState->file_stat.m_method)))
         {
             /* Decompression required, therefore intermediate read buffer required */
-            pState->read_buf_size = MZ_MIN(pState->file_stat.m_comp_size, MZ_ZIP_MAX_IO_BUF_SIZE);
+            pState->read_buf_size = MZ_MIN(pState->file_stat.m_comp_size, (mz_uint64)MZ_ZIP_MAX_IO_BUF_SIZE);
             if (NULL == (pState->pRead_buf = pZip->m_pAlloc(pZip->m_pAlloc_opaque, 1, (size_t)pState->read_buf_size)))
             {
                 mz_zip_set_error(pZip, MZ_ZIP_ALLOC_FAILED);
@@ -5332,7 +5332,10 @@ mz_bool mz_zip_validate_file(mz_zip_archive *pZip, mz_uint file_index, mz_uint f
             goto handle_failure;
         }
 
-        has_id = (MZ_READ_LE32(descriptor_buf) == MZ_ZIP_DATA_DESCRIPTOR_ID);
+		// VS: Workaround for strict-aliasing warning
+		mz_uint32 descriptior_id = descriptor_buf[0] | (descriptor_buf[1] << 8) | (descriptor_buf[2] << 16) | (descriptor_buf[3] << 24);
+		has_id = (descriptior_id == MZ_ZIP_DATA_DESCRIPTOR_ID);
+        //has_id = (MZ_READ_LE32(descriptor_buf) == MZ_ZIP_DATA_DESCRIPTOR_ID);
         pSrc = has_id ? (descriptor_buf + sizeof(mz_uint32)) : descriptor_buf;
 
         file_crc32 = MZ_READ_LE32(pSrc);
