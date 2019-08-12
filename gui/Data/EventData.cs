@@ -39,6 +39,8 @@ namespace Profiler.Data
 	{
 		public abstract Object GetSharedKey();
 
+		public abstract bool HasShortName { get; }
+
 		private String name;
 		public String Name { get { return name; } }
 
@@ -49,12 +51,14 @@ namespace Profiler.Data
 			set
 			{
 				fullName = value;
+				name = value;
 
-                String shortName = StripFunctionArguments(fullName);
-                if (shortName.Length != fullName.Length)
-                    name = StripReturnValue(shortName);
-                else
-                    name = fullName;
+				if (HasShortName)
+				{
+					String shortName = StripFunctionArguments(fullName);
+					if (shortName.Length != fullName.Length)
+						name = StripReturnValue(shortName);
+				}
 			}
 		}
 

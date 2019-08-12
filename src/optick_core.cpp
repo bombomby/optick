@@ -207,7 +207,7 @@ EventDescription* EventDescription::CreateShared(const char* eventName, const ch
 	return EventDescriptionBoard::Get().CreateSharedDescription(eventName, fileName, fileLine, eventColor, filter);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-EventDescription::EventDescription() : name(""), file(""), line(0), color(0)
+EventDescription::EventDescription() : name(""), file(""), line(0), color(0), flags(IS_CUSTOM_NAME)
 {
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -379,8 +379,7 @@ void Tag::Attach(const EventDescription& description, const char* val)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream & operator<<(OutputDataStream &stream, const EventDescription &ob)
 {
-	byte flags = 0;
-	return stream << ob.name << ob.file << ob.line << ob.filter << ob.color << (float)0.0f << flags;
+	return stream << ob.name << ob.file << ob.line << ob.filter << ob.color << (float)0.0f << ob.flags;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& stream, const EventTime& ob)

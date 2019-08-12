@@ -38,20 +38,6 @@ namespace Profiler.Data
 
 	public class EventDescription : Description
 	{
-		private bool isSampling = false;
-		public bool IsSampling
-		{
-			get { return isSampling; }
-			set
-			{
-				if (isSampling != value)
-				{
-					ProfilerClient.Get().SendMessage(new TurnSamplingMessage(id, value));
-					isSampling = value;
-				}
-			}
-		}
-
 		private int id;
 		private Color forceColor;
 
@@ -105,7 +91,15 @@ namespace Profiler.Data
 			this.id = id;
 		}
 
-		const byte IS_SAMPLING_FLAG = 0x1;
+		public enum DescFlags : byte
+		{
+			NONE = 0,
+			IS_CUSTOM_NAME = 1 << 0,
+		}
+
+		public DescFlags Flags { get; private set; }
+
+		public override bool HasShortName { get { return (Flags & DescFlags.IS_CUSTOM_NAME) == 0; } }
 
 		public void SetOverrideColor(Color color)
 		{
@@ -116,8 +110,7 @@ namespace Profiler.Data
 		static public EventDescription Read(BinaryReader reader, int id)
 		{
 			EventDescription desc = new EventDescription();
-			int nameLength = reader.ReadInt32();
-			desc.FullName = new String(reader.ReadChars(nameLength));
+			String fullName = Utils.ReadBinaryString(reader);
 			desc.id = id;
 
 			int fileLength = reader.ReadInt32();
@@ -132,8 +125,8 @@ namespace Profiler.Data
 
 			desc.Brush = new SolidColorBrush(desc.Color);
 			desc.Budget = reader.ReadSingle();
-			byte flags = reader.ReadByte();
-			desc.isSampling = (flags & IS_SAMPLING_FLAG) != 0;
+			desc.Flags = (DescFlags)reader.ReadByte();
+			desc.FullName = fullName;
 
 			return desc;
 		}

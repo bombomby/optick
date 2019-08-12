@@ -64,6 +64,8 @@ namespace Profiler.Data
 			}
 		}
 
+		public override bool HasShortName => true;
+
 		public static SamplingDescription UnresolvedDescription = new SamplingDescription() { FullName = "Unresolved", Address = 0, Path = FileLine.Empty };
 
 		public static SamplingDescription Create(BinaryReader reader, uint version)
