@@ -159,7 +159,7 @@ namespace Profiler
 		public delegate void OnExpanedChangedHandler(ThreadRow row);
 		public event OnExpanedChangedHandler ExpandChanged;
 
-		private bool _isExpanded = true;
+		protected bool _isExpanded = true;
 		public bool IsExpanded
 		{
 			get { return _isExpanded; }

@@ -8,14 +8,16 @@
              xmlns:models="clr-namespace:Profiler.ViewModels"
              xmlns:profiler="clr-namespace:Profiler"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450" Width="200">
     <UserControl.Resources>
         <models:SamplingFrequencyConverter x:Key="SamplingFrequencyConverter" />
+        <profiler:DisplayNameConverter x:Key="DisplayNameConverter" />
+        <profiler:DisplayDescriptionConverter x:Key="DisplayDescriptionConverter" />
         <profiler:StringToResource x:Key="StringToResource" />
     </UserControl.Resources>
     <StackPanel Orientation="Vertical">
 
-        <GroupBox MahApps:ControlsHelper.ContentCharacterCasing="Normal" Header="Capture Mode">
+        <GroupBox MahApps:ControlsHelper.ContentCharacterCasing="Normal" Header="Capture Mode" Margin="0,0,0,2">
             <ItemsControl ItemsSource="{Binding FlagSettings}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
@@ -28,27 +30,7 @@
             </ItemsControl>
         </GroupBox>
 
-        <!--<StackPanel Orientation="Vertical">
-            <StackPanel VerticalAlignment="Center" Orientation="Horizontal" Height="{StaticResource DefaultButtonSize}" Margin="2,0" >
-                <ContentControl VerticalAlignment="Center" Style="{Binding Icon, Converter={StaticResource StringToResource}}" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" Margin="-6" />
-                <TextBlock Margin="2,0" Text="Sampling Frequency (Hz)" ToolTip="{Binding Description}" VerticalAlignment="Center" />
-            </StackPanel>
-            <ComboBox MahApps:TextBoxHelper.Watermark="Sampling Frequency" MahApps:TextBoxHelper.UseFloatingWatermark="True" ItemsSource="{Binding SamplingFrequencyList, Mode=OneTime}" SelectedItem="{Binding SamplingFrequencyHz}">
-                <ComboBox.Resources>
-                    <sys:Double x:Key="FloatingWatermarkFontSize">12</sys:Double>
-                </ComboBox.Resources>
-                <ComboBox.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Margin="2,2">
-                            <Label Content="{Binding}" Margin="0" FontWeight="Bold" Width="80" />
-                            <Label Content="{Binding Converter={StaticResource SamplingFrequencyConverter}}" Width="50" Margin="0" Opacity="0.5" HorizontalContentAlignment="Right" />
-                        </StackPanel>
-                    </DataTemplate>
-                </ComboBox.ItemTemplate>
-            </ComboBox>
-        </StackPanel>-->
-
-        <GroupBox MahApps:ControlsHelper.ContentCharacterCasing="Normal" Header="Sampling Frequency (Hz)">
+        <GroupBox MahApps:ControlsHelper.ContentCharacterCasing="Normal" Header="Sampling Frequency (Hz)" Margin="0,0,0,2">
             <StackPanel Orientation="Vertical" Margin="1">
                 <ComboBox ItemsSource="{Binding SamplingFrequencyList, Mode=OneTime}" SelectedItem="{Binding SamplingFrequencyHz}" ToolTip="Collect callstacks at specified frequency">
                     <ComboBox.Resources>
@@ -66,7 +48,7 @@
             </StackPanel>
         </GroupBox>
 
-        <GroupBox MahApps:ControlsHelper.ContentCharacterCasing="Normal" Header="Capture Limits">
+        <GroupBox MahApps:ControlsHelper.ContentCharacterCasing="Normal" Header="Capture Limits" Margin="0,0,0,2">
             <ItemsControl ItemsSource="{Binding CaptureLimits}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
@@ -79,17 +61,33 @@
             </ItemsControl>
         </GroupBox>
 
-        <GroupBox MahApps:ControlsHelper.ContentCharacterCasing="Normal" Header="Timeline Settings">
-            <ItemsControl ItemsSource="{Binding TimelineSettings}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Vertical" Margin="1" ToolTip="{Binding Description}">
-                            <TextBlock Grid.Column="0" Text="{Binding Name}" VerticalAlignment="Center" HorizontalAlignment="Left" />
-                            <MahApps:NumericUpDown Grid.Column="1" MahApps:TextBoxHelper.Watermark="{Binding Name}" Value="{Binding Value}" Minimum="0" />
-                        </StackPanel>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+        <GroupBox MahApps:ControlsHelper.ContentCharacterCasing="Normal" Header="Timeline Settings" Margin="0,0,0,2">
+            <StackPanel Orientation="Vertical" Margin="1">
+                <ItemsControl ItemsSource="{Binding TimelineSettings}" >
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Vertical" Margin="1" ToolTip="{Binding Description}">
+                                <TextBlock Grid.Column="0" Text="{Binding Name}" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                                <MahApps:NumericUpDown Grid.Column="1" MahApps:TextBoxHelper.Watermark="{Binding Name}" Value="{Binding Value}" Minimum="1" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Grid.Column="0" Text="Thread Expand Mode" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                <ComboBox ItemsSource="{Binding ExpandModeList, Mode=OneTime}" SelectedItem="{Binding ExpandMode}" ToolTip="Collect callstacks at specified frequency">
+                    <ComboBox.Resources>
+                        <sys:Double x:Key="FloatingWatermarkFontSize">12</sys:Double>
+                    </ComboBox.Resources>
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="{Binding Converter={StaticResource DisplayNameConverter}}" ToolTip="{Binding Converter={StaticResource DisplayDescriptionConverter}}" Margin="0" />
+                                <!--<Label Content="{Binding Converter={StaticResource SamplingFrequencyConverter}}" Margin="4,0" Opacity="0.5" HorizontalContentAlignment="Right" Width="55" />-->
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
         </GroupBox>
     </StackPanel>
 </UserControl>

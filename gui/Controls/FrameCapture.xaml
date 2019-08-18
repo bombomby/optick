@@ -191,10 +191,11 @@
             </Border>
         </Popup>
 
-        <Popup Width="Auto" Height="Auto" Placement="Bottom" PlacementTarget="{Binding ElementName=SettingsButton}" IsOpen="{Binding IsChecked, ElementName=SettingsButton}">
-            <Border BorderThickness="1" BorderBrush="Black" Background="{StaticResource OptickBackground}">
-                <ControlsView:CaptureSettingsView DataContext="{StaticResource CaptureSettingsVM}" />
+        <Popup Width="Auto" Height="Auto" Placement="Bottom" PlacementTarget="{Binding ElementName=SettingsButton}" IsOpen="{Binding IsChecked, ElementName=SettingsButton}" StaysOpen="False">
+            <Border BorderThickness="1" BorderBrush="LightGray" Background="{StaticResource OptickBackground}">
+                <ControlsView:CaptureSettingsView DataContext="{StaticResource CaptureSettingsVM}" Margin="1" />
             </Border>
         </Popup>
+        
     </Grid>
 </UserControl>

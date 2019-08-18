@@ -1,13 +1,15 @@
-﻿using System;
+﻿using Profiler.Controls;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Markup;
 using System.Windows.Media.Imaging;
 
 namespace Profiler
@@ -219,11 +221,11 @@ namespace Profiler
     }
 
 
-    public class IPAddressValidationRule : ValidationRule
-    {
-        public override ValidationResult Validate(object value, CultureInfo cultureInfo)
+    public class IPAddressValidationRule : System.Windows.Controls.ValidationRule
+	{
+        public override System.Windows.Controls.ValidationResult Validate(object value, CultureInfo cultureInfo)
         {
-            var validationResult = new ValidationResult(true, null);
+            var validationResult = new System.Windows.Controls.ValidationResult(true, null);
 
             if (value != null)
             {
@@ -233,7 +235,7 @@ namespace Profiler
                     IPAddress dummy = null;
                     if (!IPAddress.TryParse(text, out dummy))
                     {
-                        validationResult = new ValidationResult(false, "Invalid IP Address!");
+                        validationResult = new System.Windows.Controls.ValidationResult(false, "Invalid IP Address!");
                     }
                 }
             }
@@ -258,6 +260,43 @@ namespace Profiler
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			return null;
+		}
+	}
+
+
+	public class DisplayNameConverter : MarkupExtension, IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			return ((Enum)value).GetAttributeOfType<DisplayAttribute>().Name;
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			return null;
+		}
+
+		public override object ProvideValue(IServiceProvider serviceProvider)
+		{
+			return this;
+		}
+	}
+
+	public class DisplayDescriptionConverter : MarkupExtension, IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			return ((Enum)value).GetAttributeOfType<DisplayAttribute>().Description;
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			return null;
+		}
+
+		public override object ProvideValue(IServiceProvider serviceProvider)
+		{
+			return this;
 		}
 	}
 

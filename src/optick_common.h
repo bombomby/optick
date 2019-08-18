@@ -146,6 +146,18 @@ inline int wcstombs_s(char(&buffer)[sizeOfBuffer], const wchar_t* src, size_t ma
 {
 	return wcstombs(buffer, src, maxCount);
 }
+
+template<size_t sizeOfBuffer>
+inline int strcpy_s(char(&buffer)[sizeOfBuffer], const char* str)
+{
+	return strncpy(buffer, str, sizeOfBuffer - 1);
+}
+
+template<size_t sizeOfBuffer>
+inline int strcat_s(char(&buffer)[sizeOfBuffer], const char* str)
+{
+	return strcat(buffer, str);
+}
 #endif
 
 #if defined(OPTICK_MSVC)

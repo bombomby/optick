@@ -1,4 +1,5 @@
-﻿using Profiler.Data;
+﻿using Profiler.Controls;
+using Profiler.Data;
 using Profiler.InfrastructureMvvm;
 using System;
 using System.Collections.Generic;
@@ -38,10 +39,20 @@ namespace Profiler.ViewModels
 			}
 		}
 
+
 		public class Numeric : Setting
 		{
 			public Numeric(String name, String description) : base(name, description) { }
-			public double Value { get; set; }
+			public virtual double Value { get; set; }
+		}
+
+		public class NumericDelegate : Numeric
+		{
+			public NumericDelegate(string name, string description) : base(name, description) { }
+			public Func<double> Getter { get; set; }
+			public Action<double> Setter { get; set; }
+			public override double Value { get { return Getter(); } set { Setter(value); } }
+
 		}
 
 		public enum SamplingFrequency
@@ -85,7 +96,36 @@ namespace Profiler.ViewModels
 		public ObservableCollection<Numeric> CaptureLimits { get; set; } = new ObservableCollection<Numeric>();
 
 		// Timeline Settings
-		public Numeric TimelineMaxThreadDepth { get; private set; } = new Numeric("Max Thread Depth", "Limits the maximum visualization depth for each thread") { Value = 12 };
+		public NumericDelegate TimelineMinThreadDepth { get; private set; } = new NumericDelegate("Collapsed Thread Depth", "Limits the maximum visualization depth for each thread in collapsed mode")
+		{
+			Getter = () => Settings.LocalSettings.Data.CollapsedMaxThreadDepth,
+			Setter = (val) => { Settings.LocalSettings.Data.CollapsedMaxThreadDepth = (int)val; Settings.LocalSettings.Save(); }
+		};
+
+		public NumericDelegate TimelineMaxThreadDepth { get; private set; } = new NumericDelegate("Expanded Thread Depth", "Limits the maximum visualization depth for each thread in expanded modes")
+		{
+			Getter = ()=> Controls.Settings.LocalSettings.Data.ExpandedMaxThreadDepth,
+			Setter = (val) => { Controls.Settings.LocalSettings.Data.ExpandedMaxThreadDepth = (int)val; Settings.LocalSettings.Save(); }
+		};
+
+		public Array ExpandModeList
+		{
+			get { return Enum.GetValues(typeof(Controls.LocalSettings.ExpandMode)); }
+		}
+
+		public Controls.LocalSettings.ExpandMode ExpandMode 
+		{
+			get
+			{
+				return Controls.Settings.LocalSettings.Data.ThreadExpandMode;
+			}
+			set
+			{
+				Controls.Settings.LocalSettings.Data.ThreadExpandMode = value;
+				Controls.Settings.LocalSettings.Save();
+			}
+		}
+
 		public ObservableCollection<Numeric> TimelineSettings { get; set; } = new ObservableCollection<Numeric>();
 
 		public CaptureSettingsViewModel()
@@ -94,6 +134,7 @@ namespace Profiler.ViewModels
 			CaptureLimits.Add(TimeLimitSec);
 			CaptureLimits.Add(MaxSpikeLimitMs);
 
+			TimelineSettings.Add(TimelineMinThreadDepth);
 			TimelineSettings.Add(TimelineMaxThreadDepth);
 		}
 

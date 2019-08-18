@@ -11,6 +11,9 @@ namespace Profiler
 	{
 		public ThreadDescription Description { get; set; }
 		public ThreadData EventData { get; set; }
+
+		int MaxThreadsDepth { get; set; }
+
 		int MaxDepth { get; set; }
 
 		List<Mesh> Blocks { get; set; }
@@ -81,91 +84,40 @@ namespace Profiler
 
 			Header = new ThreadNameView() { DataContext = this };
 
-			List<EventNode> rootCategories = new List<EventNode>();
-			List<EventNode> nodesToProcess = new List<EventNode>();
+			UpdateThreadsDepth();
 
-			foreach (EventFrame frame in data.Events)
+			switch (Controls.Settings.LocalSettings.Data.ThreadExpandMode)
 			{
-				// Fill holes in timeline from regular events (not categories)
-				// ------------------------------------------------------------------------------------------------------
-				const double thresholdMs = 0.1;
+				case Controls.LocalSettings.ExpandMode.CollapseAll:
+					_isExpanded = false;
+					break;
 
-				EventTree categoriesTree = frame.CategoriesTree;
-				rootCategories.Clear();
-				foreach (EventNode node in frame.CategoriesTree.Children)
-				{
-					rootCategories.Add(node);
-				}
+				case Controls.LocalSettings.ExpandMode.ExpandAll:
+					_isExpanded = true;
+					break;
 
-				if (rootCategories.Count != 0)
-				{
-					nodesToProcess.Clear();
-					foreach (EventNode node in frame.Root.Children)
-					{
-						nodesToProcess.Add(node);
-					}
+				case Controls.LocalSettings.ExpandMode.ExpandMain:
+					_isExpanded = group.MainThread.Description == desc;
+					break;
+			}
+		}
 
-					while (nodesToProcess.Count > 0)
-					{
-						EventNode node = nodesToProcess[0];
-						nodesToProcess.RemoveAt(0);
+		private void UpdateThreadsDepth()
+		{
+			int depth = 1;
 
-						bool nodeIntersectWithCategories = false;
-
-						foreach (EventNode categoryNode in rootCategories)
-						{
-							// drop nodes less than thresholdMs ms
-							if (node.Entry.Duration < thresholdMs)
-							{
-								nodeIntersectWithCategories = true;
-								break;
-							}
-
-							// node is entirely inside the categoryNode
-							if (node.Entry.Start >= categoryNode.Entry.Start && node.Entry.Finish <= categoryNode.Entry.Finish)
-							{
-								nodeIntersectWithCategories = true;
-								break;
-							}
-
-							// node is partially inside the categoryNode
-							if (node.Entry.Intersect(categoryNode.Entry))
-							{
-								foreach (EventNode tmp in node.Children)
-								{
-									nodesToProcess.Add(tmp);
-								}
-
-								nodeIntersectWithCategories = true;
-								break;
-							}
-						}
-
-						if (nodeIntersectWithCategories == false && node.Entry.Duration >= thresholdMs)
-						{
-							// node is not intersect with any categoryNode (add to category tree)
-							EventNode fakeCategoryNode = new EventNode(frame.CategoriesTree, node.Entry);
-
-							node.Entry.SetOverrideColor(GenerateColorFromString(node.Entry.Description.FullName));
-
-							rootCategories.Add(fakeCategoryNode);
-							frame.CategoriesTree.Children.Add(fakeCategoryNode);
-						}
-					}
-				}
-				// ------------------------------------------------------------------------------------------------------
+			foreach (EventFrame frame in EventData.Events)
+			{
+				depth = Math.Max(GetTree(frame).Depth, MaxDepth);
 			}
 
-			UpdateDepth();
+			MaxThreadsDepth = depth;
 		}
 
 		private void UpdateDepth()
 		{
-			MaxDepth = 1;
-			foreach (EventFrame frame in EventData.Events)
-			{
-				MaxDepth = Math.Max(GetTree(frame).Depth, MaxDepth);
-			}
+			int targetDepth = IsExpanded ? Controls.Settings.LocalSettings.Data.ExpandedMaxThreadDepth : Controls.Settings.LocalSettings.Data.CollapsedMaxThreadDepth;
+			MaxDepth = Math.Min(Math.Max(targetDepth, 1), MaxThreadsDepth);
 		}
 
 		const float NodeGradientShade = 0.85f;
@@ -295,7 +247,7 @@ namespace Profiler
 
 		EventTree GetTree(EventFrame frame)
 		{
-			return IsExpanded ? frame.Root : frame.CategoriesTree;
+			return frame.Root;
 		}
 
 		public override void Render(DirectX.DirectXCanvas canvas, ThreadScroll scroll, DirectXCanvas.Layer layer, Rect box)
@@ -332,7 +284,7 @@ namespace Profiler
 						Entry entry = (node as EventNode).Entry;
 						Interval intervalPx = scroll.TimeToPixel(entry);
 
-						if (intervalPx.Width < TextDrawThreshold || intervalPx.Right < 0.0)
+						if (intervalPx.Width < TextDrawThreshold || intervalPx.Right < 0.0 || level >= MaxDepth)
 							return false;
 
 						if (intervalPx.Left < 0.0)

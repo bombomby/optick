@@ -2,10 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
 namespace Profiler.Controls
 {
@@ -45,8 +42,22 @@ namespace Profiler.Controls
 
 		public int Version { get; set; }
 
+		public enum ExpandMode
+		{
+			[Display(Name = "Expand MainThread", Description = "Expand MainThread Only")]
+			ExpandMain,
+			[Display(Name = "Expand All", Description = "Expand All Threads")]
+			ExpandAll,
+			[Display(Name = "Collapse All", Description = "Collapse All Threads")]
+			CollapseAll,
+		}
+
 		public List<Platform.Connection> Connections { get; set; } = new List<Platform.Connection>();
         public Platform.Connection LastConnection { get; set; }
+
+		public int CollapsedMaxThreadDepth { get; set; } = 2;
+		public int ExpandedMaxThreadDepth { get; set; } = 12;
+		public ExpandMode ThreadExpandMode { get; set; } = ExpandMode.ExpandMain;
 
         public string TempDirectoryPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Optick\\Temp\\");
 

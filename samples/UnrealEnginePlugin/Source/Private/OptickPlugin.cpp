@@ -57,6 +57,8 @@ class FOptickPlugin : public IOptickPlugin
 	const uint64 LowMask =  0x00000000FFFFFFFFULL;
 	const uint64 HighMask = 0xFFFFFFFF00000000ULL;
 
+	const uint32 WaitForScreenshotMaxFrameCount = 5;
+
 	uint64 OriginTimestamp;
 
 	FDelegateHandle TickDelegateHandle;
@@ -65,6 +67,7 @@ class FOptickPlugin : public IOptickPlugin
 	TMap<uint32, ThreadStorage*> StorageMap;
 	TMap<FName, Optick::EventDescription*> DescriptionMap;
 
+	uint32 WaitingForScreenshotFrameNumber{0};
 	TAtomic<bool> WaitingForScreenshot;
 
 	bool Tick(float DeltaTime);
@@ -102,6 +105,7 @@ public:
 
 	void RequestScreenshot();
 	bool IsReadyToDumpCapture() const;
+	bool IsScreenshotReady() const;
 };
 
 IMPLEMENT_MODULE( FOptickPlugin, OptickPlugin )
@@ -168,26 +172,30 @@ bool OnOptickStateChanged(Optick::State::Type state)
 		Optick::AttachSummary("UnrealVersion", TCHAR_TO_ANSI(*FEngineVersion::Current().ToString(EVersionComponent::Changelist)));
 		Optick::AttachSummary("GPU", TCHAR_TO_ANSI(*FPlatformMisc::GetPrimaryGPUBrand()));
 
-		FString FullName = Optick_SCREENSHOT_NAME;
-		FScreenshotRequest::CreateViewportScreenShotFilename(FullName);
-
-		IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
-
-		if (PlatformFile.FileExists(*FullName))
+		if (plugin.IsScreenshotReady())
 		{
-			const int64 FileSize = PlatformFile.FileSize(*FullName);
-			TArray<uint8> Image;
-			Image.Reserve(FileSize);
+			FString FullName = Optick_SCREENSHOT_NAME;
+			FScreenshotRequest::CreateViewportScreenShotFilename(FullName);
 
-			IFileHandle* FileHandle = PlatformFile.OpenRead(*FullName);
-			if (FileHandle)
+			IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+
+			if (PlatformFile.FileExists(*FullName))
 			{
-				FileHandle->Read(Image.GetData(), FileSize);
-				delete FileHandle;
-			}
+				const int64 FileSize = PlatformFile.FileSize(*FullName);
+				TArray<uint8> Image;
+				Image.Reserve(FileSize);
 
-			Optick::AttachFile(Optick::File::OPTICK_IMAGE, "Screenshot.png", Image.GetData(), (uint32_t)FileSize);
+				IFileHandle* FileHandle = PlatformFile.OpenRead(*FullName);
+				if (FileHandle)
+				{
+					FileHandle->Read(Image.GetData(), FileSize);
+					delete FileHandle;
+				}
+
+				Optick::AttachFile(Optick::File::OPTICK_IMAGE, "Screenshot.png", Image.GetData(), (uint32_t)FileSize);
+			}
 		}
+
 
 		break;
 	}
@@ -300,13 +308,19 @@ void FOptickPlugin::RequestScreenshot()
 	// Requesting screenshot
 	UE_LOG(OptickLog, Display, TEXT("Screenshot requested!"));
 	WaitingForScreenshot = true;
+	WaitingForScreenshotFrameNumber = GFrameNumber;
 	FScreenshotRequest::OnScreenshotRequestProcessed().AddRaw(this, &FOptickPlugin::OnScreenshotProcessed);
 	FScreenshotRequest::RequestScreenshot(Optick_SCREENSHOT_NAME, true, false);
 }
 
+bool FOptickPlugin::IsScreenshotReady() const
+{
+	return (WaitingForScreenshot == false);
+}
+
 bool FOptickPlugin::IsReadyToDumpCapture() const
 {
-	return WaitingForScreenshot == false;
+	return IsScreenshotReady() || (GFrameNumber - WaitingForScreenshotFrameNumber) > WaitForScreenshotMaxFrameCount;
 }
 
 void FOptickPlugin::OnScreenshotProcessed()
