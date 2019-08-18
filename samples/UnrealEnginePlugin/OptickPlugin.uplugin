@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.2.5",
+	"VersionName": "1.2.6",
 	"FriendlyName": "Optick",
 	"Description": "Super Lightweight Performance Profiler",
 	"Category": "Performance",
@@ -10,7 +10,6 @@
 	"DocsURL": "https://github.com/bombomby/optick",
 	"MarketplaceURL": "",
 	"SupportURL": "https://github.com/bombomby/optick/issues",
-	"EngineVersion" : "4.21.0",
 	"EnabledByDefault": true,
 	"CanContainContent": false,
 	"IsBetaVersion": true,
