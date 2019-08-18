@@ -150,13 +150,15 @@ inline int wcstombs_s(char(&buffer)[sizeOfBuffer], const wchar_t* src, size_t ma
 template<size_t sizeOfBuffer>
 inline int strcpy_s(char(&buffer)[sizeOfBuffer], const char* str)
 {
-	return strncpy(buffer, str, sizeOfBuffer - 1);
+	strncpy(buffer, str, sizeOfBuffer - 1);
+	return 0;
 }
 
 template<size_t sizeOfBuffer>
 inline int strcat_s(char(&buffer)[sizeOfBuffer], const char* str)
 {
-	return strcat(buffer, str);
+	strcat(buffer, str);
+	return 0;
 }
 #endif
 
