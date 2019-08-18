@@ -141,6 +141,7 @@ inline int sprintf_s(char(&buffer)[sizeOfBuffer], const char* format, ...)
 #endif
 
 #if defined(OPTICK_GCC)
+#include <string.h>
 template<size_t sizeOfBuffer>
 inline int wcstombs_s(char(&buffer)[sizeOfBuffer], const wchar_t* src, size_t maxCount)
 {
