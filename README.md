@@ -46,7 +46,18 @@ void SlowFunction()
 	...
 }
 ```
-4) Edit `optick.config.h` to enable/disable some of the features in specific configs or platforms.<br/>(e.g. disabling Optick in final builds)
+4) Add `OPTICK_THREAD("Name");` macro add a thread
+```c++
+void WorkerThread(...)
+{
+	OPTICK_THREAD("Worker");
+	while (isRunning)
+	{
+		...
+	}
+}
+```
+5) Edit `optick.config.h` to enable/disable some of the features in specific configs or platforms.<br/>(e.g. disabling Optick in final builds)
 
 > :warning: If your Game uses **dynamic linking** and you are planning to **use Optick from multiple dlls** within the same executable - please make sure that Optick's code is added to the common **Dynamic Library** and this library is compiled with **OPTICK_EXPORT** define (Static Library won't work).<br/>
 > You could also use precompiled **OptickCore.dll** which is packaged with every release:
