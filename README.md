@@ -46,7 +46,7 @@ void SlowFunction()
 	...
 }
 ```
-4) Add `OPTICK_THREAD("Name");` macro add a thread
+4) Add `OPTICK_THREAD("Name");` macro to declare a new thread with Optick
 ```c++
 void WorkerThread(...)
 {
