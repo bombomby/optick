@@ -8,7 +8,7 @@
 	"CreatedBy": "Vadim Slyusarev",
 	"CreatedByURL": "https://github.com/bombomby/optick",
 	"DocsURL": "https://github.com/bombomby/optick",
-	"MarketplaceURL": "",
+	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/95c078f6fa924b2b82fd8f281e04850f",
 	"SupportURL": "https://github.com/bombomby/optick/issues",
 	"EnabledByDefault": true,
 	"CanContainContent": false,
@@ -20,5 +20,6 @@
 			"Type": "Developer",
 			"LoadingPhase": "Default"
 		}
-	]
+	],
+	"WhitelistPlatforms": [ "Win64", "Win32", "Mac", "Linux", "PS4", "XboxOne" ]
 }
