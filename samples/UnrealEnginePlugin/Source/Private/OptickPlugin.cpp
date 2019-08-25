@@ -23,7 +23,7 @@
 #include "Editor/LevelEditor/Public/LevelEditor.h"
 #include "Editor/UnrealEd/Public/SEditorViewportToolBarMenu.h"
 #include "Projects/Public/Interfaces/IPluginManager.h"
-#include "Windows/WindowsPlatformProcess.h"
+//#include "Windows/WindowsPlatformProcess.h"
 
 #include "OptickStyle.h"
 #include "OptickCommands.h"
