@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.2.6",
+	"VersionName": "1.2.7",
 	"FriendlyName": "Optick",
 	"Description": "Super Lightweight Performance Profiler",
 	"Category": "Performance",
@@ -10,7 +10,7 @@
 	"DocsURL": "https://github.com/bombomby/optick",
 	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/95c078f6fa924b2b82fd8f281e04850f",
 	"SupportURL": "https://github.com/bombomby/optick/issues",
-	"EnabledByDefault": true,
+	"EngineVersion": "4.22.0",
 	"CanContainContent": false,
 	"IsBetaVersion": true,
 	"Installed": true,
@@ -18,8 +18,8 @@
 		{
 			"Name": "OptickPlugin",
 			"Type": "Developer",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [ "Win64", "Mac", "Linux", "PS4", "XboxOne" ]
 		}
 	],
-	"WhitelistPlatforms": [ "Win64", "Win32", "Mac", "Linux", "PS4", "XboxOne" ]
 }
