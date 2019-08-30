@@ -614,6 +614,7 @@ struct ETWRuntime
 	array<ThreadID, MAX_CPU_CORES> activeCores;
 	vector<std::pair<uint8_t, SysCallData*>> activeSyscalls;
 	unordered_set<uint64> activeThreadsIDs;
+	ProcessID currentProcessId;
 
 	ETWRuntime()
 	{
@@ -622,6 +623,7 @@ struct ETWRuntime
 
 	void Reset()
 	{
+		currentProcessId = INVALID_PROCESS_ID;
 		activeCores.fill(INVALID_THREAD_ID);
 		activeSyscalls.resize(0);
 		activeThreadsIDs.clear();
@@ -1041,6 +1043,9 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 			{
 				const Thread_TypeGroup1* pThreadEvent = (const Thread_TypeGroup1*)eventRecord->UserData;
 				Core::Get().RegisterThreadDescription(ThreadDescription("", pThreadEvent->TThreadId, pThreadEvent->ProcessId, 1, pThreadEvent->BasePriority));
+
+				if (pThreadEvent->ProcessId == runtime.currentProcessId)
+					runtime.activeThreadsIDs.insert(pThreadEvent->TThreadId);
 			}
 
 		}

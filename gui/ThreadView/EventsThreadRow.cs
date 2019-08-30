@@ -12,8 +12,8 @@ namespace Profiler
 		public ThreadDescription Description { get; set; }
 		public ThreadData EventData { get; set; }
 
+		public bool LimitMaxDepth { get; set; } = true;
 		int MaxThreadsDepth { get; set; }
-
 		int MaxDepth { get; set; }
 
 		List<Mesh> Blocks { get; set; }
@@ -117,7 +117,7 @@ namespace Profiler
 		private void UpdateDepth()
 		{
 			int targetDepth = IsExpanded ? Controls.Settings.LocalSettings.Data.ExpandedMaxThreadDepth : Controls.Settings.LocalSettings.Data.CollapsedMaxThreadDepth;
-			MaxDepth = Math.Min(Math.Max(targetDepth, 1), MaxThreadsDepth);
+			MaxDepth = LimitMaxDepth ? Math.Min(Math.Max(targetDepth, 1), MaxThreadsDepth) : MaxThreadsDepth;
 		}
 
 		const float NodeGradientShade = 0.85f;

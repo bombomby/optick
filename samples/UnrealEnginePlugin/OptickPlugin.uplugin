@@ -10,7 +10,6 @@
 	"DocsURL": "https://github.com/bombomby/optick",
 	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/95c078f6fa924b2b82fd8f281e04850f",
 	"SupportURL": "https://github.com/bombomby/optick/issues",
-	"EngineVersion": "4.22.0",
 	"CanContainContent": false,
 	"IsBetaVersion": true,
 	"Installed": true,
@@ -21,5 +20,5 @@
 			"LoadingPhase": "Default",
 			"WhitelistPlatforms": [ "Win64", "Mac", "Linux", "PS4", "XboxOne" ]
 		}
-	],
+	]
 }
