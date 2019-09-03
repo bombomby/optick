@@ -322,6 +322,7 @@ void Server::SetSaveCallback(CaptureSaveChunkCb cb)
 	saveCb = cb;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#if OPTICK_ENABLE_COMPRESSION
 struct ZLibCompressor
 {
 	static const int BUFFER_SIZE = 1024 << 10; // 1Mb
@@ -397,15 +398,18 @@ struct ZLibCompressor
 		return compressor;
 	}
 };
+#endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Server::SendStart()
 {
 	if (saveCb != nullptr)
 	{
 		OptickHeader header;
-		header.flags |= OptickHeader::IsMiniz;
-		saveCb((const char*)&header, sizeof(header));
+#if OPTICK_ENABLE_COMPRESSION
 		ZLibCompressor::Get().Init();
+		header.flags |= OptickHeader::IsMiniz;
+#endif
+		saveCb((const char*)&header, sizeof(header));
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -413,7 +417,11 @@ void Server::Send(const char* data, size_t size)
 {
 	if (saveCb)
 	{
+#if OPTICK_ENABLE_COMPRESSION
 		ZLibCompressor::Get().Compress(data, size, saveCb);
+#else
+		saveCb(data, size);
+#endif
 	}
 	else
 	{
@@ -440,7 +448,9 @@ void Server::SendFinish()
 
 	if (saveCb != nullptr)
 	{
+#if OPTICK_ENABLE_COMPRESSION
 		ZLibCompressor::Get().Finish(saveCb);
+#endif
 		saveCb(nullptr, 0);
 		saveCb = nullptr;
 	}

@@ -112,7 +112,18 @@
 */
 #pragma once
 
-namespace Optick {
+#include "optick.config.h"
+
+// COMPRESSION (ZLIB/MINIZ)
+#if !defined(OPTICK_ENABLE_COMPRESSION)
+#if defined(_MSC_VER) || defined(__APPLE_CC__) || defined(__linux__)
+#define OPTICK_ENABLE_COMPRESSION (USE_OPTICK)
+#else
+#define OPTICK_ENABLE_COMPRESSION (0)
+#endif
+#endif
+
+#if OPTICK_ENABLE_COMPRESSION
 
 /* Defines to completely disable specific portions of miniz.c: 
    If all macros here are defined the only functionality remaining will be CRC-32, adler-32, tinfl, and tdefl. */
@@ -1335,4 +1346,4 @@ void *mz_zip_extract_archive_file_to_heap_v2(const char *pZip_filename, const ch
 
 #endif /* MINIZ_NO_ARCHIVE_APIS */
 
-}
+#endif
