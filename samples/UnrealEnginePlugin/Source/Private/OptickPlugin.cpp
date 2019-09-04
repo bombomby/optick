@@ -114,8 +114,8 @@ DECLARE_DELEGATE_OneParam(FStatFrameDelegate, int64);
 
 bool FOptickPlugin::Tick(float DeltaTime)
 {
-	static const FString OptickMessage(TEXT("OptickPlugin is running!"));
-	GEngine->AddOnScreenDebugMessage(31313, 5.f, FColor::Yellow, OptickMessage);
+	//static const FString OptickMessage(TEXT("OptickPlugin is running!"));
+	//GEngine->AddOnScreenDebugMessage(31313, 5.f, FColor::Yellow, OptickMessage);
 
 	Optick::Update();
 	return true;
