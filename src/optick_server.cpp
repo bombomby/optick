@@ -341,6 +341,9 @@ struct ZLibCompressor
 		stream.next_out = &buffer[0];
 		stream.avail_out = (uint32)buffer.size();
 
+		stream.zalloc = [](void* /*opaque*/, size_t items, size_t size) -> void* { return Memory::Alloc(items * size); };
+		stream.zfree = [](void* /*opaque*/, void *address) { Memory::Free(address); };
+
 		if (deflateInit(&stream, COMPRESSION_LEVEL) != Z_OK)
 		{
 			OPTICK_FAILED("deflateInit failed!");
