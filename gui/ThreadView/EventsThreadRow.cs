@@ -108,7 +108,7 @@ namespace Profiler
 
 			foreach (EventFrame frame in EventData.Events)
 			{
-				depth = Math.Max(GetTree(frame).Depth, MaxDepth);
+				depth = Math.Max(GetTree(frame).Depth, depth);
 			}
 
 			MaxThreadsDepth = depth;
