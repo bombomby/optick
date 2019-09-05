@@ -1254,8 +1254,9 @@ uint32_t Core::EndUpdateFrame(FrameType::Type frameType, int64_t timestamp)
 {
 	std::lock_guard<std::recursive_mutex> lock(coreLock);
 
-	if (EventData* lastFrame = frames[frameType].m_Frames.Back())
-		lastFrame->finish = timestamp;
+	if (currentMode != Mode::OFF)
+		if (EventData* lastFrame = frames[frameType].m_Frames.Back())
+			lastFrame->finish = timestamp;
 
 	return frames[frameType].m_FrameNumber;
 }
@@ -1813,7 +1814,7 @@ OPTICK_API bool SaveCapture(const char* path, bool force /*= true*/)
 #if defined(OPTICK_MSVC)
 		localtime_s(&tstruct, &now);
 #else
-		tstruct = *localtime(&now);
+		localtime_r(&now, &tstruct);
 #endif
 		char timeStr[80] = { 0 };
 		strftime(timeStr, sizeof(timeStr), "(%Y-%m-%d.%H-%M-%S).opt", &tstruct);

@@ -11,8 +11,8 @@ rem MsBuild gui/OptickApp_vs2017.sln /t:Rebuild /p:Configuration=Release /p:Plat
 
 for /f %%i in ('powershell "(Get-Item -path Bin\Release\x64\Optick.exe).VersionInfo.ProductVersion"') do set VERSION=%%i
 
-set UNREAL_VERSION=4.22
-set VERSION_NAME=%VERSION:~0,-2%(UE4Plugin_%UNREAL_VERSION%)
+set UNREAL_VERSION=4.23
+set VERSION_NAME=%VERSION:~0,-2%_UE4Plugin%UNREAL_VERSION%
 
 xcopy /Y Bin\Release\x64\Optick.exe samples\UnrealEnginePlugin\GUI\*
 

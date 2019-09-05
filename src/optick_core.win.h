@@ -804,7 +804,7 @@ struct Thread_TypeGroup1
 	// Not used.
 	uint8  ThreadFlags;
 
-	enum struct Opcode : uint8
+	enum Opcode : uint8
 	{
 		Start = 1,
 		End = 2,
@@ -874,7 +874,7 @@ struct Process_TypeGroup1
 		return (char*)this + sidOffset + sidSize;
 	}
 
-	enum struct Opcode
+	enum Opcode
 	{
 		Start = 1,
 		End = 2,
@@ -907,35 +907,55 @@ struct SysCallExit
 
 	static const byte OPCODE = 52;
 };
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+constexpr uint32 GuidHash(uint32 u0, uint32 u1, uint32 u2, uint32 u3)
+{
+	return u0 ^ u1 ^ u2 ^ u3;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+uint32 GuidHash(GUID guid)
+{
+	return GuidHash(guid.Data1, (guid.Data3 << 16) | guid.Data2, ((uint32*)guid.Data4)[0], ((uint32*)guid.Data4)[1]);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#define ETW_GUID(NAME, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) DEFINE_GUID(NAME, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8); \
+																  const uint32 NAME##Hash = GuidHash((uint32)l, (uint32)((w2 << 16) | w1), (uint32)((b4 << 24) | (b3 << 16) | (b2 << 8) | b1), (uint32)((b8 << 24) | (b7 << 16) | (b6 << 8) | b5));
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ce1dbfb4-137e-4da6-87b0-3f59aa102cbc 
-DEFINE_GUID(SampledProfileGuid, 0xce1dbfb4, 0x137e, 0x4da6, 0x87, 0xb0, 0x3f, 0x59, 0xaa, 0x10, 0x2c, 0xbc);
+ETW_GUID(SampledProfileGuid, 0xce1dbfb4, 0x137e, 0x4da6, 0x87, 0xb0, 0x3f, 0x59, 0xaa, 0x10, 0x2c, 0xbc);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 3d6fa8d1-fe05-11d0-9dda-00c04fd7ba7c
 // https://docs.microsoft.com/en-us/windows/desktop/etw/thread
-DEFINE_GUID(ThreadGuid, 0x3d6fa8d1, 0xfe05, 0x11d0, 0x9d, 0xda, 0x00, 0xc0, 0x4f, 0xd7, 0xba, 0x7c);
+ETW_GUID(ThreadGuid, 0x3d6fa8d1, 0xfe05, 0x11d0, 0x9d, 0xda, 0x00, 0xc0, 0x4f, 0xd7, 0xba, 0x7c);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 3d6fa8d0-fe05-11d0-9dda-00c04fd7ba7c
 // https://docs.microsoft.com/en-us/windows/desktop/etw/process
-DEFINE_GUID(ProcessGuid, 0x3d6fa8d0, 0xfe05, 0x11d0, 0x9d, 0xda, 0x00, 0xc0, 0x4f, 0xd7, 0xba, 0x7c);
+ETW_GUID(ProcessGuid, 0x3d6fa8d0, 0xfe05, 0x11d0, 0x9d, 0xda, 0x00, 0xc0, 0x4f, 0xd7, 0xba, 0x7c);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// def2fe46-7bd6-4b80-bd94-f57fe20d0ce3
+// https://docs.microsoft.com/en-us/windows/win32/etw/stackwalk
+ETW_GUID(StackWalkGuid, 0xdef2fe46, 0x7bd6, 0x4b80, 0xbd, 0x94, 0xf5, 0x7f, 0xe2, 0x0d, 0x0c, 0xe3);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// https://docs.microsoft.com/en-us/windows/win32/etw/perfinfo
+// ce1dbfb4-137e-4da6-87b0-3f59aa102cbc
+ETW_GUID(PerfInfoGuid, 0xce1dbfb4, 0x137e, 0x4da6, 0x87, 0xb0, 0x3f, 0x59, 0xaa, 0x10, 0x2c, 0xbc);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ETW* g_ETW;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
+void OnThreadEvent(PEVENT_RECORD eventRecord)
 {
-	//static uint8 cpuCoreIsExecutingThreadFromOurProcess[256] = { 0 };
-
-	const byte opcode = eventRecord->EventHeader.EventDescriptor.Opcode;
-
 	ETWRuntime& runtime = g_ETW->runtime;
 
-	if (opcode == CSwitch::OPCODE)
+	switch (eventRecord->EventHeader.EventDescriptor.Opcode)
 	{
+	case CSwitch::OPCODE:
 		if (sizeof(CSwitch) == eventRecord->UserDataLength)
 		{
 			CSwitch* pSwitchEvent = (CSwitch*)eventRecord->UserData;
@@ -959,9 +979,48 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 				runtime.activeCores[desc.cpuId] = INVALID_THREAD_ID;
 			}
 		}
+		break;
+
+	case Thread_TypeGroup1::Start:
+	case Thread_TypeGroup1::DCStart:
+		if (eventRecord->UserDataLength >= sizeof(Thread_TypeGroup1))
+		{
+			const Thread_TypeGroup1* pThreadEvent = (const Thread_TypeGroup1*)eventRecord->UserData;
+			Core::Get().RegisterThreadDescription(ThreadDescription("", pThreadEvent->TThreadId, pThreadEvent->ProcessId, 1, pThreadEvent->BasePriority));
+
+			if (pThreadEvent->ProcessId == runtime.currentProcessId)
+				runtime.activeThreadsIDs.insert(pThreadEvent->TThreadId);
+		}
+		break;
+
+	default:
+		break;
 	}
-	else if (opcode == StackWalk_Event::OPCODE)
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void OnProcessEvent(PEVENT_RECORD eventRecord)
+{
+	switch (eventRecord->EventHeader.EventDescriptor.Opcode)
 	{
+	case Process_TypeGroup1::Start:
+	case Process_TypeGroup1::DCStart:
+		if (eventRecord->UserDataLength >= sizeof(Process_TypeGroup1))
+		{
+			const Process_TypeGroup1* pProcessEvent = (const Process_TypeGroup1*)eventRecord->UserData;
+			Core::Get().RegisterProcessDescription(ProcessDescription(pProcessEvent->GetProcessName(eventRecord), pProcessEvent->ProcessId, pProcessEvent->UniqueProcessKey));
+		}
+		break;
+
+	default:
+		break;
+	}
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void OnStackWalkEvent(PEVENT_RECORD eventRecord)
+{
+	switch (eventRecord->EventHeader.EventDescriptor.Opcode)
+	{
+	case StackWalk_Event::OPCODE:
 		if (eventRecord->UserData && eventRecord->UserDataLength >= sizeof(StackWalk_Event))
 		{
 			//TODO: Support x86 windows kernels
@@ -986,14 +1045,17 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 				}
 			}
 		}
+		break;
 	}
-	else if (opcode == SampledProfile::OPCODE)
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void OnPerfInfoEvent(PEVENT_RECORD eventRecord)
+{
+	ETWRuntime& runtime = g_ETW->runtime;
+
+	switch (eventRecord->EventHeader.EventDescriptor.Opcode)
 	{
-		SampledProfile* pEvent = (SampledProfile*)eventRecord->UserData;
-		OPTICK_UNUSED(pEvent);
-	}
-	else if (opcode == SysCallEnter::OPCODE)
-	{
+	case SysCallEnter::OPCODE:
 		if (eventRecord->UserDataLength >= sizeof(SysCallEnter))
 		{
 			uint8_t cpuId = eventRecord->BufferContext.ProcessorNumber;
@@ -1013,9 +1075,9 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 				runtime.activeSyscalls.push_back(std::make_pair(cpuId, &sysCall));
 			}
 		}
-	}
-	else if (opcode == SysCallExit::OPCODE)
-	{
+		break;
+
+	case SysCallExit::OPCODE:
 		if (eventRecord->UserDataLength >= sizeof(SysCallExit))
 		{
 			uint8_t cpuId = eventRecord->BufferContext.ProcessorNumber;
@@ -1032,31 +1094,37 @@ void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
 				}
 			}
 		}
+		break;
+
+	default:
+		break;
 	}
-	else
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void WINAPI OnRecordEvent(PEVENT_RECORD eventRecord)
+{
+	const uint32 eventHash = GuidHash(eventRecord->EventHeader.ProviderId);
+
+	switch (eventHash)
 	{
-		// VS TODO: We might have a situation where a thread was deleted and the new thread was created with the same threadID
-		//			Ignoring for now - profiling sessions are quite short - not critical
-		if (IsEqualGUID(eventRecord->EventHeader.ProviderId, ThreadGuid))
-		{
-			if (eventRecord->UserDataLength >= sizeof(Thread_TypeGroup1))
-			{
-				const Thread_TypeGroup1* pThreadEvent = (const Thread_TypeGroup1*)eventRecord->UserData;
-				Core::Get().RegisterThreadDescription(ThreadDescription("", pThreadEvent->TThreadId, pThreadEvent->ProcessId, 1, pThreadEvent->BasePriority));
+	case ThreadGuidHash:
+		OnThreadEvent(eventRecord);
+		break;
 
-				if (pThreadEvent->ProcessId == runtime.currentProcessId)
-					runtime.activeThreadsIDs.insert(pThreadEvent->TThreadId);
-			}
+	case ProcessGuidHash:
+		OnProcessEvent(eventRecord);
+		break;
 
-		}
-		else if (IsEqualGUID(eventRecord->EventHeader.ProviderId, ProcessGuid))
-		{
-			if (eventRecord->UserDataLength >= sizeof(Process_TypeGroup1))
-			{
-				const Process_TypeGroup1* pProcessEvent = (const Process_TypeGroup1*)eventRecord->UserData;
-				Core::Get().RegisterProcessDescription(ProcessDescription(pProcessEvent->GetProcessName(eventRecord), pProcessEvent->ProcessId, pProcessEvent->UniqueProcessKey));
-			}
-		}
+	case StackWalkGuidHash:
+		OnStackWalkEvent(eventRecord);
+		break;
+
+	case PerfInfoGuidHash:
+		OnPerfInfoEvent(eventRecord);
+		break;
+
+	default:
+		break;
 	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
