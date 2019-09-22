@@ -57,7 +57,7 @@ namespace Profiler.Controls
 
 		public int CollapsedMaxThreadDepth { get; set; } = 2;
 		public int ExpandedMaxThreadDepth { get; set; } = 12;
-		public ExpandMode ThreadExpandMode { get; set; } = ExpandMode.ExpandMain;
+		public ExpandMode ThreadExpandMode { get; set; } = ExpandMode.ExpandAll;
 
         public string TempDirectoryPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Optick\\Temp\\");
 

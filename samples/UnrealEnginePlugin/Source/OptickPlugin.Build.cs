@@ -15,7 +15,7 @@ namespace UnrealBuildTool.Rules
 			PrivateIncludePaths.AddRange(
 				new string[] {
 					"Private",
-					"Private/OptickCore",
+					"ThirdParty/Optick/src",
 					// ... add other private include paths required here ...
 				}
 				);

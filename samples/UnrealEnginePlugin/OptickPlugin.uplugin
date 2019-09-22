@@ -7,7 +7,7 @@
 	"Category": "Performance",
 	"CreatedBy": "Vadim Slyusarev",
 	"CreatedByURL": "https://github.com/bombomby/optick",
-	"DocsURL": "https://github.com/bombomby/optick",
+	"DocsURL": "https://github.com/bombomby/optick/wiki/UE4-Optick-Plugin",
 	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/95c078f6fa924b2b82fd8f281e04850f",
 	"SupportURL": "https://github.com/bombomby/optick/issues",
 	"CanContainContent": false,

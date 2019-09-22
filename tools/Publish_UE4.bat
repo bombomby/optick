@@ -19,13 +19,13 @@ xcopy /Y Bin\Release\x64\Optick.exe samples\UnrealEnginePlugin\GUI\*
 call "C:\Program Files\Epic Games\UE_%UNREAL_VERSION%\Engine\Build\BatchFiles\RunUAT.bat" BuildPlugin -Plugin="%CD%\samples\UnrealEnginePlugin\OptickPlugin.uplugin" -Package="%CD%\publish\Optick_%VERSION_NAME%\OptickPlugin" -Rocket
 
 rem Process Copyright
-cd %CD%\publish\Optick_%VERSION_NAME%\OptickPlugin\Source\Private\OptickCore\
+cd %CD%\publish\Optick_%VERSION_NAME%\OptickPlugin\Source\ThirdParty\Optick\src\
 
 if not exist "tmp" mkdir tmp
 
 for %%f in (*.cpp *.h) do (
-   (Echo "%%f" | FIND /I "miniz" 1>NUL) || (
-	   echo // Copyright(c^) 2019 Vadim Slyusarev > "tmp\%%f"
+	(Echo "%%f" | FIND /I "miniz" 1>NUL) || (
+		echo // Copyright(c^) 2019 Vadim Slyusarev > "tmp\%%f"
        more +21 "%%f" >> "tmp\%%f"
    )
 )
@@ -35,9 +35,12 @@ xcopy /Y tmp\*.* *
 del /Q tmp\*.*
 rmdir tmp
 
-cd ..\..\..\..\..\..
+cd ..\..\..\..\..\..\..
+
+rd /s /q %CD%\publish\Optick_%VERSION_NAME%\OptickPlugin\Intermediate
+rem rd /s /q %CD%\publish\Optick_%VERSION_NAME%\OptickPlugin\Binaries
 
 rem Compress Archive
-powershell "Compress-Archive -Path \"%CD%\publish\Optick_%VERSION_NAME%\*\" -DestinationPath \"%CD%\publish\Optick_%VERSION_NAME%.zip\""
+powershell "Compress-Archive -Path \"%CD%\publish\Optick_%VERSION_NAME%\*\" -DestinationPath \"%CD%\publish\Optick_%VERSION_NAME%.zip\" -Force"
 
 cd tools

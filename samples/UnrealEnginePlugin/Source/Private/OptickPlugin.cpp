@@ -29,7 +29,7 @@
 #include "OptickCommands.h"
 #endif
 
-#include <OptickCore/Optick.h>
+#include <optick.h>
 
 DEFINE_LOG_CATEGORY(OptickLog);
 
