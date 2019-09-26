@@ -74,8 +74,8 @@ Optick provides a special plugin for UE4. Check more detailed documentation here
 https://github.com/bombomby/optick/wiki/UE4-Optick-Plugin
 
 ## Samples
-Run [generate_projects.gpu.bat](https://github.com/bombomby/optick/blob/master/generate_projects.gpu.bat) from the root folder to generate project files.<br/>
-Open solution `build\vs2017\Optick.sln` with samples.
+Run [generate_projects.gpu.bat](https://github.com/bombomby/optick/blob/master/generate_projects.gpu.bat) from the root folder to generate project files. To compile the samples you'll need to install VulkanSDK. Alternatively you could use [generate_projects.bat](https://github.com/bombomby/optick/blob/master/generate_projects.bat) to generate only minimal solution with ConsoleApp sample.<br/>
+Open solution `build\vs2017\Optick.sln` with generated samples.
 
 | [WindowsD3D12](https://github.com/bombomby/optick/tree/master/samples/WindowsD3D12) | [WindowsVulkan](https://github.com/bombomby/optick/tree/master/samples/WindowsVulkan) | [ConsoleApp](https://github.com/bombomby/optick/tree/master/samples/ConsoleApp) |
 | ---------- | ------------ | ------------- |
