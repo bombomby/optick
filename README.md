@@ -69,6 +69,10 @@ void WorkerThread(...)
 All the available API calls are documented here:<br/>
 https://github.com/bombomby/optick/wiki/Optick-API
 
+## Unreal Engine
+Optick provides a special plugin for UE4. Check more detailed documentation here: 
+https://github.com/bombomby/optick/wiki/UE4-Optick-Plugin
+
 ## Samples
 Run [generate_projects.gpu.bat](https://github.com/bombomby/optick/blob/master/generate_projects.gpu.bat) from the root folder to generate project files.<br/>
 Open solution `build\vs2017\Optick.sln` with samples.
