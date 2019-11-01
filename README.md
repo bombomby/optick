@@ -23,7 +23,8 @@ instrumentation, switch-contexts, sampling, GPU counters.<br/>
 ![Allods Team](https://optick.dev/images/studios/AllodsTeam_thumb2.png "Allods Team") ![4A Games](https://optick.dev/images/studios/4A_Games_thumb2.png "4A Gaemes") ![CryEngine](https://optick.dev/images/studios/CryEngine_thumb.png "CryEngine") ![Larian Studios](https://optick.dev/images/studios/Larian_png.png "Larian Studios")
 ![Skyforge](https://optick.dev/images/studios/Skyforge_thumb.jpg "Skyforge") ![Metro Exodus](https://optick.dev/images/studios/Metro_thumb.jpg "Metro Exodus")  ![Warface](https://optick.dev/images/studios/Warface_thumb.jpg "Metro Exodus") ![Armored Warfare](https://optick.dev/images/studios/ArmoredWarfare_thumb.jpg "Metro Exodus")
 
-
+## Video Tutorial
+[![Optick Video Tutorial](https://github.com/bombomby/brofiler/blob/gh-pages/images/VideoThumbnail.jpg)](https://www.youtube.com/watch?v=p57TV5342fo)
 
 ## Basic Integration (one line of code)
 1) Copy 'src' folder from the repository or latest release to your game project
@@ -68,9 +69,13 @@ void WorkerThread(...)
 All the available API calls are documented here:<br/>
 https://github.com/bombomby/optick/wiki/Optick-API
 
+## Unreal Engine
+Optick provides a special plugin for UE4. Check more detailed documentation here: 
+https://github.com/bombomby/optick/wiki/UE4-Optick-Plugin
+
 ## Samples
-Run [generate_projects.gpu.bat](https://github.com/bombomby/optick/blob/master/generate_projects.gpu.bat) from the root folder to generate project files.<br/>
-Open solution `build\vs2017\Optick.sln` with samples.
+Run [generate_projects.gpu.bat](https://github.com/bombomby/optick/blob/master/generate_projects.gpu.bat) from the root folder to generate project files. To compile the samples you'll need to install VulkanSDK. Alternatively you could use [generate_projects.bat](https://github.com/bombomby/optick/blob/master/generate_projects.bat) to generate only minimal solution with ConsoleApp sample.<br/>
+Open solution `build\vs2017\Optick.sln` with generated samples.
 
 | [WindowsD3D12](https://github.com/bombomby/optick/tree/master/samples/WindowsD3D12) | [WindowsVulkan](https://github.com/bombomby/optick/tree/master/samples/WindowsVulkan) | [ConsoleApp](https://github.com/bombomby/optick/tree/master/samples/ConsoleApp) |
 | ---------- | ------------ | ------------- |
