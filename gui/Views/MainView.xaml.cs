@@ -62,7 +62,13 @@ namespace Profiler.Views
 		public delegate void SaveCaptureEventHandler(object sender, SaveCaptureEventArgs e);
 		public static readonly RoutedEvent SaveCaptureEvent = EventManager.RegisterRoutedEvent("SaveCaptureEvent", RoutingStrategy.Bubble, typeof(SaveCaptureEventHandler), typeof(MainView));
 
-		const String DefaultTitle = "What the hell is going on?";
+		private String DefaultTitle
+		{
+			get
+			{
+				return Settings.GlobalSettings.Data.IsCensored ? "Optick Profiler" : "What the hell is going on? - Optick Profiler";
+			}
+		}
 
 		private void UpdateTitle(String message)
 		{
