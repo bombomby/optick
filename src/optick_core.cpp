@@ -718,8 +718,10 @@ bool SwitchContextCollector::Serialize(OutputDataStream& stream)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #if defined(OPTICK_MSVC)
+#include <intrin.h>
 #define CPUID(INFO, ID) __cpuid(INFO, ID)
-#include <intrin.h> 
+#elif defined(__ANDROID__)
+// Nothing
 #elif defined(OPTICK_GCC)
 #include <cpuid.h>
 #define CPUID(INFO, ID) __cpuid(ID, INFO[0], INFO[1], INFO[2], INFO[3])
@@ -729,6 +731,20 @@ bool SwitchContextCollector::Serialize(OutputDataStream& stream)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 string GetCPUName()
 {
+#if defined(__ANDROID__)
+	FILE * fp = popen("cat /proc/cpuinfo | grep -m1 'model name'","r");
+    char res[128] = {0};
+    fread(res, 1, sizeof(res)-1, fp);
+    fclose(fp);
+    char* name = strstr(res, ":");
+    if (name && strlen(name) > 2)
+    {
+    	string s = name + 2;
+    	s.erase(std::remove(s.begin(), s.end(), '\n'), s.end());
+    	return s;
+    }
+	return "Undefined CPU";
+#else
 	int cpuInfo[4] = { -1 };
 	char cpuBrandString[0x40] = { 0 };
 	CPUID(cpuInfo, 0x80000000);
@@ -744,6 +760,7 @@ string GetCPUName()
 			memcpy(cpuBrandString + 32, cpuInfo, sizeof(cpuInfo));
 	}
 	return string(cpuBrandString);
+#endif
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core& Core::Get()

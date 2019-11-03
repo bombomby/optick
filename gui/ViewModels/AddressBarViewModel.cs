@@ -83,7 +83,11 @@ namespace Profiler.ViewModels
                         return "appbar_controller_xbox";
                     case Platform.Type.PS4:
                         return "appbar_social_playstation";
-                    default:
+					case Platform.Type.Android:
+						return "appbar_os_android";
+					case Platform.Type.iOS:
+						return "appbar_os_ios";
+					default:
                         return "appbar_network";
                 }
             }

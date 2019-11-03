@@ -38,7 +38,11 @@ namespace Optick
 {
 	const char* Platform::GetName() 
 	{
+#if defined(__ANDROID__)
+	    return "Android";
+#else
 		return "Linux";
+#endif
 	}
 
 	ThreadID Platform::GetThreadID()

@@ -18,6 +18,8 @@ namespace Profiler
 			MacOS,
 			XBox,
 			PS4,
+			Android,
+			iOS,
 		}
 
 		public class Connection
