@@ -498,6 +498,7 @@ struct EventTime
 
 	OPTICK_INLINE void Start() { start  = Optick::GetHighPrecisionTime(); }
 	OPTICK_INLINE void Stop() 	{ finish = Optick::GetHighPrecisionTime(); }
+	OPTICK_INLINE bool IsValid() const { return start < finish && start != INVALID_TIMESTAMP && finish != INVALID_TIMESTAMP;  }
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct EventData : public EventTime

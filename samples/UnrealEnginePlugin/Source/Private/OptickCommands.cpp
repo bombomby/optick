@@ -2,6 +2,8 @@
 
 #include "OptickCommands.h"
 
+#if WITH_EDITOR
+
 #define LOCTEXT_NAMESPACE "FOptickModule"
 
 void FOptickCommands::RegisterCommands()
@@ -10,3 +12,5 @@ void FOptickCommands::RegisterCommands()
 }
 
 #undef LOCTEXT_NAMESPACE
+
+#endif

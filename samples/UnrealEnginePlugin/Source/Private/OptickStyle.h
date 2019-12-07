@@ -2,6 +2,8 @@
 
 #pragma once
 
+#if WITH_EDITOR
+
 #include "SlateCore/Public/Styling/SlateStyle.h"
 
 /**  */
@@ -29,3 +31,5 @@ private:
 
 	static TSharedPtr< class FSlateStyleSet > StyleInstance;
 };
+
+#endif

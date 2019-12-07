@@ -1002,9 +1002,13 @@ void Core::DumpFrames(uint32 mode)
 		if (threads[i]->description.threadID == mainThreadID)
 			mainThreadIndex = (uint32)i;
 
-	EventTime timeSlice = CalculateRange(frames[FrameType::CPU]); 
+	std::array<EventTime, FrameType::COUNT> timeSlice;
+	for (int i = 0; i < FrameType::COUNT; ++i)
+	{
+		timeSlice[i] = CalculateRange(frames[i]);
+	} 
 
-	DumpBoard(mode, timeSlice, mainThreadIndex);
+	DumpBoard(mode, timeSlice[FrameType::CPU], mainThreadIndex);
 
 	{
 		DumpProgress("Serializing Frames");
@@ -1026,7 +1030,15 @@ void Core::DumpFrames(uint32 mode)
 	for (size_t i = 0; i < threads.size(); ++i)
 	{
 		threadScope.header.threadNumber = (uint32)i;
-		DumpThread(*threads[i], timeSlice, threadScope);
+
+		ThreadEntry* entry = threads[i];
+
+		EventTime range = timeSlice[FrameType::CPU];
+
+		if ((entry->description.mask & ThreadMask::GPU) != 0 && timeSlice[FrameType::GPU].IsValid())
+			range = timeSlice[FrameType::GPU];
+
+		DumpThread(*entry, range, threadScope);
 	}
 
 	ScopeData fiberScope;
@@ -1035,7 +1047,7 @@ void Core::DumpFrames(uint32 mode)
 	for (size_t i = 0; i < fibers.size(); ++i)
 	{
 		fiberScope.header.fiberNumber = (uint32)i;
-		DumpFiber(*fibers[i], timeSlice, fiberScope);
+		DumpFiber(*fibers[i], timeSlice[FrameType::CPU], fiberScope);
 	}
 
 	for (int i = 0; i < FrameType::COUNT; ++i)

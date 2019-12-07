@@ -2,6 +2,8 @@
 
 #include "OptickStyle.h"
 
+#if WITH_EDITOR
+
 #include "Slate/SlateGameResources.h"
 #include "SlateCore/Public/Styling/SlateStyleRegistry.h"
 #include "Projects/Public/Interfaces/IPluginManager.h"
@@ -68,3 +70,5 @@ const ISlateStyle& FOptickStyle::Get()
 {
 	return *StyleInstance;
 }
+
+#endif

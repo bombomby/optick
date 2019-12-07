@@ -3,20 +3,25 @@
 // Core
 #include "CoreMinimal.h"
 #include "Containers/Ticker.h"
+#include "GenericPlatform/GenericPlatformFile.h"
 #include "HAL/PlatformFilemanager.h"
 #include "HAL/PlatformProcess.h"
 #include "Misc/EngineVersion.h"
 #include "Modules/ModuleManager.h"
+#include "Stats/Stats2.h"
 #include "Stats/StatsData.h"
-#include "DesktopPlatformModule.h"
 #include "IOptickPlugin.h"
 
 // Engine
 #include "UnrealClient.h"
 
+// Optick
+#include "OptickUE4Classes.h"
+
 #define LOCTEXT_NAMESPACE "FOptickModule"
 
 #if WITH_EDITOR
+#include "DesktopPlatformModule.h"
 #include "EditorStyleSet.h"
 #include "Framework/Commands/Commands.h"
 #include "Editor/EditorPerformanceSettings.h"
@@ -33,25 +38,31 @@
 
 DEFINE_LOG_CATEGORY(OptickLog);
 
+#if STATS
 static FName NAME_STATGROUP_CPUStalls(FStatGroup_STATGROUP_CPUStalls::GetGroupName());
 static FName NAME_Wait[] =
 {
 	FName("STAT_FQueuedThread_Run_WaitForWork"),
 	FName("STAT_TaskGraph_OtherStalls"),
 };
-static FString Optick_SCREENSHOT_NAME(TEXT("UE4_Optick_Screenshot.png"));
+static FName NAME_GPU_Unaccounted("Unaccounted");
+#endif
 
+static FString Optick_SCREENSHOT_NAME(TEXT("UE4_Optick_Screenshot.png"));
 
 struct ThreadStorage
 {
 	Optick::EventStorage* EventStorage;
 	uint64 LastTimestamp;
 	ThreadStorage(Optick::EventStorage* storage = nullptr) : EventStorage(storage), LastTimestamp(0) {}
+	void Reset() { LastTimestamp = 0; }
 };
 
 
 class FOptickPlugin : public IOptickPlugin
 {
+	FCriticalSection UpdateCriticalSection;
+
 	volatile bool IsCapturing;
 
 	const uint64 LowMask =  0x00000000FFFFFFFFULL;
@@ -63,9 +74,13 @@ class FOptickPlugin : public IOptickPlugin
 
 	FDelegateHandle TickDelegateHandle;
 	FDelegateHandle StatFrameDelegateHandle;
+	FDelegateHandle EndFrameRTDelegateHandle;
 
 	TMap<uint32, ThreadStorage*> StorageMap;
 	TMap<FName, Optick::EventDescription*> DescriptionMap;
+
+	ThreadStorage GPUThreadStorage;
+	TMap<FName, Optick::EventDescription*> GPUDescriptionMap;
 
 	uint32 WaitingForScreenshotFrameNumber{0};
 	TAtomic<bool> WaitingForScreenshot;
@@ -92,6 +107,15 @@ class FOptickPlugin : public IOptickPlugin
 #endif
 
 	void OnScreenshotProcessed();
+
+	uint64 Convert32bitCPUTimestamp(int64 timestamp) const;
+
+#if OPTICK_UE4_GPU
+	void OnEndFrameRT();
+	uint64 ConvertGPUTimestamp(uint64 timestamp);
+
+	FGPUTimingCalibrationTimestamp CalibrationTimestamp;
+#endif
 
 public:
 	/** IModuleInterface implementation */
@@ -128,7 +152,7 @@ bool FOptickPlugin::Tick(float DeltaTime)
 
 void FOptickPlugin::OnOpenGUI()
 {
-	UE_LOG(OptickLog, Display, TEXT("OnOpenGUI!"));
+	//UE_LOG(OptickLog, Display, TEXT("OnOpenGUI!"));
 
 	const FString OptickPath = IPluginManager::Get().FindPlugin("OptickPlugin")->GetBaseDir() / TEXT("GUI/Optick.exe");
 	const FString OptickFullPath = FPaths::ConvertRelativePathToFull(OptickPath);
@@ -138,7 +162,7 @@ void FOptickPlugin::OnOpenGUI()
 
 void FOptickPlugin::AddToolbarExtension(FToolBarBuilder& ToolbarBuilder)
 {
-	UE_LOG(OptickLog, Log, TEXT("Attaching toolbar extension..."));
+	//UE_LOG(OptickLog, Log, TEXT("Attaching toolbar extension..."));
 
 	ToolbarBuilder.BeginSection("Optick");
 	{
@@ -154,7 +178,7 @@ bool OnOptickStateChanged(Optick::State::Type state)
 {
 	FOptickPlugin& plugin = (FOptickPlugin&)IOptickPlugin::Get();
 
-	UE_LOG(OptickLog, Display, TEXT("State => %d"), state);
+	//UE_LOG(OptickLog, Display, TEXT("State => %d"), state);
 
 	switch (state)
 	{
@@ -209,12 +233,13 @@ void FOptickPlugin::StartupModule()
 {
 	UE_LOG(OptickLog, Display, TEXT("OptickPlugin Loaded!"));
 
+	GPUThreadStorage.EventStorage = Optick::RegisterStorage(TCHAR_TO_ANSI(*FPlatformMisc::GetPrimaryGPUBrand()), (uint64_t)-1, Optick::ThreadMask::GPU);
+
 	// Subscribing for Ticker
 	TickDelegateHandle = FTicker::GetCoreTicker().AddTicker(FTickerDelegate::CreateRaw(this, &FOptickPlugin::Tick));
 
 	// Register Optick callback
 	Optick::SetStateChangedCallback(OnOptickStateChanged);
-
 
 #if WITH_EDITOR
 	FOptickStyle::Initialize();
@@ -234,6 +259,10 @@ void FOptickPlugin::StartupModule()
 	ToolbarExtension = ToolbarExtender->AddToolBarExtension("Game", EExtensionHook::After, PluginCommands, FToolBarExtensionDelegate::CreateLambda([this](FToolBarBuilder& ToolbarBuilder) { AddToolbarExtension(ToolbarBuilder); })	);
 	ExtensionManager->AddExtender(ToolbarExtender);
 #endif
+
+#if OPTICK_UE4_GPU
+	EndFrameRTDelegateHandle = FCoreDelegates::OnEndFrameRT.AddRaw(this, &FOptickPlugin::OnEndFrameRT);
+#endif
 }
 
 
@@ -241,6 +270,7 @@ void FOptickPlugin::ShutdownModule()
 {
 	// Remove delegate
 	FTicker::GetCoreTicker().RemoveTicker(TickDelegateHandle);
+ 	FCoreDelegates::OnEndFrameRT.Remove(EndFrameRTDelegateHandle);
 
 	// Stop capture if needed
 	StopCapture();
@@ -258,9 +288,17 @@ void FOptickPlugin::ShutdownModule()
 
 void FOptickPlugin::StartCapture()
 {
+	FScopeLock ScopeLock(&UpdateCriticalSection);
+
 	if (!IsCapturing)
 	{
-		IsCapturing = true;
+#if OPTICK_UE4_GPU
+		CalibrationTimestamp = FGPUTiming::GetCalibrationTimestamp();
+
+		GPUThreadStorage.Reset();
+		for (auto& pair : StorageMap)
+			pair.Value->Reset();
+#endif
 
 #if WITH_EDITOR
 		UEditorPerformanceSettings* Settings = GetMutableDefault<UEditorPerformanceSettings>();
@@ -273,20 +311,28 @@ void FOptickPlugin::StartCapture()
 
 		OriginTimestamp = FPlatformTime::Cycles64();
 
+		IsCapturing = true;
+
+#if STATS
 		FThreadStats::MasterEnableAdd(1);
 
 		FStatsThreadState& Stats = FStatsThreadState::GetLocalState();
 
 		// Set up our delegate to gather data from the stats thread for safe consumption on game thread.
 		StatFrameDelegateHandle = Stats.NewFrameDelegate.Add(FStatFrameDelegate::CreateRaw(this, &FOptickPlugin::GetDataFromStatsThread));
+#endif
 	}
 }
 
 void FOptickPlugin::StopCapture()
 {
+	FScopeLock ScopeLock(&UpdateCriticalSection);
+
 	if (IsCapturing)
 	{
 		IsCapturing = false;
+
+#if STATS
 		FThreadStats::MasterEnableSubtract(1);
 
 		FStatsThreadState& Stats = FStatsThreadState::GetLocalState();
@@ -294,6 +340,7 @@ void FOptickPlugin::StopCapture()
 		// Set up our delegate to gather data from the stats thread for safe consumption on game thread.
 		Stats.NewFrameDelegate.Remove(StatFrameDelegateHandle);
 		StatFrameDelegateHandle.Reset();
+#endif
 
 #if WITH_EDITOR
 		UEditorPerformanceSettings* Settings = GetMutableDefault<UEditorPerformanceSettings>();
@@ -309,7 +356,7 @@ void FOptickPlugin::StopCapture()
 void FOptickPlugin::RequestScreenshot()
 {
 	// Requesting screenshot
-	UE_LOG(OptickLog, Display, TEXT("Screenshot requested!"));
+	//UE_LOG(OptickLog, Display, TEXT("Screenshot requested!"));
 	WaitingForScreenshot = true;
 	WaitingForScreenshotFrameNumber = GFrameNumber;
 	FScreenshotRequest::OnScreenshotRequestProcessed().AddRaw(this, &FOptickPlugin::OnScreenshotProcessed);
@@ -328,17 +375,147 @@ bool FOptickPlugin::IsReadyToDumpCapture() const
 
 void FOptickPlugin::OnScreenshotProcessed()
 {
-	UE_LOG(OptickLog, Display, TEXT("Screenshot processed!"));
+	//UE_LOG(OptickLog, Display, TEXT("Screenshot processed!"));
 	WaitingForScreenshot = false;
 	FScreenshotRequest::OnScreenshotRequestProcessed().RemoveAll(this);
 }
 
+uint64 FOptickPlugin::Convert32bitCPUTimestamp(int64 timestamp) const
+{
+	uint64 result = (OriginTimestamp & HighMask) | (timestamp & LowMask);
+
+	// Handle Overflow
+	if (result < OriginTimestamp)
+		result += (1ULL << 32ULL);
+
+	return result;
+}
+
+#if OPTICK_UE4_GPU
+void FOptickPlugin::OnEndFrameRT()
+{
+	FScopeLock ScopeLock(&UpdateCriticalSection);
+
+	if (!IsCapturing || !Optick::IsActive(Optick::Mode::GPU))
+		return;
+
+	QUICK_SCOPE_CYCLE_COUNTER(STAT_FOptickPlugin_UpdRT);
+
+	if (FRealtimeGPUProfilerImpl* gpuProfiler = reinterpret_cast<FRealtimeGPUProfilerImpl*>(FRealtimeGPUProfiler::Get()))
+	{
+		if (FRealtimeGPUProfilerFrameImpl* Frame = gpuProfiler->Frames[gpuProfiler->ReadBufferIndex])
+		{
+			FRHICommandListImmediate& RHICmdList = FRHICommandListExecutor::GetImmediateCommandList();
+
+			bool bAnyEventFailed = false;
+			bool bAllQueriesAllocated = true;
+
+			for (int i = 0; i < Frame->GpuProfilerEvents.Num(); ++i)
+			{
+				FRealtimeGPUProfilerEventImpl* Event = Frame->GpuProfilerEvents[i];
+				check(Event != nullptr);
+
+				if (!Event->HasValidResult())
+				{
+					Event->GatherQueryResults(RHICmdList);
+				}
+
+				if (!Event->HasValidResult())
+				{
+#if UE_BUILD_DEBUG
+					UE_LOG(OptickLog, Warning, TEXT("Query '%s' not ready."), *Event->GetName().ToString());
+#endif
+					// The frame isn't ready yet. Don't update stats - we'll try again next frame. 
+					bAnyEventFailed = true;
+					continue;
+				}
+
+				if (!Event->HasQueriesAllocated())
+				{
+					bAllQueriesAllocated = false;
+				}
+			}
+
+			if (bAnyEventFailed)
+			{
+				return;
+			}
+
+			if (!bAllQueriesAllocated)
+			{
+				static bool bWarned = false;
+
+				if (!bWarned)
+				{
+					bWarned = true;
+					UE_LOG(OptickLog, Warning, TEXT("Ran out of GPU queries! Results for this frame will be incomplete"));
+				}
+			}
+
+
+			for (int i = 0; i < Frame->GpuProfilerEvents.Num(); ++i)
+			{
+				FRealtimeGPUProfilerEventImpl* Event = Frame->GpuProfilerEvents[i];
+				check(Event != nullptr);
+
+				const FName Name = Event->Name;
+
+				Optick::EventDescription* Description = nullptr;
+
+				if (Optick::EventDescription** ppDescription = GPUDescriptionMap.Find(Name))
+				{
+					Description = *ppDescription;
+				}
+				else
+				{
+					Description = Optick::EventDescription::CreateShared(TCHAR_TO_ANSI(*Name.ToString()));
+					GPUDescriptionMap.Add(Name, Description);
+				}
+
+				uint64 startTimestamp = ConvertGPUTimestamp(Event->StartResultMicroseconds);
+				uint64 endTimestamp = ConvertGPUTimestamp(Event->EndResultMicroseconds);
+
+				if (Name == NAME_GPU_Unaccounted)
+				{
+					OPTICK_FRAME_FLIP(Optick::FrameType::GPU, startTimestamp);
+
+					if (GPUThreadStorage.LastTimestamp != 0)
+					{
+						OPTICK_STORAGE_POP(GPUThreadStorage.EventStorage, GPUThreadStorage.LastTimestamp);
+					}
+						
+					OPTICK_STORAGE_PUSH(GPUThreadStorage.EventStorage, Optick::GetFrameDescription(Optick::FrameType::GPU), startTimestamp)
+				}
+				else
+				{
+					OPTICK_STORAGE_EVENT(GPUThreadStorage.EventStorage, Description, startTimestamp, endTimestamp);
+				}
+				GPUThreadStorage.LastTimestamp = FMath::Max<uint64>(GPUThreadStorage.LastTimestamp, endTimestamp);
+			}
+		}
+	}
+}
+
+uint64 FOptickPlugin::ConvertGPUTimestamp(uint64 timestamp)
+{
+	if (CalibrationTimestamp.CPUMicroseconds == 0 || CalibrationTimestamp.GPUMicroseconds == 0)
+	{
+		CalibrationTimestamp.CPUMicroseconds = uint64(FPlatformTime::ToSeconds64(FPlatformTime::Cycles64()) * 1e6);
+		CalibrationTimestamp.GPUMicroseconds = timestamp;
+	}
+
+	const uint64 cpuTimestampUs = timestamp - CalibrationTimestamp.GPUMicroseconds + CalibrationTimestamp.CPUMicroseconds;
+	const uint64 cpuTimestamp = cpuTimestampUs * 1e-6 / FPlatformTime::GetSecondsPerCycle64();
+	return cpuTimestamp;
+}
+#endif
+
 void FOptickPlugin::GetDataFromStatsThread(int64 CurrentFrame)
 {
-	QUICK_SCOPE_CYCLE_COUNTER(STAT_FOptickPlugin_Upd);
-
 	if (!IsCapturing)
 		return;
+
+	QUICK_SCOPE_CYCLE_COUNTER(STAT_FOptickPlugin_Upd);
 
 #if STATS
 	const FStatsThreadState& Stats = FStatsThreadState::GetLocalState();
@@ -369,10 +546,7 @@ void FOptickPlugin::GetDataFromStatsThread(int64 CurrentFrame)
 			{
 				FName name = Item.NameAndInfo.GetRawName();
 
-				uint64 Timestamp = (OriginTimestamp & HighMask) | (Item.GetValue_int64() & LowMask);
-				// Handle Overflow
-				if (Timestamp < OriginTimestamp)
-					Timestamp += (1ULL << 32ULL);
+				uint64 Timestamp = Convert32bitCPUTimestamp(Item.GetValue_int64());
 
 				if (Op == EStatOperation::CycleScopeStart)
 				{

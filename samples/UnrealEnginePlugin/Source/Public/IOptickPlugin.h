@@ -38,4 +38,3 @@ public:
 		return FModuleManager::Get().IsModuleLoaded( "OptickPlugin" );
 	}
 };
-
