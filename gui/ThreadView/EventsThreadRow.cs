@@ -97,7 +97,7 @@ namespace Profiler
 					break;
 
 				case Controls.LocalSettings.ExpandMode.ExpandMain:
-					_isExpanded = group.MainThread.Description == desc;
+					_isExpanded = group.MainThread != null && group.MainThread.Description == desc;
 					break;
 			}
 		}
@@ -309,33 +309,44 @@ namespace Profiler
 
 			if (layer == DirectXCanvas.Layer.Foreground)
 			{
-				if (CallstackMeshPolys != null && CallstackMeshLines != null && scroll.DrawCallstacks != 0)
+				if (CallstackMeshPolys != null && CallstackMeshLines != null && (scroll.DrawCallstacks != 0 || scroll.DrawDataTags))
 				{
 					double width = CallstackMarkerRadius;
 					double height = CallstackMarkerRadius;
 					double offset = Offset + RenderParams.BaseHeight * 0.5;
 
-					Data.Utils.ForEachInsideInterval(EventData.Callstacks, scroll.ViewTime, callstack =>
+					if (scroll.DrawCallstacks != 0)
 					{
-						if ((callstack.Reason & scroll.DrawCallstacks) != 0)
+						Data.Utils.ForEachInsideInterval(EventData.Callstacks, scroll.ViewTime, callstack =>
 						{
-							double center = scroll.TimeToPixel(callstack);
+							if ((callstack.Reason & scroll.DrawCallstacks) != 0)
+							{
+								double center = scroll.TimeToPixel(callstack);
 
-							Point[] points = new Point[] { new Point(center - width, offset), new Point(center, offset - height), new Point(center + width, offset), new Point(center, offset + height) };
+								Point[] points = new Point[] { new Point(center - width, offset), new Point(center, offset - height), new Point(center + width, offset), new Point(center, offset + height) };
 
-							Color fillColor = (callstack.Reason == CallStackReason.AutoSample) ? CallstackColor : SystemCallstackColor;
-							Color strokeColor = Colors.Black;
+								Color fillColor = (callstack.Reason == CallStackReason.AutoSample) ? CallstackColor : SystemCallstackColor;
+								Color strokeColor = Colors.Black;
 
-							CallstackMeshPolys.AddRect(points, fillColor);
-							CallstackMeshLines.AddRect(points, strokeColor);
-						}
-					});
+								CallstackMeshPolys.AddRect(points, fillColor);
+								CallstackMeshLines.AddRect(points, strokeColor);
+							}
+						});
+					}
+
+					if (scroll.DrawDataTags && EventData.TagsPack != null)
+					{
+						Data.Utils.ForEachInsideInterval(EventData.TagsPack.Tags, scroll.ViewTime, tag =>
+						{
+							double center = scroll.TimeToPixel(tag);
+							Point[] points = new Point[] { new Point(center - width, Offset), new Point(center + width, Offset), new Point(center, offset) };
+							CallstackMeshPolys.AddTri(points, CallstackColor);
+							CallstackMeshLines.AddTri(points, Colors.Black);
+						});
+					}
 
 					CallstackMeshPolys.Update(canvas.RenderDevice);
 					CallstackMeshLines.Update(canvas.RenderDevice);
-
-					//CallstackMeshPolys.World = world;
-					//CallstackMeshLines.World = world;
 
 					canvas.Draw(CallstackMeshPolys);
 					canvas.Draw(CallstackMeshLines);

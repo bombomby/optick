@@ -431,7 +431,20 @@ namespace Profiler
 
 			ThreadViewControl.InitRows(rows, group != null ? group.Board.TimeSlice : null);
 
-			List<ITick> frames = Group?.MainThread.Events.ConvertAll(frame => frame.Header as ITick);
+			List<ITick> frames = null;
+
+			if (Group != null && Group.MainThread != null)
+			{
+				frames = Group.MainThread.Events.ConvertAll(frame => frame.Header as ITick);
+			}
+			else if (Group != null)
+			{
+				frames = new List<ITick>();
+				long step = Durable.MsToTick(1000.0);
+				for (long timestamp = Group.Board.TimeSlice.Start; timestamp < Group.Board.TimeSlice.Finish; timestamp += step)
+					frames.Add(new Tick() { Start = timestamp });
+			}
+
 			ThreadViewControl.InitForegroundLines(frames);
 		}
 
@@ -462,8 +475,8 @@ namespace Profiler
 		{
 			Group = frame.Group;
 			ThreadRow row = null;
-			if (id2row.TryGetValue(frame.Header.ThreadIndex, out row))
-				Highlight(new ThreadView.Selection[] { new ThreadView.Selection() { Frame = frame, Focus = focus, Row = row } });
+			id2row.TryGetValue(frame.Header.ThreadIndex, out row);
+			Highlight(new ThreadView.Selection[] { new ThreadView.Selection() { Frame = frame, Focus = focus, Row = row } });
 		}
 
 
@@ -529,5 +542,11 @@ namespace Profiler
 			ThreadViewControl.Scroll.DrawCallstacks = 0;
 			ThreadViewControl.UpdateSurface();
 		}
+
+		//private void ShowTagsButton_Click(object sender, RoutedEventArgs e)
+		//{
+		//	ThreadViewControl.Scroll.DrawDataTags = ShowTagsButton.IsChecked.Value;
+		//	ThreadViewControl.UpdateSurface();
+		//}
 	}
 }

@@ -101,11 +101,10 @@ namespace Profiler.Data
 		public List<ThreadData> Threads { get; set; }
 		public List<ThreadData> Cores { get; set; }
 		public List<ThreadData> Fibers { get; set; }
-		public ThreadData MainThread { get { return Threads[Board.MainThreadIndex]; } }
+		public ThreadData MainThread { get { return Board.MainThreadIndex != -1 ? Threads[Board.MainThreadIndex] : null; } }
 		public SummaryPack Summary { get; set; }
 		public FramePack Frames { get; set; }
 		public SynchronizationMap Synchronization { get; set; }
-
 		public List<DataResponse> Responses { get; set; }
 
 		public bool IsCoreDataGenerated { get; set; }
@@ -125,17 +124,22 @@ namespace Profiler.Data
 
 		public FrameGroup(EventDescriptionBoard board)
 		{
-			System.Diagnostics.Debug.Assert(board != null && board.Response != null, "Invalid EventDescriptionBoard response");
+			//System.Diagnostics.Debug.Assert(board != null && board.Response != null, "Invalid EventDescriptionBoard response");
 
 			Board = board;
 
-			Threads = new List<ThreadData>(board.Threads.Count);
-			foreach (ThreadDescription desc in board.Threads)
-				Threads.Add(new ThreadData(desc));
+			if (board.Threads != null)
+			{
+				Threads = new List<ThreadData>(board.Threads.Count);
+				foreach (ThreadDescription desc in board.Threads)
+					Threads.Add(new ThreadData(desc));
+			}
 
 			Fibers = new List<ThreadData>();
 			Responses = new List<DataResponse>();
-			Responses.Add(board.Response);
+
+			if (board.Response != null)
+				Responses.Add(board.Response);
 		}
 
 		public void AddFrame(EventFrame frame)
@@ -409,7 +413,7 @@ namespace Profiler.Data
 		internal void Add(TagsPack pack)
 		{
 			Responses.Add(pack.Response);
-			if (pack.ThreadIndex < Threads.Count)
+			if (0 <= pack.ThreadIndex && pack.ThreadIndex < Threads.Count)
 				Threads[pack.ThreadIndex].TagsPack = pack;
 		}
 
@@ -482,6 +486,11 @@ namespace Profiler.Data
 		Dictionary<int, FrameGroup> groups = new Dictionary<int, FrameGroup>();
 		Dictionary<int, SummaryPack> summaries = new Dictionary<int, SummaryPack>();
 
+		public void AddGroup(FrameGroup group)
+		{
+			groups[group.Board.ID] = group;
+		}
+
 		public void Flush()
 		{
 			foreach (FrameGroup group in groups.Values)
@@ -513,7 +522,8 @@ namespace Profiler.Data
 					{
 						EventDescriptionBoard board = EventDescriptionBoard.Read(response);
 						FrameGroup group = new FrameGroup(board);
-						groups[board.ID] = group;
+
+						AddGroup(group);
 
 						SummaryPack summary = null;
 						if (summaries.TryGetValue(board.ID, out summary))

@@ -82,6 +82,11 @@ namespace Profiler.DirectX
 			IsDirty = true;
 		}
 
+		public virtual void AddTri(System.Windows.Point[] points, System.Windows.Media.Color color)
+		{
+			AddTri(points[0], points[1], points[2], color);
+		}
+
 		public virtual void AddTri(System.Windows.Point a, System.Windows.Point b, System.Windows.Point c, System.Windows.Media.Color color)
 		{
 			a = InverseLocalTransform.Transform(a);

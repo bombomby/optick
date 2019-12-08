@@ -52,6 +52,8 @@ namespace Profiler
 
 		public static Interval Unit = new Interval(0.0, 1.0);
 		public static Interval Zero = new Interval(0.0, 0.0);
+
+		public bool IsValid { get { return Width > double.Epsilon; } }
 	}
 
 	public class ThreadScroll
@@ -112,6 +114,7 @@ namespace Profiler
 		}
 
 		public CallStackReason DrawCallstacks { get; set; }
+		public bool DrawDataTags { get; set; }
 
 		public enum SyncDrawType
 		{
@@ -269,16 +272,19 @@ namespace Profiler
 
 				double yOffset = Offset + (Height - RenderParams.BaseHeight) * 0.5;
 
-				Data.Utils.ForEachInsideInterval(Group.MainThread.Events, scroll.ViewTime, (frame, index) =>
+				if (Group.MainThread != null)
 				{
-					Interval interval = scroll.TimeToPixel(frame.Header);
-					uint? frameNumber = FrameGroup.GetFrameNumber(frame);
-					String text = String.Format(System.Globalization.CultureInfo.InvariantCulture, "Frame {0} ({1:0.0}ms)", frameNumber.HasValue ? frameNumber.Value : (uint)index, frame.Header.Duration);
+					Data.Utils.ForEachInsideInterval(Group.MainThread.Events, scroll.ViewTime, (frame, index) =>
+					{
+						Interval interval = scroll.TimeToPixel(frame.Header);
+						uint? frameNumber = FrameGroup.GetFrameNumber(frame);
+						String text = String.Format(System.Globalization.CultureInfo.InvariantCulture, "Frame {0} ({1:0.0}ms)", frameNumber.HasValue ? frameNumber.Value : (uint)index, frame.Header.Duration);
 
-					// 2 times to emulate "bold"
-					for (int i = 0; i < 2; ++i)
-						canvas.Text.Draw(new Point(interval.Left, yOffset), text, TextColor, TextAlignment.Center, interval.Width);
-				});
+						// 2 times to emulate "bold"
+						for (int i = 0; i < 2; ++i)
+							canvas.Text.Draw(new Point(interval.Left, yOffset), text, TextColor, TextAlignment.Center, interval.Width);
+					});
+				}
 			}
 		}
 

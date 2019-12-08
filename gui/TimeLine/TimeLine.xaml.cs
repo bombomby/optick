@@ -94,9 +94,20 @@ namespace Profiler
 			{
 				using (new WaitCursor())
 				{
-					using (Stream stream = Data.Capture.Open(file))
+					if (System.IO.Path.GetExtension(file) == ".trace")
 					{
-						return Open(file, stream);
+						return OpenTrace<FTraceGroup>(file);
+					}
+					else if (System.IO.Path.GetExtension(file) == ".json")
+					{
+						return OpenTrace<ChromeTracingGroup>(file);	
+					}
+					else
+					{
+						using (Stream stream = Data.Capture.Open(file))
+						{
+							return Open(file, stream);
+						}
 					}
 				}
 			}
@@ -119,6 +130,23 @@ namespace Profiler
 			ScrollToEnd();
 
 			return true;
+		}
+
+		private bool OpenTrace<T>(String path) where T : ITrace, new()
+		{
+			if (File.Exists(path))
+			{
+				using (Stream stream = File.OpenRead(path))
+				{
+					T trace = new T();
+					trace.Init(path, stream);
+					frames.AddGroup(trace.MainGroup);
+					frames.Add(trace.MainFrame);
+					FocusOnFrame(trace.MainFrame);
+				}
+				return true;
+			}
+			return false;
 		}
 
 		Dictionary<DataResponse.Type, int> testResponses = new Dictionary<DataResponse.Type, int>();

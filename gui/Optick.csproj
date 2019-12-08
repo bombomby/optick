@@ -257,6 +257,7 @@
     </Compile>
     <Compile Include="Data\CaptureSettings.cs" />
     <Compile Include="Data\Mode.cs" />
+    <Compile Include="Data\TraceGroup.cs" />
     <Compile Include="InfrastructureMvvm\BoolToVisibilityConverter.cs" />
     <Compile Include="InfrastructureMvvm\BootStrapperBase.cs" />
     <Compile Include="InfrastructureMvvm\DialogManager.cs" />

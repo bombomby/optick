@@ -224,7 +224,7 @@ namespace Profiler
                 foreach (Selection s in items)
                 {
                     Interval interval = Scroll.TimeToUnit(s.Focus != null ? s.Focus : (IDurable)s.Frame);
-                    if (!Scroll.ViewUnit.Contains(interval) && !interval.Contains(Scroll.ViewUnit))
+                    if (!Scroll.ViewUnit.IsValid || (!Scroll.ViewUnit.Contains(interval) && !interval.Contains(Scroll.ViewUnit)))
                     {
                         Scroll.ViewUnit.Width = interval.Width * DefaultFrameZoom;
                         Scroll.ViewUnit.Left = interval.Left - (Scroll.ViewUnit.Width - interval.Width) * 0.5;

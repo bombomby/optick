@@ -87,16 +87,18 @@ namespace Profiler.ViewModels
             });
         }
 
-		public void OnDataClick(FrameworkElement parent, int index)
+		public void OnDataClick(FrameworkElement parent, List<int> indices)
 		{
-			if (Stats != null && 0 <= index && index < Stats.Samples.Count)
+			if (Stats != null)
 			{
-				FunctionStats.Sample sample = Stats.Samples[index];
+				List<FunctionStats.Sample> samples = new List<FunctionStats.Sample>();
+				indices.ForEach(i => samples.Add(Stats.Samples[i]));
 
 				Entry maxEntry = null;
 				double maxDuration = 0;
 
-				sample.Entries.ForEach(e => { if (maxDuration < e.Duration) { maxDuration = e.Duration; maxEntry = e; } });
+				samples.ForEach(s => s.Entries.ForEach(e => { if (maxDuration < e.Duration) { maxDuration = e.Duration; maxEntry = e; } }));
+
 				if (maxEntry != null)
 				{
 					EventNode maxNode = maxEntry.Frame.Root.FindNode(maxEntry);

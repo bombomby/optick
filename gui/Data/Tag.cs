@@ -115,9 +115,10 @@ namespace Profiler.Data
 	{
 		public override DataResponse Response { get; set; }
 		private FrameGroup Group { get; set; }
-		public int ThreadIndex { get; private set; }
+		public int ThreadIndex { get; private set; } = -1;
+		public int CoreIndex { get; set; } = -1;
 
-		List<Tag> tags;
+		List<Tag> tags = new List<Tag>();
 		public List<Tag> Tags { get { return tags; } }
 
 		bool IsLoaded { get; set; }
@@ -126,12 +127,23 @@ namespace Profiler.Data
 		{
 			Response = response;
 			Group = group;
-			ThreadIndex = response.Reader.ReadInt32();
-			Load();
+			if (response != null)
+			{
+				ThreadIndex = response.Reader.ReadInt32();
+				Load();
+			}
+		}
+
+		public TagsPack(List<Tag> t)
+		{
+			tags = t;
 		}
 
 		void Load()
 		{
+			if (Response == null)
+				return;
+
 			lock (Response)
 			{
 				if (!IsLoaded)

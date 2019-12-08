@@ -54,12 +54,7 @@ namespace Profiler.Data
 					}
 					else
 					{
-						Random rnd = new Random(FullName.GetHashCode());
-
-						do
-						{
-							forceColor = Color.FromRgb((byte)rnd.Next(), (byte)rnd.Next(), (byte)rnd.Next());
-						} while (DirectX.Utils.GetLuminance(forceColor) < DirectX.Utils.LuminanceThreshold);
+						forceColor = GenerateRandomColor(FullName);
 					}
 				}
 				return forceColor;
@@ -100,6 +95,27 @@ namespace Profiler.Data
 		public DescFlags Flags { get; private set; }
 
 		public override bool HasShortName { get { return (Flags & DescFlags.IS_CUSTOM_NAME) == 0; } }
+
+		public static Color GenerateRandomColor(String name, float variance = 0.0f)
+		{
+			Random rnd = new Random(name.GetHashCode());
+			Color color;
+			do
+			{
+				color = Color.FromRgb((byte)rnd.Next(), (byte)rnd.Next(), (byte)rnd.Next());
+			} while (DirectX.Utils.GetLuminance(color) < DirectX.Utils.LuminanceThreshold);
+
+			if (variance > float.Epsilon)
+			{
+				byte shift = (byte)(new Random().Next() % (int)(variance * 255.0f));
+				byte r = (byte)(color.R + Math.Min(255 - color.R, shift));
+				byte g = (byte)(color.G + Math.Min(255 - color.G, shift));
+				byte b = (byte)(color.B + Math.Min(255 - color.B, shift));
+				return Color.FromRgb(r, g, b);
+			}
+
+			return color;
+		}
 
 		public void SetOverrideColor(Color color)
 		{
@@ -233,11 +249,11 @@ namespace Profiler.Data
 	{
 		public Stream BaseStream { get; private set; }
 		public int ID { get; private set; }
-		public Durable TimeSlice { get; private set; }
-		public int MainThreadIndex { get; private set; }
-		public TimeSettings TimeSettings { get; private set; }
-		public List<ThreadDescription> Threads { get; private set; }
-		public Dictionary<UInt64, int> ThreadID2ThreadIndex { get; private set; }
+		public Durable TimeSlice { get; set; }
+		public int MainThreadIndex { get; set; } = -1;
+		public TimeSettings TimeSettings { get; set; }
+		public List<ThreadDescription> Threads { get; private set; } = new List<ThreadDescription>();
+		public Dictionary<UInt64, int> ThreadID2ThreadIndex { get; private set; } = new Dictionary<ulong, int>();
 		public List<FiberDescription> Fibers { get; private set; }
 		public UInt32 Mode { get; set; }
 
@@ -397,7 +413,7 @@ namespace Profiler.Data
 		{
 			ReadEventData(reader);
 			int index = reader.ReadInt32();
-			Description = index != -1 ? board[index] : null;
+			Description = (index != -1 && index < board.Board.Count) ? board[index] : null;
 		}
 
 		public static Entry Read(BinaryReader reader, EventDescriptionBoard board)

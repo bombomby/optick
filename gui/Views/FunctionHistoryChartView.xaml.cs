@@ -137,7 +137,7 @@ namespace Profiler.Views
 			FunctionViewModel vm = DataContext as FunctionViewModel;
 			if (vm != null)
 			{
-				vm.OnDataClick(this, index);
+				vm.OnDataClick(this, new List<int>() { index });
 			}
 		}
 

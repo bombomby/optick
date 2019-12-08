@@ -194,19 +194,13 @@ namespace Profiler.Data
 		public Dictionary<UInt64, Synchronization> SyncMap { get; set; }
 		public List<SyncEvent> Events { get; set; }
 
-		public SynchronizationMap(DataResponse response, FrameGroup group)
+		public void Load(List<SyncEvent> events)
 		{
-			Response = response;
-			SyncMap = new Dictionary<UInt64, Synchronization>();
-
-			int count = response.Reader.ReadInt32();
-			List<SyncEvent> events = new List<SyncEvent>(count);
-			for (int i = 0; i < count; ++i)
-				events.Add(new SyncEvent(response.Reader));
-
 			Events = events;
 
-			for (int i = 0; i < count; ++i)
+			SyncMap = new Dictionary<UInt64, Synchronization>();
+
+			for (int i = 0; i < events.Count; ++i)
 			{
 				SyncEvent scEvent = events[i];
 
@@ -263,10 +257,28 @@ namespace Profiler.Data
 				for (int i = 0; i < sync.Count - 1; ++i)
 				{
 					Debug.Assert(sync[i].IsValid, "Invalid data!");
-					Debug.Assert(sync[i].Finish <= sync[i+1].Start, "Not sorted!");
+					Debug.Assert(sync[i].Finish <= sync[i + 1].Start, "Not sorted!");
 				}
 			}
 #endif
+
+		}
+
+		public SynchronizationMap(List<SyncEvent> events)
+		{
+			Load(events);
+		}
+
+		public SynchronizationMap(DataResponse response, FrameGroup group)
+		{
+			Response = response;
+
+			int count = response.Reader.ReadInt32();
+			List<SyncEvent> events = new List<SyncEvent>(count);
+			for (int i = 0; i < count; ++i)
+				events.Add(new SyncEvent(response.Reader));
+
+			Load(events);
 		}
 	}
 

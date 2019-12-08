@@ -85,6 +85,10 @@ namespace Profiler.Data
 
 				return tags;
 			}
+			set
+			{
+				tags = value;
+			}
 		}
 
 		public T FindTag<T>(String name) where T : Tag

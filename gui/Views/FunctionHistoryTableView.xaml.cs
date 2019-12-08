@@ -29,12 +29,16 @@ namespace Profiler.Views
 
 		private void FunctionInstanceDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			FunctionStats.Sample sample = FunctionInstanceDataGrid.SelectedItem as FunctionStats.Sample;
-			if (sample != null)
+			List<int> indices = new List<int>();
+
+			foreach (FunctionStats.Sample sample in FunctionInstanceDataGrid.SelectedItems)
+				indices.Add(sample.Index);
+
+			if (indices.Count > 0)
 			{
 				FunctionViewModel vm = DataContext as FunctionViewModel;
 				if (vm != null)
-					vm.OnDataClick(this, sample.Index);
+					vm.OnDataClick(this, indices);
 			}
 		}
 	}

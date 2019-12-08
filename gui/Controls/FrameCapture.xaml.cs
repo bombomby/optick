@@ -145,19 +145,19 @@ namespace Profiler.Controls
 			{
 				EventFrame eventFrame = frame as EventFrame;
 				FrameGroup group = eventFrame.Group;
-				EventDescription desc = eventFrame.RootEntry.Description;
 
-				FunctionSummaryVM.Load(group, desc);
-				FunctionInstanceVM.Load(group, desc);
+				if (eventFrame.RootEntry != null)
+				{
+					EventDescription desc = eventFrame.RootEntry.Description;
 
-				FunctionSamplingVM.Load(group, desc);
-				SysCallsSamplingVM.Load(group, desc);
+					FunctionSummaryVM.Load(group, desc);
+					FunctionInstanceVM.Load(group, desc);
 
-				FrameInfoControl.SetFrame(frame, null);
-				//SampleInfoControl.SetFrame(frame, null);
-				//SysCallInfoControl.SetFrame(frame, null);
+					FunctionSamplingVM.Load(group, desc);
+					SysCallsSamplingVM.Load(group, desc);
 
-				//SamplingTreeControl.SetDescription(frame.Group, eventFrame.RootEntry.Description);
+					FrameInfoControl.SetFrame(frame, null);
+				}
 			}
 
 			if (frame != null && frame.Group != null)
@@ -262,7 +262,7 @@ namespace Profiler.Controls
 		private void OnOpenCommandExecuted(object sender, ExecutedRoutedEventArgs args)
 		{
 			System.Windows.Forms.OpenFileDialog dlg = new System.Windows.Forms.OpenFileDialog();
-			dlg.Filter = "Optick Performance Capture (*.opt)|*.opt";
+			dlg.Filter = "Optick Capture (*.opt)|*.opt|Chrome Trace (*.json)|*.json|FTrace Capture (*.ftrace)|*.ftrace";
 			dlg.Title = "Load profiler results?";
 			if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
 			{
