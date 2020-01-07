@@ -12,7 +12,7 @@ DECLARE_LOG_CATEGORY_EXTERN(OptickLog, Log, All);
  * The public interface to this module.  In most cases, this interface is only public to sibling modules 
  * within this plugin.
  */
-class IOptickPlugin : public IModuleInterface
+class OPTICKPLUGIN_API IOptickPlugin : public IModuleInterface
 {
 
 public:

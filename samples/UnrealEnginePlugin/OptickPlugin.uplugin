@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.2.8",
+	"VersionName": "1.3.0",
 	"FriendlyName": "Optick",
 	"Description": "Super Lightweight Performance Profiler",
 	"Category": "Performance",
@@ -16,7 +16,7 @@
 	"Modules": [
 		{
 			"Name": "OptickPlugin",
-			"Type": "Developer",
+			"Type": "DeveloperTool",
 			"LoadingPhase": "Default",
 			"WhitelistPlatforms": [ "Win64", "Mac", "Linux", "PS4", "XboxOne", "Android" ]
 		}

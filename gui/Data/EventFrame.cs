@@ -400,14 +400,22 @@ namespace Profiler.Data
 			Custom,
 		}
 
-		public List<EventData> Events { get; set; } = new List<EventData>();
+		public List<FrameData> Events { get; set; } = new List<FrameData>();
 		public Type FrameType { get; set; }
 	}
 
 	public class FramePack
 	{
 		public DataResponse Response { get; set; }
-		public List<FrameList> Frames { get; set; } = new List<FrameList>();
+		public List<FrameList> Threads { get; set; } = new List<FrameList>();
+
+		public FrameList this[FrameList.Type index]
+		{
+			get
+			{
+				return Threads.Find(list => list.FrameType == index);
+			}
+		}
 
 		public static FramePack Create(DataResponse response, EventDescriptionBoard board)
 		{
@@ -422,8 +430,12 @@ namespace Profiler.Data
 				list.FrameType = (FrameList.Type)frame;
 				int count = response.Reader.ReadInt32();
 				for (int i = 0; i < count; ++i)
-					list.Events.Add(Entry.Read(response.Reader, board));
-				pack.Frames.Add(list);
+				{
+					FrameData frameData = FrameData.Read(response, board);
+					if (frameData.IsNonZero)
+						list.Events.Add(frameData);
+				}
+				pack.Threads.Add(list);
 			}
 			return pack;
 		}

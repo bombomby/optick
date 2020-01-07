@@ -272,13 +272,13 @@ namespace Profiler
 
 				double yOffset = Offset + (Height - RenderParams.BaseHeight) * 0.5;
 
-				if (Group.MainThread != null)
+				FrameList focusThread = Group.FocusThread;
+				if (focusThread != null)
 				{
-					Data.Utils.ForEachInsideInterval(Group.MainThread.Events, scroll.ViewTime, (frame, index) =>
+					Data.Utils.ForEachInsideInterval(focusThread.Events, scroll.ViewTime, (frame, index) =>
 					{
-						Interval interval = scroll.TimeToPixel(frame.Header);
-						uint? frameNumber = FrameGroup.GetFrameNumber(frame);
-						String text = String.Format(System.Globalization.CultureInfo.InvariantCulture, "Frame {0} ({1:0.0}ms)", frameNumber.HasValue ? frameNumber.Value : (uint)index, frame.Header.Duration);
+						Interval interval = scroll.TimeToPixel(frame);
+						String text = String.Format(System.Globalization.CultureInfo.InvariantCulture, "Frame {0} ({1:0.0}ms)", (uint)index, frame.Duration);
 
 						// 2 times to emulate "bold"
 						for (int i = 0; i < 2; ++i)

@@ -75,31 +75,40 @@ namespace Profiler.Data
 
 			if (origin == Origin.MainThread)
 			{
-				List<EventFrame> frames = Group.MainThread.Events;
+				Group.UpdateDescriptionMask(Description);
 
-				for (int i = 0; i < frames.Count; ++i)
+				if (Description.Mask != null)
 				{
-					Sample sample = new Sample() { Name = String.Format("Frame {0:000}", i), Index = i };
-
-					long start = frames[i].Start;
-					long finish = i == frames.Count - 1 ? frames[i].Finish : frames[i + 1].Start;
-
-					foreach (ThreadData thread in Group.Threads)
+					FrameList frameList = Group.GetFocusThread(Description.Mask.Value);
+					if (frameList != null)
 					{
-						Utils.ForEachInsideIntervalStrict(thread.Events, start, finish, (frame) =>
-						{
-							List<Entry> shortEntries = null;
-							if (frame.ShortBoard.TryGetValue(Description, out shortEntries))
-							{
-								foreach (Entry e in shortEntries)
-								{
-									sample.Add(e);
-								}
-							}
-						});
-					}
+						List<FrameData> frames = frameList.Events;
 
-					Samples.Add(sample);
+						for (int i = 0; i < frames.Count; ++i)
+						{
+							Sample sample = new Sample() { Name = String.Format("Frame {0:000}", i), Index = i };
+
+							long start = frames[i].Start;
+							long finish = i == frames.Count - 1 ? frames[i].Finish : frames[i + 1].Start;
+
+							foreach (ThreadData thread in Group.Threads)
+							{
+								Utils.ForEachInsideIntervalStrict(thread.Events, start, finish, (frame) =>
+								{
+									List<Entry> shortEntries = null;
+									if (frame.ShortBoard.TryGetValue(Description, out shortEntries))
+									{
+										foreach (Entry e in shortEntries)
+										{
+											sample.Add(e);
+										}
+									}
+								});
+							}
+
+							Samples.Add(sample);
+						}
+					}
 				}
 			}
 

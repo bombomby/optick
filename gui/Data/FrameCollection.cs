@@ -101,13 +101,33 @@ namespace Profiler.Data
 		public List<ThreadData> Threads { get; set; }
 		public List<ThreadData> Cores { get; set; }
 		public List<ThreadData> Fibers { get; set; }
-		public ThreadData MainThread { get { return Board.MainThreadIndex != -1 ? Threads[Board.MainThreadIndex] : null; } }
+		//public ThreadData MainThread { get { return Board.MainThreadIndex != -1 ? Threads[Board.MainThreadIndex] : null; } }
+		public FrameList FocusThread { get { return Frames != null ? Frames[FrameList.Type.CPU] : null; } }
 		public SummaryPack Summary { get; set; }
 		public FramePack Frames { get; set; }
 		public SynchronizationMap Synchronization { get; set; }
 		public List<DataResponse> Responses { get; set; }
 
 		public bool IsCoreDataGenerated { get; set; }
+
+		public FrameList GetFocusThread(ThreadMask mask)
+		{
+			if (mask == ThreadMask.GPU)
+			{
+				FrameList gpuFrames = Frames[FrameList.Type.GPU];
+				if (gpuFrames != null && gpuFrames.Events.Count > 0)
+					return gpuFrames;
+			}
+
+			if (mask == ThreadMask.Render)
+			{
+				FrameList renderFrames = Frames[FrameList.Type.Render];
+				if (renderFrames != null && renderFrames.Events.Count > 0)
+					return renderFrames;
+			}
+
+			return Frames[FrameList.Type.CPU];
+		}
 
 		public List<ThreadData> GetThreads(ThreadDescription.Source origin)
 		{
@@ -478,6 +498,29 @@ namespace Profiler.Data
 			if (tag != null)
 				return tag.Value;
 			return null;
+		}
+
+		public bool UpdateDescriptionMask(EventDescription description)
+		{
+			if (description.Mask != null)
+				return false;
+
+			ThreadMask mask = ThreadMask.None;
+
+			foreach (ThreadData thread in Threads)
+			{
+				foreach (EventFrame frame in thread.Events)
+				{
+					if (frame.ShortBoard.ContainsKey(description))
+					{
+						mask |= (ThreadMask)thread.Description.Mask;
+					}
+				}
+			}
+
+			description.Mask = mask;
+
+			return true;
 		}
 	}
 

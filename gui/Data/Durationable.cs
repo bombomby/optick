@@ -127,6 +127,14 @@ namespace Profiler.Data
 			}
 		}
 
+		public bool IsNonZero
+		{
+			get
+			{
+				return (Finish > Start) && (Finish != Tick.INVALID_TIMESTAMP) && (Start != Tick.INVALID_TIMESTAMP);
+			}
+		}
+
 		public Durable(long s, long f)
 		{
 			this.Start = s;

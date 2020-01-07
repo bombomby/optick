@@ -427,7 +427,13 @@ struct CaptureStatus
     };
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-typedef MemoryPool<EventData, 128> FrameBuffer;
+struct FrameData : public EventData 
+{
+	uint64_t threadID;
+	FrameData() : threadID(INVALID_THREAD_ID) {}
+};
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+typedef MemoryPool<FrameData, 128> FrameBuffer;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct FrameStorage
 {
@@ -485,8 +491,8 @@ class Core
 	void UpdateEvents();
 	bool UpdateState();
 
-	uint32_t BeginUpdateFrame(FrameType::Type frame, int64_t timestamp);
-	uint32_t EndUpdateFrame(FrameType::Type frame, int64_t timestamp);
+	uint32_t BeginUpdateFrame(FrameType::Type frame, int64_t timestamp, uint64_t threadID);
+	uint32_t EndUpdateFrame(FrameType::Type frame, int64_t timestamp, uint64_t threadID);
 
 	Core();
 	~Core();
@@ -611,8 +617,8 @@ public:
 	void Shutdown();
 
 	// Frame Flip functions
-	static uint32_t BeginFrame(FrameType::Type frame, int64_t timestamp) { return Get().BeginUpdateFrame(frame, timestamp); }
-	static uint32_t EndFrame(FrameType::Type frame, int64_t timestamp) { return Get().EndUpdateFrame(frame, timestamp); }
+	static uint32_t BeginFrame(FrameType::Type frame, int64_t timestamp, uint64_t threadID) { return Get().BeginUpdateFrame(frame, timestamp, threadID); }
+	static uint32_t EndFrame(FrameType::Type frame, int64_t timestamp, uint64_t threadID) { return Get().EndUpdateFrame(frame, timestamp, threadID); }
 
 	// NOT Thread Safe singleton (performance)
 	static Core& Get();

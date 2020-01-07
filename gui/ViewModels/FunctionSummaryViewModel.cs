@@ -92,7 +92,7 @@ namespace Profiler.ViewModels
 			if (Stats != null)
 			{
 				List<FunctionStats.Sample> samples = new List<FunctionStats.Sample>();
-				indices.ForEach(i => samples.Add(Stats.Samples[i]));
+				indices.ForEach(i => { if (i > 0 && i < Stats.Samples.Count) samples.Add(Stats.Samples[i]); });
 
 				Entry maxEntry = null;
 				double maxDuration = 0;

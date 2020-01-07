@@ -4,9 +4,104 @@
 
 #if OPTICK_UE4_GPU
 
+#define UE_4_24_OR_LATER (ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION >= 24)
+
 // RenderCore
 #include "GPUProfiler.h"
 #include "ProfilingDebugging/RealtimeGPUProfiler.h"
+#include "ProfilingDebugging/TracingProfiler.h"
+
+#define REALTIME_GPU_PROFILER_EVENT_TRACK_FRAME_NUMBER (TRACING_PROFILER || DO_CHECK)
+
+#ifdef UE_4_24_OR_LATER
+
+/*-----------------------------------------------------------------------------
+FRealTimeGPUProfilerEvent class
+-----------------------------------------------------------------------------*/
+class FRealtimeGPUProfilerEventImpl
+{
+public:
+	static const uint64 InvalidQueryResult = 0xFFFFFFFFFFFFFFFFull;
+
+public:
+	bool GatherQueryResults(FRHICommandListImmediate& RHICmdList)
+	{
+		QUICK_SCOPE_CYCLE_COUNTER(STAT_SceneUtils_GatherQueryResults);
+
+		// Get the query results which are still outstanding
+		check(StartQuery.IsValid() && EndQuery.IsValid());
+
+		if (StartResultMicroseconds == InvalidQueryResult)
+		{
+			if (!RHICmdList.GetRenderQueryResult(StartQuery.GetQuery(), StartResultMicroseconds, false))
+			{
+				StartResultMicroseconds = InvalidQueryResult;
+			}
+		}
+
+		if (EndResultMicroseconds == InvalidQueryResult)
+		{
+			if (!RHICmdList.GetRenderQueryResult(EndQuery.GetQuery(), EndResultMicroseconds, false))
+			{
+				EndResultMicroseconds = InvalidQueryResult;
+			}
+		}
+
+		return HasValidResult();
+	}
+
+	bool HasValidResult() const
+	{
+		return StartResultMicroseconds != InvalidQueryResult && EndResultMicroseconds != InvalidQueryResult;
+	}
+
+	FRHIPooledRenderQuery StartQuery;
+	FRHIPooledRenderQuery EndQuery;
+
+	FName Name;
+	STAT(FName StatName;)
+
+	uint64 StartResultMicroseconds;
+	uint64 EndResultMicroseconds;
+
+#if REALTIME_GPU_PROFILER_EVENT_TRACK_FRAME_NUMBER
+	uint32 FrameNumber;
+#endif
+
+#if DO_CHECK
+	bool bInsideQuery;
+#endif
+};
+
+
+class FRealtimeGPUProfilerFrameImpl
+{
+public:
+	struct FGPUEventTimeAggregate
+	{
+		uint32 ExclusiveTimeUs;
+		uint32 InclusiveTimeUs;
+	};
+
+	static constexpr uint32 GPredictedMaxNumEvents = 100u;
+	static constexpr uint32 GPredictedMaxNumEventsUpPow2 = 128u;
+	static constexpr uint32 GPredictedMaxStackDepth = 32u;
+
+	int32 NextEventIdx;
+	int32 OverflowEventCount;
+	int32 NextResultPendingEventIdx;
+
+	uint32& QueryCount;
+	FRenderQueryPoolRHIRef RenderQueryPool;
+
+	TArray<FRealtimeGPUProfilerEventImpl, TInlineAllocator<GPredictedMaxNumEvents>> GpuProfilerEvents;
+	TArray<int32, TInlineAllocator<GPredictedMaxNumEvents>> GpuProfilerEventParentIndices;
+	TArray<int32, TInlineAllocator<GPredictedMaxStackDepth>> EventStack;
+	TArray<FGPUEventTimeAggregate, TInlineAllocator<GPredictedMaxNumEvents>> EventAggregates;
+};
+
+
+#else
 
 /*-----------------------------------------------------------------------------
 FRealTimeGPUProfilerEvent class
@@ -102,6 +197,8 @@ public:
 	FRenderQueryPoolRHIRef RenderQueryPool;
 };
 
+#endif
+
 class FRealtimeGPUProfilerImpl
 {
 public:
@@ -116,14 +213,5 @@ public:
 };
 
 static_assert(sizeof(FRealtimeGPUProfilerImpl) == sizeof(FRealtimeGPUProfiler), "Size mismatch");
-//static_assert(offsetof(FRealtimeGPUProfilerImpl, Frames) == offsetof(FRealtimeGPUProfiler, Frames), "FRealtimeGPUProfiler::Frames offset mismatch");
-//static_assert(offsetof(FRealtimeGPUProfilerImpl, WriteBufferIndex) == offsetof(FRealtimeGPUProfiler, WriteBufferIndex), "FRealtimeGPUProfiler::WriteBufferIndex offset mismatch");
-//static_assert(offsetof(FRealtimeGPUProfilerImpl, ReadBufferIndex) == offsetof(FRealtimeGPUProfiler, ReadBufferIndex), "FRealtimeGPUProfiler::ReadBufferIndex offset mismatch");
-//static_assert(offsetof(FRealtimeGPUProfilerImpl, WriteFrameNumber) == offsetof(FRealtimeGPUProfiler, WriteFrameNumber), "FRealtimeGPUProfiler::WriteFrameNumber offset mismatch");
-//static_assert(offsetof(FRealtimeGPUProfilerImpl, QueryCount) == offsetof(FRealtimeGPUProfiler, QueryCount), "FRealtimeGPUProfiler::QueryCount offset mismatch");
-//static_assert(offsetof(FRealtimeGPUProfilerImpl, RenderQueryPool) == offsetof(FRealtimeGPUProfiler, RenderQueryPool), "FRealtimeGPUProfiler::RenderQueryPool offset mismatch");
-//static_assert(offsetof(FRealtimeGPUProfilerImpl, bStatGatheringPaused) == offsetof(FRealtimeGPUProfiler, bStatGatheringPaused), "FRealtimeGPUProfiler::bStatGatheringPaused offset mismatch");
-//static_assert(offsetof(FRealtimeGPUProfilerImpl, bInBeginEndBlock) == offsetof(FRealtimeGPUProfiler, bInBeginEndBlock), "FRealtimeGPUProfiler::bInBeginEndBlock offset mismatch");
-
 
 #endif //OPTICK_UE4_GPU

@@ -433,9 +433,10 @@ namespace Profiler
 
 			List<ITick> frames = null;
 
-			if (Group != null && Group.MainThread != null)
+			if (Group != null && Group.Frames != null && Group.Frames[FrameList.Type.CPU] != null)
 			{
-				frames = Group.MainThread.Events.ConvertAll(frame => frame.Header as ITick);
+				FrameList list = Group.Frames[FrameList.Type.CPU];
+				frames = list.Events.ConvertAll(frame => frame as ITick);
 			}
 			else if (Group != null)
 			{

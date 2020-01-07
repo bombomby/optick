@@ -392,6 +392,81 @@ uint64 FOptickPlugin::Convert32bitCPUTimestamp(int64 timestamp) const
 }
 
 #if OPTICK_UE4_GPU
+#if UE_4_24_OR_LATER
+void FOptickPlugin::OnEndFrameRT()
+{
+	FScopeLock ScopeLock(&UpdateCriticalSection);
+
+	if (!IsCapturing || !Optick::IsActive(Optick::Mode::GPU))
+		return;
+
+	QUICK_SCOPE_CYCLE_COUNTER(STAT_FOptickPlugin_UpdRT);
+
+	if (FRealtimeGPUProfilerImpl* gpuProfiler = reinterpret_cast<FRealtimeGPUProfilerImpl*>(FRealtimeGPUProfiler::Get()))
+	{
+		if (FRealtimeGPUProfilerFrameImpl* Frame = gpuProfiler->Frames[gpuProfiler->ReadBufferIndex])
+		{
+			FRHICommandListImmediate& RHICmdList = FRHICommandListExecutor::GetImmediateCommandList();
+
+			// Gather any remaining results and check all the results are ready
+			const int32 NumEventsThisFramePlusOne = Frame->NextEventIdx;
+
+			for (int32 i = Frame->NextResultPendingEventIdx; i < NumEventsThisFramePlusOne; ++i)
+			{
+				FRealtimeGPUProfilerEventImpl& Event = Frame->GpuProfilerEvents[i];
+
+				if (!Event.GatherQueryResults(RHICmdList))
+				{
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+					UE_LOG(OptickLog, Warning, TEXT("Query is not ready."));
+#endif
+					// The frame isn't ready yet. Don't update stats - we'll try again next frame. 
+					return;
+				}
+			}
+
+			for (int32 i = 1; i < NumEventsThisFramePlusOne; ++i)
+			{
+				FRealtimeGPUProfilerEventImpl& Event = Frame->GpuProfilerEvents[i];
+
+				const FName Name = Event.Name;
+
+				Optick::EventDescription* Description = nullptr;
+
+				if (Optick::EventDescription** ppDescription = GPUDescriptionMap.Find(Name))
+				{
+					Description = *ppDescription;
+				}
+				else
+				{
+					Description = Optick::EventDescription::CreateShared(TCHAR_TO_ANSI(*Name.ToString()));
+					GPUDescriptionMap.Add(Name, Description);
+				}
+
+				uint64 startTimestamp = ConvertGPUTimestamp(Event.StartResultMicroseconds);
+				uint64 endTimestamp = ConvertGPUTimestamp(Event.EndResultMicroseconds);
+
+				if (Name == NAME_GPU_Unaccounted)
+				{
+					OPTICK_FRAME_FLIP(Optick::FrameType::GPU, startTimestamp);
+
+					if (GPUThreadStorage.LastTimestamp != 0)
+					{
+						OPTICK_STORAGE_POP(GPUThreadStorage.EventStorage, GPUThreadStorage.LastTimestamp);
+					}
+						
+					OPTICK_STORAGE_PUSH(GPUThreadStorage.EventStorage, Optick::GetFrameDescription(Optick::FrameType::GPU), startTimestamp)
+				}
+				else
+				{
+					OPTICK_STORAGE_EVENT(GPUThreadStorage.EventStorage, Description, startTimestamp, endTimestamp);
+				}
+				GPUThreadStorage.LastTimestamp = FMath::Max<uint64>(GPUThreadStorage.LastTimestamp, endTimestamp);
+			}
+		}
+	}
+}
+#else
 void FOptickPlugin::OnEndFrameRT()
 {
 	FScopeLock ScopeLock(&UpdateCriticalSection);
@@ -483,7 +558,7 @@ void FOptickPlugin::OnEndFrameRT()
 					{
 						OPTICK_STORAGE_POP(GPUThreadStorage.EventStorage, GPUThreadStorage.LastTimestamp);
 					}
-						
+
 					OPTICK_STORAGE_PUSH(GPUThreadStorage.EventStorage, Optick::GetFrameDescription(Optick::FrameType::GPU), startTimestamp)
 				}
 				else
@@ -495,6 +570,7 @@ void FOptickPlugin::OnEndFrameRT()
 		}
 	}
 }
+#endif
 
 uint64 FOptickPlugin::ConvertGPUTimestamp(uint64 timestamp)
 {
@@ -594,7 +670,7 @@ void FOptickPlugin::GetDataFromStatsThread(int64 CurrentFrame)
 					// Push the new one
 					OPTICK_STORAGE_PUSH(Storage->EventStorage, cpuFrameDescription, Storage->LastTimestamp);
 
-					OPTICK_FRAME_FLIP(Optick::FrameType::CPU, Storage->LastTimestamp);
+					OPTICK_FRAME_FLIP(Optick::FrameType::CPU, Storage->LastTimestamp, Packet.ThreadId);
 				}
 			}
 			else if (Op == EStatOperation::AdvanceFrameEventRenderThread)
@@ -607,7 +683,7 @@ void FOptickPlugin::GetDataFromStatsThread(int64 CurrentFrame)
 					// Push the new one
 					OPTICK_STORAGE_PUSH(Storage->EventStorage, renderFrameDescription, Storage->LastTimestamp);
 
-					OPTICK_FRAME_FLIP(Optick::FrameType::Render, Storage->LastTimestamp);
+					OPTICK_FRAME_FLIP(Optick::FrameType::Render, Storage->LastTimestamp, Packet.ThreadId);
 				}
 			}
 		}

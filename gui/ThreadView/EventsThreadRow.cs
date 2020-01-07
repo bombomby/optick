@@ -97,7 +97,7 @@ namespace Profiler
 					break;
 
 				case Controls.LocalSettings.ExpandMode.ExpandMain:
-					_isExpanded = group.MainThread != null && group.MainThread.Description == desc;
+					_isExpanded = desc.ThreadIndex == group.Board.MainThreadIndex;
 					break;
 			}
 		}

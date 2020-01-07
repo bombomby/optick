@@ -94,6 +94,8 @@ namespace Profiler.Data
 
 		public DescFlags Flags { get; private set; }
 
+		public ThreadMask? Mask { get; set; }
+
 		public override bool HasShortName { get { return (Flags & DescFlags.IS_CUSTOM_NAME) == 0; } }
 
 		public static Color GenerateRandomColor(String name, float variance = 0.0f)
@@ -183,6 +185,16 @@ namespace Profiler.Data
 		}
 	}
 
+	public enum ThreadMask
+	{
+		None,
+		Main = 1 << 0,
+		GPU = 1 << 1,
+		IO = 1 << 2,
+		Idle = 1 << 3,
+		Render = 1 << 4,
+	}
+
 	public class ThreadDescription
 	{
 		public String Name { get; set; }
@@ -202,15 +214,6 @@ namespace Profiler.Data
 			Sampling,
 		}
 		public Source Origin { get; set; }
-
-		public enum ThreadMask
-		{
-			None,
-			Main = 1 << 0,
-			GPU = 1 << 1,
-			IO = 1 << 2,
-            Idle = 1 << 3,
-		}
 
         public bool IsIdle { get { return (Mask & (int)ThreadMask.Idle) != 0; } }
 
@@ -434,6 +437,28 @@ namespace Profiler.Data
 				return Start < other.Start ? -1 : 1;
 			else
 				return Finish == other.Finish ? 0 : Finish > other.Finish ? -1 : 1;
+		}
+	}
+
+	public class FrameData : Entry
+	{
+		public UInt64 ThreadID { get; set; }
+
+		public static FrameData Read(DataResponse response, EventDescriptionBoard board)
+		{
+			FrameData res = new FrameData();
+			res.ReadEntry(response.Reader, board);
+
+			if (response.Version >= NetworkProtocol.NETWORK_PROTOCOL_VERSION_25)
+			{
+				res.ThreadID = response.Reader.ReadUInt64();
+			}
+			else
+			{
+				res.ThreadID = UInt64.MaxValue;
+			}
+
+			return res;
 		}
 	}
 }

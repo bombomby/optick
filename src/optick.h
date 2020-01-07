@@ -398,7 +398,6 @@ struct FrameType
 		CPU,
 		GPU,
 		Render,
-		Custom,
 		COUNT,
 	};
 };
@@ -406,8 +405,8 @@ struct FrameType
 OPTICK_API int64_t GetHighPrecisionTime();
 OPTICK_API int64_t GetHighPrecisionFrequency();
 OPTICK_API void Update();
-OPTICK_API uint32_t BeginFrame(FrameType::Type type = FrameType::CPU, int64_t timestamp = -1);
-OPTICK_API uint32_t EndFrame(FrameType::Type type = FrameType::CPU, int64_t timestamp = -1);
+OPTICK_API uint32_t BeginFrame(FrameType::Type type = FrameType::CPU, int64_t timestamp = -1, uint64_t threadID = (uint64_t)-1);
+OPTICK_API uint32_t EndFrame(FrameType::Type type = FrameType::CPU, int64_t timestamp = -1, uint64_t threadID = (uint64_t)-1);
 OPTICK_API bool IsActive(Mode::Type mode = Mode::INSTRUMENTATION_EVENTS);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct EventStorage;
@@ -428,6 +427,7 @@ struct ThreadMask
 		GPU		= 1 << 1,
 		IO		= 1 << 2,
 		Idle	= 1 << 3,
+		Render  = 1 << 4,
 	};
 };
 
