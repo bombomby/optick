@@ -57,6 +57,7 @@ namespace UnrealBuildTool.Rules
 				}
 				);
 
+/*
 #if UE_4_24_OR_LATER
 			PublicDefinitions.AddRange(
 				new string[]
@@ -65,7 +66,7 @@ namespace UnrealBuildTool.Rules
 				}
 				);
 #endif
-
+*/
 
 			if (Target.bBuildEditor == true)
 			{
