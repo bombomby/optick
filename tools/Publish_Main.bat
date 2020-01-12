@@ -2,7 +2,7 @@
 
 cd ..
 
-call generate_projects.gpu.bat
+call tools/GenerateProjects_gpu.bat
 
 MsBuild build/vs2017/Optick.sln /t:OptickCore:Rebuild /p:Configuration=Debug /p:Platform=x64
 MsBuild build/vs2017/Optick.sln /t:Samples\ConsoleApp:Rebuild /p:Configuration=Release /p:Platform=x64
