@@ -71,7 +71,8 @@ https://github.com/bombomby/optick/wiki/Optick-API
 
 ## Unreal Engine
 Optick provides a special plugin for UE4. Check more detailed documentation here: 
-https://github.com/bombomby/optick/wiki/UE4-Optick-Plugin
+https://github.com/bombomby/optick/wiki/UE4-Optick-Plugin <br/>
+![](https://github.com/bombomby/brofiler/blob/gh-pages/images/UE4_Optick_1.png)
 
 ## Samples
 Run [GenerateProjects_gpu.bat](https://github.com/bombomby/optick/blob/master/tools/GenerateProjects_gpu.bat) to generate project files. To compile the samples you'll need to install VulkanSDK. Alternatively you could use [GenerateProjects.bat](https://github.com/bombomby/optick/blob/master/tools/GenerateProjects.bat) to generate only minimal solution with ConsoleApp sample.<br/>
