@@ -12,7 +12,7 @@ namespace Profiler.Data
 {
 	public static class Utils
 	{
-		public static int BinarySearchIndex<T, U>(List<T> frames, U value, Func<T, U> mapping) where U : IComparable
+		public static int BinarySearchIndex<T, U>(IList<T> frames, U value, Func<T, U> mapping) where U : IComparable
 		{
 			if (frames == null || frames.Count == 0)
 				return -1;
@@ -39,7 +39,7 @@ namespace Profiler.Data
 			return left;
 		}
 
-		public static int BinarySearchClosestIndex<T>(List<T> frames, long value) where T : ITick
+		public static int BinarySearchClosestIndex<T>(IList<T> frames, long value) where T : ITick
 		{
 			if (frames == null || frames.Count == 0)
 				return -1;

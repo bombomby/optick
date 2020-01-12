@@ -30,8 +30,9 @@ namespace Profiler
 		public const UInt32 NETWORK_PROTOCOL_VERSION_23 = 23; // Added Support for Target Platform and Computer name in Handshake response
 		public const UInt32 NETWORK_PROTOCOL_VERSION_24 = 24; // Adding Modules
 		public const UInt32 NETWORK_PROTOCOL_VERSION_25 = 25; // Adding ThreadID to the frame list
+		public const UInt32 NETWORK_PROTOCOL_VERSION_26 = 26; // Adding FrameType to the FrameHeader
 
-		public const UInt32 NETWORK_PROTOCOL_VERSION = NETWORK_PROTOCOL_VERSION_25;
+		public const UInt32 NETWORK_PROTOCOL_VERSION = NETWORK_PROTOCOL_VERSION_26;
 		public const UInt32 NETWORK_PROTOCOL_MIN_VERSION = NETWORK_PROTOCOL_VERSION_18;
 
 		public const UInt16 OPTICK_APP_ID = 0xB50F;

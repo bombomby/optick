@@ -252,19 +252,31 @@ else
 		vpaths { 
 			["*"] = "samples/ConsoleApp"
 		}
-
-        if isFibersEnabled then
-        defines {
-			"OPTICK_ENABLE_FIBERS=1"
-		}
-		files {
-            "samples/Common/TaskScheduler/Scheduler/Source/MTDefaultAppInterop.cpp",
-        }
-        links {
-            "TaskScheduler"
-        }
-        end
 end
+
+	project "ConsoleAppMT"
+		flags {"NoPCH"}
+		kind "ConsoleApp"
+		uuid "C50A1240-316C-EF4D-BAD9-3500263A260E"
+		files {
+			"samples/ConsoleAppMT/**.*", 
+			"samples/Common/TestEngine/**.*",
+		}
+		
+		includedirs {
+			"src",
+			"samples/Common/TestEngine",
+			"samples/Common/TaskScheduler/Scheduler/Include"
+		}
+		
+		links {
+			"OptickCore"
+		}
+
+		vpaths { 
+			["*"] = "samples/ConsoleAppMT"
+		}
+
 
 if isDX12 then
 	project "WindowsD3D12"

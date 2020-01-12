@@ -522,6 +522,7 @@ namespace Profiler.Data
 
 			return true;
 		}
+
 	}
 
 	public class FrameCollection : ObservableCollection<Frame>
@@ -537,7 +538,14 @@ namespace Profiler.Data
 		public void Flush()
 		{
 			foreach (FrameGroup group in groups.Values)
+			{
 				group.UpdateEventsSynchronization();
+				group.Frames.FinishUpdate();
+
+				FrameList frameList = group.Frames[FrameList.Type.CPU];
+				foreach (EventFrame frame in frameList.Frames)
+					Add(frame);
+			}
 
 			groups.Clear();
 			summaries.Clear();
@@ -583,10 +591,20 @@ namespace Profiler.Data
 
 						group.AddFrame(frame);
 
-						if (group.Board.MainThreadIndex == frame.Header.ThreadIndex)
+						if (group.Board.MainThreadIndex != -1 && group.Board.MainThreadIndex == frame.Header.ThreadIndex)
+						{
+							Add(frame);
+						}
+						else if (frame.Header.FrameType != FrameList.Type.None)
 						{
 							if (frame.Header.Duration > 0.0)
-								Add(frame);
+							{
+								FrameList frameList = group.Frames[frame.Header.FrameType];
+								if (frameList != null)
+								{
+									frameList.Frames.Add(frame);
+								}
+							}
 						}
 
 						break;

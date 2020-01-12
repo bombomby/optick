@@ -16,7 +16,7 @@ static const size_t SCHEDULER_WORKERS_COUNT = 0;
 namespace Test
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-inline void SpinSleep(uint32_t milliseconds)
+void SpinSleep(uint32_t milliseconds)
 {
     auto start = std::chrono::system_clock::now();
     auto finish = start + std::chrono::milliseconds(milliseconds);

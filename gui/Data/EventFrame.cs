@@ -13,6 +13,7 @@ namespace Profiler.Data
 	{
 		public int ThreadIndex { get; private set; }
 		public int FiberIndex { get; private set; }
+		public FrameList.Type FrameType { get; private set; } = FrameList.Type.None;
 
 		public static FrameHeader Read(DataResponse response)
 		{
@@ -24,6 +25,16 @@ namespace Profiler.Data
 			}
 
 			header.ReadEventData(response.Reader);
+
+			if (response.Version >= NetworkProtocol.NETWORK_PROTOCOL_VERSION_26)
+			{
+				header.FrameType = (FrameList.Type)response.Reader.ReadInt32();
+			}
+			else
+			{
+				header.FrameType = FrameList.Type.None;
+			}
+
 			return header;
 		}
 
@@ -398,10 +409,14 @@ namespace Profiler.Data
 			GPU,
 			Render,
 			Custom,
+
+			None = -1,
 		}
 
 		public List<FrameData> Events { get; set; } = new List<FrameData>();
 		public Type FrameType { get; set; }
+
+		public List<EventFrame> Frames { get; set; } = new List<EventFrame>();
 	}
 
 	public class FramePack
@@ -438,6 +453,19 @@ namespace Profiler.Data
 				pack.Threads.Add(list);
 			}
 			return pack;
+		}
+
+		private bool IsFinished { get; set; }
+		public void FinishUpdate()
+		{
+			if (!IsFinished)
+			{
+				foreach (FrameList list in Threads)
+				{
+					list.Frames.Sort();
+				}
+				IsFinished = true;
+			}
 		}
 	}
 }

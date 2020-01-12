@@ -46,4 +46,7 @@ namespace Test
 
 		bool IsAlive() const { return isAlive; }
 	};
+
+	bool OnOptickStateChanged(Optick::State::Type state);
+	void SpinSleep(uint32_t milliseconds);
 }

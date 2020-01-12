@@ -399,6 +399,8 @@ struct FrameType
 		GPU,
 		Render,
 		COUNT,
+
+		NONE = -1,
 	};
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -794,8 +796,26 @@ struct OptickApp
 										::Optick::Event OPTICK_CONCAT(autogen_event_, __LINE__)(*::Optick::GetFrameDescription(__VA_ARGS__)); \
 										OPTICK_TAG("Frame", frameNumber);
 
-#define OPTICK_UPDATE()					::Optick::Update();
-#define OPTICK_FRAME_FLIP(...)			::Optick::EndFrame(__VA_ARGS__); ::Optick::BeginFrame(__VA_ARGS__);
+#define OPTICK_UPDATE()						::Optick::Update();
+#define OPTICK_FRAME_FLIP(...)				::Optick::EndFrame(__VA_ARGS__); ::Optick::BeginFrame(__VA_ARGS__);
+
+// Scoped event for categorized frame types.
+// Example:
+//	void UpdateFrame()
+//	{
+//		// Flip "Main/Update" frame
+//		OPTICK_FRAME_EVENT(Optick::FrameType::CPU);
+//
+//		// Root category event 
+//		OPTICK_CATEGORY("UpdateFrame", Optick::Category::GameLogic);
+//
+//		...
+//  }
+//
+#define OPTICK_FRAME_EVENT(FRAME_TYPE, ...)		::Optick::EndFrame(FRAME_TYPE);									\
+												if (FRAME_TYPE == Optick::FrameType::CPU) ::Optick::Update();	\
+												::Optick::BeginFrame(FRAME_TYPE);								\
+												::Optick::Event OPTICK_CONCAT(autogen_event_, __LINE__)(*::Optick::GetFrameDescription(FRAME_TYPE));
 
 
 // Thread registration macro.
@@ -1000,6 +1020,7 @@ struct OptickApp
 #define OPTICK_GPU_FLIP(SWAP_CHAIN)
 #define OPTICK_UPDATE()
 #define OPTICK_FRAME_FLIP(...)
+#define OPTICK_FRAME_EVENT(FRAME_TYPE, ...)
 #define OPTICK_START_CAPTURE(...)
 #define OPTICK_STOP_CAPTURE()
 #define OPTICK_SAVE_CAPTURE(...)
