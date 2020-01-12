@@ -4,7 +4,7 @@
 #include <mutex>
 #include <thread>
 #include <condition_variable>
-#include <conio.h>
+#include <stdio.h>
 #include "optick.h"
 
 #include "TestEngine.h"
@@ -107,7 +107,7 @@ int main()
 	scheduler.Add(UpdateFrame);
 
 	// Waiting for any key
-	_getch();
+	getchar();
 
 	OPTICK_SHUTDOWN();
 
