@@ -14,7 +14,7 @@ instrumentation, switch-contexts, sampling, GPU counters.<br/>
 | -------- | ------- | ----- | ----- | ---- | --- | --- |
 | Instrumentation | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :grey_question: | :heavy_check_mark: |
 | Switch Contexts | :heavy_check_mark: ETW | :heavy_check_mark: FTrace | :heavy_check_mark: DTrace | :heavy_check_mark: | :grey_question: | :heavy_check_mark: Win |
-| Sampling | :heavy_check_mark: ETW | :hourglass_flowing_sand: | :hourglass_flowing_sand: | :grey_question: | :grey_question: | :heavy_check_mark: Win |
+| Sampling | :heavy_check_mark: ETW | | | :grey_question: | :grey_question: | :heavy_check_mark: Win |
 | GPU | :heavy_check_mark: D3D12, Vulkan | :heavy_check_mark: Vulkan | :heavy_check_mark: Vulkan | | | :hourglass_flowing_sand: |
 
 :heavy_check_mark: - works out of the box, :hourglass_flowing_sand: - in progress, :grey_question: - will be available soon for the certified developers
