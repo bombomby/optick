@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.2)
-project(Optick LANGUAGES CXX)
+project(Optick LANGUAGES CXX VERSION 1.3.0)
 
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -43,8 +43,16 @@ option(OPTICK_BUILD_CONSOLE_SAMPLE "Build Optick console sample app" ${standalon
 
 # OptickCore
 add_library(OptickCore SHARED ${OPTICK_SRC})
-target_include_directories(OptickCore PUBLIC "src")
-target_compile_definitions(OptickCore PUBLIC OPTICK_EXPORTS=1)
+target_include_directories(OptickCore
+	PUBLIC
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+)
+set_target_properties(OptickCore 
+	PROPERTIES 
+		PUBLIC_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/src/optick.h;${CMAKE_CURRENT_SOURCE_DIR}/src/optick.config.h"
+		DEBUG_POSTFIX d # So that we can install debug and release side by side
+)
+target_compile_definitions(OptickCore PRIVATE OPTICK_EXPORTS=1)
 if(OPTICK_USE_VULKAN)
 	message(STATUS "Optick uses Vulkan")
 	target_include_directories(OptickCore PRIVATE "$(VULKAN_SDK)/Include")
@@ -88,4 +96,56 @@ if(OPTICK_BUILD_CONSOLE_SAMPLE)
 	target_link_libraries(ConsoleApp ${EXTRA_LIBS})
 	set_target_properties(ConsoleApp PROPERTIES FOLDER Samples)
 endif()
+
+
+
+###############
+## Packaging ##
+###############
+include(CMakePackageConfigHelpers)
+include(GNUInstallDirs)
+
+set(${PROJECT_NAME}_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}" CACHE STRING "Path to smartcrop cmake files")
+
+# Use version checking boilerplate
+write_basic_package_version_file(
+	${PROJECT_NAME}ConfigVersion.cmake
+	COMPATIBILITY SameMajorVersion
+)
+
+configure_package_config_file(
+	${PROJECT_SOURCE_DIR}/tools/${PROJECT_NAME}Config.cmake.in
+	${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+	INSTALL_DESTINATION ${${PROJECT_NAME}_INSTALL_CMAKEDIR} 
+	# Imported targets do not require the following macros
+	NO_SET_AND_CHECK_MACRO
+	NO_CHECK_REQUIRED_COMPONENTS_MACRO 
+)
+
+install(TARGETS OptickCore
+	EXPORT ${PROJECT_NAME}_Targets
+	RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
+	LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+
+)
+
+install(
+	EXPORT ${PROJECT_NAME}_Targets 
+	NAMESPACE ${PROJECT_NAME}::
+	FILE ${PROJECT_NAME}Targets.cmake
+	DESTINATION ${${PROJECT_NAME}_INSTALL_CMAKEDIR}
+)
+
+
+install(FILES 
+	${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+	${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+	DESTINATION
+		${${PROJECT_NAME}_INSTALL_CMAKEDIR}
+)
+
+
+
 

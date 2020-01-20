@@ -1,0 +1,9 @@
+@PACKAGE_INIT@
+
+# Required so that on windows Release and RelWithDebInfo can be used instead of default fallback which is Debug
+# See https://gitlab.kitware.com/cmake/cmake/-/issues/20319
+set(CMAKE_MAP_IMPORTED_CONFIG_MINSIZEREL MinSizeRel RelWithDebInfo Release Debug)
+set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO RelWithDebInfo Release MinSizeRel Debug)
+set(CMAKE_MAP_IMPORTED_CONFIG_RELEASE Release RelWithDebInfo MinSizeRel Debug)
+
+include("${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake")
