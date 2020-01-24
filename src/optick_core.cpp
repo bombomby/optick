@@ -1188,12 +1188,12 @@ Core::Core()
 	, stateCallback(nullptr)
 	, currentState(State::DUMP_CAPTURE)
 	, pendingState(State::DUMP_CAPTURE)
+	, forcedMainThreadIndex((uint32)-1)
 	, currentMode(Mode::OFF)
 	, previousMode(Mode::OFF)
 	, symbolEngine(nullptr)
 	, tracer(nullptr)
 	, gpuProfiler(nullptr)
-	, forcedMainThreadIndex((uint32)-1)
 {
 	frames[FrameType::CPU].m_Description = EventDescription::Create("CPU Frame", __FILE__, __LINE__);
 	frames[FrameType::GPU].m_Description = EventDescription::Create("GPU Frame", __FILE__, __LINE__);
@@ -1579,12 +1579,12 @@ void Core::SetMainThreadID(uint64_t threadID)
 	}
 	else
 	{
-		for (int i = 0; i < threads.size(); ++i)
+		for (size_t i = 0; i < threads.size(); ++i)
 		{
 			ThreadEntry* entry = threads[i];
 			if (entry->description.threadID == threadID)
 			{
-				forcedMainThreadIndex = i;
+				forcedMainThreadIndex = (uint32)i;
 			}
 		}
 	}
