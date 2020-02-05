@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Optick", "Optick.csproj", "{97F462A6-7E81-4AD1-AE48-602F79F70169}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Optick", "Optick\Optick.csproj", "{97F462A6-7E81-4AD1-AE48-602F79F70169}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4164CD29-B7C4-47BF-9F75-A8D5BF59CCA4}"
 EndProject

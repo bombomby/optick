@@ -259,7 +259,7 @@ namespace Profiler.Data
 			{
 				return Path.GetFileName(name);
 			}
-			catch (Exception ex) 
+			catch (Exception /*ex*/) 
 			{
 				return name;
 			}
