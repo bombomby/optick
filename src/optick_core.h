@@ -494,6 +494,8 @@ class Core
 
 	CaptureSettings settings;
 
+	uint32 forcedMainThreadIndex;
+
 	void UpdateEvents();
 	bool UpdateState();
 
@@ -625,6 +627,9 @@ public:
 	// Frame Flip functions
 	static uint32_t BeginFrame(FrameType::Type frame, int64_t timestamp, uint64_t threadID) { return Get().BeginUpdateFrame(frame, timestamp, threadID); }
 	static uint32_t EndFrame(FrameType::Type frame, int64_t timestamp, uint64_t threadID) { return Get().EndUpdateFrame(frame, timestamp, threadID); }
+
+	// Initialize Main ThreadID
+	void SetMainThreadID(uint64_t threadID);
 
 	// NOT Thread Safe singleton (performance)
 	static Core& Get();

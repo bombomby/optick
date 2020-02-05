@@ -1090,6 +1090,8 @@ void Core::DumpFrames(uint32 mode)
 		Server::Get().Send(DataResponse::CallstackPack, callstacksStream);
 	}
 
+	forcedMainThreadIndex = (uint32)-1;
+
 	Server::Get().SendFinish();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1154,7 +1156,7 @@ void Core::DumpBoard(uint32 mode, EventTime timeSlice)
 	boardStream << timeSlice;
 	boardStream << threads;
 	boardStream << fibers;
-	boardStream << (uint32)-1; // MainThreadIndex
+	boardStream << forcedMainThreadIndex;
 	boardStream << EventDescriptionBoard::Get();
 	boardStream << (uint32)0; // Tags
 	boardStream << (uint32)0; // Run
@@ -1186,6 +1188,7 @@ Core::Core()
 	, stateCallback(nullptr)
 	, currentState(State::DUMP_CAPTURE)
 	, pendingState(State::DUMP_CAPTURE)
+	, forcedMainThreadIndex((uint32)-1)
 	, currentMode(Mode::OFF)
 	, previousMode(Mode::OFF)
 	, symbolEngine(nullptr)
@@ -1566,6 +1569,27 @@ bool Core::SetSettings(const CaptureSettings& captureSettings)
 	return false;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Core::SetMainThreadID(uint64_t threadID)
+{
+	std::lock_guard<std::recursive_mutex> lock(threadsLock);
+
+	if (threadID == INVALID_THREAD_ID)
+	{
+		forcedMainThreadIndex = (uint32)-1;
+	}
+	else
+	{
+		for (size_t i = 0; i < threads.size(); ++i)
+		{
+			ThreadEntry* entry = threads[i];
+			if (entry->description.threadID == threadID)
+			{
+				forcedMainThreadIndex = (uint32)i;
+			}
+		}
+	}
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 const EventDescription* Core::GetFrameDescription(FrameType::Type frame) const
 {
 	return frames[frame].m_Description;
@@ -1782,6 +1806,7 @@ OPTICK_API bool StartCapture(Mode::Type mode /*= Mode::DEFAULT*/, int samplingFr
 	if (force)
 	{
 		core.Update();
+		core.SetMainThreadID(Platform::GetThreadID());
 		core.BeginFrame(FrameType::CPU, GetHighPrecisionTime(), Platform::GetThreadID());
 	}
 	

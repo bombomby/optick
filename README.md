@@ -10,12 +10,12 @@ instrumentation, switch-contexts, sampling, GPU counters.<br/>
 | ------- | ----- | ----- | --------------------- |
 | [![Windows Build status](https://ci.appveyor.com/api/projects/status/bu5smbuh1d2lcsf6?svg=true)](https://ci.appveyor.com/project/bombomby/brofiler) | [![Linux+MacOS Build Status](https://travis-ci.org/bombomby/optick.svg)](https://travis-ci.org/bombomby/optick) | [![Linux+MacOS Build Status](https://travis-ci.org/bombomby/optick.svg)](https://travis-ci.org/bombomby/optick) | [![Total alerts](https://img.shields.io/lgtm/alerts/g/bombomby/optick.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/bombomby/optick/alerts/) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/3195c1fa7d554dc1bb9d45dd30454b48)](https://www.codacy.com/app/bombomby/optick?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=bombomby/optick&amp;utm_campaign=Badge_Grade) |
 
-| Features | Windows | Linux | MacOS | XBox | PS4 |
-| -------- | ------- | ----- | ----- | ---- | --- |
-| Instrumentation | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :grey_question: |
-| Switch Contexts | :heavy_check_mark: ETW | :heavy_check_mark: FTrace | :heavy_check_mark: DTrace | :heavy_check_mark: | :grey_question: |
-| Sampling | :heavy_check_mark: ETW | :hourglass_flowing_sand: | :hourglass_flowing_sand: | :grey_question: | :grey_question: |
-| GPU | :heavy_check_mark: D3D12, Vulkan | :heavy_check_mark: Vulkan | :heavy_check_mark: Vulkan | | |
+| Features | Windows | Linux | MacOS | XBox | PS4 | UE4 |
+| -------- | ------- | ----- | ----- | ---- | --- | --- |
+| Instrumentation | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :grey_question: | :heavy_check_mark: |
+| Switch Contexts | :heavy_check_mark: ETW | :heavy_check_mark: FTrace | :heavy_check_mark: DTrace | :heavy_check_mark: | :grey_question: | :heavy_check_mark: Win |
+| Sampling | :heavy_check_mark: ETW | | | :grey_question: | :grey_question: | :heavy_check_mark: Win |
+| GPU | :heavy_check_mark: D3D12, Vulkan | :heavy_check_mark: Vulkan | :heavy_check_mark: Vulkan | | | :hourglass_flowing_sand: |
 
 :heavy_check_mark: - works out of the box, :hourglass_flowing_sand: - in progress, :grey_question: - will be available soon for the certified developers
 
@@ -71,10 +71,11 @@ https://github.com/bombomby/optick/wiki/Optick-API
 
 ## Unreal Engine
 Optick provides a special plugin for UE4. Check more detailed documentation here: 
-https://github.com/bombomby/optick/wiki/UE4-Optick-Plugin
+https://github.com/bombomby/optick/wiki/UE4-Optick-Plugin <br/>
+![](https://github.com/bombomby/brofiler/blob/gh-pages/images/UE4_Optick_1.png)
 
 ## Samples
-Run [generate_projects.gpu.bat](https://github.com/bombomby/optick/blob/master/generate_projects.gpu.bat) from the root folder to generate project files. To compile the samples you'll need to install VulkanSDK. Alternatively you could use [generate_projects.bat](https://github.com/bombomby/optick/blob/master/generate_projects.bat) to generate only minimal solution with ConsoleApp sample.<br/>
+Run [GenerateProjects_gpu.bat](https://github.com/bombomby/optick/blob/master/tools/GenerateProjects_gpu.bat) to generate project files. To compile the samples you'll need to install VulkanSDK. Alternatively you could use [GenerateProjects.bat](https://github.com/bombomby/optick/blob/master/tools/GenerateProjects.bat) to generate only minimal solution with ConsoleApp sample.<br/>
 Open solution `build\vs2017\Optick.sln` with generated samples.
 
 | [WindowsD3D12](https://github.com/bombomby/optick/tree/master/samples/WindowsD3D12) | [WindowsVulkan](https://github.com/bombomby/optick/tree/master/samples/WindowsVulkan) | [ConsoleApp](https://github.com/bombomby/optick/tree/master/samples/ConsoleApp) |
