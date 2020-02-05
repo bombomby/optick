@@ -22,6 +22,7 @@ using System.Runtime.CompilerServices;            //CallerMemberName
 using Profiler.ViewModels;
 using Profiler.InfrastructureMvvm;
 using Autofac;
+using Profiler.Controls.ViewModels;
 
 namespace Profiler.Controls
 {
@@ -65,8 +66,8 @@ namespace Profiler.Controls
 
             InitializeComponent();
 
-			this.AddHandler(TimeLine.FocusFrameEvent, new TimeLine.FocusFrameEventHandler(this.OpenFrame));
-            this.AddHandler(ThreadView.HighlightFrameEvent, new ThreadView.HighlightFrameEventHandler(this.ThreadView_HighlightEvent));
+			this.AddHandler(GlobalEvents.FocusFrameEvent, new FocusFrameEventArgs.Handler(this.OpenFrame));
+            this.AddHandler(ThreadViewControl.HighlightFrameEvent, new ThreadViewControl.HighlightFrameEventHandler(this.ThreadView_HighlightEvent));
 
             ProfilerClient.Get().ConnectionChanged += MainWindow_ConnectionChanged;
 
@@ -85,6 +86,14 @@ namespace Profiler.Controls
 
 			FunctionSamplingVM = (SamplingViewModel)FindResource("FunctionSamplingVM");
 			SysCallsSamplingVM = (SamplingViewModel)FindResource("SysCallsSamplingVM");
+
+			EventThreadViewControl.Settings = Settings.LocalSettings.Data.ThreadSettings;
+			Settings.LocalSettings.OnChanged += LocalSettings_OnChanged;
+		}
+
+		private void LocalSettings_OnChanged()
+		{
+			EventThreadViewControl.Settings = Settings.LocalSettings.Data.ThreadSettings;
 		}
 
 		private void CancelConnection()
@@ -134,7 +143,7 @@ namespace Profiler.Controls
             AddressBarVM?.Update(args.Connection);
         }
 
-		private void OpenFrame(object source, TimeLine.FocusFrameEventArgs args)
+		private void OpenFrame(object source, FocusFrameEventArgs args)
 		{
 			Data.Frame frame = args.Frame;
 
@@ -281,7 +290,7 @@ namespace Profiler.Controls
 
 		private void OnSearchCommandExecuted(object sender, ExecutedRoutedEventArgs args)
 		{
-			EventThreadViewControl.FunctionSearchControl.Open();
+			EventThreadViewControl.OpenFunctionSearch();
 		}
 
 		private void OnShowDebugInfoCommandExecuted(object sender, ExecutedRoutedEventArgs args)

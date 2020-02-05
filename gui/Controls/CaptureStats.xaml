@@ -6,10 +6,11 @@
              xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:Profiler="clr-namespace:Profiler"
+             xmlns:Controls="clr-namespace:Profiler.Controls;assembly=Profiler.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="200" d:DesignWidth="900">
     <UserControl.Resources>
-        <Profiler:MultiplyConverter x:Key="MultiplyConverter"/>
+        <Controls:MultiplyConverter x:Key="MultiplyConverter"/>
         <sys:Double x:Key="ScreenshotAspectRatio">1.777777777</sys:Double>
     </UserControl.Resources>
     <Grid x:Name="RootGrid">

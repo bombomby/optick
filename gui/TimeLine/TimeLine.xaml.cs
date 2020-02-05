@@ -29,6 +29,7 @@ using System.ComponentModel;
 using System.IO.Compression;
 using System.Threading.Tasks;
 using System.Security;
+using Profiler.Controls;
 
 namespace Profiler
 {
@@ -277,20 +278,8 @@ namespace Profiler
 		#region FocusFrame
 		private void FocusOnFrame(Data.Frame frame)
 		{
-			FocusFrameEventArgs args = new FocusFrameEventArgs(FocusFrameEvent, frame);
+			FocusFrameEventArgs args = new FocusFrameEventArgs(GlobalEvents.FocusFrameEvent, frame);
 			RaiseEvent(args);
-		}
-
-		public class FocusFrameEventArgs : RoutedEventArgs
-		{
-			public Data.Frame Frame { get; set; }
-			public IDurable Focus { get; set; }
-
-			public FocusFrameEventArgs(RoutedEvent routedEvent, Data.Frame frame, IDurable focus = null) : base(routedEvent)
-			{
-				Frame = frame;
-				Focus = focus;
-			}
 		}
 
         public class ShowWarningEventArgs : RoutedEventArgs
@@ -322,20 +311,18 @@ namespace Profiler
 			}
 		}
 
-		public delegate void FocusFrameEventHandler(object sender, FocusFrameEventArgs e);
 		public delegate void ShowWarningEventHandler(object sender, ShowWarningEventArgs e);
 		public delegate void NewConnectionEventHandler(object sender, NewConnectionEventArgs e);
 		public delegate void CancelConnectionEventHandler(object sender, CancelConnectionEventArgs e);
 
-		public static readonly RoutedEvent FocusFrameEvent = EventManager.RegisterRoutedEvent("FocusFrame", RoutingStrategy.Bubble, typeof(FocusFrameEventHandler), typeof(TimeLine));
 		public static readonly RoutedEvent ShowWarningEvent = EventManager.RegisterRoutedEvent("ShowWarning", RoutingStrategy.Bubble, typeof(ShowWarningEventArgs), typeof(TimeLine));
 		public static readonly RoutedEvent NewConnectionEvent = EventManager.RegisterRoutedEvent("NewConnection", RoutingStrategy.Bubble, typeof(NewConnectionEventHandler), typeof(TimeLine));
 		public static readonly RoutedEvent CancelConnectionEvent = EventManager.RegisterRoutedEvent("CancelConnection", RoutingStrategy.Bubble, typeof(CancelConnectionEventHandler), typeof(TimeLine));
 
 		public event RoutedEventHandler FocusFrame
 		{
-			add { AddHandler(FocusFrameEvent, value); }
-			remove { RemoveHandler(FocusFrameEvent, value); }
+			add { AddHandler(GlobalEvents.FocusFrameEvent, value); }
+			remove { RemoveHandler(GlobalEvents.FocusFrameEvent, value); }
 		}
 
 		public event RoutedEventHandler ShowWarning

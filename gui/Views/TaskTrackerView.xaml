@@ -10,7 +10,8 @@
             xmlns:Profiler="clr-namespace:Profiler"
             xmlns:MahApps="http://metro.mahapps.com/winfx/xaml/controls"
             xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
-            Width="700"
+            xmlns:Profiler_Controls="clr-namespace:Profiler.Controls;assembly=Profiler.Controls"
+    Width="700"
             WindowTransitionsEnabled="False"
             Title="Create Issue"
             Icon="../Resources/Bug.ico" 
@@ -21,7 +22,7 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <Controls:MetroWindow.Resources>
         <ControlsViewModel:TaskTrackerViewModel x:Key="DesignVM" />
-        <Profiler:StringToResource x:Key="StringToResource" />
+        <Profiler_Controls:StringToResource x:Key="StringToResource" />
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </Controls:MetroWindow.Resources>
     <Grid d:DataContext="{StaticResource DesignVM}">

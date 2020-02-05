@@ -11,7 +11,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Profiler</RootNamespace>
     <AssemblyName>Optick</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
@@ -20,6 +20,8 @@
     <Utf8Output>true</Utf8Output>
     <ExpressionBlendVersion>4.0.20525.0</ExpressionBlendVersion>
     <IsWebBootstrapper>false</IsWebBootstrapper>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -34,8 +36,6 @@
     <ApplicationVersion>1.1.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -244,33 +244,21 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="AppBootStrapper.cs" />
-    <Compile Include="ColorToBrushConverter.cs" />
     <Compile Include="Controls\AttachmentViewControl.xaml.cs">
       <DependentUpon>AttachmentViewControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\ControlUtils.cs" />
     <Compile Include="Controls\EditStorageListDialog.xaml.cs">
       <DependentUpon>EditStorageListDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\EditTaskTrackerListDialog.xaml.cs">
       <DependentUpon>EditTaskTrackerListDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Data\CaptureSettings.cs" />
-    <Compile Include="Data\Mode.cs" />
-    <Compile Include="Data\TraceGroup.cs" />
-    <Compile Include="InfrastructureMvvm\BoolToVisibilityConverter.cs" />
-    <Compile Include="InfrastructureMvvm\BootStrapperBase.cs" />
-    <Compile Include="InfrastructureMvvm\DialogManager.cs" />
-    <Compile Include="InfrastructureMvvm\DialogViewModel.cs" />
-    <Compile Include="InfrastructureMvvm\IDialogManager.cs" />
-    <Compile Include="InfrastructureMvvm\IDialogViewModel.cs" />
     <Compile Include="Controls\CaptureStats.xaml.cs">
       <DependentUpon>CaptureStats.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\CaptureThumbnail.xaml.cs">
       <DependentUpon>CaptureThumbnail.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\Converters.cs" />
     <Compile Include="Controls\FileHistory.xaml.cs">
       <DependentUpon>FileHistory.xaml</DependentUpon>
     </Compile>
@@ -280,12 +268,6 @@
     <Compile Include="Controls\FunctionSearch.xaml.cs">
       <DependentUpon>FunctionSearch.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\HamburgerMenuContentItem.cs" />
-    <Compile Include="InfrastructureMvvm\IOnClosingHandler.cs" />
-    <Compile Include="InfrastructureMvvm\IOnLoadedHandler.cs" />
-    <Compile Include="InfrastructureMvvm\RelayCommand.cs" />
-    <Compile Include="InfrastructureMvvm\RelayCommandAsync.cs" />
-    <Compile Include="InfrastructureMvvm\RelayCommandGeneric.cs" />
     <Compile Include="Controls\RoutedEvents.cs" />
     <Compile Include="Controls\SettingsControl.xaml.cs">
       <DependentUpon>SettingsControl.xaml</DependentUpon>
@@ -294,33 +276,17 @@
     <Compile Include="Controls\TagsControl.xaml.cs">
       <DependentUpon>TagsControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="InfrastructureMvvm\IUiExecution.cs" />
-    <Compile Include="InfrastructureMvvm\IWindowManager.cs" />
-    <Compile Include="InfrastructureMvvm\RelayCommandGenericAsync.cs" />
-    <Compile Include="InfrastructureMvvm\ViewLocator.cs" />
-    <Compile Include="InfrastructureMvvm\ViewModelPresenter.cs" />
-    <Compile Include="InfrastructureMvvm\WindowManager.cs" />
-    <Compile Include="InfrastructureMvvm\BaseViewModel.cs" />
-    <Compile Include="ThreadView\EventThreadView.xaml.cs">
-      <DependentUpon>EventThreadView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ThreadView\SamplingThreadView.xaml.cs">
-      <DependentUpon>SamplingThreadView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ThreadView\ThreadNameView.xaml.cs">
-      <DependentUpon>ThreadNameView.xaml</DependentUpon>
+    <Compile Include="SearchBox.xaml.cs">
+      <DependentUpon>SearchBox.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModels\AddressBarViewModel.cs" />
     <Compile Include="ViewModels\CaptureSettingsViewModel.cs" />
     <Compile Include="ViewModels\FunctionSummaryViewModel.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\MemoryStatsViewModel.cs" />
-    <Compile Include="ViewModels\SamplingViewModel.cs" />
     <Compile Include="ViewModels\ScreenShotViewModel.cs" />
     <Compile Include="ViewModels\SummaryViewerModel.cs" />
-    <Compile Include="InfrastructureMvvm\ViewModelLocator.cs" />
     <Compile Include="ViewModels\TaskTrackerViewModel.cs" />
-    <Compile Include="ViewModels\ThreadFilterViewModel.cs" />
     <Compile Include="Views\AddressBarView.xaml.cs">
       <DependentUpon>AddressBarView.xaml</DependentUpon>
     </Compile>
@@ -348,41 +314,9 @@
     <Compile Include="Views\SummaryViewer.xaml.cs">
       <DependentUpon>SummaryViewer.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Data\Callstack.cs" />
-    <Compile Include="Data\Capture.cs" />
-    <Compile Include="Data\Durationable.cs" />
-    <Compile Include="Data\EventBoard.cs" />
-    <Compile Include="Data\EventData.cs" />
-    <Compile Include="Data\EventFrame.cs" />
-    <Compile Include="Data\Frame.cs" />
-    <Compile Include="Data\FunctionStats.cs" />
-    <Compile Include="Data\SamplingFrame.cs" />
     <Compile Include="Controls\Settings.cs" />
-    <Compile Include="Data\SourceView.cs" />
-    <Compile Include="Data\Summary.cs" />
-    <Compile Include="Data\Synchronization.cs" />
-    <Compile Include="Data\SysCall.cs" />
-    <Compile Include="Data\Tag.cs" />
-    <Compile Include="Data\Utils.cs" />
-    <Compile Include="DirectX\ComplexDynamicMesh.cs" />
-    <Compile Include="DirectX\DirectXCanvas.xaml.cs">
-      <DependentUpon>DirectXCanvas.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="DirectX\DynamicBuffer.cs" />
-    <Compile Include="DirectX\Fragment.cs" />
-    <Compile Include="DirectX\Mesh.cs" />
-    <Compile Include="DirectX\DynamicMesh.cs" />
-    <Compile Include="DirectX\RenderSettings.cs" />
-    <Compile Include="DirectX\ScrollableWinFormsHost.cs" />
-    <Compile Include="DirectX\TextManager.cs" />
-    <Compile Include="DirectX\TextureLoader.cs" />
-    <Compile Include="DirectX\Utils.cs" />
-    <Compile Include="InfrastructureMvvm\FileDialogService.cs" />
-    <Compile Include="InfrastructureMvvm\IFileDialogService.cs" />
     <Compile Include="TaskManager\AttachmentStorage.cs" />
     <Compile Include="TaskManager\TaskTracker.cs" />
-    <Compile Include="ThreadView\ChartRow.cs" />
-    <Compile Include="ThreadView\EventsThreadRow.cs" />
     <Compile Include="Frames\FrameDataTable.xaml.cs">
       <DependentUpon>FrameDataTable.xaml</DependentUpon>
     </Compile>
@@ -391,21 +325,11 @@
     </Compile>
     <Compile Include="Platform\Platform.cs" />
     <Compile Include="ProfilerClient.cs" />
-    <Compile Include="Data\EventTree.cs" />
-    <Compile Include="Data\FrameCollection.cs" />
-    <Compile Include="Message\Message.cs" />
     <Compile Include="Frames\FrameInfo.xaml.cs">
       <DependentUpon>FrameInfo.xaml</DependentUpon>
     </Compile>
-    <Compile Include="SearchBox.xaml.cs">
-      <DependentUpon>SearchBox.xaml</DependentUpon>
-    </Compile>
     <Compile Include="SourceWindow.xaml.cs">
       <DependentUpon>SourceWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ThreadView\ThreadRow.cs" />
-    <Compile Include="ThreadView\ThreadView.xaml.cs">
-      <DependentUpon>ThreadView.xaml</DependentUpon>
     </Compile>
     <Compile Include="TimeLine\TimeLine.xaml.cs">
       <DependentUpon>TimeLine.xaml</DependentUpon>
@@ -415,9 +339,6 @@
     </Compile>
     <Compile Include="Views\TaskTrackerView.xaml.cs">
       <DependentUpon>TaskTrackerView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\ThreadFilterView.xaml.cs">
-      <DependentUpon>ThreadFilterView.xaml</DependentUpon>
     </Compile>
     <Page Include="Controls\AttachmentViewControl.xaml">
       <SubType>Designer</SubType>
@@ -459,17 +380,9 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="ThreadView\EventThreadView.xaml">
-      <SubType>Designer</SubType>
+    <Page Include="SearchBox.xaml">
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="ThreadView\SamplingThreadView.xaml">
       <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="ThreadView\ThreadNameView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\AddressBarView.xaml">
       <SubType>Designer</SubType>
@@ -507,10 +420,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="DirectX\DirectXCanvas.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Frames\FrameDataTable.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -531,7 +440,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Data\EventDescription.cs" />
     <Compile Include="Views\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -541,19 +449,11 @@
       <SubType>Designer</SubType>
       <ContainsDesignTimeResources>true</ContainsDesignTimeResources>
     </Page>
-    <Page Include="SearchBox.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="SourceWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\TaskTrackerView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\ThreadFilterView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -581,10 +481,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="ThreadView\ThreadView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="TimeLine\TimeLine.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -607,16 +503,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_16_Normal.fnt" />
-    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_20_Normal.fnt" />
-    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_24_Normal.fnt" />
-    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_32_Normal.fnt" />
-    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_28_Normal.fnt" />
-    <EmbeddedResource Include="DirectX\Shaders\Basic_ps.fxo" />
-    <EmbeddedResource Include="DirectX\Shaders\Basic_vs.fxo" />
-    <EmbeddedResource Include="DirectX\Shaders\Text_ps.fxo" />
-    <EmbeddedResource Include="DirectX\Shaders\Text_vs.fxo" />
-    <None Include="DirectX\Shaders\Compile.bat" />
+    <None Include="app.config" />
     <None Include="packages.config" />
     <AppDesigner Include="Properties\" />
     <EmbeddedResource Include="TaskManager\brofiler-github-07994fd14248.p12" />
@@ -686,22 +573,11 @@
     <Resource Include="TimeLine\Icons\Clear-icon.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_16_Normal_0.png" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="AutoEmbedLibs\SharpDX.D3DCompiler.dll" />
     <EmbeddedResource Include="AutoEmbedLibs\SharpDX.Direct2D1.dll" />
     <EmbeddedResource Include="AutoEmbedLibs\SharpDX.Direct3D11.dll" />
     <EmbeddedResource Include="AutoEmbedLibs\SharpDX.dll" />
     <EmbeddedResource Include="AutoEmbedLibs\SharpDX.DXGI.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_20_Normal_0.png" />
-    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_24_Normal_0.png" />
-    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_32_Normal_0.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="DirectX\Fonts\SegoeUI_28_Normal_0.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="AutoEmbedLibs\System.Windows.Interactivity.dll" />
@@ -714,11 +590,24 @@
       <Project>{2d34544c-2df2-4b20-a43a-6c8d2df3dd82}</Project>
       <Name>InteractiveDataDisplay.WPF</Name>
     </ProjectReference>
+    <ProjectReference Include="Profiler.Controls\Profiler.Controls.csproj">
+      <Project>{2b515f9a-27ed-4a0f-85f1-2e73b838bd81}</Project>
+      <Name>Profiler.Controls</Name>
+    </ProjectReference>
+    <ProjectReference Include="Profiler.Data\Profiler.Data.csproj">
+      <Project>{37d3fa6a-86fa-43b2-8a4f-681daa3c5e63}</Project>
+      <Name>Profiler.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="Profiler.DirectX\Profiler.DirectX.csproj">
+      <Project>{e86c057e-e135-4100-a4a4-c943c7f14c56}</Project>
+      <Name>Profiler.DirectX</Name>
+    </ProjectReference>
+    <ProjectReference Include="Profiler.InfrastructureMvvm\Profiler.InfrastructureMvvm.csproj">
+      <Project>{65cae3b7-6ea5-4fa4-8e83-4128ff73a40d}</Project>
+      <Name>Profiler.InfrastructureMvvm</Name>
+    </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="DirectX\Shaders\Basic.fx" />
-    <Content Include="DirectX\Shaders\Text.fx" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="packages\Fody.4.0.2\build\Fody.targets" Condition="Exists('packages\Fody.4.0.2\build\Fody.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

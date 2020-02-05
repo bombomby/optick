@@ -20,13 +20,6 @@ namespace Profiler
 	using System.Timers;
 	using System.Collections;
 
-	public struct FilterMode
-	{
-		public bool HideNotRelative { get; set; }
-		public bool ChangeExpand { get; set; }
-		public double TimeLimit { get; set; }
-	}
-
 	public delegate void ApplyFilterEventHandler(HashSet<Object> filter, FilterMode mode);
 	public delegate void ApplyDescriptionFilterEventHandler(HashSet<Object> filter);
 

@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Media;
 using LiveCharts;
 using LiveCharts.Wpf;
+using Profiler.Controls;
 using Profiler.Data;
 using Profiler.InfrastructureMvvm;
 using Profiler.Views;
@@ -102,7 +103,7 @@ namespace Profiler.ViewModels
 				if (maxEntry != null)
 				{
 					EventNode maxNode = maxEntry.Frame.Root.FindNode(maxEntry);
-					parent.RaiseEvent(new TimeLine.FocusFrameEventArgs(TimeLine.FocusFrameEvent, new EventFrame(maxEntry.Frame, maxNode), null));
+					parent.RaiseEvent(new FocusFrameEventArgs(GlobalEvents.FocusFrameEvent, new EventFrame(maxEntry.Frame, maxNode), null));
 				}
 			}
 		}

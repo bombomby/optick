@@ -1,16 +1,17 @@
-﻿<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:Profiler_Data="clr-namespace:Profiler.Data" xmlns:local="clr-namespace:Profiler"
+﻿<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:Profiler_Data="clr-namespace:Profiler.Data;assembly=Profiler.Data" xmlns:local="clr-namespace:Profiler"
 	xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
 	xmlns:Custom="http://schemas.microsoft.com/wpf/2008/toolkit"
     xmlns:Controls="clr-namespace:Profiler.Controls"
-    x:Class="Profiler.FrameInfo"
+    xmlns:Profiler_Controls="clr-namespace:Profiler.Controls;assembly=Profiler.Controls"
+             x:Class="Profiler.FrameInfo"
 	x:Name="UserControl" mc:Ignorable="d"
 	TextOptions.TextFormattingMode="Display"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
   d:DataContext="{Binding Source={x:Static Profiler_Data:TestEventFrame.Frame}}" d:DesignWidth="778">
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <local:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
-        <local:CategoryWidthConverter x:Key="CategoryWidthConverter"/>
+        <Profiler_Controls:ColorToBrushConverter x:Key="ColorToBrushConverter"/>
+        <Profiler_Controls:CategoryWidthConverter x:Key="CategoryWidthConverter"/>
         <ItemsPanelTemplate x:Key="CategoryListStyle">
             <StackPanel Height="Auto" Width="Auto" Orientation="Horizontal"/>
         </ItemsPanelTemplate>

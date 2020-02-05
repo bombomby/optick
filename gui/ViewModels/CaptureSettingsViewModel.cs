@@ -98,30 +98,30 @@ namespace Profiler.ViewModels
 		// Timeline Settings
 		public NumericDelegate TimelineMinThreadDepth { get; private set; } = new NumericDelegate("Collapsed Thread Depth", "Limits the maximum visualization depth for each thread in collapsed mode")
 		{
-			Getter = () => Settings.LocalSettings.Data.CollapsedMaxThreadDepth,
-			Setter = (val) => { Settings.LocalSettings.Data.CollapsedMaxThreadDepth = (int)val; Settings.LocalSettings.Save(); }
+			Getter = () => Settings.LocalSettings.Data.ThreadSettings.CollapsedMaxThreadDepth,
+			Setter = (val) => { Settings.LocalSettings.Data.ThreadSettings.CollapsedMaxThreadDepth = (int)val; Settings.LocalSettings.Save(); }
 		};
 
 		public NumericDelegate TimelineMaxThreadDepth { get; private set; } = new NumericDelegate("Expanded Thread Depth", "Limits the maximum visualization depth for each thread in expanded modes")
 		{
-			Getter = ()=> Controls.Settings.LocalSettings.Data.ExpandedMaxThreadDepth,
-			Setter = (val) => { Controls.Settings.LocalSettings.Data.ExpandedMaxThreadDepth = (int)val; Settings.LocalSettings.Save(); }
+			Getter = ()=> Controls.Settings.LocalSettings.Data.ThreadSettings.ExpandedMaxThreadDepth,
+			Setter = (val) => { Controls.Settings.LocalSettings.Data.ThreadSettings.ExpandedMaxThreadDepth = (int)val; Settings.LocalSettings.Save(); }
 		};
 
 		public Array ExpandModeList
 		{
-			get { return Enum.GetValues(typeof(Controls.LocalSettings.ExpandMode)); }
+			get { return Enum.GetValues(typeof(ExpandMode)); }
 		}
 
-		public Controls.LocalSettings.ExpandMode ExpandMode 
+		public ExpandMode ExpandMode 
 		{
 			get
 			{
-				return Controls.Settings.LocalSettings.Data.ThreadExpandMode;
+				return Controls.Settings.LocalSettings.Data.ThreadSettings.ThreadExpandMode;
 			}
 			set
 			{
-				Controls.Settings.LocalSettings.Data.ThreadExpandMode = value;
+				Controls.Settings.LocalSettings.Data.ThreadSettings.ThreadExpandMode = value;
 				Controls.Settings.LocalSettings.Save();
 			}
 		}

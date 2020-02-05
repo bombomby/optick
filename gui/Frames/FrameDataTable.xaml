@@ -4,9 +4,10 @@
 	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:scm="clr-namespace:System.ComponentModel;assembly=WindowsBase"
-	xmlns:Profiler_Data="clr-namespace:Profiler.Data"
+	xmlns:Profiler_Data="clr-namespace:Profiler.Data;assembly=Profiler.Data"
   xmlns:Profiler="clr-namespace:Profiler"
-	mc:Ignorable="d"
+    xmlns:Profiler_Controls="clr-namespace:Profiler.Controls;assembly=Profiler.Controls"
+    mc:Ignorable="d"
 	x:Class="Profiler.FrameDataTable"
 	x:Name="UserControl" d:DesignHeight="480"
 	d:DataContext="{Binding Source={x:Static Profiler_Data:TestEventFrame.Board}}" Width="803.57">
@@ -40,7 +41,7 @@
 			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="413*"/>
 		</Grid.RowDefinitions>
-    <Profiler:SearchBox x:Name="FilterText" SnapsToDevicePixels="True" VerticalAlignment="Top" Margin="1" FontWeight="Normal" />
+        <Profiler:SearchBox x:Name="FilterText" SnapsToDevicePixels="True" VerticalAlignment="Top" Margin="1" FontWeight="Normal" />
     <DataGrid VirtualizingStackPanel.IsVirtualizing="True" 
 				VirtualizingStackPanel.VirtualizationMode="Recycling" 
 				x:Name="SummaryTable" 

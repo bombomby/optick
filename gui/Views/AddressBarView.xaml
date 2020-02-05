@@ -6,13 +6,14 @@
              xmlns:MahApps="http://metro.mahapps.com/winfx/xaml/controls"
              xmlns:local="clr-namespace:Profiler.Views"
              xmlns:Profiler="clr-namespace:Profiler"
+             xmlns:Controls="clr-namespace:Profiler.Controls;assembly=Profiler.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
-        <Profiler:StringToResource x:Key="StringToResource" />
+        <Controls:StringToResource x:Key="StringToResource" />
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <Profiler:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
-        <Profiler:SecureStringToVisibilityConverter x:Key="SecureStringToVisibilityConverter" />
+        <Controls:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+        <Controls:SecureStringToVisibilityConverter x:Key="SecureStringToVisibilityConverter" />
     </UserControl.Resources>
     <StackPanel Orientation="Horizontal">
         <ComboBox x:Name="ConnectionComboBox" ItemsSource="{Binding Connections}" SelectedItem="{Binding Selection, Mode=TwoWay}" MinHeight="{StaticResource DefaultButtonSize}" SelectionChanged="ComboBox_SelectionChanged">
@@ -46,7 +47,7 @@
                 <TextBox.Text>
                     <Binding Path="Address" UpdateSourceTrigger="PropertyChanged" Mode="TwoWay">
                         <Binding.ValidationRules>
-                            <Profiler:IPAddressValidationRule />
+                            <Controls:IPAddressValidationRule />
                         </Binding.ValidationRules>
                     </Binding>
                 </TextBox.Text>

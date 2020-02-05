@@ -7,6 +7,7 @@
              xmlns:dialogs="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
              xmlns:local="clr-namespace:Profiler.Controls"
                          xmlns:Profiler="clr-namespace:Profiler"
+                         xmlns:Controls="clr-namespace:Profiler.Controls;assembly=Profiler.Controls"
                          mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <dialogs:BaseMetroDialog.DialogTop>
@@ -24,7 +25,7 @@
                     <TextBlock DockPanel.Dock="Left" Text="Issue Tracker" Width="80" VerticalAlignment="Center" Margin="4" />
                     <ComboBox DockPanel.Dock="Right" ItemsSource="{Binding Trackers}" SelectedItem="{Binding ActiveItem}">
                         <ComboBox.Resources>
-                            <Profiler:StringToResource x:Key="StringToResource" />
+                            <Controls:StringToResource x:Key="StringToResource" />
                         </ComboBox.Resources>
                         <ComboBox.ItemTemplate>
                             <DataTemplate>

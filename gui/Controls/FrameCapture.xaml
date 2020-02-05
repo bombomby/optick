@@ -5,17 +5,18 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:xcad="http://schemas.xceed.com/wpf/xaml/avalondock"
              xmlns:Profiler="clr-namespace:Profiler"
-             xmlns:Controls="clr-namespace:Profiler.Controls"
              xmlns:ControlsViewModel="clr-namespace:Profiler.ViewModels"
              xmlns:ControlsView="clr-namespace:Profiler.Views"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:Controls="clr-namespace:Profiler.Controls;assembly=Profiler.Controls"
+             xmlns:BaseControlsViewModel="clr-namespace:Profiler.Controls.ViewModels;assembly=Profiler.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="900" d:DesignWidth="1400"
              MinHeight="400">
     
     <UserControl.Resources>
-        <Profiler:MultiplyConverter x:Key="MultiplyConverter"/>
-        <Profiler:SubtractConverter x:Key="SubtractConverter"/>
+        <Controls:MultiplyConverter x:Key="MultiplyConverter"/>
+        <Controls:SubtractConverter x:Key="SubtractConverter"/>
         <sys:Double x:Key="ThreadViewHeightRatio">0.5</sys:Double>
          <DataTemplate DataType="{x:Type ControlsViewModel:SummaryViewerModel}">
             <ControlsView:SummaryViewer />
@@ -24,8 +25,8 @@
         <ControlsViewModel:FunctionInstanceViewModel x:Key="FunctionInstanceVM" Origin="IndividualCalls" Title="Per Call Statistics" />
         <ControlsViewModel:AddressBarViewModel x:Key="AddressBarVM" />
         <ControlsViewModel:CaptureSettingsViewModel x:Key="CaptureSettingsVM" />
-        <ControlsViewModel:SamplingViewModel x:Key="FunctionSamplingVM" Reason="AutoSample" />
-        <ControlsViewModel:SamplingViewModel x:Key="SysCallsSamplingVM" Reason="SysCall" />
+        <BaseControlsViewModel:SamplingViewModel x:Key="FunctionSamplingVM" Reason="AutoSample" />
+        <BaseControlsViewModel:SamplingViewModel x:Key="SysCallsSamplingVM" Reason="SysCall" />
     </UserControl.Resources>
 
     <UserControl.CommandBindings>
@@ -129,7 +130,7 @@
                         <xcad:LayoutAnchorablePaneGroup DockHeight="2*">
                             <xcad:LayoutAnchorablePane x:Name="LayoutDocumentPane">
                                 <xcad:LayoutAnchorable ContentId="document1" Title="Threads" >
-                                    <Profiler:EventThreadView x:Name="EventThreadViewControl" MinHeight="1" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" />
+                                    <Controls:EventThreadView x:Name="EventThreadViewControl" MinHeight="1" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto" />
                                 </xcad:LayoutAnchorable>
                             </xcad:LayoutAnchorablePane>
                         </xcad:LayoutAnchorablePaneGroup>
@@ -163,7 +164,7 @@
                                         <Profiler:SampleInfo x:Name="SampleInfoControl" CallstackType="AutoSample" VM="{StaticResource FunctionSamplingVM}" />
                                     </xcad:LayoutAnchorable>
                                     <xcad:LayoutAnchorable ContentId="sampling_tree_sharpdx" Title="Function Flamegraph" CanClose="False">
-                                        <Profiler:SamplingThreadView x:Name="SamplingTreeControl" DataContext="{StaticResource FunctionSamplingVM}" />
+                                        <Controls:SamplingThreadView x:Name="SamplingTreeControl" DataContext="{StaticResource FunctionSamplingVM}" />
                                     </xcad:LayoutAnchorable>
                                     <xcad:LayoutAnchorable ContentId="syscalls_tree" Title="Function SysCalls" CanClose="False">
                                         <Profiler:SampleInfo x:Name="SysCallInfoControl" CallstackType="SysCall" VM="{StaticResource SysCallsSamplingVM}" />

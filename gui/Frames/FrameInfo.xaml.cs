@@ -17,6 +17,8 @@ using System.Windows.Threading;
 using System.Diagnostics;
 using System.Globalization;
 using Profiler.ViewModels;
+using Profiler.Controls.ViewModels;
+using Profiler.Controls;
 
 namespace Profiler
 {
@@ -156,7 +158,7 @@ namespace Profiler
 		{
 			if (e.NewValue is EventNode && DataContext is Data.EventFrame)
 			{
-                RaiseEvent(new Controls.HighlightFrameEventArgs(new ThreadView.Selection[] { new ThreadView.Selection() { Frame = DataContext as Data.EventFrame, Focus = (e.NewValue as EventNode).Entry } }));
+                RaiseEvent(new Controls.HighlightFrameEventArgs(new ThreadViewControl.Selection[] { new ThreadViewControl.Selection() { Frame = DataContext as Data.EventFrame, Focus = (e.NewValue as EventNode).Entry } }));
 			}
 		}
 
@@ -294,7 +296,7 @@ namespace Profiler
 			if (callstacks.Count > 0)
 			{
 				SamplingFrame frame = new SamplingFrame(callstacks, group);
-				Profiler.TimeLine.FocusFrameEventArgs args = new Profiler.TimeLine.FocusFrameEventArgs(Profiler.TimeLine.FocusFrameEvent, frame);
+				FocusFrameEventArgs args = new FocusFrameEventArgs(GlobalEvents.FocusFrameEvent, frame);
 				RaiseEvent(args);
 			}
 		}

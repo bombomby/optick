@@ -6,7 +6,7 @@
 	xmlns:Microsoft_Windows_Themes="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero"
 	xmlns:local="clr-namespace:Profiler"
     xmlns:Controls="clr-namespace:Profiler.Controls"
-	xmlns:Profiler_Data="clr-namespace:Profiler.Data"
+	xmlns:Profiler_Data="clr-namespace:Profiler.Data;assembly=Profiler.Data"
 	xmlns:System="clr-namespace:System;assembly=mscorlib"
 	mc:Ignorable="d"
 	x:Class="Profiler.TimeLine"

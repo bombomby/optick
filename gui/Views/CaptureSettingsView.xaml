@@ -7,13 +7,14 @@
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:models="clr-namespace:Profiler.ViewModels"
              xmlns:profiler="clr-namespace:Profiler"
+             xmlns:Controls="clr-namespace:Profiler.Controls;assembly=Profiler.Controls"
              mc:Ignorable="d" 
              d:DesignHeight="450" Width="200">
     <UserControl.Resources>
         <models:SamplingFrequencyConverter x:Key="SamplingFrequencyConverter" />
-        <profiler:DisplayNameConverter x:Key="DisplayNameConverter" />
-        <profiler:DisplayDescriptionConverter x:Key="DisplayDescriptionConverter" />
-        <profiler:StringToResource x:Key="StringToResource" />
+        <Controls:DisplayNameConverter x:Key="DisplayNameConverter" />
+        <Controls:DisplayDescriptionConverter x:Key="DisplayDescriptionConverter" />
+        <Controls:StringToResource x:Key="StringToResource" />
     </UserControl.Resources>
     <StackPanel Orientation="Vertical">
 
