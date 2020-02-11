@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
 
 namespace OptickVSIX
@@ -26,7 +28,7 @@ namespace OptickVSIX
 	[PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
 	[Guid(OptickVSIXPackage.PackageGuidString)]
 	[ProvideMenuResource("Menus.ctmenu", 1)]
-	[ProvideToolWindow(typeof(BuildProgressWindow))]
+	[ProvideToolWindow(typeof(BuildProgressWindow), Style = VsDockStyle.Tabbed, DockedHeight = 400, Window = "DocumentWell", Orientation = ToolWindowOrientation.Bottom)]
 	public sealed class OptickVSIXPackage : AsyncPackage
 	{
 		/// <summary>
@@ -49,6 +51,28 @@ namespace OptickVSIX
 			// Do any initialization that requires the UI thread after switching to the UI thread.
 			await this.JoinableTaskFactory.SwitchToMainThreadAsync(cancellationToken);
 		    await BuildProgressWindowCommand.InitializeAsync(this);
+		}
+
+		public override IVsAsyncToolWindowFactory GetAsyncToolWindowFactory(Guid toolWindowType)
+		{
+			return toolWindowType.Equals(Guid.Parse(BuildProgressWindow.WindowGuidString)) ? this : null;
+		}
+
+		protected override string GetToolWindowTitle(Type toolWindowType, int id)
+		{
+			return toolWindowType == typeof(BuildProgressWindow) ? BuildProgressWindow.Title : base.GetToolWindowTitle(toolWindowType, id);
+		}
+
+		protected override async Task<object> InitializeToolWindowAsync(Type toolWindowType, int id, CancellationToken cancellationToken)
+		{
+			// Perform as much work as possible in this method which is being run on a background thread.
+			// The object returned from this method is passed into the constructor of the SampleToolWindow 
+			var dte = await GetServiceAsync(typeof(EnvDTE.DTE)) as EnvDTE80.DTE2;
+
+			return new BuildProgressState
+			{
+				DTE = dte
+			};
 		}
 
 		#endregion

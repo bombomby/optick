@@ -1,6 +1,10 @@
 ﻿namespace OptickVSIX
 {
-	using System.Diagnostics.CodeAnalysis;
+    using EnvDTE;
+    using EnvDTE80;
+    using OptickVSIX.ViewModels;
+    using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
 	using System.Windows;
 	using System.Windows.Controls;
 
@@ -9,12 +13,40 @@
 	/// </summary>
 	public partial class BuildProgressWindowControl : UserControl
 	{
+		BuildViewModel BuildVM { get; set; }
+
+		BuildProgressState State { get; set; }
+
+		Events Events { get; set; }
+		BuildEvents BuildEvents { get; set; }
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="BuildProgressWindowControl"/> class.
 		/// </summary>
-		public BuildProgressWindowControl()
+		public BuildProgressWindowControl(BuildProgressState state)
 		{
 			this.InitializeComponent();
+			this.State = state;
+
+			this.Events = state.DTE.Events;
+			this.BuildEvents = state.DTE.Events.BuildEvents;
+
+			this.BuildEvents.OnBuildBegin += BuildEvents_OnBuildBegin;
+			this.BuildEvents.OnBuildDone += BuildEvents_OnBuildDone;
+		}
+
+		private void BuildEvents_OnBuildBegin(vsBuildScope Scope, vsBuildAction Action)
+		{
+			BuildVM = new BuildViewModel();
+			DataContext = BuildVM;
+
+			BuildVM.Name = State.DTE.Solution.FullName;
+			BuildVM.Start(Scope, Action);
+		}
+
+		private void BuildEvents_OnBuildDone(vsBuildScope Scope, vsBuildAction Action)
+		{
+			BuildVM?.Finish(Scope, Action);
 		}
 
 		/// <summary>

@@ -15,20 +15,23 @@
 	/// implementation of the IVsUIElementPane interface.
 	/// </para>
 	/// </remarks>
-	[Guid("86d4c770-4241-4cb2-a4b2-c79ac8b95834")]
+	[Guid(WindowGuidString)]
 	public class BuildProgressWindow : ToolWindowPane
 	{
+		public const string WindowGuidString = "86d4c770-4241-4cb2-a4b2-c79ac8b95834";
+		public const string Title = "Build Progress Window";
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="BuildProgressWindow"/> class.
 		/// </summary>
-		public BuildProgressWindow() : base(null)
+		public BuildProgressWindow(BuildProgressState state) : base(null)
 		{
-			this.Caption = "BuildProgressWindow";
+			this.Caption = Title;
 
 			// This is the user control hosted by the tool window; Note that, even if this class implements IDisposable,
 			// we are not calling Dispose on this object. This is because ToolWindowPane calls Dispose on
 			// the object returned by the Content property.
-			this.Content = new BuildProgressWindowControl();
+			this.Content = new BuildProgressWindowControl(state);
 		}
 	}
 }
