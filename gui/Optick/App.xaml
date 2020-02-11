@@ -20,7 +20,7 @@
                 <ResourceDictionary Source="themes\BaseDark.xaml" />
                                 
                 <ResourceDictionary Source="themes\Brushes.xaml" />
-                <ResourceDictionary Source="themes\Icons.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/Profiler.Controls;component/Icons/Icons.xaml" />
                 <!--<ResourceDictionary Source="themes\Window.xaml" />-->
                 <ResourceDictionary Source="themes\Controls.xaml" />
                 <ResourceDictionary>

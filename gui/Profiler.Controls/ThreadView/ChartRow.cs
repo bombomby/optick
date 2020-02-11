@@ -10,7 +10,7 @@ using System.Windows.Media;
 
 namespace Profiler.Controls
 {
-	class ChartRow : ThreadRow
+	public class ChartRow : ThreadRow
 	{
 		public override double Height => 64.0;
 

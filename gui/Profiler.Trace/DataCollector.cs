@@ -12,6 +12,7 @@ namespace Profiler.Trace
     {
         public object GroupLock = new Object();
         public ProcessGroup Group { get; set; }
+		public SwitchContextGroup SwitchContexts { get; set; }
 
         private ETWCollector ETWCollector { get; set; }
         private DiagnosticsCollector DiagCollector { get; set; }
@@ -19,15 +20,22 @@ namespace Profiler.Trace
         public DataCollector(Config config)
         {
             Group = new ProcessGroup();
+			SwitchContexts = new SwitchContextGroup();
 
             ETWCollector = new ETWCollector();
             ETWCollector.SetProcessFilter(config.ProcessFilters);
             ETWCollector.ProcessEvent += ETWCollector_ProcessEvent;
+			ETWCollector.SwitchContextEvent += ETWCollector_SwitchContextEvent;
 
-            DiagCollector = new DiagnosticsCollector();
+			DiagCollector = new DiagnosticsCollector();
         }
 
-        private void ETWCollector_ProcessEvent(ProcessData obj)
+		private void ETWCollector_SwitchContextEvent(SwitchContextData sc)
+		{
+			SwitchContexts.Add(sc);
+		}
+
+		private void ETWCollector_ProcessEvent(ProcessData obj)
         {
 			Application.Current.Dispatcher.Invoke((Action)(() =>
 			{

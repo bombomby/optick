@@ -261,13 +261,26 @@ namespace Profiler.Trace
         public List<CounterSample> Samples { get; set; }
     }
 
-    [DataContract]
+	[DataContract]
+	public struct SwitchContextData
+	{
+		[DataMember]
+		public DateTime Timestamp;
+		[DataMember]
+		public UInt64 OldThreadID;
+		[DataMember]
+		public UInt64 NewThreadID;
+		[DataMember]
+		public byte CPUID;
+	}
+
+	[DataContract]
     public class ProcessGroup
     {
         [DataMember]
         public ObservableCollection<ProcessData> Processes { get; set; }
-        
-        [DataMember]
+
+		[DataMember]
         public CounterGroup Counters { get; set; }
 
         public void Add(ProcessData process)
@@ -278,7 +291,7 @@ namespace Profiler.Trace
         public void Clear()
         {
             Processes.Clear();
-            Counters = null;
+			Counters = null;
         }
 
         public ProcessGroup()
@@ -286,4 +299,18 @@ namespace Profiler.Trace
             Processes = new ObservableCollection<ProcessData>();
         }
     }
+
+
+	[DataContract]
+	public class SwitchContextGroup
+	{
+		[DataMember]
+		public List<SwitchContextData> Events { get; set; } = new List<SwitchContextData>();
+
+		public void Add(SwitchContextData sc)
+		{
+			Events.Add(sc);
+		}
+	}
+
 }

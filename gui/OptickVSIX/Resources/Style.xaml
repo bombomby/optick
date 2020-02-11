@@ -1,0 +1,12 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:System="clr-namespace:System;assembly=mscorlib">
+    <SolidColorBrush x:Key="ControlBackgroundBrush" Color="Red" />
+    <SolidColorBrush x:Key="OptickContentBackground" Color="Green" />
+    <SolidColorBrush x:Key="OptickBorder" Color="Black" />
+    <SolidColorBrush x:Key="OptickBackground" Color="Blue" />
+    <SolidColorBrush x:Key="OptickAlternative" Color="Gray" />
+    <SolidColorBrush x:Key="AccentColorBrush" Color="Magenta" />
+    <SolidColorBrush x:Key="BlackBrush" Color="Black" />
+    <System:Double x:Key="DefaultButtonSize">22</System:Double>
+</ResourceDictionary>

@@ -22,6 +22,7 @@ namespace Profiler.Trace
         HashSet<String> Filters { get; set; }
 
         public event Action<ProcessData> ProcessEvent;
+		public event Action<SwitchContextData> SwitchContextEvent;
 
 		public const KernelTraceEventParser.Keywords TraceProcessFlags = KernelTraceEventParser.Keywords.Process | KernelTraceEventParser.Keywords.Thread | KernelTraceEventParser.Keywords.ContextSwitch;
 
@@ -92,35 +93,48 @@ namespace Profiler.Trace
 
         private void Kernel_ThreadCSwitch(Microsoft.Diagnostics.Tracing.Parsers.Kernel.CSwitchTraceData obj)
         {
-            ProcessData newProcess = null;
-            if (ProcessDataMap.TryGetValue(obj.NewProcessID, out newProcess))
-            {
-                ThreadData thread = newProcess.Threads[obj.NewThreadID];
-                thread.WorkIntervals.Add(new WorkIntervalData()
-                {
-                    Start = obj.TimeStamp,
-                    CpuID = obj.ProcessorNumber,
-                    Finish = DateTime.MinValue,
-                });
+			if (SwitchContextEvent != null)
+			{
+				SwitchContextData sc = new SwitchContextData()
+				{
+					CPUID = (byte)obj.ProcessorNumber,
+					NewThreadID = (ulong)obj.NewThreadID,
+					OldThreadID = (ulong)obj.OldThreadID,
+					Timestamp = obj.TimeStamp,
+				};
 
-                ActiveCoresMap[obj.ProcessorNumber] = thread;
-            }
-            else
-            {
-                ActiveCoresMap[obj.ProcessorNumber] = null;
-            }
+				SwitchContextEvent.Invoke(sc);
+			}
 
-            ProcessData oldProcess = null;
-            if (ProcessDataMap.TryGetValue(obj.OldProcessID, out oldProcess))
-            {
-                ThreadData thread = oldProcess.Threads[obj.OldThreadID];
-                if (thread.WorkIntervals.Count > 0)
-                {
-                    WorkIntervalData interval = thread.WorkIntervals[thread.WorkIntervals.Count - 1];
-                    interval.Finish = obj.TimeStamp;
-                    interval.WaitReason = (int)obj.OldThreadWaitReason;
-                }
-            }
+            //ProcessData newProcess = null;
+            //if (ProcessDataMap.TryGetValue(obj.NewProcessID, out newProcess))
+            //{
+            //    ThreadData thread = newProcess.Threads[obj.NewThreadID];
+            //    thread.WorkIntervals.Add(new WorkIntervalData()
+            //    {
+            //        Start = obj.TimeStamp,
+            //        CpuID = obj.ProcessorNumber,
+            //        Finish = DateTime.MinValue,
+            //    });
+
+            //    ActiveCoresMap[obj.ProcessorNumber] = thread;
+            //}
+            //else
+            //{
+            //    ActiveCoresMap[obj.ProcessorNumber] = null;
+            //}
+
+            //ProcessData oldProcess = null;
+            //if (ProcessDataMap.TryGetValue(obj.OldProcessID, out oldProcess))
+            //{
+            //    ThreadData thread = oldProcess.Threads[obj.OldThreadID];
+            //    if (thread.WorkIntervals.Count > 0)
+            //    {
+            //        WorkIntervalData interval = thread.WorkIntervals[thread.WorkIntervals.Count - 1];
+            //        interval.Finish = obj.TimeStamp;
+            //        interval.WaitReason = (int)obj.OldThreadWaitReason;
+            //    }
+            //}
         }
 
         private void Kernel_PerfInfoSysClEnter(Microsoft.Diagnostics.Tracing.Parsers.Kernel.SysCallEnterTraceData obj)

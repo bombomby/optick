@@ -18,12 +18,12 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="1*" />
                 </Grid.ColumnDefinitions>
-                <Grid x:Name="ThreadList" VerticalAlignment="Top" Background="{StaticResource OptickBackground}">
+                <Grid x:Name="ThreadList" VerticalAlignment="Top" Background="{DynamicResource OptickBackground}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                 </Grid>
-                <DX:DirectXCanvas x:Name="surface" Grid.Column="1" Height="Auto" Background="{StaticResource OptickContentBackground}" VerticalAlignment="Top" />
+                <DX:DirectXCanvas x:Name="surface" Grid.Column="1" Height="Auto" Background="{DynamicResource OptickContentBackground}" VerticalAlignment="Top" />
             </Grid>
         </ScrollViewer>
         <ScrollBar Orientation="Horizontal" Width="Auto" x:Name="scrollBar" Grid.Row="1" VerticalAlignment="Bottom" Margin="0,0,10,0" />

@@ -4,28 +4,54 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:vsshell="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.15.0"
+             xmlns:controls="clr-namespace:Profiler.Controls;assembly=Profiler.Controls"
+             xmlns:System="clr-namespace:System;assembly=mscorlib"
              Background="{DynamicResource {x:Static vsshell:VsBrushes.WindowKey}}"
              Foreground="{DynamicResource {x:Static vsshell:VsBrushes.WindowTextKey}}"
              mc:Ignorable="d"
-             d:DesignHeight="300" d:DesignWidth="300"
+             d:DesignHeight="400" d:DesignWidth="1200"
              Name="MyToolWindow">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Profiler.Controls;component/Icons/Icons.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="3*" />
+            <ColumnDefinition Width="1*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="1*" />
+        </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal">
-            <TextBlock>Started: </TextBlock>
+            <TextBlock>Started:</TextBlock>
             <TextBlock Margin="10,0" Text="{Binding StartTime}" />
             <TextBlock>Finished:</TextBlock>
             <TextBlock Margin="10,0" Text="{Binding FinishTime}" />
-            <Button Content="Click me!" Click="button1_Click" Width="120" Height="80" Name="button1"/>
-            <DataGrid ItemsSource="{Binding Collector.Group.Processes}" AutoGenerateColumns="False" x:Name="ProcessDataGrid" x:FieldModifier="public" Width="800">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
-                    <DataGridTextColumn Header="ProcessID" Binding="{Binding ProcessID}" />
-                    <DataGridTextColumn Header="Threads" Binding="{Binding Threads.Count, Mode=OneWay}" />
-                    <DataGridTextColumn Header="CommandLine" Binding="{Binding CommandLine, Mode=OneWay}" />
-                    <DataGridTextColumn Header="Start" Binding="{Binding Duration, Mode=OneWay}" />
-                    <DataGridTextColumn Header="Text" Binding="{Binding Text}" />
-                </DataGrid.Columns>
-            </DataGrid>
+            <Button Content="Click me!" Click="button1_Click" Name="button1"/>
         </StackPanel>
+        <DataGrid Grid.Column="1" Grid.RowSpan="2" ItemsSource="{Binding Collector.Group.Processes}" AutoGenerateColumns="False" x:Name="ProcessDataGrid" x:FieldModifier="public">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
+                <DataGridTextColumn Header="ProcessID" Binding="{Binding ProcessID}" />
+                <DataGridTextColumn Header="Threads" Binding="{Binding Threads.Count, Mode=OneWay}" />
+                <DataGridTextColumn Header="CommandLine" Binding="{Binding CommandLine, Mode=OneWay}" />
+                <DataGridTextColumn Header="Start" Binding="{Binding Duration, Mode=OneWay}" />
+                <DataGridTextColumn Header="Text" Binding="{Binding Text}" />
+            </DataGrid.Columns>
+        </DataGrid>
+        <controls:ThreadViewControl Grid.Row="1" x:Name="ThreadView" MinHeight="1" Height="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="Auto">
+            <controls:ThreadViewControl.Resources>
+                <ResourceDictionary>
+                    <ResourceDictionary.MergedDictionaries>
+                        <ResourceDictionary Source="..\Resources\Style.xaml" />
+                    </ResourceDictionary.MergedDictionaries>
+                </ResourceDictionary>
+            </controls:ThreadViewControl.Resources>
+        </controls:ThreadViewControl>
     </Grid>
 </UserControl>

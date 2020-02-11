@@ -32,20 +32,25 @@ namespace Profiler.Controls
 		public ThreadScroll Scroll { get; set; } = new ThreadScroll();
 		private List<ThreadRow> Rows = new List<ThreadRow>();
 
-		public SolidColorBrush OptickBackground;
-		public SolidColorBrush OptickAlternativeBackground;
-		public SolidColorBrush FrameSelection;
-		public SolidColorBrush FrameHover;
+
+		private SolidColorBrush _optickBackground;
+		public SolidColorBrush OptickBackground { get { if (_optickBackground == null) _optickBackground = FindResource("OptickBackground") as SolidColorBrush; return _optickBackground; } }
+
+		private SolidColorBrush _optickAlternativeBackground;
+		public SolidColorBrush OptickAlternativeBackground { get { if (_optickAlternativeBackground == null) _optickAlternativeBackground = FindResource("OptickAlternative") as SolidColorBrush; return _optickAlternativeBackground; } }
+
+		private SolidColorBrush _frameSelection;
+		public SolidColorBrush FrameSelection { get { if (_frameSelection == null) _frameSelection = FindResource("OptickFrameSelection") as SolidColorBrush; return _frameSelection; } }
+
+		private SolidColorBrush _frameHover;
+		public SolidColorBrush FrameHover { get { if (_frameHover == null) _frameHover = FindResource("OptickFrameHover") as SolidColorBrush; return _frameHover; } }
+
 		Color MeasureBackground;
 		Color HoverBackground;
 
 
 		void InitColors()
 		{
-			OptickBackground = FindResource("OptickBackground") as SolidColorBrush;
-			OptickAlternativeBackground = FindResource("OptickAlternative") as SolidColorBrush;
-			FrameSelection = FindResource("OptickFrameSelection") as SolidColorBrush;
-			FrameHover = FindResource("OptickFrameHover") as SolidColorBrush;
 			MeasureBackground = Color.FromArgb(100, 0, 0, 0);
 			HoverBackground = Color.FromArgb(170, 0, 0, 0);
 		}

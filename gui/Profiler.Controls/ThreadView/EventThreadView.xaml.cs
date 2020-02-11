@@ -40,31 +40,44 @@ namespace Profiler.Controls
 		Dictionary<int, ThreadRow> id2row = new Dictionary<int, ThreadRow>();
 
 		FrameGroup group;
+
 		public FrameGroup Group
 		{
-			set
-			{
-				if (value != group)
-				{
-					group = value;
-
-					InitThreadList(group);
-
-					Visibility visibility = value == null ? Visibility.Collapsed : Visibility.Visible;
-
-					ThreadToolsPanel.Visibility = visibility;
-
-					FunctionSearchControl.DataContext = group;
-					SummaryView.ItemsSource = group?.Summary?.SummaryTable;
-				}
-			}
-
 			get
 			{
-				return group;
+				return (FrameGroup)GetValue(GroupProperty);
+			}
+			set
+			{
+				SetValue(GroupProperty, value);
 			}
 		}
 
+		public static readonly DependencyProperty GroupProperty =
+			DependencyProperty.Register(
+				"Group",
+				typeof(FrameGroup),
+				typeof(EventThreadView),
+				new PropertyMetadata(default(FrameGroup), OnGroupPropertyChanged));
+
+		private static void OnGroupPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+		{
+			FrameGroup value = e.NewValue as FrameGroup;
+			EventThreadView threadView = d as EventThreadView;
+			if (value != threadView.group)
+			{
+				threadView.group = value;
+
+				threadView.InitThreadList(threadView.group);
+
+				Visibility visibility = value == null ? Visibility.Collapsed : Visibility.Visible;
+
+				threadView.ThreadToolsPanel.Visibility = visibility;
+
+				FunctionSearchControl.DataContext = group;
+				threadView.SummaryView.ItemsSource = threadView.group?.Summary?.SummaryTable;
+			}
+		}
 
 		int ThreadNameSorter(EventsThreadRow a, EventsThreadRow b)
 		{
@@ -250,7 +263,7 @@ namespace Profiler.Controls
 			OtherProcess,
 		}
 
-		ProcessGroup GetProcessGroup(FrameGroup group, UInt64 threadID)
+		private static ProcessGroup GetProcessGroup(FrameGroup group, UInt64 threadID)
 		{
             if (threadID == 0)
                 return ProcessGroup.None;
@@ -267,7 +280,7 @@ namespace Profiler.Controls
             return ProcessGroup.OtherProcess;
 		}
 
-		ChartRow GenerateCoreChart(FrameGroup group)
+		public static ChartRow GenerateCoreChart(FrameGroup group)
 		{
 			if (group.Synchronization == null || group.Synchronization.Events.Count == 0)
 				return null;
@@ -327,7 +340,6 @@ namespace Profiler.Controls
 			}
 
 			ChartRow chart = new ChartRow("CPU", timestamps, new List<ChartRow.Entry>() { currProcess, otherProcess }, isCoreInUse.Count);
-			chart.ChartHover += Row_ChartHover;
 			return chart;
 		}
 
@@ -417,11 +429,12 @@ namespace Profiler.Controls
 					Header = new ThreadFilterView(),
 				});
 
-				ThreadRow cpuCoreChart = GenerateCoreChart(group);
+				ChartRow cpuCoreChart = GenerateCoreChart(group);
 				if (cpuCoreChart != null)
 				{
 					cpuCoreChart.IsExpanded = false;
 					cpuCoreChart.ExpandChanged += CpuCoreChart_ExpandChanged;
+					cpuCoreChart.ChartHover += Row_ChartHover;
 					rows.Add(cpuCoreChart);
 				}
 

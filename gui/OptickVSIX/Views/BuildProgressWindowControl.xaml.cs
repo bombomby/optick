@@ -1,17 +1,22 @@
 ﻿namespace OptickVSIX
 {
-    using EnvDTE;
-    using EnvDTE80;
-    using OptickVSIX.ViewModels;
+	using EnvDTE;
+	using EnvDTE80;
+	using OptickVSIX.ViewModels;
+    using Profiler.Controls;
+    using Profiler.Data;
+    using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Diagnostics.CodeAnalysis;
+	using System.Diagnostics.CodeAnalysis;
 	using System.Windows;
 	using System.Windows.Controls;
+    using System.Windows.Media;
 
-	/// <summary>
-	/// Interaction logic for BuildProgressWindowControl.
-	/// </summary>
-	public partial class BuildProgressWindowControl : UserControl
+    /// <summary>
+    /// Interaction logic for BuildProgressWindowControl.
+    /// </summary>
+    public partial class BuildProgressWindowControl : UserControl
 	{
 		BuildViewModel BuildVM { get; set; }
 
@@ -47,6 +52,46 @@
 		private void BuildEvents_OnBuildDone(vsBuildScope Scope, vsBuildAction Action)
 		{
 			BuildVM?.Finish(Scope, Action);
+			GenerateData(BuildVM.Group);			
+		}
+
+		private void GenerateData(FrameGroup group)
+		{
+			List<ThreadRow> rows = new List<ThreadRow>();
+
+			if (group != null)
+			{
+				rows.Add(new HeaderThreadRow(group)
+				{
+					GradientTop = (ThreadView.OptickAlternativeBackground as SolidColorBrush).Color,
+					GradientBottom = (ThreadView.OptickBackground as SolidColorBrush).Color,
+					TextColor = Colors.Gray,
+					//Header = new ThreadFilterView(),
+				});
+
+				ChartRow cpuCoreChart = EventThreadView.GenerateCoreChart(group);
+				if (cpuCoreChart != null)
+				{
+					cpuCoreChart.IsExpanded = false;
+					//cpuCoreChart.ExpandChanged += CpuCoreChart_ExpandChanged;
+					//cpuCoreChart.ChartHover += Row_ChartHover;
+					rows.Add(cpuCoreChart);
+				}
+
+				//List<EventsThreadRow> threadRows = GenerateThreadRows(group);
+				//foreach (EventsThreadRow row in threadRows)
+				//{
+				//	if (row.Description.Origin == ThreadDescription.Source.Core)
+				//	{
+				//		row.IsVisible = false;
+				//		coreRows.Add(row);
+				//	}
+				//}
+				//rows.AddRange(threadRows);
+			}
+
+			ThreadView.Scroll.ViewUnit.Width = 1.0;
+			ThreadView.InitRows(rows, group != null ? group.Board.TimeSlice : null);
 		}
 
 		/// <summary>

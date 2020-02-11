@@ -74,10 +74,20 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="ControlzEx">
+      <Version>3.0.2.4</Version>
+    </PackageReference>
+    <PackageReference Include="MahApps.Metro">
+      <Version>1.6.5</Version>
+    </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.SDK" Version="16.0.200" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="16.2.3074" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Resources\Style.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Resource>
     <Page Include="Views\BuildProgressWindowControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -90,6 +100,18 @@
     <Content Include="Resources\BuildProgressWindowCommand.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Profiler.Controls\Profiler.Controls.csproj">
+      <Project>{2b515f9a-27ed-4a0f-85f1-2e73b838bd81}</Project>
+      <Name>Profiler.Controls</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Profiler.Data\Profiler.Data.csproj">
+      <Project>{37D3FA6A-86FA-43B2-8A4F-681DAA3C5E63}</Project>
+      <Name>Profiler.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Profiler.DirectX\Profiler.DirectX.csproj">
+      <Project>{e86c057e-e135-4100-a4a4-c943c7f14c56}</Project>
+      <Name>Profiler.DirectX</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Profiler.InfrastructureMvvm\Profiler.InfrastructureMvvm.csproj">
       <Project>{65CAE3B7-6EA5-4FA4-8E83-4128FF73A40D}</Project>
       <Name>Profiler.InfrastructureMvvm</Name>
