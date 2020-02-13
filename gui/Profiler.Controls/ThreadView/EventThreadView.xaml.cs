@@ -45,20 +45,24 @@ namespace Profiler.Controls
 		{
 			get
 			{
-				return (FrameGroup)GetValue(GroupProperty);
+				return group;
 			}
 			set
 			{
-				SetValue(GroupProperty, value);
+				if (value != group)
+				{
+					group = value;
+
+					InitThreadList(group);
+
+					Visibility visibility = value == null ? Visibility.Collapsed : Visibility.Visible;
+
+					ThreadToolsPanel.Visibility = visibility;
+					FunctionSearchControl.DataContext = group;
+					SummaryView.ItemsSource = group?.Summary?.SummaryTable;
+				}
 			}
 		}
-
-		public static readonly DependencyProperty GroupProperty =
-			DependencyProperty.Register(
-				"Group",
-				typeof(FrameGroup),
-				typeof(EventThreadView),
-				new PropertyMetadata(default(FrameGroup), OnGroupPropertyChanged));
 
 		private static void OnGroupPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
 		{
@@ -73,8 +77,7 @@ namespace Profiler.Controls
 				Visibility visibility = value == null ? Visibility.Collapsed : Visibility.Visible;
 
 				threadView.ThreadToolsPanel.Visibility = visibility;
-
-				FunctionSearchControl.DataContext = group;
+				threadView.FunctionSearchControl.DataContext = threadView.group;
 				threadView.SummaryView.ItemsSource = threadView.group?.Summary?.SummaryTable;
 			}
 		}
