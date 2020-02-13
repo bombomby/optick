@@ -1,6 +1,6 @@
 version: 2.0.{build}
 
-image: Visual Studio 2017
+image: Visual Studio 2019
 
 platform:
   - x64
@@ -13,11 +13,11 @@ matrix:
   fast_finish: true
 
 before_build:
-  - nuget restore gui/OptickApp_vs2017.sln
+  - nuget restore gui/OptickApp_vs2019.sln
   
 build_script:
-  - tools\Windows\premake5.exe vs2015
-  - cd build/vs2015
+  - tools\Windows\premake5.exe vs2019
+  - cd build/vs2019
   - MsBuild Optick.sln /t:Rebuild /p:Configuration=%CONFIGURATION%
   - cd ../../gui
-  - MsBuild OptickApp_vs2017.sln /t:Rebuild /p:Configuration=%CONFIGURATION%
+  - MsBuild OptickApp_vs2019.sln /t:Rebuild /p:Configuration=%CONFIGURATION%

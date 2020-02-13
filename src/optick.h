@@ -646,9 +646,7 @@ struct OPTICK_API Tag
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct ThreadScope
 {
-    bool keepAlive;
-    
-    ThreadScope(const char* name, bool bKeepAlive = false) : keepAlive(bKeepAlive)
+    ThreadScope(const char* name)
 	{
 		RegisterThread(name);
 	}
@@ -660,7 +658,7 @@ struct ThreadScope
 
 	~ThreadScope()
 	{
-		UnRegisterThread(keepAlive);
+		UnRegisterThread(false);
 	}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -813,7 +811,11 @@ struct OptickApp
 //  }
 //
 #define OPTICK_FRAME_EVENT(FRAME_TYPE, ...)		::Optick::EndFrame(FRAME_TYPE);									\
-												if (FRAME_TYPE == Optick::FrameType::CPU) ::Optick::Update();	\
+												switch (FRAME_TYPE) {											\
+													case Optick::FrameType::CPU:								\
+														::Optick::Update();										\
+														break;													\
+												}																\
 												::Optick::BeginFrame(FRAME_TYPE);								\
 												::Optick::Event OPTICK_CONCAT(autogen_event_, __LINE__)(*::Optick::GetFrameDescription(FRAME_TYPE));
 

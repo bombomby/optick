@@ -5,6 +5,7 @@
 #include <thread>
 #include <condition_variable>
 #include <stdio.h>
+#include <functional>
 #include "optick.h"
 
 #include "TestEngine.h"
@@ -107,9 +108,9 @@ int main()
 	scheduler.Add(UpdateFrame);
 
 	// Waiting for any key
-	getchar();
+	int res = getchar();
 
 	OPTICK_SHUTDOWN();
 
-	return 0;
+	return res;
 }
