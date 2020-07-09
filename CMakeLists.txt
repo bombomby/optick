@@ -24,6 +24,8 @@ source_group("OptickCore" FILES ${OPTICK_SRC})
 
 # Enabled
 option(OPTICK_ENABLED "Enable profiling with Optick" ON)
+option(OPTICK_INSTALL_TARGETS "Should optick be installed? Set to OFF if you use add_subdirectory to include Optick." ON)
+
 if(NOT OPTICK_ENABLED)
 	message(STATUS "Optick is disabled")
 	# add dummy target as a replacement
@@ -98,54 +100,54 @@ if(OPTICK_BUILD_CONSOLE_SAMPLE)
 endif()
 
 
-
 ###############
 ## Packaging ##
 ###############
-include(CMakePackageConfigHelpers)
-include(GNUInstallDirs)
+if(OPTICK_INSTALL_TARGETS)
+	include(CMakePackageConfigHelpers)
+	include(GNUInstallDirs)
 
-set(${PROJECT_NAME}_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}" CACHE STRING "Path to smartcrop cmake files")
+	set(${PROJECT_NAME}_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}" CACHE STRING "Path to smartcrop cmake files")
 
-# Use version checking boilerplate
-write_basic_package_version_file(
-	${PROJECT_NAME}ConfigVersion.cmake
-	COMPATIBILITY SameMajorVersion
-)
+	# Use version checking boilerplate
+	write_basic_package_version_file(
+		${PROJECT_NAME}ConfigVersion.cmake
+		COMPATIBILITY SameMajorVersion
+	)
 
-configure_package_config_file(
-	${PROJECT_SOURCE_DIR}/tools/${PROJECT_NAME}Config.cmake.in
-	${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
-	INSTALL_DESTINATION ${${PROJECT_NAME}_INSTALL_CMAKEDIR} 
-	# Imported targets do not require the following macros
-	NO_SET_AND_CHECK_MACRO
-	NO_CHECK_REQUIRED_COMPONENTS_MACRO 
-)
+	configure_package_config_file(
+		${PROJECT_SOURCE_DIR}/tools/${PROJECT_NAME}Config.cmake.in
+		${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+		INSTALL_DESTINATION ${${PROJECT_NAME}_INSTALL_CMAKEDIR} 
+		# Imported targets do not require the following macros
+		NO_SET_AND_CHECK_MACRO
+		NO_CHECK_REQUIRED_COMPONENTS_MACRO 
+	)
 
-install(TARGETS OptickCore
-	EXPORT ${PROJECT_NAME}_Targets
-	RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
-	LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-	ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
-	INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+	install(TARGETS OptickCore
+		EXPORT ${PROJECT_NAME}_Targets
+		RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR}
+		LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+		ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
+		INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 
-)
+	)
 
-install(
-	EXPORT ${PROJECT_NAME}_Targets 
-	NAMESPACE ${PROJECT_NAME}::
-	FILE ${PROJECT_NAME}Targets.cmake
-	DESTINATION ${${PROJECT_NAME}_INSTALL_CMAKEDIR}
-)
+	install(
+		EXPORT ${PROJECT_NAME}_Targets 
+		NAMESPACE ${PROJECT_NAME}::
+		FILE ${PROJECT_NAME}Targets.cmake
+		DESTINATION ${${PROJECT_NAME}_INSTALL_CMAKEDIR}
+	)
 
 
-install(FILES 
-	${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
-	${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
-	DESTINATION
-		${${PROJECT_NAME}_INSTALL_CMAKEDIR}
-)
-
+	install(FILES 
+		${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+		${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+		DESTINATION
+			${${PROJECT_NAME}_INSTALL_CMAKEDIR}
+	)
+endif()
 
 
 
