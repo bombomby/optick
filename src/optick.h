@@ -89,6 +89,47 @@ OPTICK_DEFINE_HANDLE(VkDevice);
 OPTICK_DEFINE_HANDLE(VkPhysicalDevice);
 OPTICK_DEFINE_HANDLE(VkQueue);
 OPTICK_DEFINE_HANDLE(VkCommandBuffer);
+OPTICK_DEFINE_HANDLE(VkQueryPool);
+OPTICK_DEFINE_HANDLE(VkCommandPool);
+OPTICK_DEFINE_HANDLE(VkFence);
+
+struct VkPhysicalDeviceProperties;
+struct VkQueryPoolCreateInfo;
+struct VkAllocationCallbacks;
+struct VkCommandPoolCreateInfo;
+struct VkCommandBufferAllocateInfo;
+struct VkFenceCreateInfo;
+struct VkSubmitInfo;
+struct VkCommandBufferBeginInfo;
+
+// uint32_t here as a return time means to mean VkResult but we don't want to re-declare that entire enormous enum
+#ifndef VULKAN_CORE_H_
+#ifdef _WIN32
+#define VKAPI_CALL __stdcall
+#else
+#define VKAPI_VALL
+#endif
+
+typedef void (VKAPI_CALL *PFN_vkGetPhysicalDeviceProperties)(VkPhysicalDevice physicalDevice, VkPhysicalDeviceProperties* pProperties);
+typedef uint32_t(VKAPI_CALL *PFN_vkCreateQueryPool)(VkDevice device, const VkQueryPoolCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkQueryPool* pQueryPool);
+typedef uint32_t(VKAPI_CALL *PFN_vkCreateCommandPool)(VkDevice device, const VkCommandPoolCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkCommandPool* pCommandPool);
+typedef uint32_t(VKAPI_CALL *PFN_vkAllocateCommandBuffers)(VkDevice device, const VkCommandBufferAllocateInfo* pAllocateInfo, VkCommandBuffer* pCommandBuffers);
+typedef uint32_t(VKAPI_CALL *PFN_vkCreateFence)(VkDevice device, const VkFenceCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkFence* pFence);
+typedef uint32_t(VKAPI_CALL *PFN_vkCmdResetQueryPool)(VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount);
+typedef uint32_t(VKAPI_CALL *PFN_vkEndCommandBuffer)(VkCommandBuffer commandBuffer);
+typedef uint32_t(VKAPI_CALL *PFN_vkQueueSubmit)(VkQueue queue, uint32_t submitCount, const VkSubmitInfo* pSubmits, VkFence fence);
+typedef uint32_t(VKAPI_CALL *PFN_vkWaitForFences)(VkDevice device, uint32_t fenceCount, const VkFence* pFences, uint32_t waitAll, uint64_t timeout);
+typedef uint32_t(VKAPI_CALL *PFN_vkResetCommandBuffer)(VkCommandBuffer commandBuffer, uint32_t flags);
+typedef void (VKAPI_CALL*PFN_vkCmdWriteTimestamp)(VkCommandBuffer commandBuffer, uint32_t pipelineStage, VkQueryPool queryPool, uint32_t query);
+typedef uint32_t(VKAPI_CALL *PFN_vkGetQueryPoolResults)(VkDevice device, VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount, size_t dataSize, void* pData, size_t stride, uint32_t flags);
+typedef uint32_t(VKAPI_CALL *PFN_vkBeginCommandBuffer)(VkCommandBuffer commandBuffer, const VkCommandBufferBeginInfo* pBeginInfo);
+typedef uint32_t(VKAPI_CALL *PFN_vkEndCommandBuffer)(VkCommandBuffer commandBuffer);
+typedef uint32_t(VKAPI_CALL *PFN_vkResetFences)(VkDevice device, uint32_t fenceCount, const VkFence* pFences);
+typedef void (VKAPI_CALL *PFN_vkDestroyCommandPool)(VkDevice device, VkCommandPool commandPool, const VkAllocationCallbacks* pAllocator);
+typedef void (VKAPI_CALL *PFN_vkDestroyQueryPool)(VkDevice device, VkQueryPool queryPool, const VkAllocationCallbacks* pAllocator);
+typedef void (VKAPI_CALL *PFN_vkDestroyFence)(VkDevice device, VkFence fence, const VkAllocationCallbacks* pAllocator);
+typedef void (VKAPI_CALL *PFN_vkFreeCommandBuffers)(VkDevice device, VkCommandPool commandPool, uint32_t commandBufferCount, const VkCommandBuffer* pCommandBuffers);
+#endif
 
 // D3D12 Forward Declarations
 struct ID3D12CommandList;
@@ -679,9 +720,32 @@ struct OPTICK_API GPUContext
 	int node;
 	GPUContext(void* c = nullptr, GPUQueueType q = GPU_QUEUE_GRAPHICS, int n = 0) : cmdBuffer(c), queue(q), node(n) {}
 };
+
+struct OPTICK_API VulkanFunctions
+{
+	PFN_vkGetPhysicalDeviceProperties vkGetPhysicalDeviceProperties;
+	PFN_vkCreateQueryPool vkCreateQueryPool;
+	PFN_vkCreateCommandPool vkCreateCommandPool;
+	PFN_vkAllocateCommandBuffers vkAllocateCommandBuffers;
+	PFN_vkCreateFence vkCreateFence;
+	PFN_vkCmdResetQueryPool vkCmdResetQueryPool;
+	PFN_vkQueueSubmit vkQueueSubmit;
+	PFN_vkWaitForFences vkWaitForFences;
+	PFN_vkResetCommandBuffer vkResetCommandBuffer;
+	PFN_vkCmdWriteTimestamp vkCmdWriteTimestamp;
+	PFN_vkGetQueryPoolResults vkGetQueryPoolResults;
+	PFN_vkBeginCommandBuffer vkBeginCommandBuffer;
+	PFN_vkEndCommandBuffer vkEndCommandBuffer;
+	PFN_vkResetFences vkResetFences;
+	PFN_vkDestroyCommandPool vkDestroyCommandPool;
+	PFN_vkDestroyQueryPool vkDestroyQueryPool;
+	PFN_vkDestroyFence vkDestroyFence;
+	PFN_vkFreeCommandBuffers vkFreeCommandBuffers;
+};
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OPTICK_API void InitGpuD3D12(ID3D12Device* device, ID3D12CommandQueue** cmdQueues, uint32_t numQueues);
-OPTICK_API void InitGpuVulkan(VkDevice* vkDevices, VkPhysicalDevice* vkPhysicalDevices, VkQueue* vkQueues, uint32_t* cmdQueuesFamily, uint32_t numQueues);
+OPTICK_API void InitGpuVulkan(VkDevice* vkDevices, VkPhysicalDevice* vkPhysicalDevices, VkQueue* vkQueues, uint32_t* cmdQueuesFamily, uint32_t numQueues, const VulkanFunctions* functions = nullptr);
 OPTICK_API void GpuFlip(void* swapChain);
 OPTICK_API GPUContext SetGpuContext(GPUContext context);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
