@@ -83,7 +83,7 @@
 #endif
 
 // Vulkan Forward Declarations
-#ifndef OPTICK_ENABLE_GPU_VULKAN
+#if OPTICK_ENABLE_GPU_VULKAN == 0
 #define OPTICK_DEFINE_HANDLE(object) typedef struct object##_T *object;
 OPTICK_DEFINE_HANDLE(VkDevice);
 OPTICK_DEFINE_HANDLE(VkPhysicalDevice);
