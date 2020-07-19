@@ -83,8 +83,41 @@
 #endif
 
 // Vulkan Forward Declarations
+#ifndef OPTICK_ENABLE_GPU_VULKAN
+#define OPTICK_DEFINE_HANDLE(object) typedef struct object##_T *object;
+OPTICK_DEFINE_HANDLE(VkDevice);
+OPTICK_DEFINE_HANDLE(VkPhysicalDevice);
+OPTICK_DEFINE_HANDLE(VkQueue);
+OPTICK_DEFINE_HANDLE(VkCommandBuffer);
+struct OPTICK_API VulkanFunctions
+{
+};
+
+#else
 #define VK_NO_PROTOTYPES
 #include <vulkan/vulkan.h>
+struct OPTICK_API VulkanFunctions
+{
+	PFN_vkGetPhysicalDeviceProperties vkGetPhysicalDeviceProperties;
+	PFN_vkCreateQueryPool vkCreateQueryPool;
+	PFN_vkCreateCommandPool vkCreateCommandPool;
+	PFN_vkAllocateCommandBuffers vkAllocateCommandBuffers;
+	PFN_vkCreateFence vkCreateFence;
+	PFN_vkCmdResetQueryPool vkCmdResetQueryPool;
+	PFN_vkQueueSubmit vkQueueSubmit;
+	PFN_vkWaitForFences vkWaitForFences;
+	PFN_vkResetCommandBuffer vkResetCommandBuffer;
+	PFN_vkCmdWriteTimestamp vkCmdWriteTimestamp;
+	PFN_vkGetQueryPoolResults vkGetQueryPoolResults;
+	PFN_vkBeginCommandBuffer vkBeginCommandBuffer;
+	PFN_vkEndCommandBuffer vkEndCommandBuffer;
+	PFN_vkResetFences vkResetFences;
+	PFN_vkDestroyCommandPool vkDestroyCommandPool;
+	PFN_vkDestroyQueryPool vkDestroyQueryPool;
+	PFN_vkDestroyFence vkDestroyFence;
+	PFN_vkFreeCommandBuffers vkFreeCommandBuffers;
+};
+#endif
 
 // D3D12 Forward Declarations
 struct ID3D12CommandList;
@@ -673,28 +706,6 @@ namespace Optick
 		GPUQueueType queue;
 		int node;
 		GPUContext(void *c = nullptr, GPUQueueType q = GPU_QUEUE_GRAPHICS, int n = 0) : cmdBuffer(c), queue(q), node(n) {}
-	};
-
-	struct OPTICK_API VulkanFunctions
-	{
-		PFN_vkGetPhysicalDeviceProperties vkGetPhysicalDeviceProperties;
-		PFN_vkCreateQueryPool vkCreateQueryPool;
-		PFN_vkCreateCommandPool vkCreateCommandPool;
-		PFN_vkAllocateCommandBuffers vkAllocateCommandBuffers;
-		PFN_vkCreateFence vkCreateFence;
-		PFN_vkCmdResetQueryPool vkCmdResetQueryPool;
-		PFN_vkQueueSubmit vkQueueSubmit;
-		PFN_vkWaitForFences vkWaitForFences;
-		PFN_vkResetCommandBuffer vkResetCommandBuffer;
-		PFN_vkCmdWriteTimestamp vkCmdWriteTimestamp;
-		PFN_vkGetQueryPoolResults vkGetQueryPoolResults;
-		PFN_vkBeginCommandBuffer vkBeginCommandBuffer;
-		PFN_vkEndCommandBuffer vkEndCommandBuffer;
-		PFN_vkResetFences vkResetFences;
-		PFN_vkDestroyCommandPool vkDestroyCommandPool;
-		PFN_vkDestroyQueryPool vkDestroyQueryPool;
-		PFN_vkDestroyFence vkDestroyFence;
-		PFN_vkFreeCommandBuffers vkFreeCommandBuffers;
 	};
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
