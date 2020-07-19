@@ -156,10 +156,12 @@ namespace Optick
 			
 			r = (*vulkanFunctions.vkCreateQueryPool)(devices[i], &queryPoolCreateInfo, 0, &nodePayload->queryPool);
 			OPTICK_ASSERT(r == VK_SUCCESS, "Failed");
+			(void)r;
 
 			commandPoolCreateInfo.queueFamilyIndex = cmdQueuesFamily[i];
 			r = (*vulkanFunctions.vkCreateCommandPool)(nodePayload->device, &commandPoolCreateInfo, 0, &nodePayload->commandPool);
 			OPTICK_ASSERT(r == VK_SUCCESS, "Failed");
+			(void)r;
 
 			for (uint32_t j = 0; j < nodePayload->frames.size(); ++j)
 			{
@@ -173,6 +175,7 @@ namespace Optick
 				allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 				r = (*vulkanFunctions.vkAllocateCommandBuffers)(nodePayload->device, &allocInfo, &frame.commandBuffer);
 				OPTICK_ASSERT(r == VK_SUCCESS, "Failed");
+				(void)r;
 
 				VkFenceCreateInfo fenceCreateInfo;
 				fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
@@ -180,6 +183,7 @@ namespace Optick
 				fenceCreateInfo.flags = j == 0 ? 0 : VK_FENCE_CREATE_SIGNALED_BIT;
 				r = (*vulkanFunctions.vkCreateFence)(nodePayload->device, &fenceCreateInfo, 0, &frame.fence);
 				OPTICK_ASSERT(r == VK_SUCCESS, "Failed");
+				(void)r;
 				if (j == 0)
 				{
 					VkCommandBufferBeginInfo commandBufferBeginInfo;
