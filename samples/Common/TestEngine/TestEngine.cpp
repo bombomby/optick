@@ -70,7 +70,7 @@ void SlowFunction()
 	OPTICK_TAG("Before", value);
 
 	for (unsigned long i = 0; i < N; ++i)
-		value = (value + sin((float)i)) * 0.5f;
+		value = (value + sinf((float)i)) * 0.5f;
 
 	OPTICK_TAG("After", value);
 }

@@ -94,8 +94,10 @@ struct OPTICK_API VulkanFunctions
 };
 
 #else
-#define VK_NO_PROTOTYPES
-#include <vulkan/vulkan.h>
+#ifndef VULKAN_H_
+#error Please include vulkan.h before including Optick
+#endif
+
 struct OPTICK_API VulkanFunctions
 {
 	PFN_vkGetPhysicalDeviceProperties vkGetPhysicalDeviceProperties;

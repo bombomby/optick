@@ -13,7 +13,7 @@
 #include <exception>
 #include <assert.h>
 #include <algorithm>
-#include "vulkan/vulkan.h"
+#include <vulkan/vulkan.h>
 #include "VulkanTools.h"
 #include "VulkanBuffer.hpp"
 
