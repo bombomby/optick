@@ -95,8 +95,8 @@ struct OPTICK_API VulkanFunctions
 };
 
 #else
-#ifndef VULKAN_H_
-#error Please include vulkan.h before including Optick
+#ifndef VULKAN_CORE_H_
+#error Please include vulkan_core.h before including Optick
 #endif
 
 struct OPTICK_API VulkanFunctions
