@@ -102,8 +102,8 @@ struct VkFenceCreateInfo;
 struct VkSubmitInfo;
 struct VkCommandBufferBeginInfo;
 
-enum VkResult : int32_t;
-enum VkPipelineStageFlagBits : uint32_t; 
+enum VkResult;
+enum VkPipelineStageFlagBits; 
 
 #ifndef VKAPI_PTR
 #if defined(_WIN32)
