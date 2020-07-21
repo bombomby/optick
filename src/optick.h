@@ -102,11 +102,11 @@ struct VkFenceCreateInfo;
 struct VkSubmitInfo;
 struct VkCommandBufferBeginInfo;
 
-// If vulkan is included, use THOSE definitions of VkResult
-#ifndef VULKAN_CORE_H_
-enum VkResult : int32_t;
-enum VkPipelineStageFlagBits : uint32_t;
-#endif
+extern "C"
+{
+enum VkResult;
+enum VkPipelineStageFlagBits; 
+}
 
 #ifndef VKAPI_PTR
 #if defined(_WIN32)
