@@ -84,43 +84,76 @@
 
 
 // Vulkan Forward Declarations
-#if OPTICK_ENABLE_GPU_VULKAN == 0
 #define OPTICK_DEFINE_HANDLE(object) typedef struct object##_T *object;
 OPTICK_DEFINE_HANDLE(VkDevice);
 OPTICK_DEFINE_HANDLE(VkPhysicalDevice);
 OPTICK_DEFINE_HANDLE(VkQueue);
 OPTICK_DEFINE_HANDLE(VkCommandBuffer);
-struct OPTICK_API VulkanFunctions
-{
-};
+OPTICK_DEFINE_HANDLE(VkQueryPool);
+OPTICK_DEFINE_HANDLE(VkCommandPool);
+OPTICK_DEFINE_HANDLE(VkFence);
 
+struct VkPhysicalDeviceProperties;
+struct VkQueryPoolCreateInfo;
+struct VkAllocationCallbacks;
+struct VkCommandPoolCreateInfo;
+struct VkCommandBufferAllocateInfo;
+struct VkFenceCreateInfo;
+struct VkSubmitInfo;
+struct VkCommandBufferBeginInfo;
+
+enum VkResult : int32_t;
+enum VkPipelineStageFlagBits : uint32_t; 
+
+#ifndef VKAPI_PTR
+#if defined(_WIN32)
+    // On Windows, Vulkan commands use the stdcall convention
+	#define VKAPI_PTR  __stdcall
 #else
-#ifndef VULKAN_CORE_H_
-#error Please include vulkan_core.h before including Optick
+	#define VKAPI_PTR 
 #endif
+#endif
+
+typedef void (VKAPI_PTR *PFN_vkGetPhysicalDeviceProperties_)(VkPhysicalDevice physicalDevice, VkPhysicalDeviceProperties* pProperties);
+typedef VkResult (VKAPI_PTR *PFN_vkCreateQueryPool_)(VkDevice device, const VkQueryPoolCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkQueryPool* pQueryPool);
+typedef VkResult (VKAPI_PTR *PFN_vkCreateCommandPool_)(VkDevice device, const VkCommandPoolCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkCommandPool* pCommandPool);
+typedef VkResult (VKAPI_PTR *PFN_vkAllocateCommandBuffers_)(VkDevice device, const VkCommandBufferAllocateInfo* pAllocateInfo, VkCommandBuffer* pCommandBuffers);
+typedef VkResult (VKAPI_PTR *PFN_vkCreateFence_)(VkDevice device, const VkFenceCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkFence* pFence);
+typedef void (VKAPI_PTR *PFN_vkCmdResetQueryPool_)(VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount);
+typedef VkResult (VKAPI_PTR *PFN_vkQueueSubmit_)(VkQueue queue, uint32_t submitCount, const VkSubmitInfo* pSubmits, VkFence fence);
+typedef VkResult (VKAPI_PTR *PFN_vkWaitForFences_)(VkDevice device, uint32_t fenceCount, const VkFence* pFences, uint32_t waitAll, uint64_t timeout);
+typedef VkResult (VKAPI_PTR *PFN_vkResetCommandBuffer_)(VkCommandBuffer commandBuffer, uint32_t flags);
+typedef void (VKAPI_PTR *PFN_vkCmdWriteTimestamp_)(VkCommandBuffer commandBuffer, VkPipelineStageFlagBits pipelineStage, VkQueryPool queryPool, uint32_t query);
+typedef VkResult (VKAPI_PTR *PFN_vkGetQueryPoolResults_)(VkDevice device, VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount, size_t dataSize, void* pData, uint64_t stride, uint32_t flags);
+typedef VkResult (VKAPI_PTR *PFN_vkBeginCommandBuffer_)(VkCommandBuffer commandBuffer, const VkCommandBufferBeginInfo* pBeginInfo);
+typedef VkResult (VKAPI_PTR *PFN_vkEndCommandBuffer_)(VkCommandBuffer commandBuffer);
+typedef VkResult (VKAPI_PTR *PFN_vkResetFences_)(VkDevice device, uint32_t fenceCount, const VkFence* pFences);
+typedef void (VKAPI_PTR *PFN_vkDestroyCommandPool_)(VkDevice device, VkCommandPool commandPool, const VkAllocationCallbacks* pAllocator);
+typedef void (VKAPI_PTR *PFN_vkDestroyQueryPool_)(VkDevice device, VkQueryPool queryPool, const VkAllocationCallbacks* pAllocator);
+typedef void (VKAPI_PTR *PFN_vkDestroyFence_)(VkDevice device, VkFence fence, const VkAllocationCallbacks* pAllocator);
+typedef void (VKAPI_PTR *PFN_vkFreeCommandBuffers_)(VkDevice device, VkCommandPool commandPool, uint32_t commandBufferCount, const VkCommandBuffer* pCommandBuffers);
 
 struct OPTICK_API VulkanFunctions
 {
-	PFN_vkGetPhysicalDeviceProperties vkGetPhysicalDeviceProperties;
-	PFN_vkCreateQueryPool vkCreateQueryPool;
-	PFN_vkCreateCommandPool vkCreateCommandPool;
-	PFN_vkAllocateCommandBuffers vkAllocateCommandBuffers;
-	PFN_vkCreateFence vkCreateFence;
-	PFN_vkCmdResetQueryPool vkCmdResetQueryPool;
-	PFN_vkQueueSubmit vkQueueSubmit;
-	PFN_vkWaitForFences vkWaitForFences;
-	PFN_vkResetCommandBuffer vkResetCommandBuffer;
-	PFN_vkCmdWriteTimestamp vkCmdWriteTimestamp;
-	PFN_vkGetQueryPoolResults vkGetQueryPoolResults;
-	PFN_vkBeginCommandBuffer vkBeginCommandBuffer;
-	PFN_vkEndCommandBuffer vkEndCommandBuffer;
-	PFN_vkResetFences vkResetFences;
-	PFN_vkDestroyCommandPool vkDestroyCommandPool;
-	PFN_vkDestroyQueryPool vkDestroyQueryPool;
-	PFN_vkDestroyFence vkDestroyFence;
-	PFN_vkFreeCommandBuffers vkFreeCommandBuffers;
+	PFN_vkGetPhysicalDeviceProperties_ vkGetPhysicalDeviceProperties;
+	PFN_vkCreateQueryPool_ vkCreateQueryPool;
+	PFN_vkCreateCommandPool_ vkCreateCommandPool;
+	PFN_vkAllocateCommandBuffers_ vkAllocateCommandBuffers;
+	PFN_vkCreateFence_ vkCreateFence;
+	PFN_vkCmdResetQueryPool_ vkCmdResetQueryPool;
+	PFN_vkQueueSubmit_ vkQueueSubmit;
+	PFN_vkWaitForFences_ vkWaitForFences;
+	PFN_vkResetCommandBuffer_ vkResetCommandBuffer;
+	PFN_vkCmdWriteTimestamp_ vkCmdWriteTimestamp;
+	PFN_vkGetQueryPoolResults_ vkGetQueryPoolResults;
+	PFN_vkBeginCommandBuffer_ vkBeginCommandBuffer;
+	PFN_vkEndCommandBuffer_ vkEndCommandBuffer;
+	PFN_vkResetFences_ vkResetFences;
+	PFN_vkDestroyCommandPool_ vkDestroyCommandPool;
+	PFN_vkDestroyQueryPool_ vkDestroyQueryPool;
+	PFN_vkDestroyFence_ vkDestroyFence;
+	PFN_vkFreeCommandBuffers_ vkFreeCommandBuffers;
 };
-#endif
 
 // D3D12 Forward Declarations
 struct ID3D12CommandList;

@@ -26,9 +26,6 @@
 
 #if USE_OPTICK
 
-#if OPTICK_ENABLE_GPU_VULKAN == 1
-#include <vulkan/vulkan.h>
-#endif
 #include "optick.h"
 
 #include <cstdio>
