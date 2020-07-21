@@ -133,28 +133,6 @@ typedef void (VKAPI_PTR *PFN_vkDestroyQueryPool_)(VkDevice device, VkQueryPool q
 typedef void (VKAPI_PTR *PFN_vkDestroyFence_)(VkDevice device, VkFence fence, const VkAllocationCallbacks* pAllocator);
 typedef void (VKAPI_PTR *PFN_vkFreeCommandBuffers_)(VkDevice device, VkCommandPool commandPool, uint32_t commandBufferCount, const VkCommandBuffer* pCommandBuffers);
 
-struct OPTICK_API VulkanFunctions
-{
-	PFN_vkGetPhysicalDeviceProperties_ vkGetPhysicalDeviceProperties;
-	PFN_vkCreateQueryPool_ vkCreateQueryPool;
-	PFN_vkCreateCommandPool_ vkCreateCommandPool;
-	PFN_vkAllocateCommandBuffers_ vkAllocateCommandBuffers;
-	PFN_vkCreateFence_ vkCreateFence;
-	PFN_vkCmdResetQueryPool_ vkCmdResetQueryPool;
-	PFN_vkQueueSubmit_ vkQueueSubmit;
-	PFN_vkWaitForFences_ vkWaitForFences;
-	PFN_vkResetCommandBuffer_ vkResetCommandBuffer;
-	PFN_vkCmdWriteTimestamp_ vkCmdWriteTimestamp;
-	PFN_vkGetQueryPoolResults_ vkGetQueryPoolResults;
-	PFN_vkBeginCommandBuffer_ vkBeginCommandBuffer;
-	PFN_vkEndCommandBuffer_ vkEndCommandBuffer;
-	PFN_vkResetFences_ vkResetFences;
-	PFN_vkDestroyCommandPool_ vkDestroyCommandPool;
-	PFN_vkDestroyQueryPool_ vkDestroyQueryPool;
-	PFN_vkDestroyFence_ vkDestroyFence;
-	PFN_vkFreeCommandBuffers_ vkFreeCommandBuffers;
-};
-
 // D3D12 Forward Declarations
 struct ID3D12CommandList;
 struct ID3D12Device;
@@ -163,6 +141,28 @@ struct ID3D12CommandQueue;
 
 namespace Optick
 {
+	struct OPTICK_API VulkanFunctions
+	{
+		PFN_vkGetPhysicalDeviceProperties_ vkGetPhysicalDeviceProperties;
+		PFN_vkCreateQueryPool_ vkCreateQueryPool;
+		PFN_vkCreateCommandPool_ vkCreateCommandPool;
+		PFN_vkAllocateCommandBuffers_ vkAllocateCommandBuffers;
+		PFN_vkCreateFence_ vkCreateFence;
+		PFN_vkCmdResetQueryPool_ vkCmdResetQueryPool;
+		PFN_vkQueueSubmit_ vkQueueSubmit;
+		PFN_vkWaitForFences_ vkWaitForFences;
+		PFN_vkResetCommandBuffer_ vkResetCommandBuffer;
+		PFN_vkCmdWriteTimestamp_ vkCmdWriteTimestamp;
+		PFN_vkGetQueryPoolResults_ vkGetQueryPoolResults;
+		PFN_vkBeginCommandBuffer_ vkBeginCommandBuffer;
+		PFN_vkEndCommandBuffer_ vkEndCommandBuffer;
+		PFN_vkResetFences_ vkResetFences;
+		PFN_vkDestroyCommandPool_ vkDestroyCommandPool;
+		PFN_vkDestroyQueryPool_ vkDestroyQueryPool;
+		PFN_vkDestroyFence_ vkDestroyFence;
+		PFN_vkFreeCommandBuffers_ vkFreeCommandBuffers;
+	};
+
 	// Source: http://msdn.microsoft.com/en-us/library/system.windows.media.colors(v=vs.110).aspx
 	// Image:  http://i.msdn.microsoft.com/dynimg/IC24340.png
 	struct Color
