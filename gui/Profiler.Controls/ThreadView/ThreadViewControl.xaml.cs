@@ -56,6 +56,7 @@ namespace Profiler.Controls
 		}
 
 		public bool ShowThreadHeaders { get; set; } = true;
+		public bool ShowFrameLines { get; set; } = true;
 
 		Mesh BackgroundMesh { get; set; }
 		Mesh ForegroundMesh { get; set; }
@@ -571,7 +572,7 @@ namespace Profiler.Controls
 
 			if (layer == DirectXCanvas.Layer.Foreground)
 			{
-				if (ForegroundMesh != null)
+				if (ShowFrameLines && ForegroundMesh != null)
 				{
 					Matrix world = new Matrix(Scroll.Zoom, 0.0, 0.0, 1.0, -Scroll.ViewUnit.Left * Scroll.Zoom, 0.0);
 					ForegroundMesh.WorldTransform = world;

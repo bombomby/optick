@@ -549,6 +549,12 @@ namespace Profiler.Controls
 			ThreadViewControl.UpdateSurface();
 		}
 
+		private void ShowFrameLinesButton_Click(object sender, RoutedEventArgs e)
+		{
+			ThreadViewControl.ShowFrameLines = ShowFrameLinesButton.IsChecked.GetValueOrDefault(true);
+			ThreadViewControl.UpdateSurface();
+		}
+
 		private void CallstackFilterDrowpdown_Click(object sender, RoutedEventArgs e)
 		{
 			CallstackFilterPopup.IsOpen = true;

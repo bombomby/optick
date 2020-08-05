@@ -88,6 +88,9 @@
                         </StackPanel>
                     </ToggleButton.Content>
                 </ToggleButton>
+                <ToggleButton x:Name="ShowFrameLinesButton" ToolTip="Show Frame Lines" Height="{StaticResource DefaultButtonSize}" Margin="0,0,1,0" Click="ShowFrameLinesButton_Click" IsChecked="{Binding ShowFrameLines, ElementName=ThreadViewControl}">
+                    <TextBlock Text="SHOW FRAMES" Margin="0,-3,0,0" Padding="0" />
+                </ToggleButton>
                 <Popup x:Name="CallstackFilterPopup" Placement="Bottom" IsOpen="{Binding IsChecked, ElementName=CallstackFilterDrowpdown}" PlacementTarget="{Binding ElementName=ShowCallstacksButton}" StaysOpen="False" >
                     <Border Background="{StaticResource OptickContentBackground}" BorderBrush="{StaticResource OptickBorder}" BorderThickness="1" Width="{Binding ActualWidth, ElementName=ShowCallstacksButton}">
                         <ItemsControl ItemsSource="{Binding}">
