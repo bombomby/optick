@@ -219,9 +219,9 @@ void SortMemoryPool(MemoryPool<T, SIZE>& memoryPool)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-EventDescription* EventDescription::Create(const char* eventName, const char* fileName, const unsigned long fileLine, const unsigned long eventColor /*= Color::Null*/, const unsigned long filter /*= 0*/)
+EventDescription* EventDescription::Create(const char* eventName, const char* fileName, const unsigned long fileLine, const unsigned long eventColor /*= Color::Null*/, const unsigned long filter /*= 0*/, const uint8_t eventFlags /*= 0*/)
 {
-	return EventDescriptionBoard::Get().CreateDescription(eventName, fileName, fileLine, eventColor, filter);
+	return EventDescriptionBoard::Get().CreateDescription(eventName, fileName, fileLine, eventColor, filter, eventFlags);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventDescription* EventDescription::CreateShared(const char* eventName, const char* fileName, const unsigned long fileLine, const unsigned long eventColor /*= Color::Null*/, const unsigned long filter /*= 0*/)
@@ -229,7 +229,7 @@ EventDescription* EventDescription::CreateShared(const char* eventName, const ch
 	return EventDescriptionBoard::Get().CreateSharedDescription(eventName, fileName, fileLine, eventColor, filter);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-EventDescription::EventDescription() : name(""), file(""), line(0), color(0), flags(IS_CUSTOM_NAME)
+EventDescription::EventDescription() : name(""), file(""), line(0), index((uint32_t)-1), color(0), filter(0), flags(0)
 {
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -399,6 +399,13 @@ void Tag::Attach(const EventDescription& description, const char* val)
 			storage->tagStringBuffer.Add(TagString(description, val));
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Tag::Attach(const EventDescription& description, const char* val, uint16_t length)
+{
+	if (EventStorage * storage = Core::storage)
+		if (storage->currentMode & Mode::TAGS)
+			storage->tagStringBuffer.Add(TagString(description, val, length));
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream & operator<<(OutputDataStream &stream, const EventDescription &ob)
 {
 	return stream << ob.name << ob.file << ob.line << ob.filter << ob.color << (float)0.0f << ob.flags;
@@ -456,7 +463,7 @@ void EventDescriptionBoard::Shutdown()
 	sharedDescriptions.clear();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-EventDescription* EventDescriptionBoard::CreateDescription(const char* name, const char* file /*= nullptr*/, uint32_t line /*= 0*/, uint32_t color /*= Color::Null*/, uint32_t filter /*= 0*/)
+EventDescription* EventDescriptionBoard::CreateDescription(const char* name, const char* file /*= nullptr*/, uint32_t line /*= 0*/, uint32_t color /*= Color::Null*/, uint32_t filter /*= 0*/, uint8_t flags /*= 0*/)
 {
 	std::lock_guard<std::mutex> lock(GetBoardLock());
 
@@ -464,11 +471,12 @@ EventDescription* EventDescriptionBoard::CreateDescription(const char* name, con
 
 	EventDescription& desc = boardDescriptions.Add();
 	desc.index = (uint32)index;
-	desc.name = name;
-	desc.file = file;
+	desc.name = (flags & EventDescription::COPY_NAME_STRING) != 0 ? CacheString(name) : name;
+	desc.file = (flags & EventDescription::COPY_FILENAME_STRING) != 0 ? CacheString(file) : file;
 	desc.line = line;
 	desc.color = color;
 	desc.filter = filter;
+	desc.flags = flags;
 
 	return &desc;
 }
@@ -483,11 +491,16 @@ EventDescription* EventDescriptionBoard::CreateSharedDescription(const char* nam
 
 	if (cached.second)
 	{
-		const char* nameCopy = sharedNames.Add(name, strlen(name) + 1, false);
+		const char* nameCopy = CacheString(name);
 		cached.first->second = CreateDescription(nameCopy, file, line, color, filter);
 	}
 
 	return cached.first->second;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+const char* EventDescriptionBoard::CacheString(const char* name)
+{
+	return sharedNames.Add(name, strlen(name) + 1, false);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator << (OutputDataStream& stream, const EventDescriptionBoard& ob)
@@ -1430,8 +1443,18 @@ ThreadEntry* Core::RegisterThread(const ThreadDescription& description, EventSto
 {
 	std::lock_guard<std::recursive_mutex> lock(threadsLock);
 
-	ThreadEntry* entry = Memory::New<ThreadEntry>(description, slot);
-	threads.push_back(entry);
+	ThreadEntry* entry = nullptr;
+
+	auto it = std::find_if(threads.begin(), threads.end(), [&description](const ThreadEntry* entry) { return entry->description == description; });
+	if (it == threads.end())
+	{
+		entry = Memory::New<ThreadEntry>(description, slot);
+		threads.push_back(entry);
+	}
+	else
+	{
+		entry = *it;
+	}
 
 	if ((currentMode != Mode::OFF) && slot != nullptr)
 		*slot = &entry->storage;

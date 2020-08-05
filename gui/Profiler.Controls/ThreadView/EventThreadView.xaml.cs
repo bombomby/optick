@@ -59,6 +59,7 @@ namespace Profiler.Controls
 
 					ThreadToolsPanel.Visibility = visibility;
 					FunctionSearchControl.DataContext = group;
+					GroupStats.DataContext = group != null ? new FrameGroupStats(group) : null;
 					SummaryView.ItemsSource = group?.Summary?.SummaryTable;
 				}
 			}

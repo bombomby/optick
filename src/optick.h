@@ -549,6 +549,8 @@ struct OPTICK_API EventDescription
 	enum Flags : uint8_t
 	{
 		IS_CUSTOM_NAME = 1 << 0,
+		COPY_NAME_STRING = 1 << 1,
+		COPY_FILENAME_STRING = 1 << 2,
 	};
 
 	const char* name;
@@ -559,7 +561,7 @@ struct OPTICK_API EventDescription
 	uint32_t filter;
 	uint8_t flags;
 
-	static EventDescription* Create(const char* eventName, const char* fileName, const unsigned long fileLine, const unsigned long eventColor = Color::Null, const unsigned long filter = 0);
+	static EventDescription* Create(const char* eventName, const char* fileName, const unsigned long fileLine, const unsigned long eventColor = Color::Null, const unsigned long filter = 0, const uint8_t eventFlags = 0);
 	static EventDescription* CreateShared(const char* eventName, const char* fileName = nullptr, const unsigned long fileLine = 0, const unsigned long eventColor = Color::Null, const unsigned long filter = 0);
 
 	EventDescription();
@@ -596,12 +598,12 @@ struct OPTICK_API Event
 	}
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-OPTICK_INLINE Optick::EventDescription* CreateDescription(const char* functionName, const char* fileName, int fileLine, const char* eventName = nullptr, const ::Optick::Category::Type category = ::Optick::Category::None)
+OPTICK_INLINE Optick::EventDescription* CreateDescription(const char* functionName, const char* fileName, int fileLine, const char* eventName = nullptr, const ::Optick::Category::Type category = ::Optick::Category::None, uint8_t flags = 0)
 {
-	::Optick::EventDescription* desc = ::Optick::EventDescription::Create(eventName != nullptr ? eventName : functionName, fileName, (unsigned long)fileLine, ::Optick::Category::GetColor(category), ::Optick::Category::GetMask(category));
-	if (eventName == nullptr)
-		desc->flags &= ~::Optick::EventDescription::IS_CUSTOM_NAME;
-	return desc;
+	if (eventName != nullptr)
+		flags |= ::Optick::EventDescription::IS_CUSTOM_NAME;
+
+	return ::Optick::EventDescription::Create(eventName != nullptr ? eventName : functionName, fileName, (unsigned long)fileLine, ::Optick::Category::GetColor(category), ::Optick::Category::GetMask(category), flags);
 }
 OPTICK_INLINE Optick::EventDescription* CreateDescription(const char* functionName, const char* fileName, int fileLine, const ::Optick::Category::Type category)
 {
@@ -635,6 +637,7 @@ struct OPTICK_API Tag
 	static void Attach(const EventDescription& description, uint64_t val);
 	static void Attach(const EventDescription& description, float val[3]);
 	static void Attach(const EventDescription& description, const char* val);
+	static void Attach(const EventDescription& description, const char* val, uint16_t length);
 
 	// Derived
 	static void Attach(const EventDescription& description, float x, float y, float z)

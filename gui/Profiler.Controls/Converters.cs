@@ -262,6 +262,39 @@ namespace Profiler.Controls
 		}
 	}
 
+	public class MsToStringConverter : IValueConverter
+	{
+		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			if (value is double)
+			{
+				double duration = (double)value;
+				if (duration < 10.0)
+				{
+					return String.Format("{0:0.000} ms", duration);
+				}
+				else if (duration < 1000.0)
+				{
+					return String.Format("{0:0.0} ms", duration);
+				}
+				else if (duration < 10000.0)
+				{
+					return String.Format("{0:0.000} sec", duration / 1000.0);
+				}
+				else
+				{
+					return String.Format("{0:0.0} sec", duration / 1000.0);
+				}
+			}
+			return null;
+		}
+
+		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		{
+			return null;
+		}
+	}
+
 
 	public class DisplayNameConverter : MarkupExtension, IValueConverter
 	{

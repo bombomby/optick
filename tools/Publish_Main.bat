@@ -2,18 +2,19 @@
 
 cd ..
 
-call tools/GenerateProjects_gpu.bat
+rem call tools/GenerateProjects_gpu.bat
+
 
 MsBuild build/vs2017/Optick.sln /t:OptickCore:Rebuild /p:Configuration=Debug /p:Platform=x64
 MsBuild build/vs2017/Optick.sln /t:Samples\ConsoleApp:Rebuild /p:Configuration=Release /p:Platform=x64
 MsBuild gui/OptickApp_vs2017.sln /t:Rebuild /p:Configuration=Release /p:Platform=x64
 
-for /f %%i in ('powershell "(Get-Item -path Bin\Release\x64\Optick.exe).VersionInfo.ProductVersion"') do set VERSION=%%i
+for /f %%i in ('powershell "(Get-Item -path gui\Bin\Release\x64\Optick.exe).VersionInfo.ProductVersion"') do set VERSION=%%i
 
 set VERSION_NAME=%VERSION:~0,-2%
 
 rem GUI
-xcopy /Y Bin\Release\x64\Optick.exe publish\Optick_%VERSION_NAME%\*
+xcopy /Y gui\Bin\Release\x64\Optick.exe publish\Optick_%VERSION_NAME%\*
 
 rem Samples
 xcopy /Y Bin\vs2017\x64\Release\ConsoleApp.exe publish\Optick_%VERSION_NAME%\samples\*

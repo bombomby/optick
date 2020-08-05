@@ -10,6 +10,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <UserControl.Resources>
+        <Controls:MsToStringConverter x:Key="MsToStringConverter" />
         <Style x:Key="LabelUnderscoreStyle" BasedOn="{StaticResource {x:Type Label}}" TargetType="Label">
             <Setter Property="Template">
                 <Setter.Value>
@@ -52,6 +53,23 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
             <StackPanel Margin="1" HorizontalAlignment="Right" x:Name="ThreadToolsPanel" Grid.Column="2" VerticalAlignment="Top" Orientation="Horizontal">
+                <StackPanel Orientation="Horizontal" TextBlock.FontSize="12" TextBlock.FontWeight="Bold" Height="16" TextBlock.TextAlignment="Center" Margin="2,0" Opacity="0.5" x:Name="GroupStats">
+                    <StackPanel Orientation="Horizontal" ToolTip="Duration of the Capture">
+                        <ContentControl Style="{StaticResource appbar_timer}" Margin="-10" />
+                        <TextBlock Text="{Binding Duration, Converter={StaticResource MsToStringConverter}}" Margin="2" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Rectangle Width="1" Height="15" Stroke="Gray" Margin="0,0,5,0" />
+                    <StackPanel Orientation="Horizontal" ToolTip="Number of Collected Scopes">
+                        <ContentControl Style="{StaticResource appbar_greek_sigma_uppercase}" Margin="-6" />
+                        <TextBlock Text="{Binding NumScopes, StringFormat={}{0:### ### ### ##0}}" Margin="2" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Rectangle Width="1" Height="15" Stroke="Gray" Margin="0,0,5,0" />
+                    <StackPanel Orientation="Horizontal" ToolTip="Number of Collected Callstacks (Run the Game as Administrator to enable callstack collection)">
+                        <ContentControl Style="{StaticResource appbar_cards_diamond}" Margin="-6" />
+                        <TextBlock Text="{Binding NumCallstacks, StringFormat={}{0:### ### ### ##0}}" Margin="2" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <Rectangle Width="1" Height="15" Stroke="Gray" Margin="0,0,5,0" />
+                </StackPanel>
                 <Controls:FunctionSearch x:Name="FunctionSearchControl" Margin="1,0" Width="230" />
                 <ToggleButton x:Name="ShowSyncWorkButton" ToolTip="Show Work" Height="{StaticResource DefaultButtonSize}" Margin="0,0,1,0" Click="ShowSyncWorkButton_Click">
                     <TextBlock Text="SHOW CPU CORES" Margin="0,-3,0,0" Padding="0" />

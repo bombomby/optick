@@ -2,7 +2,7 @@
 
 #pragma once
 
-#if OPTICK_UE4_GPU
+#ifdef OPTICK_UE4_GPU
 
 #define UE_4_24_OR_LATER (ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION >= 24)
 
