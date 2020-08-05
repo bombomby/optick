@@ -97,7 +97,6 @@ if(OPTICK_BUILD_CONSOLE_SAMPLE)
 	target_include_directories(ConsoleApp PRIVATE "samples/Common/TestEngine")
 	target_link_libraries(ConsoleApp ${EXTRA_LIBS})
 	set_target_properties(ConsoleApp PROPERTIES FOLDER Samples)
-	target_compile_definitions(ConsoleApp PRIVATE OPTICK_ENABLE_GPU=0)
 endif()
 
 
