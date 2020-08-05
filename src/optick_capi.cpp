@@ -26,7 +26,11 @@
 
 #include "optick_core.h"
 
+#if defined(__MACH__)
+#include <stdlib.h>
+#else 
 #include <malloc.h>
+#endif
 #include <string.h>
 
 OPTICK_API void OptickAPI_RegisterThread(const char* inThreadName, uint16_t inThreadNameLength)
