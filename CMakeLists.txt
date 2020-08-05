@@ -42,7 +42,6 @@ option(OPTICK_USE_D3D12 "Built-in support for DirectX 12" OFF)
 option(OPTICK_BUILD_GUI_APP "Build Optick gui viewer app" OFF)
 option(OPTICK_BUILD_CONSOLE_SAMPLE "Build Optick console sample app" ${standalone})
 
-
 # OptickCore
 add_library(OptickCore SHARED ${OPTICK_SRC})
 target_include_directories(OptickCore
@@ -57,7 +56,8 @@ set_target_properties(OptickCore
 target_compile_definitions(OptickCore PRIVATE OPTICK_EXPORTS=1)
 if(OPTICK_USE_VULKAN)
 	message(STATUS "Optick uses Vulkan")
-	target_include_directories(OptickCore PRIVATE "$(VULKAN_SDK)/Include")
+	find_package(Vulkan REQUIRED)
+	target_link_libraries(OptickCore PUBLIC Vulkan::Vulkan)
 else()
 	target_compile_definitions(OptickCore PRIVATE OPTICK_ENABLE_GPU_VULKAN=0)
 endif()
@@ -97,6 +97,7 @@ if(OPTICK_BUILD_CONSOLE_SAMPLE)
 	target_include_directories(ConsoleApp PRIVATE "samples/Common/TestEngine")
 	target_link_libraries(ConsoleApp ${EXTRA_LIBS})
 	set_target_properties(ConsoleApp PROPERTIES FOLDER Samples)
+	target_compile_definitions(ConsoleApp PRIVATE OPTICK_ENABLE_GPU=0)
 endif()
 
 

@@ -12,6 +12,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <functional>
+#include <vulkan/vulkan.h>
 #include <Optick.h>
 
 // make_unique is not available in C++11

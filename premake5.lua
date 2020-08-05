@@ -249,6 +249,8 @@ else
 			"OptickCore"
 		}
 
+		defines { "OPTICK_ENABLE_GPU=0" }
+
 		vpaths { 
 			["*"] = "samples/ConsoleApp"
 		}
@@ -272,6 +274,8 @@ end
 		links {
 			"OptickCore"
 		}
+
+		defines { "OPTICK_ENABLE_GPU=0" }
 
 		vpaths { 
 			["*"] = "samples/ConsoleAppMT"
@@ -340,6 +344,7 @@ if isVulkan then
 			"/wd4456", -- declaration of '***' hides previous local declaration
 			"/wd4700", -- uninitialized local variable '***' used
 			"/wd4702", -- unreachable code
+			"/wd4127", -- conditional expression is constant but don't want to bump to C++17
 		}
 	
 		files {

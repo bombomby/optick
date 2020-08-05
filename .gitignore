@@ -9,7 +9,7 @@ gui/packages/
 gui/InteractiveDataDisplay.WPF/obj/
 gui/*/obj/
 gui/.vs/
-Build/
+[Bb]uild*/
 Tools/Publish/
 *.suo
 *.user

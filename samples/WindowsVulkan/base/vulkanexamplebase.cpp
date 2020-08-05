@@ -6,6 +6,7 @@
 * This code is licensed under the MIT license (MIT) (http://opensource.org/licenses/MIT)
 */
 
+#include <vulkan/vulkan.h>
 #include <Optick.h>
 #include "vulkanexamplebase.h"
 
@@ -946,7 +947,7 @@ bool VulkanExampleBase::initVulkan()
 	// Get a graphics queue from the device
 	vkGetDeviceQueue(device, vulkanDevice->queueFamilyIndices.graphics, 0, &queue);
 
-	OPTICK_GPU_INIT_VULKAN(&device, &physicalDevice, &queue, &vulkanDevice->queueFamilyIndices.graphics, 1);
+	OPTICK_GPU_INIT_VULKAN(&device, &physicalDevice, &queue, &vulkanDevice->queueFamilyIndices.graphics, 1, nullptr);
 
 	// Find a suitable depth format
 	VkBool32 validDepthFormat = vks::tools::getSupportedDepthFormat(physicalDevice, &depthFormat);
