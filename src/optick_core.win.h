@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #pragma once
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
 
 #include "optick.config.h"
 
@@ -1585,7 +1585,14 @@ void WinSymbolEngine::Init()
 		for (size_t i = 0; i < loadedModules.size(); ++i)
 		{
 			const Module& module = loadedModules[i];
+#if defined(__MINGW32__) || defined(__MINGW64__)
+            // Cast away const because mingw marks the param as char* not const char*
+			char* modulePath = (char*)module.path.c_str();
+			SymLoadModule64(hProcess, NULL, modulePath, NULL, (DWORD64)module.address, (DWORD)module.size);
+#else
 			SymLoadModule64(hProcess, NULL, module.path.c_str(), NULL, (DWORD64)module.address, (DWORD)module.size);
+#endif
+
 		}
 
 #else
