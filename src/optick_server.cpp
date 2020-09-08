@@ -26,7 +26,7 @@
 #include "optick_common.h"
 #include "optick_miniz.h"
 
-#if defined(OPTICK_MSVC)
+#if defined(OPTICK_MSVC) || defined(OPTICK_MINGW)
 #define USE_WINDOWS_SOCKETS (1)
 #else
 #define USE_BERKELEY_SOCKETS (1)
