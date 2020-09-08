@@ -55,14 +55,14 @@ public:
 		return StartResultMicroseconds != InvalidQueryResult && EndResultMicroseconds != InvalidQueryResult;
 	}
 
+	uint64 StartResultMicroseconds;
+	uint64 EndResultMicroseconds;
+
 	FRHIPooledRenderQuery StartQuery;
 	FRHIPooledRenderQuery EndQuery;
 
 	FName Name;
 	STAT(FName StatName;)
-
-	uint64 StartResultMicroseconds;
-	uint64 EndResultMicroseconds;
 
 #if REALTIME_GPU_PROFILER_EVENT_TRACK_FRAME_NUMBER
 	uint32 FrameNumber;
@@ -77,6 +77,10 @@ public:
 class FRealtimeGPUProfilerFrameImpl
 {
 public:
+
+	uint64 CPUFrameStartTimestamp;
+	FTimestampCalibrationQueryRHIRef TimestampCalibrationQuery;
+
 	struct FGPUEventTimeAggregate
 	{
 		uint32 ExclusiveTimeUs;
