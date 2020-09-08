@@ -38,7 +38,7 @@
 #		define OPTICK_LINUX (1)
 #	elif defined(__FreeBSD__)
 #		define OPTICK_FREEBSD (1)
-#	elif defined(_WIN32) || defined(WIN32)
+#	elif defined(__MINGW32__) || defined(__MINGW64__)
 #       define OPTICK_MINGW (1)
 #       define OPTICK_PC (1)
 #       include <sdkddkver.h>
