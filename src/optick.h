@@ -38,14 +38,17 @@
 #		define OPTICK_LINUX (1)
 #	elif defined(__FreeBSD__)
 #		define OPTICK_FREEBSD (1)
-#	endif
+#	elif defined(_WIN32) || defined(WIN32)
+#       define OPTICK_MINGW (1)
+#       define OPTICK_PC (1)
+#   endif
 #elif defined(_MSC_VER)
 #	define OPTICK_MSVC (1)
 #	if defined(_DURANGO)
 #		define OPTICK_PC (0)
 #	else
 #		define OPTICK_PC (1)
-#endif
+#   endif
 #else
 #error Compiler not supported
 #endif
