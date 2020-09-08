@@ -77,6 +77,12 @@ if(MSVC)
 	target_compile_definitions(OptickCore PRIVATE _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS)
 endif()
 
+if(NOT MSVC)
+	if(WIN32)
+		target_link_libraries(OptickCore PRIVATE ws2_32 dbghelp)
+	endif()
+endif()
+
 set(EXTRA_LIBS ${EXTRA_LIBS} OptickCore)
 if(NOT MSVC)
 	set(EXTRA_LIBS ${EXTRA_LIBS} pthread)
