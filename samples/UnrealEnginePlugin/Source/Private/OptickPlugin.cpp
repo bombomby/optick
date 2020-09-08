@@ -370,7 +370,9 @@ bool FOptickPlugin::IsScreenshotReady() const
 
 bool FOptickPlugin::IsReadyToDumpCapture() const
 {
-	return IsScreenshotReady() || (GFrameNumber - WaitingForScreenshotFrameNumber) > WaitForScreenshotMaxFrameCount;
+	return	IsScreenshotReady() ||
+			(GFrameNumber - WaitingForScreenshotFrameNumber) > WaitForScreenshotMaxFrameCount ||
+			(GIsServer && !GIsClient);
 }
 
 void FOptickPlugin::OnScreenshotProcessed()
@@ -673,7 +675,7 @@ void FOptickPlugin::GetDataFromStatsThread(int64 CurrentFrame)
 					OPTICK_FRAME_FLIP(Optick::FrameType::CPU, Storage->LastTimestamp, Packet.ThreadId);
 				}
 			}
-			else if (Op == EStatOperation::AdvanceFrameEventRenderThread)
+			else if (Op == EStatOperation::AdvanceFrameEventRenderThread && (GIsClient || !GIsServer))
 			{
 				if (Storage->LastTimestamp != 0)
 				{
