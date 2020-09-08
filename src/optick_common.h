@@ -34,10 +34,12 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#if defined(OPTICK_MSVC)
+#if defined(OPTICK_MSVC) || defined(OPTICK_MINGW)
 
-#ifdef OPTICK_UE4
-#include "Core/Public/Windows/AllowWindowsPlatformTypes.h"
+#if !defined(OPTICK_MINGW)
+#   ifdef OPTICK_UE4
+#   include "Core/Public/Windows/AllowWindowsPlatformTypes.h"
+#   endif
 #endif
 
 #ifndef WIN32_LEAN_AND_MEAN
@@ -48,8 +50,10 @@
 #endif
 #include <windows.h>
 
-#ifdef OPTICK_UE4
-#include "Core/Public/Windows/HideWindowsPlatformTypes.h"
+#if !defined(OPTICK_MINGW)
+#   ifdef OPTICK_UE4
+#   include "Core/Public/Windows/HideWindowsPlatformTypes.h"
+#   endif
 #endif
 
 #ifndef TRUE
