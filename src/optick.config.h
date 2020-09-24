@@ -62,7 +62,7 @@
 #endif
 #endif
 
-// VUKLAN
+// VULKAN
 #if !defined(OPTICK_ENABLE_GPU_VULKAN)
 #if defined(_MSC_VER)
 #define OPTICK_ENABLE_GPU_VULKAN (OPTICK_ENABLE_GPU /*&& 0*/)
