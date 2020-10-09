@@ -75,6 +75,8 @@ int Win32Application::Run(DXSample* pSample, HINSTANCE hInstance, int nCmdShow)
 
 	pSample->OnDestroy();
 
+    OPTICK_SHUTDOWN();
+
 	// Return this part of the WM_QUIT message to Windows.
 	return static_cast<char>(msg.wParam);
 }
