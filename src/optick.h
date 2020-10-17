@@ -1023,6 +1023,10 @@ struct OptickApp
 									 if (OPTICK_CONCAT(gpu_autogen_description_, __LINE__) == nullptr) OPTICK_CONCAT(gpu_autogen_description_, __LINE__) = ::Optick::EventDescription::Create( NAME, __FILE__, __LINE__ ); \
 									 ::Optick::GPUEvent OPTICK_CONCAT(gpu_autogen_event_, __LINE__)( *(OPTICK_CONCAT(gpu_autogen_description_, __LINE__)) ); \
 
+#define OPTICK_GPU_EVENT_DYNAMIC(NAME)	 OPTICK_EVENT_DYNAMIC(NAME); \
+									 ::Optick::EventDescription* OPTICK_CONCAT(gpu_autogen_description_, __LINE__) = ::Optick::EventDescription::CreateShared( NAME, __FILE__, __LINE__); \
+									 ::Optick::GPUEvent OPTICK_CONCAT(gpu_autogen_event_, __LINE__)( *(OPTICK_CONCAT(gpu_autogen_description_, __LINE__)) ); \
+
 #define OPTICK_GPU_FLIP(SWAP_CHAIN)		::Optick::GpuFlip(SWAP_CHAIN);
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -1084,6 +1088,7 @@ struct OptickApp
 #define OPTICK_GPU_INIT_VULKAN(DEVICES, PHYSICAL_DEVICES, CMD_QUEUES, CMD_QUEUES_FAMILY, NUM_CMD_QUEUS, FUNCTIONS)
 #define OPTICK_GPU_CONTEXT(...)
 #define OPTICK_GPU_EVENT(NAME)
+#define OPTICK_GPU_EVENT_DYNAMIC(NAME) 
 #define OPTICK_GPU_FLIP(SWAP_CHAIN)
 #define OPTICK_UPDATE()
 #define OPTICK_FRAME_FLIP(...)
