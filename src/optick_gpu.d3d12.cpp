@@ -115,19 +115,6 @@ namespace Optick
 		{
 			Flip(static_cast<IDXGISwapChain*>(swapChain));
 		}
-
-        void CleanUp() override
-        {
-            for (NodePayload* payload : nodePayloads)
-                Memory::Delete(payload);
-            nodePayloads.clear();
-
-            for (Node* node : nodes)
-                Memory::Delete(node);
-            nodes.clear();
-
-            SafeRelease(&queryBuffer);
-        }
 	};
 
 	template <class T> void SafeRelease(T **ppT)
@@ -153,7 +140,15 @@ namespace Optick
 
 	GPUProfilerD3D12::~GPUProfilerD3D12()
 	{
-		CleanUp();
+        for (NodePayload* payload : nodePayloads)
+            Memory::Delete(payload);
+        nodePayloads.clear();
+
+        for (Node* node : nodes)
+            Memory::Delete(node);
+        nodes.clear();
+
+        SafeRelease(&queryBuffer);
 	}
 
 	void GPUProfilerD3D12::InitDevice(ID3D12Device* pDevice, ID3D12CommandQueue** pCommandQueues, uint32_t numCommandQueues)

@@ -143,7 +143,6 @@ namespace Optick
 		virtual void QueryTimestamp(void* context, int64_t* cpuTimestampOut) = 0;
 		virtual void Flip(void* swapChain) = 0;
 
-        virtual void CleanUp() {}
 		virtual ~GPUProfiler();
 	};
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
