@@ -153,7 +153,6 @@ namespace Optick
 
 	GPUProfilerD3D12::~GPUProfilerD3D12()
 	{
-		WaitForFrame(frameNumber - 1);
 		CleanUp();
 	}
 
