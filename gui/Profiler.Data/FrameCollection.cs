@@ -139,6 +139,9 @@ namespace Profiler.Data
 
 		public FrameList GetFocusThread(ThreadMask mask)
 		{
+			if (Frames == null)
+				return null;
+
 			if (mask == ThreadMask.GPU)
 			{
 				FrameList gpuFrames = Frames[FrameList.Type.GPU];
@@ -153,7 +156,8 @@ namespace Profiler.Data
 					return renderFrames;
 			}
 
-			return Frames[FrameList.Type.CPU];
+			FrameList cpuFrames = Frames[FrameList.Type.CPU];
+			return (cpuFrames != null && cpuFrames.Events.Count > 0) ? cpuFrames : null;
 		}
 
 		public List<ThreadData> GetThreads(ThreadDescription.Source origin)

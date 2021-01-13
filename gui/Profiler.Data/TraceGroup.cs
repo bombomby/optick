@@ -228,13 +228,16 @@ namespace Profiler.Data
 
 		String Extract(String text, Regex regex)
 		{
-			MatchCollection matches = regex.Matches(text);
-			if (matches.Count > 0)
+			if (text != null)
 			{
-				foreach (Match match in matches)
+				MatchCollection matches = regex.Matches(text);
+				if (matches.Count > 0)
 				{
-					if (match.Groups.Count > 0)
-						return match.Groups[match.Groups.Count - 1].Value;
+					foreach (Match match in matches)
+					{
+						if (match.Groups.Count > 0)
+							return match.Groups[match.Groups.Count - 1].Value;
+					}
 				}
 			}
 
@@ -294,6 +297,8 @@ namespace Profiler.Data
 
 			Durable range = new Durable(long.MaxValue, long.MinValue);
 
+			Dictionary<string, EventDescription> descriptions = new Dictionary<string, EventDescription>();
+
 			foreach (KeyValuePair<ulong, List<TraceEvent>> pair in threads)
 			{
 				ulong tid = pair.Key;
@@ -304,15 +309,22 @@ namespace Profiler.Data
 
 				foreach (TraceEvent ev in events)
 				{
-					String args = ev.args.ToString().Replace("\n", "").Replace("\r", "");
+					String args = ev.args != null ? ev.args.ToString().Replace("\n", "").Replace("\r", "") : null;
+
 					String context = GenerateShortContext(args);
 					String extraName = GenerateShortName(context);
 
 					String fullName = ev.name;
 					if (!String.IsNullOrWhiteSpace(extraName))
 						fullName = String.Format("{0} - {1}", ev.name, extraName);
+
+					EventDescription desc = null;
+					if (!descriptions.TryGetValue(fullName, out desc))
+					{
+						desc = new EventDescription(fullName) { Color = EventDescription.GenerateRandomColor(ev.name, RandomColorBrightnessVariance) };
+						descriptions.Add(fullName, desc);
+					}
 					
-					EventDescription desc = new EventDescription(fullName) { Color = EventDescription.GenerateRandomColor(ev.name, RandomColorBrightnessVariance) };
 					entries.Add(new Entry(desc, (long)ev.ts, (long)(ev.ts + ev.dur)));
 
 					if (!String.IsNullOrWhiteSpace(context))
