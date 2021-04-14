@@ -61,8 +61,8 @@ extern "C" {
 	OPTICK_API void OptickAPI_AttachTag_Point(uint64_t inEventDescription, float x, float y, float z);
 #else
 	inline void OptickAPI_RegisterThread(const char* inThreadName, uint16_t inThreadNameLength) {}
-	inline uint64_t OptickAPI_CreateEventDescription(const char* inFunctionName, uint16_t inFunctionLength, const char* inFileName, uint16_t inFileNameLenght, uint32_t inFileLine) {}
-	inline uint64_t OptickAPI_PushEvent(uint64_t inEventDescription) {}
+	inline uint64_t OptickAPI_CreateEventDescription(const char* inFunctionName, uint16_t inFunctionLength, const char* inFileName, uint16_t inFileNameLenght, uint32_t inFileLine) { return 0; }
+	inline uint64_t OptickAPI_PushEvent(uint64_t inEventDescription) { return 0; }
     inline void OptickAPI_PopEvent(uint64_t inEventData) {}
 	inline void OptickAPI_NextFrame() {}
 	inline void OptickAPI_StartCapture() {}
