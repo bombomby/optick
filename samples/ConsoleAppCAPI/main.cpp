@@ -55,9 +55,11 @@ int main()
 	//TestOptickApp(&engine);
 	//TestAutomation(&engine);
 
-	// Unlike C++ API, you must call StartCapture explicitly
-	// Otherwise while capture files may be generated correctly the
-	// OptickApp will fail to generate a preview when live captures are stopped
+	/*
+	Unlike C++ API, you must call StartCapture explicitly
+	Otherwise while capture files may be generated correctly the
+	OptickApp will fail to generate a preview when live captures are stopped
+	*/
 	OptickAPI_StartCapture();
 
 	bool needExit = false;
@@ -68,8 +70,16 @@ int main()
 		if (!engine.Update())
 			break;
 
-		printf(".");
-		fflush(stdout);
+		/*
+			Example of how to add a profiling scope in C
+		*/
+		static uint64_t eventDesc = OptickAPI_CreateEventDescCStr2("Print stdout");
+		uint64_t event = OptickAPI_PushEvent(eventDesc);
+		{
+			printf(".");
+			fflush(stdout);
+		}
+		OptickAPI_PopEvent(event);
 	}
 
 	OptickAPI_Shutdown();

@@ -49,7 +49,7 @@ typedef void  (*OptickAPI_InitThreadCb)(void);
 	OPTICK_API void OptickAPI_SetAllocator(OptickAPI_AllocateFn allocateFn, OptickAPI_DeallocateFn deallocateFn, OptickAPI_InitThreadCb initThreadCb);
 	OPTICK_API void OptickAPI_RegisterThread(const char* inThreadName, uint16_t inThreadNameLength);
 
-	OPTICK_API uint64_t OptickAPI_CreateEventDescription(const char* inFunctionName, uint16_t inFunctionLength, const char* inFileName, uint16_t inFileNameLenght, uint32_t inFileLine);
+	OPTICK_API uint64_t OptickAPI_CreateEventDescription(const char* inFunctionName, uint16_t inFunctionLength, const char* inFileName, uint16_t inFileNameLength, uint32_t inFileLine);
 	OPTICK_API uint64_t OptickAPI_PushEvent(uint64_t inEventDescription);
 	OPTICK_API void OptickAPI_PopEvent(uint64_t inEventData);
 	
@@ -65,9 +65,13 @@ typedef void  (*OptickAPI_InitThreadCb)(void);
 	OPTICK_API void OptickAPI_AttachTag_UInt32(uint64_t inEventDescription, uint32_t inValue);
 	OPTICK_API void OptickAPI_AttachTag_UInt64(uint64_t inEventDescription, uint64_t inValue);
 	OPTICK_API void OptickAPI_AttachTag_Point(uint64_t inEventDescription, float x, float y, float z);
+
+	#define OptickAPI_CreateEventDescCStr(functionName, fileName, line) OptickAPI_CreateEventDescription(functionName, sizeof(functionName),fileName, sizeof(fileName), line)
+	#define OptickAPI_CreateEventDescCStr2(functionName) OptickAPI_CreateEventDescCStr(functionName, __FILE__, __LINE__)
+	#define OptickAPI_CreateEventDescCStr3() OptickAPI_CreateEventDescCStr2(__func__)
 #else
 	inline void OptickAPI_RegisterThread(const char* inThreadName, uint16_t inThreadNameLength) {}
-	inline uint64_t OptickAPI_CreateEventDescription(const char* inFunctionName, uint16_t inFunctionLength, const char* inFileName, uint16_t inFileNameLenght, uint32_t inFileLine) { return 0; }
+	inline uint64_t OptickAPI_CreateEventDescription(const char* inFunctionName, uint16_t inFunctionLength, const char* inFileName, uint16_t inFileNameLength, uint32_t inFileLine) { return 0; }
 	inline uint64_t OptickAPI_PushEvent(uint64_t inEventDescription) { return 0; }
     inline void OptickAPI_PopEvent(uint64_t inEventData) {}
 	inline void OptickAPI_NextFrame() {}
@@ -79,6 +83,10 @@ typedef void  (*OptickAPI_InitThreadCb)(void);
 	inline void OptickAPI_AttachTag_Int32(uint64_t inEventDescription, uint32_t inValue) {}
 	inline void OptickAPI_AttachTag_UInt64(uint64_t inEventDescription, uint64_t inValue) {}
 	inline void OptickAPI_AttachTag_Point(uint64_t inEventDescription, float x, float y, float z) {}
+
+	#define OptickAPI_CreateEventDescCStr(functionName, fileName, line)
+	#define OptickAPI_CreateEventDescCStr2(functionName)
+	#define OptickAPI_CreateEventDescCStr3()
 #endif
 
 #ifdef __cplusplus
