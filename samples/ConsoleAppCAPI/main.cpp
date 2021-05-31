@@ -13,8 +13,6 @@
 #pragma warning(disable : 4127)
 #endif
 
-using namespace std;
-
 // Testing OPTICK_APP macro for startup performance analysis
 void TestOptickApp(Test::Engine *engine)
 {
@@ -31,7 +29,7 @@ void TestAutomation(Test::Engine *engine)
     for (int i = 0; i < 3; ++i)
         engine->Update();
     const char outFileName[] = "ConsoleApp";
-    OptickAPI_StopCapture(outFileName, sizeof(outFileName) - 1);
+    OptickAPI_StopCapture(outFileName, sizeof(outFileName));
 }
 
 #if OPTICK_MSVC
@@ -54,8 +52,13 @@ int main()
         { free(p); },
         []() { /* Do some TLS initialization here if needed */ });
 
-    //TestOptickApp(engine);
-    //TestAutomation(engine);
+    //TestOptickApp(&engine);
+    //TestAutomation(&engine);
+
+    // Unlike C++ API, you must call StartCapture explicitly
+    // Otherwise while capture files may be generated correctly the
+    // OptickApp will fail to generate a preview when live captures are stopped
+    OptickAPI_StartCapture();
 
     bool needExit = false;
     while (!needExit)
