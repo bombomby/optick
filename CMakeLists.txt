@@ -93,11 +93,18 @@ endif()
 if(OPTICK_BUILD_CONSOLE_SAMPLE)
 	file(GLOB TEST_ENGINE_SRC "samples/Common/TestEngine/*.*")
 	source_group("TestEngine" FILES ${TEST_ENGINE_SRC})
+
 	add_executable(ConsoleApp "samples/ConsoleApp/main.cpp" ${TEST_ENGINE_SRC})
 	target_include_directories(ConsoleApp PRIVATE "samples/Common/TestEngine")
 	target_link_libraries(ConsoleApp ${EXTRA_LIBS})
 	set_target_properties(ConsoleApp PROPERTIES FOLDER Samples)
 	target_compile_definitions(ConsoleApp PRIVATE OPTICK_ENABLE_GPU=0)
+
+	add_executable(ConsoleAppCAPI "samples/ConsoleAppCAPI/main.cpp" ${TEST_ENGINE_SRC})
+	target_include_directories(ConsoleAppCAPI PRIVATE "samples/Common/TestEngine")
+	target_link_libraries(ConsoleAppCAPI ${EXTRA_LIBS})
+	set_target_properties(ConsoleAppCAPI PROPERTIES FOLDER Samples)
+	target_compile_definitions(ConsoleAppCAPI PRIVATE OPTICK_ENABLE_GPU=0)
 endif()
 
 

@@ -41,7 +41,12 @@
 extern "C" {
 #endif
 
+typedef void* (*OptickAPI_AllocateFn)(size_t);
+typedef void  (*OptickAPI_DeallocateFn)(void*);
+typedef void  (*OptickAPI_InitThreadCb)(void);
+
 #if USE_OPTICK
+	OPTICK_API void OptickAPI_SetAllocator(OptickAPI_AllocateFn allocateFn, OptickAPI_DeallocateFn deallocateFn, OptickAPI_InitThreadCb initThreadCb);
 	OPTICK_API void OptickAPI_RegisterThread(const char* inThreadName, uint16_t inThreadNameLength);
 
 	OPTICK_API uint64_t OptickAPI_CreateEventDescription(const char* inFunctionName, uint16_t inFunctionLength, const char* inFileName, uint16_t inFileNameLenght, uint32_t inFileLine);
@@ -52,6 +57,7 @@ extern "C" {
 
 	OPTICK_API void OptickAPI_StartCapture();
 	OPTICK_API void OptickAPI_StopCapture(const char* inFileName, uint16_t inFileNameLength);
+	OPTICK_API void OptickAPI_Shutdown();
 
 	OPTICK_API void OptickAPI_AttachTag_String(uint64_t inEventDescription, const char* inValue, uint16_t intValueLength);
 	OPTICK_API void OptickAPI_AttachTag_Int32(uint64_t inEventDescription, int inValue);

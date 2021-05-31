@@ -33,6 +33,11 @@
 #endif
 #include <string.h>
 
+OPTICK_API void OptickAPI_SetAllocator(OptickAPI_AllocateFn allocateFn, OptickAPI_DeallocateFn deallocateFn, OptickAPI_InitThreadCb initThreadCb)
+{
+	::Optick::SetAllocator(allocateFn, deallocateFn, initThreadCb);
+}
+
 OPTICK_API void OptickAPI_RegisterThread(const char* inThreadName, uint16_t inThreadNameLength)
 {
 	Optick::OptickString<256> threadName(inThreadName, inThreadNameLength);
@@ -75,6 +80,11 @@ OPTICK_API void OptickAPI_StopCapture(const char* inFileName, uint16_t inFileNam
 	Optick::OptickString<256> fileName(inFileName, inFileNameLength);
 	Optick::StopCapture();
 	Optick::SaveCapture(fileName.data);
+}
+
+OPTICK_API void OptickAPI_Shutdown()
+{
+	Optick::Shutdown();
 }
 
 OPTICK_API void OptickAPI_AttachTag_String(uint64_t inEventDescription, const char* inValue, uint16_t inValueLength)
