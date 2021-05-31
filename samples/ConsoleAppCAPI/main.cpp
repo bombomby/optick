@@ -73,7 +73,14 @@ int main()
 		/*
 			Example of how to add a profiling scope in C
 		*/
-		static uint64_t eventDesc = OptickAPI_CreateEventDescCStr2("Print stdout");
+		static uint64_t eventDesc = 0;
+		if (eventDesc == 0)
+		{
+			eventDesc = OptickAPI_CreateEventDescription("Print stdout", __FILE__, __LINE__, OptickAPI_Category_Debug);
+			const char *tag_cstr = "Hello from C! This is a custom tag.";
+			OptickAPI_AttachTag_String(eventDesc, tag_cstr, sizeof(tag_cstr));
+		}
+
 		uint64_t event = OptickAPI_PushEvent(eventDesc);
 		{
 			printf(".");

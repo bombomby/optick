@@ -44,12 +44,12 @@ OPTICK_API void OptickAPI_RegisterThread(const char* inThreadName, uint16_t inTh
 	Optick::RegisterThread(threadName.data);
 }
 
-OPTICK_API uint64_t OptickAPI_CreateEventDescription(const char* inFunctionName, uint16_t inFunctionLength, const char* inFileName, uint16_t inFileNameLength, uint32_t inFileLine)
+OPTICK_API uint64_t OptickAPI_CreateEventDescription(const char* inFunctionName, const char* inFileName, uint32_t inFileLine, OptickAPI_Category category)
 {
-	Optick::OptickString<128> name(inFunctionName, inFunctionLength);
-	Optick::OptickString<256> file(inFileName, inFileNameLength);
+	Optick::OptickString<128> name(inFunctionName, (uint16_t)strlen(inFunctionName));
+	Optick::OptickString<256> file(inFileName, (uint16_t)strlen(inFileName));
 	uint8_t flags = Optick::EventDescription::COPY_NAME_STRING | Optick::EventDescription::COPY_FILENAME_STRING | Optick::EventDescription::IS_CUSTOM_NAME;
-	return (uint64_t)::Optick::CreateDescription(name.data, file.data, inFileLine, nullptr, Optick::Category::None, flags);
+	return (uint64_t)::Optick::CreateDescription(name.data, file.data, inFileLine, nullptr, (Optick::Category::Type)category, flags);
 }
 OPTICK_API uint64_t OptickAPI_PushEvent(uint64_t inEventDescription)
 {
