@@ -59,6 +59,7 @@ namespace Profiler.Controls
 
 					ThreadToolsPanel.Visibility = visibility;
 					FunctionSearchControl.DataContext = group;
+					GroupStats.DataContext = group != null ? new FrameGroupStats(group) : null;
 					SummaryView.ItemsSource = group?.Summary?.SummaryTable;
 				}
 			}
@@ -545,6 +546,12 @@ namespace Profiler.Controls
 		private void ShowSyncWorkButton_Click(object sender, RoutedEventArgs e)
 		{
 			ThreadViewControl.Scroll.SyncDraw = ShowSyncWorkButton.IsChecked.Value ? ThreadScroll.SyncDrawType.Work : ThreadScroll.SyncDrawType.Wait;
+			ThreadViewControl.UpdateSurface();
+		}
+
+		private void ShowFrameLinesButton_Click(object sender, RoutedEventArgs e)
+		{
+			ThreadViewControl.ShowFrameLines = ShowFrameLinesButton.IsChecked.GetValueOrDefault(true);
 			ThreadViewControl.UpdateSurface();
 		}
 

@@ -17,7 +17,7 @@ instrumentation, switch-contexts, sampling, GPU counters.<br/>
 | Sampling | :heavy_check_mark: ETW | | | :grey_question: | :grey_question: | :heavy_check_mark: Win |
 | GPU | :heavy_check_mark: D3D12, Vulkan | :heavy_check_mark: Vulkan | :heavy_check_mark: Vulkan | | | :hourglass_flowing_sand: |
 
-:heavy_check_mark: - works out of the box, :hourglass_flowing_sand: - in progress, :grey_question: - will be available soon for the certified developers
+:heavy_check_mark: - works out of the box, :hourglass_flowing_sand: - in progress, :grey_question: - coming soon for the certified developers
 
 ## List of Games and Studios using Optick(Brofiler)
 ![Allods Team](https://optick.dev/images/studios/AllodsTeam_thumb2.png "Allods Team") ![4A Games](https://optick.dev/images/studios/4A_Games_thumb2.png "4A Gaemes") ![CryEngine](https://optick.dev/images/studios/CryEngine_thumb.png "CryEngine") ![Larian Studios](https://optick.dev/images/studios/Larian_png.png "Larian Studios")

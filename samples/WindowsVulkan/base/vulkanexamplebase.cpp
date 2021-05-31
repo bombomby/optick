@@ -1167,7 +1167,7 @@ void VulkanExampleBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 			break;
 		}
 
-		if (camera.firstperson)
+		if (camera.type == Camera::firstperson)
 		{
 			switch (wParam)
 			{
@@ -1189,7 +1189,7 @@ void VulkanExampleBase::handleMessages(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 		keyPressed((uint32_t)wParam);
 		break;
 	case WM_KEYUP:
-		if (camera.firstperson)
+		if (camera.type == Camera::firstperson)
 		{
 			switch (wParam)
 			{

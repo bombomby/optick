@@ -16,6 +16,7 @@
 // for the GPU lifetime of resources to avoid destroying objects that may still be
 // referenced by the GPU.
 using Microsoft::WRL::ComPtr;
+#include <stdexcept>
 
 inline std::string HrToString(HRESULT hr)
 {

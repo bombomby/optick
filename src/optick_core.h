@@ -139,6 +139,7 @@ struct OptickString
 	OptickString() {}
 	OptickString<N>& operator=(const char* text) { strncpy(data, text ? text : "null", N - 1); data[N - 1] = 0; return *this; }
 	OptickString(const char* text) { *this = text; }
+	OptickString(const char* text, uint16_t length) { uint16_t maxLength = std::min((uint16_t)(N - 1), length); strncpy(data, text ? text : "null", maxLength); data[maxLength] = 0; }
 };
 #if defined(OPTICK_MSVC)
 #pragma warning( pop )
@@ -208,9 +209,11 @@ class EventDescriptionBoard
 	MemoryBuffer<64 * 1024> sharedNames;
 	std::mutex sharedLock;
 
+	const char* CacheString(const char* text);
 public:
-	EventDescription* CreateDescription(const char* name, const char* file = nullptr, uint32_t line = 0, uint32_t color = Color::Null, uint32_t filter = 0);
+	EventDescription* CreateDescription(const char* name, const char* file = nullptr, uint32_t line = 0, uint32_t color = Color::Null, uint32_t filter = 0, uint8_t flags = 0);
 	EventDescription* CreateSharedDescription(const char* name, const char* file = nullptr, uint32_t line = 0, uint32_t color = Color::Null, uint32_t filter = 0);
+
 
 	static EventDescriptionBoard& Get();
 
@@ -308,6 +311,7 @@ struct ThreadDescription
 	int32 priority;
 	uint32 mask;
 
+	bool operator==(const ThreadDescription& other) const { return name == other.name && threadID == other.threadID && processID == other.processID; }
 	ThreadDescription(const char* threadName, ThreadID tid, ProcessID pid, int32 maxDepth = 1, int32 priority = 0, uint32 mask = 0);
 };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

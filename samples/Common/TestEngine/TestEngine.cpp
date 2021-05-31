@@ -107,7 +107,7 @@ struct SimpleTask
 			OPTICK_CATEGORY("BeforeYield", Optick::Category::AI);
 
 			for (unsigned long i = 0; i < N; ++i)
-				value = (value + sin((float)i)) * 0.5f;
+				value = (value + sinf((float)i)) * 0.5f;
 		}
 
 		ctx.Yield();
@@ -116,7 +116,7 @@ struct SimpleTask
 			OPTICK_CATEGORY("AfterYield", Optick::Category::AI);
 
 			for (unsigned long i = 0; i < N; ++i)
-				value = (value + cos((float)i)) * 0.5f;
+				value = (value + cosf((float)i)) * 0.5f;
 		}
 
 	}
@@ -155,7 +155,7 @@ struct PriorityTask
 	{
 		for (unsigned long i = 0; i < 8192; ++i)
 		{
-			value = (value + cos((float)i)) * 0.5f;
+			value = (value + cosf((float)i)) * 0.5f;
 		}
 	}
 };

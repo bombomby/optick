@@ -742,7 +742,7 @@ void D3D12Multithreading::OnUpdate()
 	{
 		for (int i = 0; i < NumLights; i++)
 		{
-			float direction = frameChange * pow(-1.0f, i);
+			float direction = frameChange * powf(-1.0f, (float)i);
 			XMStoreFloat4(&m_lights[i].position, XMVector4Transform(XMLoadFloat4(&m_lights[i].position), XMMatrixRotationY(direction)));
 
 			XMVECTOR eye = XMLoadFloat4(&m_lights[i].position);

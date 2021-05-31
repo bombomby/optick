@@ -44,7 +44,7 @@ namespace vks
 			// Warm up phase to get more stable frame rates
 			{
 				double tMeasured = 0.0;
-				while (tMeasured < (warmup * 1000)) {
+				while (tMeasured < (warmup * 1000.0)) {
 					auto tStart = std::chrono::high_resolution_clock::now();
 					renderFunc();
 					auto tDiff = std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - tStart).count();

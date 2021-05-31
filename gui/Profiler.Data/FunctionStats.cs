@@ -109,6 +109,11 @@ namespace Profiler.Data
 							Samples.Add(sample);
 						}
 					}
+					else
+					{
+						// Fallback to Individual Calls
+						Load(Origin.IndividualCalls);
+					}
 				}
 			}
 

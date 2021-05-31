@@ -7,6 +7,7 @@ using System.Windows.Data;
 using System.IO;
 using System.Diagnostics;
 using System.Windows.Media;
+using System.ComponentModel;
 
 namespace Profiler.Data
 {
@@ -92,6 +93,32 @@ namespace Profiler.Data
 		}
 	}
 
+	public class FrameGroupStats : INotifyPropertyChanged
+	{
+		public FrameGroupStats(FrameGroup group)
+		{
+			Duration = group.Board.TimeSlice.Duration;
+			foreach (ThreadData thread in group.Threads)
+			{
+				foreach (EventFrame frame in thread.Events)
+					NumScopes = NumScopes + (UInt64)frame.Entries.Count;
+
+				NumTags = NumTags + (UInt64)(thread.TagsPack != null ? thread.TagsPack.Tags.Count : 0);
+				NumSysCalls = NumSysCalls + (UInt64)(thread.SysCalls != null ? thread.SysCalls.Count : 0);
+				NumCallstacks = NumCallstacks + (UInt64)(thread.Callstacks != null ? thread.Callstacks.Count : 0);
+			}
+		}
+
+		public double Duration { get; set; }
+		public UInt64 NumScopes { get; set; }
+		public UInt64 NumTags { get; set; }
+		public UInt64 NumSysCalls { get; set; }
+		public UInt64 NumCallstacks { get; set; }
+
+		public event PropertyChangedEventHandler PropertyChanged;
+	}
+
+
 	public class FrameGroup
 	{
 		public String Name { get; set; }
@@ -112,6 +139,9 @@ namespace Profiler.Data
 
 		public FrameList GetFocusThread(ThreadMask mask)
 		{
+			if (Frames == null)
+				return null;
+
 			if (mask == ThreadMask.GPU)
 			{
 				FrameList gpuFrames = Frames[FrameList.Type.GPU];
@@ -126,7 +156,8 @@ namespace Profiler.Data
 					return renderFrames;
 			}
 
-			return Frames[FrameList.Type.CPU];
+			FrameList cpuFrames = Frames[FrameList.Type.CPU];
+			return (cpuFrames != null && cpuFrames.Events.Count > 0) ? cpuFrames : null;
 		}
 
 		public List<ThreadData> GetThreads(ThreadDescription.Source origin)
