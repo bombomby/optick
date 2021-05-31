@@ -236,39 +236,39 @@ enum OptickAPI_Filter
 
 typedef uint64_t OptickAPI_Category;
 
-OptickAPI_Category OptickAPI_Category_None 			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_None, OptickAPI_Color_Null);
-OptickAPI_Category OptickAPI_Category_AI			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_AI, OptickAPI_Color_Purple);
-OptickAPI_Category OptickAPI_Category_Animation		= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Animation, OptickAPI_Color_LightSkyBlue);
-OptickAPI_Category OptickAPI_Category_Audio			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Audio, OptickAPI_Color_HotPink);
-OptickAPI_Category OptickAPI_Category_Debug			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Debug, OptickAPI_Color_Black);
-OptickAPI_Category OptickAPI_Category_Camera		= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Camera, OptickAPI_Color_Black);
-OptickAPI_Category OptickAPI_Category_Cloth			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Cloth, OptickAPI_Color_DarkGreen);
-OptickAPI_Category OptickAPI_Category_GameLogic		= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_GameLogic, OptickAPI_Color_RoyalBlue);
-OptickAPI_Category OptickAPI_Category_Input			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Input, OptickAPI_Color_Ivory);
-OptickAPI_Category OptickAPI_Category_Navigation	= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Navigation, OptickAPI_Color_Magenta);
-OptickAPI_Category OptickAPI_Category_Network		= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Network, OptickAPI_Color_Olive);
-OptickAPI_Category OptickAPI_Category_Physics		= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Physics, OptickAPI_Color_LawnGreen);
-OptickAPI_Category OptickAPI_Category_Rendering		= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Rendering, OptickAPI_Color_BurlyWood);
-OptickAPI_Category OptickAPI_Category_Scene			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Scene, OptickAPI_Color_RoyalBlue);
-OptickAPI_Category OptickAPI_Category_Script		= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Script, OptickAPI_Color_Plum);
-OptickAPI_Category OptickAPI_Category_Streaming		= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Streaming, OptickAPI_Color_Gold);
-OptickAPI_Category OptickAPI_Category_UI			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_UI, OptickAPI_Color_PaleTurquoise);
-OptickAPI_Category OptickAPI_Category_VFX			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_VFX, OptickAPI_Color_SaddleBrown);
-OptickAPI_Category OptickAPI_Category_Visibility	= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Visibility, OptickAPI_Color_Snow);
-OptickAPI_Category OptickAPI_Category_Wait			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Wait, OptickAPI_Color_Tomato);
-OptickAPI_Category OptickAPI_Category_WaitEmpty		= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Wait, OptickAPI_Color_White);
+static const OptickAPI_Category OptickAPI_Category_None 			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_None, OptickAPI_Color_Null);
+static const OptickAPI_Category OptickAPI_Category_AI				= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_AI, OptickAPI_Color_Purple);
+static const OptickAPI_Category OptickAPI_Category_Animation		= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Animation, OptickAPI_Color_LightSkyBlue);
+static const OptickAPI_Category OptickAPI_Category_Audio			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Audio, OptickAPI_Color_HotPink);
+static const OptickAPI_Category OptickAPI_Category_Debug			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Debug, OptickAPI_Color_Black);
+static const OptickAPI_Category OptickAPI_Category_Camera			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Camera, OptickAPI_Color_Black);
+static const OptickAPI_Category OptickAPI_Category_Cloth			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Cloth, OptickAPI_Color_DarkGreen);
+static const OptickAPI_Category OptickAPI_Category_GameLogic		= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_GameLogic, OptickAPI_Color_RoyalBlue);
+static const OptickAPI_Category OptickAPI_Category_Input			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Input, OptickAPI_Color_Ivory);
+static const OptickAPI_Category OptickAPI_Category_Navigation		= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Navigation, OptickAPI_Color_Magenta);
+static const OptickAPI_Category OptickAPI_Category_Network			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Network, OptickAPI_Color_Olive);
+static const OptickAPI_Category OptickAPI_Category_Physics			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Physics, OptickAPI_Color_LawnGreen);
+static const OptickAPI_Category OptickAPI_Category_Rendering		= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Rendering, OptickAPI_Color_BurlyWood);
+static const OptickAPI_Category OptickAPI_Category_Scene			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Scene, OptickAPI_Color_RoyalBlue);
+static const OptickAPI_Category OptickAPI_Category_Script			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Script, OptickAPI_Color_Plum);
+static const OptickAPI_Category OptickAPI_Category_Streaming		= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Streaming, OptickAPI_Color_Gold);
+static const OptickAPI_Category OptickAPI_Category_UI				= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_UI, OptickAPI_Color_PaleTurquoise);
+static const OptickAPI_Category OptickAPI_Category_VFX				= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_VFX, OptickAPI_Color_SaddleBrown);
+static const OptickAPI_Category OptickAPI_Category_Visibility		= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Visibility, OptickAPI_Color_Snow);
+static const OptickAPI_Category OptickAPI_Category_Wait				= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Wait, OptickAPI_Color_Tomato);
+static const OptickAPI_Category OptickAPI_Category_WaitEmpty		= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_Wait, OptickAPI_Color_White);
 // IO
-OptickAPI_Category OptickAPI_Category_IO			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_IO, OptickAPI_Color_Khaki);
+static const OptickAPI_Category OptickAPI_Category_IO				= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_IO, OptickAPI_Color_Khaki);
 // GPU
-OptickAPI_Category OptickAPI_Category_GPU_Cloth			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_GPU_Cloth, OptickAPI_Color_DarkGreen);
-OptickAPI_Category OptickAPI_Category_GPU_Lighting		= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_GPU_Lighting, OptickAPI_Color_Khaki);
-OptickAPI_Category OptickAPI_Category_GPU_PostFX		= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_GPU_PostFX, OptickAPI_Color_Maroon);
-OptickAPI_Category OptickAPI_Category_GPU_Reflections	= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_GPU_Reflections, OptickAPI_Color_CadetBlue);
-OptickAPI_Category OptickAPI_Category_GPU_Scene			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_GPU_Scene, OptickAPI_Color_RoyalBlue);
-OptickAPI_Category OptickAPI_Category_GPU_Shadows		= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_GPU_Shadows, OptickAPI_Color_LightSlateGray);
-OptickAPI_Category OptickAPI_Category_GPU_UI			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_GPU_UI, OptickAPI_Color_PaleTurquoise);
-OptickAPI_Category OptickAPI_Category_GPU_VFX			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_GPU_VFX, OptickAPI_Color_SaddleBrown);
-OptickAPI_Category OptickAPI_Category_GPU_Water			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_GPU_Water, OptickAPI_Color_SteelBlue);
+static const OptickAPI_Category OptickAPI_Category_GPU_Cloth		= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_GPU_Cloth, OptickAPI_Color_DarkGreen);
+static const OptickAPI_Category OptickAPI_Category_GPU_Lighting		= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_GPU_Lighting, OptickAPI_Color_Khaki);
+static const OptickAPI_Category OptickAPI_Category_GPU_PostFX		= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_GPU_PostFX, OptickAPI_Color_Maroon);
+static const OptickAPI_Category OptickAPI_Category_GPU_Reflections	= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_GPU_Reflections, OptickAPI_Color_CadetBlue);
+static const OptickAPI_Category OptickAPI_Category_GPU_Scene		= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_GPU_Scene, OptickAPI_Color_RoyalBlue);
+static const OptickAPI_Category OptickAPI_Category_GPU_Shadows		= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_GPU_Shadows, OptickAPI_Color_LightSlateGray);
+static const OptickAPI_Category OptickAPI_Category_GPU_UI			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_GPU_UI, OptickAPI_Color_PaleTurquoise);
+static const OptickAPI_Category OptickAPI_Category_GPU_VFX			= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_GPU_VFX, OptickAPI_Color_SaddleBrown);
+static const OptickAPI_Category OptickAPI_Category_GPU_Water		= OPTICK_C_MAKE_CATEGORY(OptickAPI_Filter_GPU_Water, OptickAPI_Color_SteelBlue);
 
 
 #if USE_OPTICK
