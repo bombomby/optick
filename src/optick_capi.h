@@ -42,9 +42,85 @@
 extern "C" {
 #endif
 
+// Vulkan Forward Declarations
+#define OPTICK_DEFINE_HANDLE(object) typedef struct object##_T *object;
+OPTICK_DEFINE_HANDLE(VkDevice);
+OPTICK_DEFINE_HANDLE(VkPhysicalDevice);
+OPTICK_DEFINE_HANDLE(VkQueue);
+OPTICK_DEFINE_HANDLE(VkCommandBuffer);
+OPTICK_DEFINE_HANDLE(VkQueryPool);
+OPTICK_DEFINE_HANDLE(VkCommandPool);
+OPTICK_DEFINE_HANDLE(VkFence);
+
+struct VkPhysicalDeviceProperties;
+struct VkQueryPoolCreateInfo;
+struct VkAllocationCallbacks;
+struct VkCommandPoolCreateInfo;
+struct VkCommandBufferAllocateInfo;
+struct VkFenceCreateInfo;
+struct VkSubmitInfo;
+struct VkCommandBufferBeginInfo;
+
+#ifndef VKAPI_PTR
+#if defined(_WIN32)
+    // On Windows, Vulkan commands use the stdcall convention
+	#define VKAPI_PTR  __stdcall
+#else
+	#define VKAPI_PTR 
+#endif
+#endif
+
+typedef void (VKAPI_PTR *PFN_vkGetPhysicalDeviceProperties_)(VkPhysicalDevice physicalDevice, VkPhysicalDeviceProperties* pProperties);
+typedef int32_t (VKAPI_PTR *PFN_vkCreateQueryPool_)(VkDevice device, const VkQueryPoolCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkQueryPool* pQueryPool);
+typedef int32_t (VKAPI_PTR *PFN_vkCreateCommandPool_)(VkDevice device, const VkCommandPoolCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkCommandPool* pCommandPool);
+typedef int32_t (VKAPI_PTR *PFN_vkAllocateCommandBuffers_)(VkDevice device, const VkCommandBufferAllocateInfo* pAllocateInfo, VkCommandBuffer* pCommandBuffers);
+typedef int32_t (VKAPI_PTR *PFN_vkCreateFence_)(VkDevice device, const VkFenceCreateInfo* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkFence* pFence);
+typedef void (VKAPI_PTR *PFN_vkCmdResetQueryPool_)(VkCommandBuffer commandBuffer, VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount);
+typedef int32_t (VKAPI_PTR *PFN_vkQueueSubmit_)(VkQueue queue, uint32_t submitCount, const VkSubmitInfo* pSubmits, VkFence fence);
+typedef int32_t (VKAPI_PTR *PFN_vkWaitForFences_)(VkDevice device, uint32_t fenceCount, const VkFence* pFences, uint32_t waitAll, uint64_t timeout);
+typedef int32_t (VKAPI_PTR *PFN_vkResetCommandBuffer_)(VkCommandBuffer commandBuffer, uint32_t flags);
+typedef void (VKAPI_PTR *PFN_vkCmdWriteTimestamp_)(VkCommandBuffer commandBuffer, uint32_t pipelineStage, VkQueryPool queryPool, uint32_t query);
+typedef int32_t (VKAPI_PTR *PFN_vkGetQueryPoolResults_)(VkDevice device, VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount, size_t dataSize, void* pData, uint64_t stride, uint32_t flags);
+typedef int32_t (VKAPI_PTR *PFN_vkBeginCommandBuffer_)(VkCommandBuffer commandBuffer, const VkCommandBufferBeginInfo* pBeginInfo);
+typedef int32_t (VKAPI_PTR *PFN_vkEndCommandBuffer_)(VkCommandBuffer commandBuffer);
+typedef int32_t (VKAPI_PTR *PFN_vkResetFences_)(VkDevice device, uint32_t fenceCount, const VkFence* pFences);
+typedef void (VKAPI_PTR *PFN_vkDestroyCommandPool_)(VkDevice device, VkCommandPool commandPool, const VkAllocationCallbacks* pAllocator);
+typedef void (VKAPI_PTR *PFN_vkDestroyQueryPool_)(VkDevice device, VkQueryPool queryPool, const VkAllocationCallbacks* pAllocator);
+typedef void (VKAPI_PTR *PFN_vkDestroyFence_)(VkDevice device, VkFence fence, const VkAllocationCallbacks* pAllocator);
+typedef void (VKAPI_PTR *PFN_vkFreeCommandBuffers_)(VkDevice device, VkCommandPool commandPool, uint32_t commandBufferCount, const VkCommandBuffer* pCommandBuffers);
+
+// D3D12 Forward Declarations
+struct ID3D12CommandList;
+struct ID3D12Device;
+struct ID3D12CommandQueue;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 typedef void* (*OptickAPI_AllocateFn)(size_t);
 typedef void  (*OptickAPI_DeallocateFn)(void*);
 typedef void  (*OptickAPI_InitThreadCb)(void);
+
+struct OPTICK_API OptickAPI_VulkanFunctions
+{
+	PFN_vkGetPhysicalDeviceProperties_ vkGetPhysicalDeviceProperties;
+	PFN_vkCreateQueryPool_ vkCreateQueryPool;
+	PFN_vkCreateCommandPool_ vkCreateCommandPool;
+	PFN_vkAllocateCommandBuffers_ vkAllocateCommandBuffers;
+	PFN_vkCreateFence_ vkCreateFence;
+	PFN_vkCmdResetQueryPool_ vkCmdResetQueryPool;
+	PFN_vkQueueSubmit_ vkQueueSubmit;
+	PFN_vkWaitForFences_ vkWaitForFences;
+	PFN_vkResetCommandBuffer_ vkResetCommandBuffer;
+	PFN_vkCmdWriteTimestamp_ vkCmdWriteTimestamp;
+	PFN_vkGetQueryPoolResults_ vkGetQueryPoolResults;
+	PFN_vkBeginCommandBuffer_ vkBeginCommandBuffer;
+	PFN_vkEndCommandBuffer_ vkEndCommandBuffer;
+	PFN_vkResetFences_ vkResetFences;
+	PFN_vkDestroyCommandPool_ vkDestroyCommandPool;
+	PFN_vkDestroyQueryPool_ vkDestroyQueryPool;
+	PFN_vkDestroyFence_ vkDestroyFence;
+	PFN_vkFreeCommandBuffers_ vkFreeCommandBuffers;
+};
 
 // Source: http://msdn.microsoft.com/en-us/library/system.windows.media.colors(v=vs.110).aspx
 // Image:  http://i.msdn.microsoft.com/dynimg/IC24340.png
@@ -279,12 +355,18 @@ static const OptickAPI_Category OptickAPI_Category_GPU_Water		= OPTICK_C_MAKE_CA
 	OPTICK_API uint64_t OptickAPI_CreateEventDescription(const char* inFunctionName, const char* inFileName, uint32_t inFileLine, OptickAPI_Category category);
 	OPTICK_API uint64_t OptickAPI_PushEvent(uint64_t inEventDescription);
 	OPTICK_API void OptickAPI_PopEvent(uint64_t inEventData);
+	OPTICK_API uint64_t OptickAPI_PushGPUEvent(uint64_t inEventDescription);
+	OPTICK_API void OptickAPI_PopGPUEvent(uint64_t inEventData);
 	
 	OPTICK_API void OptickAPI_NextFrame();
 
 	OPTICK_API void OptickAPI_StartCapture();
 	OPTICK_API void OptickAPI_StopCapture(const char* inFileName, uint16_t inFileNameLength);
 	OPTICK_API void OptickAPI_Shutdown();
+
+	OPTICK_API void OptickAPI_GPUInitD3D12(ID3D12Device* device, ID3D12CommandQueue** cmdQueues, uint32_t numQueues);
+	OPTICK_API void OptickAPI_GPUInitVulkan(VkDevice* vkDevices, VkPhysicalDevice* vkPhysicalDevices, VkQueue* vkQueues, uint32_t* cmdQueuesFamily, uint32_t numQueues, const OptickAPI_VulkanFunctions* functions);
+	OPTICK_API void OptickAPI_GPUFlip(void* swapChain);
 
 	OPTICK_API void OptickAPI_AttachTag_String(uint64_t inEventDescription, const char* inValue);
 	OPTICK_API void OptickAPI_AttachTag_Int32(uint64_t inEventDescription, int inValue);
@@ -296,6 +378,9 @@ static const OptickAPI_Category OptickAPI_Category_GPU_Water		= OPTICK_C_MAKE_CA
 	#define OPTICK_C_PUSH(EVENT_VAR, NAME, CATEGORY)	static uint64_t OPTICK_CONCAT(autogen_description_, __LINE__) = 0; \
 										if (OPTICK_CONCAT(autogen_description_, __LINE__) == 0) OPTICK_CONCAT(autogen_description_, __LINE__) = OptickAPI_CreateEventDescription( NAME, __FILE__, __LINE__, CATEGORY); \
 										uint64_t EVENT_VAR = OptickAPI_PushEvent(OPTICK_CONCAT(autogen_description_, __LINE__));
+	#define OPTICK_C_GPU_PUSH(EVENT_VAR, NAME, CATEGORY) static uint64_t OPTICK_CONCAT(gpu_autogen_description_, __LINE__) = 0; \
+										if (OPTICK_CONCAT(gpu_autogen_description_, __LINE__) == 0) OPTICK_CONCAT(gpu_autogen_description_, __LINE__) = OptickAPI_CreateEventDescription( NAME, __FILE__, __LINE__, CATEGORY); \
+										uint64_t EVENT_VAR = OptickAPI_PushGPUEvent(OPTICK_CONCAT(gpu_autogen_description_, __LINE__));
 	#define OPTICK_C_TAG(EVENT_DESC_VAR, NAME) static uint64_t EVENT_DESC_VAR = 0; \
 										if (EVENT_DESC_VAR == 0) EVENT_DESC_VAR = OptickAPI_CreateEventDescription( NAME, __FILE__, __LINE__, OptickAPI_Category_None); \
 
@@ -313,6 +398,10 @@ static const OptickAPI_Category OptickAPI_Category_GPU_Water		= OPTICK_C_MAKE_CA
 	inline void OptickAPI_StopCapture(const char* inFileName, uint16_t inFileNameLength) {}
 	inline void OptickAPI_Shutdown() {}
 
+	inline void OptickAPI_GPUInitD3D12(ID3D12Device* device, ID3D12CommandQueue** cmdQueues, uint32_t numQueues) {}
+	inline void OptickAPI_GPUInitVulkan(VkDevice* vkDevices, VkPhysicalDevice* vkPhysicalDevices, VkQueue* vkQueues, uint32_t* cmdQueuesFamily, uint32_t numQueues, const VulkanFunctions* functions) {}
+	inline void OptickAPI_GPUFlip(void* swapChain) {}
+
 	inline void OptickAPI_AttachTag_String(uint64_t inEventDescription, const char* inValue) {}
 	inline void OptickAPI_AttachTag_Int(uint64_t inEventDescription, int inValue) {}
 	inline void OptickAPI_AttachTag_Float(uint64_t inEventDescription, float inValue) {}
@@ -321,6 +410,7 @@ static const OptickAPI_Category OptickAPI_Category_GPU_Water		= OPTICK_C_MAKE_CA
 	inline void OptickAPI_AttachTag_Point(uint64_t inEventDescription, float x, float y, float z) {}
 
 	#define OPTICK_C_PUSH(EVENT_VAR, NAME, CATEGORY)
+	#define OPTICK_C_GPU_PUSH(EVENT_VAR, NAME, CATEGORY)
 	#define OPTICK_C_TAG(EVENT_DESC_VAR, NAME)
 #endif
 
