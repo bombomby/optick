@@ -286,28 +286,42 @@ static const OptickAPI_Category OptickAPI_Category_GPU_Water		= OPTICK_C_MAKE_CA
 	OPTICK_API void OptickAPI_StopCapture(const char* inFileName, uint16_t inFileNameLength);
 	OPTICK_API void OptickAPI_Shutdown();
 
-	OPTICK_API void OptickAPI_AttachTag_String(uint64_t inEventDescription, const char* inValue, uint16_t intValueLength);
+	OPTICK_API void OptickAPI_AttachTag_String(uint64_t inEventDescription, const char* inValue);
 	OPTICK_API void OptickAPI_AttachTag_Int32(uint64_t inEventDescription, int inValue);
 	OPTICK_API void OptickAPI_AttachTag_Float(uint64_t inEventDescription, float inValue);
 	OPTICK_API void OptickAPI_AttachTag_UInt32(uint64_t inEventDescription, uint32_t inValue);
 	OPTICK_API void OptickAPI_AttachTag_UInt64(uint64_t inEventDescription, uint64_t inValue);
 	OPTICK_API void OptickAPI_AttachTag_Point(uint64_t inEventDescription, float x, float y, float z);
+
+	#define OPTICK_C_PUSH(EVENT_VAR, NAME, CATEGORY)	static uint64_t OPTICK_CONCAT(autogen_description_, __LINE__) = 0; \
+										if (OPTICK_CONCAT(autogen_description_, __LINE__) == 0) OPTICK_CONCAT(autogen_description_, __LINE__) = OptickAPI_CreateEventDescription( NAME, __FILE__, __LINE__, CATEGORY); \
+										uint64_t EVENT_VAR = OptickAPI_PushEvent(OPTICK_CONCAT(autogen_description_, __LINE__));
+	#define OPTICK_C_TAG(EVENT_DESC_VAR, NAME) static uint64_t EVENT_DESC_VAR = 0; \
+										if (EVENT_DESC_VAR == 0) EVENT_DESC_VAR = OptickAPI_CreateEventDescription( NAME, __FILE__, __LINE__, OptickAPI_Category_None); \
+
 #else
 	inline void OptickAPI_SetAllocator(OptickAPI_AllocateFn allocateFn, OptickAPI_DeallocateFn deallocateFn, OptickAPI_InitThreadCb initThreadCb) {}
 	inline void OptickAPI_RegisterThread(const char* inThreadName, uint16_t inThreadNameLength) {}
+
 	inline uint64_t OptickAPI_CreateEventDescription(const char* inFunctionName, const char* inFileName, uint32_t inFileLine, OptickAPI_Category category) { return 0; }
 	inline uint64_t OptickAPI_PushEvent(uint64_t inEventDescription) { return 0; }
-    inline void OptickAPI_PopEvent(uint64_t inEventData) {}
+	inline void OptickAPI_PopEvent(uint64_t inEventData) {}
+
 	inline void OptickAPI_NextFrame() {}
+
 	inline void OptickAPI_StartCapture() {}
 	inline void OptickAPI_StopCapture(const char* inFileName, uint16_t inFileNameLength) {}
 	inline void OptickAPI_Shutdown() {}
-	inline void OptickAPI_AttachTag_String(uint64_t inEventDescription, const char* inValue, uint16_t intValueLength) {}
+
+	inline void OptickAPI_AttachTag_String(uint64_t inEventDescription, const char* inValue) {}
 	inline void OptickAPI_AttachTag_Int(uint64_t inEventDescription, int inValue) {}
 	inline void OptickAPI_AttachTag_Float(uint64_t inEventDescription, float inValue) {}
 	inline void OptickAPI_AttachTag_Int32(uint64_t inEventDescription, uint32_t inValue) {}
 	inline void OptickAPI_AttachTag_UInt64(uint64_t inEventDescription, uint64_t inValue) {}
 	inline void OptickAPI_AttachTag_Point(uint64_t inEventDescription, float x, float y, float z) {}
+
+	#define OPTICK_C_PUSH(EVENT_VAR, NAME, CATEGORY)
+	#define OPTICK_C_TAG(EVENT_DESC_VAR, NAME)
 #endif
 
 #ifdef __cplusplus

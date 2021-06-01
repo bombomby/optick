@@ -70,23 +70,20 @@ int main()
 		if (!engine.Update())
 			break;
 
-		/*
-			Example of how to add a profiling scope in C
-		*/
-		static uint64_t eventDesc = 0;
-		if (eventDesc == 0)
+		// Simple event with macro
 		{
-			eventDesc = OptickAPI_CreateEventDescription("Print stdout", __FILE__, __LINE__, OptickAPI_Category_Debug);
-			const char *tag_cstr = "Hello from C! This is a custom tag.";
-			OptickAPI_AttachTag_String(eventDesc, tag_cstr, sizeof(tag_cstr));
-		}
+			OPTICK_C_PUSH(stdoutEvent, "Print stdio", OptickAPI_Category_Debug);
 
-		uint64_t event = OptickAPI_PushEvent(eventDesc);
-		{
+			// Attach some tags to the event
+			OPTICK_C_TAG(stdoutTag, "CustomTag");
+			//OptickAPI_AttachTag_Int32(stdoutTag, -123);
+			OptickAPI_AttachTag_String(stdoutTag, "HelloFromC");
+
 			printf(".");
 			fflush(stdout);
+
+			OptickAPI_PopEvent(stdoutEvent);
 		}
-		OptickAPI_PopEvent(event);
 	}
 
 	OptickAPI_Shutdown();

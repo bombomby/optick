@@ -32,6 +32,7 @@
 #include <malloc.h>
 #endif
 #include <string.h>
+#include <stdarg.h>
 
 OPTICK_API void OptickAPI_SetAllocator(OptickAPI_AllocateFn allocateFn, OptickAPI_DeallocateFn deallocateFn, OptickAPI_InitThreadCb initThreadCb)
 {
@@ -87,9 +88,9 @@ OPTICK_API void OptickAPI_Shutdown()
 	Optick::Shutdown();
 }
 
-OPTICK_API void OptickAPI_AttachTag_String(uint64_t inEventDescription, const char* inValue, uint16_t inValueLength)
+OPTICK_API void OptickAPI_AttachTag_String(uint64_t inEventDescription, const char* inValue)
 {
-	Optick::Tag::Attach(*(Optick::EventDescription*)inEventDescription, inValue, inValueLength);
+	Optick::Tag::Attach(*(Optick::EventDescription*)inEventDescription, inValue);
 }
 
 OPTICK_API void OptickAPI_AttachTag_Int32(uint64_t inEventDescription, int32_t inValue)
