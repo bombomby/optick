@@ -37,6 +37,8 @@
 #define OPTICK_API 
 #endif
 
+#define OPTICK_CONCAT_IMPL(x, y) x##y
+#define OPTICK_CONCAT(x, y) OPTICK_CONCAT_IMPL(x, y)
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,14 +54,14 @@ OPTICK_DEFINE_HANDLE(VkQueryPool);
 OPTICK_DEFINE_HANDLE(VkCommandPool);
 OPTICK_DEFINE_HANDLE(VkFence);
 
-struct VkPhysicalDeviceProperties;
-struct VkQueryPoolCreateInfo;
-struct VkAllocationCallbacks;
-struct VkCommandPoolCreateInfo;
-struct VkCommandBufferAllocateInfo;
-struct VkFenceCreateInfo;
-struct VkSubmitInfo;
-struct VkCommandBufferBeginInfo;
+typedef struct VkPhysicalDeviceProperties VkPhysicalDeviceProperties;
+typedef struct VkQueryPoolCreateInfo VkQueryPoolCreateInfo;
+typedef struct VkAllocationCallbacks VkAllocationCallbacks;
+typedef struct VkCommandPoolCreateInfo VkCommandPoolCreateInfo;
+typedef struct VkCommandBufferAllocateInfo VkCommandBufferAllocateInfo;
+typedef struct VkFenceCreateInfo VkFenceCreateInfo;
+typedef struct VkSubmitInfo VkSubmitInfo;
+typedef struct VkCommandBufferBeginInfo VkCommandBufferBeginInfo;
 
 #ifndef VKAPI_PTR
 #if defined(_WIN32)
@@ -90,9 +92,9 @@ typedef void (VKAPI_PTR *PFN_vkDestroyFence_)(VkDevice device, VkFence fence, co
 typedef void (VKAPI_PTR *PFN_vkFreeCommandBuffers_)(VkDevice device, VkCommandPool commandPool, uint32_t commandBufferCount, const VkCommandBuffer* pCommandBuffers);
 
 // D3D12 Forward Declarations
-struct ID3D12CommandList;
-struct ID3D12Device;
-struct ID3D12CommandQueue;
+typedef struct ID3D12CommandList ID3D12CommandList;
+typedef struct ID3D12Device ID3D12Device;
+typedef struct ID3D12CommandQueue ID3D12CommandQueue;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -100,7 +102,7 @@ typedef void* (*OptickAPI_AllocateFn)(size_t);
 typedef void  (*OptickAPI_DeallocateFn)(void*);
 typedef void  (*OptickAPI_InitThreadCb)(void);
 
-struct OPTICK_API OptickAPI_VulkanFunctions
+typedef struct OPTICK_API OptickAPI_VulkanFunctions
 {
 	PFN_vkGetPhysicalDeviceProperties_ vkGetPhysicalDeviceProperties;
 	PFN_vkCreateQueryPool_ vkCreateQueryPool;
@@ -120,11 +122,11 @@ struct OPTICK_API OptickAPI_VulkanFunctions
 	PFN_vkDestroyQueryPool_ vkDestroyQueryPool;
 	PFN_vkDestroyFence_ vkDestroyFence;
 	PFN_vkFreeCommandBuffers_ vkFreeCommandBuffers;
-};
+} OptickAPI_VulkanFunctions;
 
 // Source: http://msdn.microsoft.com/en-us/library/system.windows.media.colors(v=vs.110).aspx
 // Image:  http://i.msdn.microsoft.com/dynimg/IC24340.png
-enum OptickAPI_Color
+typedef enum OptickAPI_Color
 {
 	OptickAPI_Color_Null = 0x00000000,
 	OptickAPI_Color_AliceBlue = 0xFFF0F8FF,
@@ -267,9 +269,9 @@ enum OptickAPI_Color
 	OptickAPI_Color_WhiteSmoke = 0xFFF5F5F5,
 	OptickAPI_Color_Yellow = 0xFFFFFF00,
 	OptickAPI_Color_YellowGreen = 0xFF9ACD32,
-};
+} OptickAPI_Color;
 
-enum OptickAPI_Filter
+typedef enum OptickAPI_Filter
 {
 	OptickAPI_Filter_None,
 	
@@ -307,7 +309,7 @@ enum OptickAPI_Filter
 	OptickAPI_Filter_GPU_UI,
 	OptickAPI_Filter_GPU_VFX,
 	OptickAPI_Filter_GPU_Water,
-};
+} OptickAPI_Filter;
 
 #define OPTICK_C_MAKE_CATEGORY(filter, color) ((((uint64_t)(1ull) << (filter + 32)) | (uint64_t)color))
 
