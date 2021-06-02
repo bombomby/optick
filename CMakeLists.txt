@@ -50,7 +50,7 @@ target_include_directories(OptickCore
 )
 set_target_properties(OptickCore 
 	PROPERTIES 
-		PUBLIC_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/src/optick.h;${CMAKE_CURRENT_SOURCE_DIR}/src/optick.config.h"
+		PUBLIC_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/src/optick.h;${CMAKE_CURRENT_SOURCE_DIR}/src/optick_capi.h;${CMAKE_CURRENT_SOURCE_DIR}/src/optick.config.h"
 		DEBUG_POSTFIX d # So that we can install debug and release side by side
 )
 target_compile_definitions(OptickCore PRIVATE OPTICK_EXPORTS=1)
