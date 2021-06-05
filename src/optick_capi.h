@@ -124,6 +124,39 @@ typedef struct OPTICK_API OptickAPI_VulkanFunctions
 	PFN_vkFreeCommandBuffers_ vkFreeCommandBuffers;
 } OptickAPI_VulkanFunctions;
 
+
+typedef enum OptickAPI_State
+{
+	// Starting a new capture
+	START_CAPTURE,
+
+	// Stopping current capture
+	STOP_CAPTURE,
+
+	// Dumping capture to the GUI
+	// Useful for attaching summary and screenshot to the capture
+	DUMP_CAPTURE,
+
+	// Cancel current capture
+	CANCEL_CAPTURE,
+} OptickAPI_State;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Sets a state change callback
+typedef bool (*OptickAPI_StateCallback)(OptickAPI_State state);
+
+typedef enum OptickAPI_File
+{
+	// Supported formats: PNG, JPEG, BMP, TIFF
+	OPTICK_IMAGE,
+	
+	// Text file
+	OPTICK_TEXT,
+
+	// Any other type
+	OPTICK_OTHER,
+}OptickAPI_File;
+
+
 // Source: http://msdn.microsoft.com/en-us/library/system.windows.media.colors(v=vs.110).aspx
 // Image:  http://i.msdn.microsoft.com/dynimg/IC24340.png
 typedef enum OptickAPI_Color
@@ -366,6 +399,21 @@ static const OptickAPI_Category OptickAPI_Category_GPU_Water		= OPTICK_C_MAKE_CA
 	OPTICK_API void OptickAPI_StopCapture(const char* inFileName, uint16_t inFileNameLength);
 	OPTICK_API void OptickAPI_Shutdown();
 
+	OPTICK_API bool OptickAPI_SetStateChangedCallback(OptickAPI_StateCallback cb);
+
+	// Attaches a key-value pair to the capture's summary
+	// Example: AttachSummary("Version", "v12.0.1");
+	//			AttachSummary("Platform", "Windows");
+	//			AttachSummary("Config", "Release_x64");
+	//			AttachSummary("Settings", "Ultra");
+	//			AttachSummary("Map", "Atlantida");
+	//			AttachSummary("Position", "123.0,120.0,41.1");
+	//			AttachSummary("CPU", "Intel(R) Xeon(R) CPU E5410@2.33GHz");
+	//			AttachSummary("GPU", "NVIDIA GeForce GTX 980 Ti");
+	OPTICK_API bool OptickAPI_AttachSummary(const char* key, const char* value);
+	// Attaches a file to the current capture
+	OPTICK_API bool OptickAPI_AttachFile(OptickAPI_File type, const char* name, const uint8_t* data, uint32_t size);
+
 	OPTICK_API void OptickAPI_GPUInitD3D12(ID3D12Device* device, ID3D12CommandQueue** cmdQueues, uint32_t numQueues);
 	OPTICK_API void OptickAPI_GPUInitVulkan(VkDevice* vkDevices, VkPhysicalDevice* vkPhysicalDevices, VkQueue* vkQueues, uint32_t* cmdQueuesFamily, uint32_t numQueues, const OptickAPI_VulkanFunctions* functions);
 	OPTICK_API void OptickAPI_GPUFlip(void* swapChain);
@@ -399,6 +447,10 @@ static const OptickAPI_Category OptickAPI_Category_GPU_Water		= OPTICK_C_MAKE_CA
 	inline void OptickAPI_StartCapture() {}
 	inline void OptickAPI_StopCapture(const char* inFileName, uint16_t inFileNameLength) {}
 	inline void OptickAPI_Shutdown() {}
+
+	inline bool OptickAPI_SetStateChangedCallback(OptickAPI_StateCallback cb){}
+	inline bool OptickAPI_AttachSummary(const char* key, const char* value) {}
+	inline bool OptickAPI_AttachFile(OptickAPI_File type, const char* name, const uint8_t* data, uint32_t size) {}
 
 	inline void OptickAPI_GPUInitD3D12(ID3D12Device* device, ID3D12CommandQueue** cmdQueues, uint32_t numQueues) {}
 	inline void OptickAPI_GPUInitVulkan(VkDevice* vkDevices, VkPhysicalDevice* vkPhysicalDevices, VkQueue* vkQueues, uint32_t* cmdQueuesFamily, uint32_t numQueues, const VulkanFunctions* functions) {}

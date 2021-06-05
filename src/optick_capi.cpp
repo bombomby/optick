@@ -98,6 +98,21 @@ OPTICK_API void OptickAPI_Shutdown()
 	Optick::Shutdown();
 }
 
+OPTICK_API bool OptickAPI_SetStateChangedCallback(OptickAPI_StateCallback cb) 
+{
+	return ::Optick::SetStateChangedCallback((Optick::StateCallback)cb);
+}
+
+OPTICK_API bool OptickAPI_AttachSummary(const char* key, const char* value)
+{
+	return ::Optick::AttachSummary(key, value);
+}
+
+OPTICK_API bool OptickAPI_AttachFile(OptickAPI_File type, const char* name, const uint8_t* data, uint32_t size)
+{
+	return ::Optick::AttachFile((Optick::File::Type)type, name, data, size);
+}
+
 OPTICK_API void OptickAPI_GPUInitD3D12(ID3D12Device* device, ID3D12CommandQueue** cmdQueues, uint32_t numQueues)
 {
 	::Optick::InitGpuD3D12(device, cmdQueues, numQueues);
