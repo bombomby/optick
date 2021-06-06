@@ -46,6 +46,7 @@ option(OPTICK_BUILD_CONSOLE_SAMPLE "Build Optick console sample app" ${standalon
 # OptickCore
 if(OPTICK_CORE_STATIC)
 	add_library(OptickCore STATIC ${OPTICK_SRC})
+	set_property(TARGET OptickCore PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 else()
 	add_library(OptickCore SHARED ${OPTICK_SRC})
 endif()
