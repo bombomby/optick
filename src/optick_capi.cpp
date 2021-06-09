@@ -139,6 +139,11 @@ OPTICK_API void OptickAPI_GPUFlip(void* swapChain)
 	::Optick::GpuFlip(swapChain);
 }
 
+OPTICK_API void OptickAPI_GPUShutdown()
+{
+	::Optick::ShutdownGpu();
+}
+
 OPTICK_API void OptickAPI_AttachTag_String(uint64_t inEventDescription, const char* inValue)
 {
 	Optick::Tag::Attach(*(Optick::EventDescription*)inEventDescription, inValue);

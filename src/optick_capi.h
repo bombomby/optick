@@ -448,6 +448,7 @@ static const OptickAPI_Category OptickAPI_Category_GPU_Water		= OPTICK_C_MAKE_CA
 	OPTICK_API void OptickAPI_GPUInitD3D12(ID3D12Device* device, ID3D12CommandQueue** cmdQueues, uint32_t numQueues);
 	OPTICK_API void OptickAPI_GPUInitVulkan(VkDevice* vkDevices, VkPhysicalDevice* vkPhysicalDevices, VkQueue* vkQueues, uint32_t* cmdQueuesFamily, uint32_t numQueues, const OptickAPI_VulkanFunctions* functions);
 	OPTICK_API void OptickAPI_GPUFlip(void* swapChain);
+	OPTICK_API void OptickAPI_GPUShutdown();
 
 	OPTICK_API void OptickAPI_AttachTag_String(uint64_t inEventDescription, const char* inValue);
 	OPTICK_API void OptickAPI_AttachTag_Int32(uint64_t inEventDescription, int inValue);
@@ -470,14 +471,14 @@ static const OptickAPI_Category OptickAPI_Category_GPU_Water		= OPTICK_C_MAKE_CA
 #else
 	inline void OptickAPI_SetAllocator(OptickAPI_AllocateFn allocateFn, OptickAPI_DeallocateFn deallocateFn, OptickAPI_InitThreadCb initThreadCb) {}
 	inline void OptickAPI_RegisterThread(const char* inThreadName, uint16_t inThreadNameLength) {}
-	inline uint64_t OptickAPI_RegisterStorage(const char* name, uint64_t inThreadId, OptickAPI_ThreadMask inThreadMask) {}
+	inline uint64_t OptickAPI_RegisterStorage(const char* name, uint64_t inThreadId, OptickAPI_ThreadMask inThreadMask) { return 0;}
 
 	inline uint64_t OptickAPI_CreateEventDescription(const char* inFunctionName, const char* inFileName, uint32_t inFileLine, OptickAPI_Category category) { return 0; }
 	inline uint64_t OptickAPI_PushEvent(uint64_t inEventDescription) { return 0; }
 	inline void OptickAPI_PopEvent(uint64_t inEventData) {}
 
-	inline OptickAPI_GPUContext OptickAPI_SetGpuContext(OptickAPI_GPUContext context) {}
-	inline uint64_t OptickAPI_PushGPUEvent(uint64_t inEventDescription) {}
+	inline OptickAPI_GPUContext OptickAPI_SetGpuContext(OptickAPI_GPUContext context) { return (OptikcAPI_GPUContext){0}; }
+	inline uint64_t OptickAPI_PushGPUEvent(uint64_t inEventDescription) { return 0; }
 	inline void OptickAPI_PopGPUEvent(uint64_t inEventData) {}
 
 	inline void OptickAPI_NextFrame() {}
@@ -486,13 +487,14 @@ static const OptickAPI_Category OptickAPI_Category_GPU_Water		= OPTICK_C_MAKE_CA
 	inline void OptickAPI_StopCapture(const char* inFileName, uint16_t inFileNameLength) {}
 	inline void OptickAPI_Shutdown() {}
 
-	inline bool OptickAPI_SetStateChangedCallback(OptickAPI_StateCallback cb){}
-	inline bool OptickAPI_AttachSummary(const char* key, const char* value) {}
-	inline bool OptickAPI_AttachFile(OptickAPI_File type, const char* name, const uint8_t* data, uint32_t size) {}
+	inline bool OptickAPI_SetStateChangedCallback(OptickAPI_StateCallback cb){ return false; }
+	inline bool OptickAPI_AttachSummary(const char* key, const char* value) { return false; }
+	inline bool OptickAPI_AttachFile(OptickAPI_File type, const char* name, const uint8_t* data, uint32_t size) { return false; }
 
 	inline void OptickAPI_GPUInitD3D12(ID3D12Device* device, ID3D12CommandQueue** cmdQueues, uint32_t numQueues) {}
 	inline void OptickAPI_GPUInitVulkan(VkDevice* vkDevices, VkPhysicalDevice* vkPhysicalDevices, VkQueue* vkQueues, uint32_t* cmdQueuesFamily, uint32_t numQueues, const VulkanFunctions* functions) {}
 	inline void OptickAPI_GPUFlip(void* swapChain) {}
+	inline void OptickAPI_GPUShutdown() {}
 
 	inline void OptickAPI_AttachTag_String(uint64_t inEventDescription, const char* inValue) {}
 	inline void OptickAPI_AttachTag_Int(uint64_t inEventDescription, int inValue) {}
