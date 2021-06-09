@@ -19,7 +19,7 @@ namespace vks
 		// On desktop the LunarG loaders exposes a meta layer that contains all layers
 		int32_t validationLayerCount = 1;
 		const char *validationLayerNames[] = {
-			"VK_LAYER_LUNARG_standard_validation"
+			"VK_LAYER_KHRONOS_validation"
 		};
 #else
 		// On Android we need to explicitly select all layers
