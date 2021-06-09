@@ -125,21 +125,31 @@ typedef struct OPTICK_API OptickAPI_VulkanFunctions
 	PFN_vkFreeCommandBuffers_ vkFreeCommandBuffers;
 } OptickAPI_VulkanFunctions;
 
+typedef enum OptickAPI_ThreadMask
+{
+	OptickAPI_ThreadMask_None	= 0,
+	OptickAPI_ThreadMask_Main	= 1 << 0,
+	OptickAPI_ThreadMask_GPU	= 1 << 1,
+	OptickAPI_ThreadMask_IO		= 1 << 2,
+	OptickAPI_ThreadMask_Idle	= 1 << 3,
+	OptickAPI_ThreadMask_Render	= 1 << 4,
+	
+} OptickAPI_ThreadMask;
 
 typedef enum OptickAPI_State
 {
 	// Starting a new capture
-	START_CAPTURE,
+	OptickAPI_State_StartCapture,
 
 	// Stopping current capture
-	STOP_CAPTURE,
+	OptickAPI_State_StopCapture,
 
 	// Dumping capture to the GUI
 	// Useful for attaching summary and screenshot to the capture
-	DUMP_CAPTURE,
+	OptickAPI_State_DumpCapture,
 
 	// Cancel current capture
-	CANCEL_CAPTURE,
+	OptickAPI_State_CancelCapture,
 } OptickAPI_State;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Sets a state change callback
@@ -148,13 +158,13 @@ typedef bool (*OptickAPI_StateCallback)(OptickAPI_State state);
 typedef enum OptickAPI_File
 {
 	// Supported formats: PNG, JPEG, BMP, TIFF
-	OPTICK_IMAGE,
+	OptickAPI_File_Image,
 	
 	// Text file
-	OPTICK_TEXT,
+	OptickAPI_File_Text,
 
 	// Any other type
-	OPTICK_OTHER,
+	OptickAPI_File_Other,
 }OptickAPI_File;
 
 
@@ -345,6 +355,23 @@ typedef enum OptickAPI_Filter
 	OptickAPI_Filter_GPU_Water,
 } OptickAPI_Filter;
 
+typedef enum OptickAPI_GPUQueueType
+{
+	OptickAPI_GPU_Queue_Graphics,
+	OptickAPI_GPU_Queue_Compute,
+	OptickAPI_GPU_Queue_Transfer,
+	OptickAPI_GPU_Queue_Vsync,
+
+	OptickAPI_GPU_Queue_Count,
+}OptickAPI_GPUQueueType;
+
+typedef struct OPTICK_API OptickAPI_GPUContext
+{
+	void* cmdBuffer;
+	OptickAPI_GPUQueueType queue;
+	int32_t node;
+}OptickAPI_GPUContext;
+
 #define OPTICK_C_MAKE_CATEGORY(filter, color) ((((uint64_t)(1ull) << (filter + 32)) | (uint64_t)color))
 
 typedef uint64_t OptickAPI_Category;
@@ -387,10 +414,13 @@ static const OptickAPI_Category OptickAPI_Category_GPU_Water		= OPTICK_C_MAKE_CA
 #if USE_OPTICK
 	OPTICK_API void OptickAPI_SetAllocator(OptickAPI_AllocateFn allocateFn, OptickAPI_DeallocateFn deallocateFn, OptickAPI_InitThreadCb initThreadCb);
 	OPTICK_API void OptickAPI_RegisterThread(const char* inThreadName, uint16_t inThreadNameLength);
+	OPTICK_API uint64_t OptickAPI_RegisterStorage(const char* name, uint64_t inThreadId, OptickAPI_ThreadMask inThreadMask);
 
 	OPTICK_API uint64_t OptickAPI_CreateEventDescription(const char* inFunctionName, const char* inFileName, uint32_t inFileLine, OptickAPI_Category category);
 	OPTICK_API uint64_t OptickAPI_PushEvent(uint64_t inEventDescription);
 	OPTICK_API void OptickAPI_PopEvent(uint64_t inEventData);
+
+	OPTICK_API OptickAPI_GPUContext OptickAPI_SetGpuContext(OptickAPI_GPUContext context);
 	OPTICK_API uint64_t OptickAPI_PushGPUEvent(uint64_t inEventDescription);
 	OPTICK_API void OptickAPI_PopGPUEvent(uint64_t inEventData);
 	
@@ -426,6 +456,8 @@ static const OptickAPI_Category OptickAPI_Category_GPU_Water		= OPTICK_C_MAKE_CA
 	OPTICK_API void OptickAPI_AttachTag_UInt64(uint64_t inEventDescription, uint64_t inValue);
 	OPTICK_API void OptickAPI_AttachTag_Point(uint64_t inEventDescription, float x, float y, float z);
 
+	#define OPTICK_C_REGISTER_STORAGE(NAME) OptickAPI_RegisterStorage(NAME, (uint64_t)-1, OptickAPI_ThreadMask_None)
+
 	#define OPTICK_C_PUSH(EVENT_VAR, NAME, CATEGORY)	static uint64_t OPTICK_CONCAT(autogen_description_, __LINE__) = 0; \
 										if (OPTICK_CONCAT(autogen_description_, __LINE__) == 0) OPTICK_CONCAT(autogen_description_, __LINE__) = OptickAPI_CreateEventDescription( NAME, __FILE__, __LINE__, CATEGORY); \
 										uint64_t EVENT_VAR = OptickAPI_PushEvent(OPTICK_CONCAT(autogen_description_, __LINE__));
@@ -438,10 +470,15 @@ static const OptickAPI_Category OptickAPI_Category_GPU_Water		= OPTICK_C_MAKE_CA
 #else
 	inline void OptickAPI_SetAllocator(OptickAPI_AllocateFn allocateFn, OptickAPI_DeallocateFn deallocateFn, OptickAPI_InitThreadCb initThreadCb) {}
 	inline void OptickAPI_RegisterThread(const char* inThreadName, uint16_t inThreadNameLength) {}
+	inline uint64_t OptickAPI_RegisterStorage(const char* name, uint64_t inThreadId, OptickAPI_ThreadMask inThreadMask) {}
 
 	inline uint64_t OptickAPI_CreateEventDescription(const char* inFunctionName, const char* inFileName, uint32_t inFileLine, OptickAPI_Category category) { return 0; }
 	inline uint64_t OptickAPI_PushEvent(uint64_t inEventDescription) { return 0; }
 	inline void OptickAPI_PopEvent(uint64_t inEventData) {}
+
+	inline OptickAPI_GPUContext OptickAPI_SetGpuContext(OptickAPI_GPUContext context) {}
+	inline uint64_t OptickAPI_PushGPUEvent(uint64_t inEventDescription) {}
+	inline void OptickAPI_PopGPUEvent(uint64_t inEventData) {}
 
 	inline void OptickAPI_NextFrame() {}
 
@@ -464,6 +501,7 @@ static const OptickAPI_Category OptickAPI_Category_GPU_Water		= OPTICK_C_MAKE_CA
 	inline void OptickAPI_AttachTag_UInt64(uint64_t inEventDescription, uint64_t inValue) {}
 	inline void OptickAPI_AttachTag_Point(uint64_t inEventDescription, float x, float y, float z) {}
 
+	#define OPTICK_C_REGISTER_STORAGE(NAME)
 	#define OPTICK_C_PUSH(EVENT_VAR, NAME, CATEGORY)
 	#define OPTICK_C_GPU_PUSH(EVENT_VAR, NAME, CATEGORY)
 	#define OPTICK_C_TAG(EVENT_DESC_VAR, NAME)

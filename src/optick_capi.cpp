@@ -45,6 +45,11 @@ OPTICK_API void OptickAPI_RegisterThread(const char* inThreadName, uint16_t inTh
 	Optick::RegisterThread(threadName.data);
 }
 
+OPTICK_API uint64_t OptickAPI_RegisterStorage(const char* name, uint64_t inThreadId, OptickAPI_ThreadMask inThreadMask)
+{
+	return (uint64_t)::Optick::RegisterStorage(name, inThreadId, (Optick::ThreadMask::Type)inThreadMask);
+}
+
 OPTICK_API uint64_t OptickAPI_CreateEventDescription(const char* inFunctionName, const char* inFileName, uint32_t inFileLine, OptickAPI_Category category)
 {
 	Optick::OptickString<128> name(inFunctionName, (uint16_t)strlen(inFunctionName));
@@ -70,6 +75,12 @@ OPTICK_API uint64_t OptickAPI_PushGPUEvent(uint64_t inEventDescription)
 OPTICK_API void OptickAPI_PopGPUEvent(uint64_t inEventData) 
 {
 	Optick::GPUEvent::Stop(*((Optick::EventData*)inEventData));
+}
+
+OPTICK_API OptickAPI_GPUContext OptickAPI_SetGpuContext(OptickAPI_GPUContext context)
+{
+	Optick::GPUContext prevCtx = Optick::SetGpuContext(Optick::GPUContext(context.cmdBuffer, (Optick::GPUQueueType)context.queue, context.node));
+	return {prevCtx.cmdBuffer, (OptickAPI_GPUQueueType)prevCtx.queue, prevCtx.node};
 }
 
 OPTICK_API void OptickAPI_NextFrame()
@@ -121,11 +132,6 @@ OPTICK_API void OptickAPI_GPUInitD3D12(ID3D12Device* device, ID3D12CommandQueue*
 OPTICK_API void OptickAPI_GPUInitVulkan(VkDevice* vkDevices, VkPhysicalDevice* vkPhysicalDevices, VkQueue* vkQueues, uint32_t* cmdQueuesFamily, uint32_t numQueues, const OptickAPI_VulkanFunctions* functions)
 {
 	::Optick::InitGpuVulkan(vkDevices, vkPhysicalDevices, vkQueues, cmdQueuesFamily, numQueues, (const Optick::VulkanFunctions*)functions);
-}
-
-OPTICK_API void OptickAPI_GPUContext()
-{
-
 }
 
 OPTICK_API void OptickAPI_GPUFlip(void* swapChain)
