@@ -164,7 +164,7 @@ namespace Optick
 	// Image:  http://i.msdn.microsoft.com/dynimg/IC24340.png
 	struct Color
 	{
-		enum
+		enum : uint32_t
 		{
 			Null = 0x00000000,
 			AliceBlue = 0xFFF0F8FF,
