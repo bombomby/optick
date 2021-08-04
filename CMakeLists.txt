@@ -41,9 +41,10 @@ option(OPTICK_USE_VULKAN "Built-in support for Vulkan" OFF)
 option(OPTICK_USE_D3D12 "Built-in support for DirectX 12" OFF)
 option(OPTICK_BUILD_GUI_APP "Build Optick gui viewer app" OFF)
 option(OPTICK_BUILD_CONSOLE_SAMPLE "Build Optick console sample app" ${standalone})
+option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
 # OptickCore
-add_library(OptickCore SHARED ${OPTICK_SRC})
+add_library(OptickCore ${OPTICK_SRC})
 target_include_directories(OptickCore
 	PUBLIC
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
