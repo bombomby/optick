@@ -4,7 +4,7 @@
 #include "CoreMinimal.h"
 #include "Containers/Ticker.h"
 #include "GenericPlatform/GenericPlatformFile.h"
-#include "HAL/PlatformFilemanager.h"
+#include "HAL/PlatformFileManager.h"
 #include "HAL/PlatformProcess.h"
 #include "Misc/EngineVersion.h"
 #include "Modules/ModuleManager.h"
