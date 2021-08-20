@@ -28,7 +28,7 @@
 
 #include "VulkanModel.hpp"
 
-#define ENABLE_VALIDATION false
+#define ENABLE_VALIDATION true
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 std::wstring g_ScreenshotRequest;
@@ -177,6 +177,8 @@ public:
 
 	~VulkanExample()
 	{
+		OPTICK_GPU_SHUTDOWN()
+
 		// Clean up used Vulkan resources 
 		// Note : Inherited destructor cleans up resources stored in base class
 		vkDestroyPipeline(device, pipelines.phong, nullptr);

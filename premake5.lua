@@ -249,6 +249,8 @@ else
 			"OptickCore"
 		}
 
+		defines { "OPTICK_ENABLE_GPU=0" }
+
 		vpaths { 
 			["*"] = "samples/ConsoleApp"
 		}
@@ -272,6 +274,8 @@ end
 		links {
 			"OptickCore"
 		}
+
+		defines { "OPTICK_ENABLE_GPU=0" }
 
 		vpaths { 
 			["*"] = "samples/ConsoleAppMT"

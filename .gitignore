@@ -20,3 +20,4 @@ Publish/
 /Samples/UnrealEnginePlugin/Binaries
 /.vs
 /samples/UnrealEnginePlugin/GUI/Optick.exe
+/.vscode

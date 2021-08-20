@@ -1578,6 +1578,11 @@ void Core::InitGPUProfiler(GPUProfiler* profiler)
 	Memory::Delete<GPUProfiler>(gpuProfiler);
 	gpuProfiler = profiler;
 }
+void Core::ShutdownGPUProfiler()
+{
+	Memory::Delete<GPUProfiler>(gpuProfiler);
+	gpuProfiler = nullptr;
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool Core::SetSettings(const CaptureSettings& captureSettings)
 {
@@ -1621,6 +1626,8 @@ const EventDescription* Core::GetFrameDescription(FrameType::Type frame) const
 void Core::Shutdown()
 {
 	std::lock_guard<std::recursive_mutex> lock(threadsLock);
+
+	Memory::Delete<GPUProfiler>(gpuProfiler);
 
 	for (ThreadList::iterator it = threads.begin(); it != threads.end(); ++it)
 	{
