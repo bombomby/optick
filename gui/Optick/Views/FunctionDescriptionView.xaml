@@ -13,11 +13,21 @@
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
         <Rectangle Grid.Column="0" Width="16" Height="16" VerticalAlignment="Center" StrokeThickness="1" Stroke="Black" Fill="{Binding Stats.Description.ForceBrush}" Margin="0,0,3,0" />
-        <TextBlock Grid.Column="1" Text="{Binding Stats.Description}" FontWeight="Bold" />
-        <StackPanel Grid.Column="2" Orientation="Horizontal" TextBlock.FontWeight="Bold">
-            <TextBlock Text="{Binding Stats.AvgTotal, StringFormat={}{0:0.000}ms, Mode=OneWay}" Margin="6,0,0,0" ToolTip="Average Time" />
-            <TextBlock Text="{Binding Stats.AvgWork, StringFormat={}{0:0.000}ms, Mode=OneWay}" Margin="6,0,0,0" Foreground="LimeGreen" ToolTip="Average Work Time" />
-            <TextBlock Text="{Binding Stats.AvgWait, StringFormat={}{0:0.000}ms, Mode=OneWay}" Margin="6,0,0,0" Foreground="Tomato" ToolTip="Average Wait Time" />
+        <TextBlock Grid.Column="1" Text="{Binding Stats.Description}" FontWeight="Bold" VerticalAlignment="Center" />
+        <StackPanel Grid.Column="2" Orientation="Vertical">
+            <StackPanel Orientation="Horizontal" TextBlock.FontWeight="Bold" HorizontalAlignment="Right">
+                <TextBlock Text="{Binding Stats.AvgTotal, StringFormat={}{0:0.000}ms, Mode=OneWay}" Margin="6,0,0,0" ToolTip="Time spent in this function during an average frame" />
+                <TextBlock Text="{Binding Stats.AvgWork, StringFormat={}{0:0.000}ms, Mode=OneWay}" Margin="6,0,0,0" Foreground="LimeGreen" ToolTip="Time spent working in this function during an average frame" />
+                <TextBlock Text="{Binding Stats.AvgWait, StringFormat={}{0:0.000}ms, Mode=OneWay}" Margin="6,0,0,0" Foreground="Tomato" ToolTip="Time spent waiting in this function during an average frame" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" TextBlock.FontWeight="Medium" HorizontalAlignment="Right">
+                <!-- per-call information, async bindings since these getters are slow -->
+                <TextBlock Text="{Binding Stats.MinPerCall, StringFormat={}Min {0:0.000}ms, Mode=OneWay, IsAsync=True}" Margin="6,0,0,0" Foreground="LightGray" ToolTip="Fastest Time (single call)" />
+                <TextBlock Text="{Binding Stats.MaxPerCall, StringFormat={}Max {0:0.000}ms, Mode=OneWay, IsAsync=True}" Margin="6,0,0,0" Foreground="LightGray" ToolTip="Slowest Time (single call)" />
+                <TextBlock Text="{Binding Stats.AvgTotalPerCall, StringFormat={}Avg {0:0.000}ms, Mode=OneWay, IsAsync=True}" Margin="6,0,0,0" Foreground="LightBlue" ToolTip="Average Time (single call)" />
+                <TextBlock Text="{Binding Stats.StdDevPerCall, StringFormat={}SD {0:0.000}ms, Mode=OneWay, IsAsync=True}" Margin="6,0,0,0" Foreground="BurlyWood" ToolTip="Standard Deviation (single call)" />
+            </StackPanel>
         </StackPanel>
+        
     </Grid>
 </UserControl>
