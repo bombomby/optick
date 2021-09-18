@@ -21,11 +21,10 @@
                 <TextBlock Text="{Binding Stats.AvgWait, StringFormat={}{0:0.000}ms, Mode=OneWay}" Margin="6,0,0,0" Foreground="Tomato" ToolTip="Time spent waiting in this function during an average frame" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" TextBlock.FontWeight="Medium" HorizontalAlignment="Right">
-                <!-- per-call information, async bindings since these getters are slow -->
-                <TextBlock Text="{Binding Stats.MinPerCall, StringFormat={}Min {0:0.000}ms, Mode=OneWay, IsAsync=True}" Margin="6,0,0,0" Foreground="LightGray" ToolTip="Fastest Time (single call)" />
-                <TextBlock Text="{Binding Stats.MaxPerCall, StringFormat={}Max {0:0.000}ms, Mode=OneWay, IsAsync=True}" Margin="6,0,0,0" Foreground="LightGray" ToolTip="Slowest Time (single call)" />
-                <TextBlock Text="{Binding Stats.AvgTotalPerCall, StringFormat={}Avg {0:0.000}ms, Mode=OneWay, IsAsync=True}" Margin="6,0,0,0" Foreground="LightBlue" ToolTip="Average Time (single call)" />
-                <TextBlock Text="{Binding Stats.StdDevPerCall, StringFormat={}SD {0:0.000}ms, Mode=OneWay, IsAsync=True}" Margin="6,0,0,0" Foreground="BurlyWood" ToolTip="Standard Deviation (single call)" />
+                <TextBlock Text="{Binding Stats.MinPerCall, StringFormat={}Min {0:0.000}ms, Mode=OneWay}" Margin="6,0,0,0" Foreground="LightGray" ToolTip="Fastest Time (single call)" />
+                <TextBlock Text="{Binding Stats.MaxPerCall, StringFormat={}Max {0:0.000}ms, Mode=OneWay}" Margin="6,0,0,0" Foreground="LightGray" ToolTip="Slowest Time (single call)" />
+                <TextBlock Text="{Binding Stats.AvgTotalPerCall, StringFormat={}Avg {0:0.000}ms, Mode=OneWay}" Margin="6,0,0,0" Foreground="LightBlue" ToolTip="Average Time (single call)" />
+                <TextBlock Text="{Binding Stats.StdDevPerCall, StringFormat={}SD {0:0.000}ms, Mode=OneWay}" Margin="6,0,0,0" Foreground="BurlyWood" ToolTip="Standard Deviation (single call)" />
             </StackPanel>
         </StackPanel>
         

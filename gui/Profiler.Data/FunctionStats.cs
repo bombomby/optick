@@ -47,107 +47,25 @@ namespace Profiler.Data
 		public FrameGroup Group { get; set; }
 		public EventDescription Description { get; set; }
 
-        // Time spent in this function during an average frame
-        public double AvgTotal
-        {
-            get { return Samples.Count > 0 ? Samples.Average(s => s.Total) : 0.0; }
-        }
+		// Timing stats computed during load
 
-        // Time spent working in this function during an average frame
-        public double AvgWork
-        {
-            get { return Samples.Count > 0 ? Samples.Average(s => s.Work) : 0.0; }
-        }
+		// Fastest time
+		public double MinPerCall { get; set; }
+		// Slowest time
+		public double MaxPerCall { get; set; }
+		// Average function time (averaged over calls, not frames)
+		public double AvgTotalPerCall { get; set; }
+		// Standard deviation of the individual function times
+		public double StdDevPerCall { get; set; }
 
-        // Time spent waiting in this function during an average frame
-        public double AvgWait
-        {
-            get { return Samples.Count > 0 ? Samples.Average(s => s.Wait) : 0.0; }
-        }
+		// Time spent in this function during an average frame
+		public double AvgTotal { get; set; }
+		// Time spent working in this function during an average frame
+		public double AvgWork { get; set; }
+		// Time spent waiting in this function during an average frame
+		public double AvgWait { get; set; }
 
-        // Fastest time
-        public double MinPerCall
-        {
-            get
-            {
-                double res = Double.MaxValue;
-                foreach (Sample s in Samples)
-                {
-                    foreach (Entry e in s.Entries)
-                    {
-                        if (res > e.Duration)
-                        {
-                            res = e.Duration;
-                        }
-                    }
-                }
-
-                return res;
-            }
-        }
-
-        // Slowest time
-        public double MaxPerCall
-        {
-            get
-            {
-                double res = 0.0;
-                foreach (Sample s in Samples)
-                {
-                    foreach (Entry e in s.Entries)
-                    {
-                        if (res < e.Duration)
-                        {
-                            res = e.Duration;
-                        }
-                    }
-                }
-
-                return res;
-            }
-        }
-
-        // Average function time (averaged over calls, not frames)
-        public double AvgTotalPerCall
-        {
-            get
-            {
-                int numCalls = 0;
-                double sum = 0.0;
-                foreach (Sample s in Samples)
-                {
-                    numCalls += s.Count;
-                    sum += s.Total;
-                }
-
-                return sum / numCalls;
-            }
-        }
-
-        // Standard deviation of the individual function times
-        public double StdDevPerCall
-        {
-            get
-            {
-                double avg = this.AvgTotalPerCall;
-
-                double sum = 0.0;
-                int num = 0;
-                foreach (Sample s in Samples)
-                {
-                    num += s.Count;
-                    foreach (Entry e in s.Entries)
-                    {
-                        double x = e.Duration - avg;
-                        sum += x * x;
-                    }
-                }
-
-                return num > 0 ? Math.Sqrt(sum / num) : 0.0;
-            }
-        }
-
-        public FunctionStats(FrameGroup group, EventDescription desc)
+		public FunctionStats(FrameGroup group, EventDescription desc)
 		{
 			Group = group;
 			Description = desc;
@@ -157,69 +75,116 @@ namespace Profiler.Data
 		{
 			Samples = new List<Sample>();
 
+			MinPerCall = Double.MaxValue;
+			MaxPerCall = 0.0;
+			AvgTotalPerCall = 0.0;
+			StdDevPerCall = 0.0;
+			double sumOfCallTimes = 0.0;
+			double sumOfCallTimesSq = 0.0;
+			double sumOfFrameTimes = 0.0;
+			double sumOfFrameTimesWork = 0.0;
+			double sumOfFrameTimesWait = 0.0;
+			int numCalls = 0;
+
 			if (origin == Origin.MainThread)
 			{
 				Group.UpdateDescriptionMask(Description);
 
-				if (Description.Mask != null)
+				if (Description.Mask == null)
 				{
-					FrameList frameList = Group.GetFocusThread(Description.Mask.Value);
-					if (frameList != null)
-					{
-						List<FrameData> frames = frameList.Events;
-
-						for (int i = 0; i < frames.Count; ++i)
-						{
-							Sample sample = new Sample() { Name = String.Format("Frame {0:000}", i), Index = i };
-
-							long start = frames[i].Start;
-							long finish = i == frames.Count - 1 ? frames[i].Finish : frames[i + 1].Start;
-
-							foreach (ThreadData thread in Group.Threads)
-							{
-								Utils.ForEachInsideIntervalStrict(thread.Events, start, finish, (frame) =>
-								{
-									List<Entry> shortEntries = null;
-									if (frame.ShortBoard.TryGetValue(Description, out shortEntries))
-									{
-										foreach (Entry e in shortEntries)
-										{
-											sample.Add(e);
-										}
-									}
-								});
-							}
-
-							Samples.Add(sample);
-						}
-					}
-					else
-					{
-						// Fallback to Individual Calls
-						Load(Origin.IndividualCalls);
-					}
+					return;
 				}
-			}
 
-			if (origin == Origin.IndividualCalls)
+				FrameList frameList = Group.GetFocusThread(Description.Mask.Value);
+				if (frameList == null)
+				{
+					// Fallback to Individual Calls
+					Load(Origin.IndividualCalls);
+					return;
+				}
+					
+				List<FrameData> frames = frameList.Events;
+
+				for (int i = 0; i < frames.Count; ++i)
+				{
+					Sample sample = new Sample() { Name = String.Format("Frame {0:000}", i), Index = i };
+
+					long start = frames[i].Start;
+					long finish = i == frames.Count - 1 ? frames[i].Finish : frames[i + 1].Start;
+
+					foreach (ThreadData thread in Group.Threads)
+					{
+						Utils.ForEachInsideIntervalStrict(thread.Events, start, finish, (frame) =>
+						{
+							List<Entry> shortEntries = null;
+							if (frame.ShortBoard.TryGetValue(Description, out shortEntries))
+							{
+								foreach (Entry e in shortEntries)
+								{
+									double dur = e.Duration;
+									sumOfCallTimes += dur;
+									sumOfCallTimesSq += dur * dur;
+									numCalls++;
+									MinPerCall = Math.Min(MinPerCall, dur);
+									MaxPerCall = Math.Max(MaxPerCall, dur);
+
+									sample.Add(e);
+								}
+							}
+						});
+					}
+
+					sumOfFrameTimes += sample.Total;
+					sumOfFrameTimesWait += sample.Wait;
+					sumOfFrameTimesWork += sample.Work;
+					Samples.Add(sample);
+				}
+			} 
+			else if (origin == Origin.IndividualCalls)
 			{
 				foreach (ThreadData thread in Group.Threads)
 				{
 					foreach (EventFrame frame in thread.Events)
 					{
 						List<Entry> shortEntries = null;
-						if (frame.ShortBoard.TryGetValue(Description, out shortEntries))
+						if (!frame.ShortBoard.TryGetValue(Description, out shortEntries))
 						{
-							foreach (Entry e in shortEntries)
-							{
-								Samples.Add(new Sample(e) { Index = Samples.Count, Name = Description.Name });
-							}
+							continue;
+						}
+
+						foreach (Entry e in shortEntries)
+						{
+							double dur = e.Duration;
+							sumOfCallTimes += dur;
+							sumOfCallTimesSq += dur * dur;
+							numCalls++;
+							MinPerCall = Math.Min(MinPerCall, dur);
+							MaxPerCall = Math.Max(MaxPerCall, dur);
+
+							Sample sample = new Sample(e) { Index = Samples.Count, Name = Description.Name };
+
+							sumOfFrameTimes += sample.Total;
+							sumOfFrameTimesWait += sample.Wait;
+							sumOfFrameTimesWork += sample.Work;
+							Samples.Add(sample);
 						}
 					}
 				}
 
-				Samples.Sort((a, b) => (a.Entries[0].CompareTo(b.Entries[0])));
+				Samples.Sort((a, b) => a.Entries[0].CompareTo(b.Entries[0]));
 			}
+		
+			// compute averages
+			double numCallsInv = numCalls > 0 ? 1.0 / numCalls : 0.0;
+			double numSamplesInv = Samples.Count > 0 ? 1.0 / Samples.Count : 0.0;
+
+			AvgTotalPerCall = sumOfCallTimes * numCallsInv;
+			double varOfTimes = sumOfCallTimesSq * numCallsInv - AvgTotalPerCall * AvgTotalPerCall;
+			StdDevPerCall = Math.Sqrt(Math.Max(varOfTimes, 0.0));
+
+			AvgTotal = numSamplesInv * sumOfFrameTimes;
+			AvgWait = numSamplesInv * sumOfFrameTimesWait;
+			AvgWork = numSamplesInv * sumOfFrameTimesWork;
 		}
 	}
 }
