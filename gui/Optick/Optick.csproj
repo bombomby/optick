@@ -507,6 +507,9 @@
     <None Include="app.config" />
     <AppDesigner Include="Properties\" />
     <EmbeddedResource Include="TaskManager\brofiler-github-07994fd14248.p12" />
+    <None Include="FodyWeavers.xsd">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="TimeLine\Icons\ClearSampling-icon.png" />

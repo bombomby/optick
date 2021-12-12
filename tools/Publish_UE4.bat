@@ -11,7 +11,7 @@ rem MsBuild gui/OptickApp_vs2017.sln /t:Rebuild /p:Configuration=Release /p:Plat
 
 for /f %%i in ('powershell "(Get-Item -path gui\Bin\Release\x64\Optick.exe).VersionInfo.ProductVersion"') do set VERSION=%%i
 
-set UNREAL_VERSION=4.25
+set UNREAL_VERSION=4.27
 set VERSION_NAME=%VERSION:~0,-2%_UE4Plugin%UNREAL_VERSION%
 
 xcopy /Y gui\Bin\Release\x64\Optick.exe samples\UnrealEnginePlugin\GUI\*
@@ -25,7 +25,7 @@ if not exist "tmp" mkdir tmp
 
 for %%f in (*.cpp *.h) do (
 	(Echo "%%f" | FIND /I "miniz" 1>NUL) || (
-		echo // Copyright(c^) 2019 Vadim Slyusarev > "tmp\%%f"
+		echo // Copyright(c^) 2021 Vadim Slyusarev > "tmp\%%f"
        more +21 "%%f" >> "tmp\%%f"
    )
 )
