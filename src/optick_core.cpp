@@ -24,6 +24,7 @@
 
 #if USE_OPTICK
 
+#include "optick.h"
 #include "optick_server.h"
 
 #include <algorithm>
@@ -64,7 +65,11 @@ namespace Optick
 void* (*Memory::allocate)(size_t) = [](size_t size)->void* { return operator new(size); };
 void (*Memory::deallocate)(void* p) = [](void* p) { operator delete(p); };
 void (*Memory::initThread)(void) = nullptr;
-std::atomic<uint64_t> Memory::memAllocated;
+#if defined(OPTICK_32BIT)
+	std::atomic<uint32_t> Memory::memAllocated;
+#else
+	std::atomic<uint64_t> Memory::memAllocated;
+#endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 uint64_t MurmurHash64A(const void * key, int len, uint64_t seed)
 {
@@ -738,7 +743,7 @@ bool SwitchContextCollector::Serialize(OutputDataStream& stream)
 #if defined(OPTICK_MSVC)
 #include <intrin.h>
 #define CPUID(INFO, ID) __cpuid(INFO, ID)
-#elif defined(__ANDROID__)
+#elif (defined(__ANDROID__) || defined(OPTICK_ARM))
 // Nothing
 #elif defined(OPTICK_GCC)
 #include <cpuid.h>
@@ -762,6 +767,28 @@ string GetCPUName()
     	return s;
     }
 	return "Undefined CPU";
+#elif defined(OPTICK_ARM)
+	#if defined(OPTICK_LINUX)
+		FILE *cpuinfo = fopen("/proc/cpuinfo", "rb");
+		if (!cpuinfo)
+			return "Undefined CPU";
+		char *arg = 0;
+		size_t size = 0;
+		while(getdelim(&arg, &size, 0, cpuinfo) != -1)
+		{
+			puts(arg);
+		}
+		string cpuName = arg;
+		free(arg);
+		fclose(cpuinfo);
+		return cpuName;
+	#else
+		#if defined(OPTICK_ARM32)
+			return "ARM 32-bit";
+		#elif defined(OPTICK_ARM64)
+			return "ARM 64-bit";
+		#endif
+	#endif
 #else
 	int cpuInfo[4] = { -1 };
 	char cpuBrandString[0x40] = { 0 };
