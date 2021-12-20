@@ -768,26 +768,10 @@ string GetCPUName()
     }
 	return "Undefined CPU";
 #elif defined(OPTICK_ARM)
-	#if defined(OPTICK_LINUX)
-		FILE *cpuinfo = fopen("/proc/cpuinfo", "rb");
-		if (!cpuinfo)
-			return "Undefined CPU";
-		char *arg = 0;
-		size_t size = 0;
-		while(getdelim(&arg, &size, 0, cpuinfo) != -1)
-		{
-			puts(arg);
-		}
-		string cpuName = arg;
-		free(arg);
-		fclose(cpuinfo);
-		return cpuName;
+	#if defined(OPTICK_ARM32)
+		return "ARM 32-bit";
 	#else
-		#if defined(OPTICK_ARM32)
-			return "ARM 32-bit";
-		#elif defined(OPTICK_ARM64)
-			return "ARM 64-bit";
-		#endif
+		return "ARM 64-bit";
 	#endif
 #else
 	int cpuInfo[4] = { -1 };
