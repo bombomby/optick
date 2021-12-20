@@ -38,14 +38,23 @@
 #		define OPTICK_LINUX (1)
 #	elif defined(__FreeBSD__)
 #		define OPTICK_FREEBSD (1)
-#	endif
+#	elif defined(__MINGW32__) || defined(__MINGW64__)
+#       define OPTICK_MINGW (1)
+#       define OPTICK_PC (1)
+#       include <sdkddkver.h>
+#       if WINVER < _WIN32_WINNT_WIN7 || _WIN32_WINNT < _WIN32_WINNT_WIN7
+#           error "Optick requires to compile at least for Windows 7, please upgrade MinGW windows \
+                  SDK, or define WINVER and _WIN32_WINNT to _WIN32_WINNT_WIN7 or greater if your \
+                  MinGW build supports it."
+#       endif
+#   endif
 #elif defined(_MSC_VER)
 #	define OPTICK_MSVC (1)
 #	if defined(_DURANGO)
 #		define OPTICK_PC (0)
 #	else
 #		define OPTICK_PC (1)
-#endif
+#   endif
 #else
 #error Compiler not supported
 #endif

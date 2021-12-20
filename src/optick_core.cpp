@@ -33,7 +33,7 @@
 //////////////////////////////////////////////////////////////////////////
 // Start of the Platform-specific stuff
 //////////////////////////////////////////////////////////////////////////
-#if defined(OPTICK_MSVC)
+#if defined(OPTICK_MSVC) || defined(OPTICK_MINGW)
 #include "optick_core.win.h"
 #elif defined(OPTICK_LINUX)
 #include "optick_core.linux.h"
@@ -826,7 +826,7 @@ void Core::DumpProgressFormatted(const char* format, ...)
 	va_list arglist;
 	char buffer[256] = { 0 };
 	va_start(arglist, format);
-#ifdef OPTICK_MSVC
+#if defined(OPTICK_MSVC) || defined(OPTICK_MINGW)
 	vsprintf_s(buffer, format, arglist);
 #else
 	vsprintf(buffer, format, arglist);
@@ -1885,20 +1885,28 @@ bool EndsWith(const char* str, const char* substr)
 OPTICK_API bool SaveCapture(const char* path, bool force /*= true*/)
 {
 	char filePath[512] = { 0 };
+#if defined(OPTICK_MINGW)
+	strcpy_s(filePath, path);
+#else
 	strcpy(filePath, path);
+#endif
 	
 	if (path == nullptr || !EndsWith(path, ".opt"))
 	{
 		time_t now = time(0);
 		struct tm tstruct;
-#if defined(OPTICK_MSVC)
+#if defined(OPTICK_MSVC) || defined(OPTICK_MINGW)
 		localtime_s(&tstruct, &now);
 #else
 		localtime_r(&now, &tstruct);
 #endif
 		char timeStr[80] = { 0 };
 		strftime(timeStr, sizeof(timeStr), "(%Y-%m-%d.%H-%M-%S).opt", &tstruct);
-		strcat(filePath, timeStr);
+#if defined(OPTICK_MINGW)
+		strcat_s(filePath, timeStr);
+#else
+        strcat(filePath, timeStr);
+#endif
 	}
 
 	SaveHelper::Init(filePath);
