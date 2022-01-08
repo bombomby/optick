@@ -48,7 +48,11 @@ namespace Optick
 			uint64_t size;
 		};
 
+	#if defined(OPTICK_32BIT)
+		static std::atomic<uint32_t> memAllocated;
+	#else
 		static std::atomic<uint64_t> memAllocated;
+	#endif
 
 		static void* (*allocate)(size_t);
 		static void  (*deallocate)(void*);
