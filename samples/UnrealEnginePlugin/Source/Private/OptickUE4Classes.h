@@ -4,16 +4,16 @@
 
 #ifdef OPTICK_UE4_GPU
 
-#define UE_4_24_OR_LATER (ENGINE_MAJOR_VERSION == 4 && ENGINE_MINOR_VERSION >= 24)
-
 // RenderCore
 #include "GPUProfiler.h"
 #include "ProfilingDebugging/RealtimeGPUProfiler.h"
 #include "ProfilingDebugging/TracingProfiler.h"
+#include "Runtime/Launch/Resources/Version.h"
+
+#define UE_4_27_OR_LATER (ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 27)
+
 
 #define REALTIME_GPU_PROFILER_EVENT_TRACK_FRAME_NUMBER (TRACING_PROFILER || DO_CHECK)
-
-#ifdef UE_4_24_OR_LATER
 
 /*-----------------------------------------------------------------------------
 FRealTimeGPUProfilerEvent class
@@ -26,34 +26,97 @@ public:
 public:
 	bool GatherQueryResults(FRHICommandListImmediate& RHICmdList)
 	{
-		QUICK_SCOPE_CYCLE_COUNTER(STAT_SceneUtils_GatherQueryResults);
+		//QUICK_SCOPE_CYCLE_COUNTER(STAT_SceneUtils_GatherQueryResults);
 
 		// Get the query results which are still outstanding
+		check(GFrameNumberRenderThread != FrameNumber);
 		check(StartQuery.IsValid() && EndQuery.IsValid());
 
-		if (StartResultMicroseconds == InvalidQueryResult)
+		for (uint32 GPUIndex : GPUMask)
 		{
-			if (!RHICmdList.GetRenderQueryResult(StartQuery.GetQuery(), StartResultMicroseconds, false))
+			if (StartResultMicroseconds[GPUIndex] == InvalidQueryResult)
 			{
-				StartResultMicroseconds = InvalidQueryResult;
+				if (!RHICmdList.GetRenderQueryResult(StartQuery.GetQuery(), StartResultMicroseconds[GPUIndex], false, GPUIndex))
+				{
+					StartResultMicroseconds[GPUIndex] = InvalidQueryResult;
+				}
 			}
-		}
 
-		if (EndResultMicroseconds == InvalidQueryResult)
-		{
-			if (!RHICmdList.GetRenderQueryResult(EndQuery.GetQuery(), EndResultMicroseconds, false))
+			if (EndResultMicroseconds[GPUIndex] == InvalidQueryResult)
 			{
-				EndResultMicroseconds = InvalidQueryResult;
+				if (!RHICmdList.GetRenderQueryResult(EndQuery.GetQuery(), EndResultMicroseconds[GPUIndex], false, GPUIndex))
+				{
+					EndResultMicroseconds[GPUIndex] = InvalidQueryResult;
+				}
 			}
 		}
 
 		return HasValidResult();
 	}
 
+	uint64 GetResultUs(uint32 GPUIndex) const
+	{
+		check(HasValidResult(GPUIndex));
+
+		if (StartResultMicroseconds[GPUIndex] > EndResultMicroseconds[GPUIndex])
+		{
+			return 0llu;
+		}
+
+		return EndResultMicroseconds[GPUIndex] - StartResultMicroseconds[GPUIndex];
+	}
+
+	bool HasValidResult(uint32 GPUIndex) const
+	{
+		return StartResultMicroseconds[GPUIndex] != InvalidQueryResult && EndResultMicroseconds[GPUIndex] != InvalidQueryResult;
+	}
+
 	bool HasValidResult() const
 	{
-		return StartResultMicroseconds != InvalidQueryResult && EndResultMicroseconds != InvalidQueryResult;
+		for (uint32 GPUIndex : GPUMask)
+		{
+			if (!HasValidResult(GPUIndex))
+			{
+				return false;
+			}
+		}
+		return true;
 	}
+
+#if STATS
+	const FName& GetStatName() const
+	{
+		return StatName;
+	}
+#endif
+
+	const FName& GetName() const
+	{
+		return Name;
+	}
+
+	FRHIGPUMask GetGPUMask() const
+	{
+		return GPUMask;
+	}
+
+	uint64 GetStartResultMicroseconds(uint32 GPUIndex) const
+	{
+		return StartResultMicroseconds[GPUIndex];
+	}
+
+	uint64 GetEndResultMicroseconds(uint32 GPUIndex) const
+	{
+		return EndResultMicroseconds[GPUIndex];
+	}
+
+	uint32 GetFrameNumber() const
+	{
+		return FrameNumber;
+	}
+
+	TStaticArray<uint64, MAX_NUM_GPUS> StartResultMicroseconds;
+	TStaticArray<uint64, MAX_NUM_GPUS> EndResultMicroseconds;
 
 	FRHIPooledRenderQuery StartQuery;
 	FRHIPooledRenderQuery EndQuery;
@@ -61,18 +124,14 @@ public:
 	FName Name;
 	STAT(FName StatName;)
 
-	uint64 StartResultMicroseconds;
-	uint64 EndResultMicroseconds;
+	FRHIGPUMask GPUMask;
 
-#if REALTIME_GPU_PROFILER_EVENT_TRACK_FRAME_NUMBER
 	uint32 FrameNumber;
-#endif
 
 #if DO_CHECK
 	bool bInsideQuery;
 #endif
 };
-
 
 class FRealtimeGPUProfilerFrameImpl
 {
@@ -82,6 +141,9 @@ public:
 		uint32 ExclusiveTimeUs;
 		uint32 InclusiveTimeUs;
 	};
+
+	uint64 CPUFrameStartTimestamp;
+	FTimestampCalibrationQueryRHIRef TimestampCalibrationQuery;
 
 	static constexpr uint32 GPredictedMaxNumEvents = 100u;
 	static constexpr uint32 GPredictedMaxNumEventsUpPow2 = 128u;
@@ -99,105 +161,6 @@ public:
 	TArray<int32, TInlineAllocator<GPredictedMaxStackDepth>> EventStack;
 	TArray<FGPUEventTimeAggregate, TInlineAllocator<GPredictedMaxNumEvents>> EventAggregates;
 };
-
-
-#else
-
-/*-----------------------------------------------------------------------------
-FRealTimeGPUProfilerEvent class
------------------------------------------------------------------------------*/
-class FRealtimeGPUProfilerEventImpl
-{
-public:
-	static const uint64 InvalidQueryResult = 0xFFFFFFFFFFFFFFFFull;
-
-public:
-	bool HasQueriesAllocated() const
-	{
-		return StartQuery.GetQuery() != nullptr;
-	}
-
-	bool GatherQueryResults(FRHICommandListImmediate& RHICmdList)
-	{
-		QUICK_SCOPE_CYCLE_COUNTER(STAT_Optick_GatherQueryResults);
-		// Get the query results which are still outstanding
-		check(GFrameNumberRenderThread != FrameNumber);
-		if (HasQueriesAllocated())
-		{
-			if (StartResultMicroseconds == InvalidQueryResult)
-			{
-				if (!RHICmdList.GetRenderQueryResult(StartQuery.GetQuery(), StartResultMicroseconds, false))
-				{
-					StartResultMicroseconds = InvalidQueryResult;
-				}
-				bBeginQueryInFlight = false;
-			}
-			if (EndResultMicroseconds == InvalidQueryResult)
-			{
-				if (!RHICmdList.GetRenderQueryResult(EndQuery.GetQuery(), EndResultMicroseconds, false))
-				{
-					EndResultMicroseconds = InvalidQueryResult;
-				}
-				bEndQueryInFlight = false;
-			}
-		}
-		else
-		{
-			// If we don't have a query allocated, just set the results to zero
-			EndResultMicroseconds = StartResultMicroseconds = 0;
-		}
-		return HasValidResult();
-	}
-
-	bool HasValidResult() const
-	{
-		return StartResultMicroseconds != FRealtimeGPUProfilerEventImpl::InvalidQueryResult && EndResultMicroseconds != FRealtimeGPUProfilerEventImpl::InvalidQueryResult;
-	}
-
-	FRHIPooledRenderQuery StartQuery;
-	FRHIPooledRenderQuery EndQuery;
-#if STATS
-	FName StatName;
-#endif
-	FName Name;
-	uint64 StartResultMicroseconds;
-	uint64 EndResultMicroseconds;
-	uint32 FrameNumber;
-
-	bool bInsideQuery;
-	bool bBeginQueryInFlight;
-	bool bEndQueryInFlight;
-};
-
-class FRealtimeGPUProfilerFrameImpl
-{
-public:
-	uint32& QueryCount;
-
-	TArray<FRealtimeGPUProfilerEventImpl*> GpuProfilerEvents;
-	TArray<int32> EventStack;
-
-	struct FRealtimeGPUProfilerTimelineEvent
-	{
-		enum class EType { PushEvent, PopEvent };
-		EType Type;
-		int32 EventIndex;
-	};
-
-	TArray<FRealtimeGPUProfilerTimelineEvent> GpuProfilerTimelineEvents;
-
-	struct FGPUEventTimeAggregate
-	{
-		float ExclusiveTime;
-		float InclusiveTime;
-	};
-	TArray<FGPUEventTimeAggregate> EventAggregates;
-
-	uint32 FrameNumber;
-	FRenderQueryPoolRHIRef RenderQueryPool;
-};
-
-#endif
 
 class FRealtimeGPUProfilerImpl
 {
