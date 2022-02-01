@@ -19,12 +19,11 @@
 // Optick
 #include "OptickUE4Classes.h"
 
-#define LOCTEXT_NAMESPACE "FOptickModule"
-
 #if WITH_EDITOR
 #include "DesktopPlatformModule.h"
 #include "EditorStyleSet.h"
 #include "Framework/Commands/Commands.h"
+#include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "Editor/EditorPerformanceSettings.h"
 #include "Editor/LevelEditor/Public/LevelEditor.h"
 #include "Editor/UnrealEd/Public/SEditorViewportToolBarMenu.h"
@@ -36,6 +35,8 @@
 #endif
 
 #include <optick.h>
+
+#define LOCTEXT_NAMESPACE "FOptickModule"
 
 DEFINE_LOG_CATEGORY(OptickLog);
 
