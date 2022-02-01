@@ -1896,7 +1896,11 @@ bool EndsWith(const char* str, const char* substr)
 OPTICK_API bool SaveCapture(const char* path, bool force /*= true*/)
 {
 	char filePath[512] = { 0 };
+#if defined(OPTICK_MSVC)
+	strcpy_s(filePath, 512, path);
+#else
 	strcpy(filePath, path);
+#endif
 	
 	if (path == nullptr || !EndsWith(path, ".opt"))
 	{
@@ -1909,7 +1913,11 @@ OPTICK_API bool SaveCapture(const char* path, bool force /*= true*/)
 #endif
 		char timeStr[80] = { 0 };
 		strftime(timeStr, sizeof(timeStr), "(%Y-%m-%d.%H-%M-%S).opt", &tstruct);
+#if defined(OPTICK_MSVC)
+		strcat_s(filePath, 512, timeStr);
+#else
 		strcat(filePath, timeStr);
+#endif
 	}
 
 	SaveHelper::Init(filePath);
