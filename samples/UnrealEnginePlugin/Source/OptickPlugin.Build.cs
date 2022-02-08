@@ -73,11 +73,9 @@ namespace UnrealBuildTool.Rules
 						"SlateCore",
 						"EditorStyle",
 						"UnrealEd",
-						"MainFrame",
 						"GameProjectGeneration",
 						"Projects",
 						"InputCore",
-						"LevelEditor",
 						"DesktopPlatform",
 					}
 				);
