@@ -1265,19 +1265,22 @@ void Core::Update()
 	{
 		FrameBuffer frameBuffer = frames[FrameType::CPU].m_Frames;
 
-		if (settings.frameLimit > 0 && frameBuffer.Size() >= settings.frameLimit)
-			DumpCapture();
-
-		if (settings.timeLimitUs > 0)
+		if (frameBuffer.Size() > 0)
 		{
-			if (TicksToUs(frameBuffer.Back()->finish - frameBuffer.Front()->start) >= settings.timeLimitUs)
+			if (settings.frameLimit > 0 && frameBuffer.Size() >= settings.frameLimit)
 				DumpCapture();
-		}
 
-		if (settings.spikeLimitUs > 0)
-		{
-			if (TicksToUs(frameBuffer.Back()->finish - frameBuffer.Front()->start) >= settings.spikeLimitUs)
-				DumpCapture();
+			if (settings.timeLimitUs > 0)
+			{
+				if (TicksToUs(frameBuffer.Back()->finish - frameBuffer.Front()->start) >= settings.timeLimitUs)
+					DumpCapture();
+			}
+
+			if (settings.spikeLimitUs > 0)
+			{
+				if (TicksToUs(frameBuffer.Back()->finish - frameBuffer.Front()->start) >= settings.spikeLimitUs)
+					DumpCapture();
+			}
 		}
 
 		if (IsTimeToReportProgress())
