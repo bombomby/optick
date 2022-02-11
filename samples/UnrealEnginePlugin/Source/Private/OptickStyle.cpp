@@ -4,6 +4,7 @@
 
 #if WITH_EDITOR
 
+#include "Framework/Application/SlateApplication.h"
 #include "Slate/SlateGameResources.h"
 #include "SlateCore/Public/Styling/SlateStyleRegistry.h"
 #include "Projects/Public/Interfaces/IPluginManager.h"

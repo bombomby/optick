@@ -246,22 +246,25 @@ void FOptickPlugin::StartupModule()
 	Optick::SetStateChangedCallback(OnOptickStateChanged);
 
 #if WITH_EDITOR
-	FOptickStyle::Initialize();
-	FOptickStyle::ReloadTextures();
-	FOptickCommands::Register();
+	if (GIsEditor)
+	{
+		FOptickStyle::Initialize();
+		FOptickStyle::ReloadTextures();
+		FOptickCommands::Register();
 
-	PluginCommands = MakeShareable(new FUICommandList);
+		PluginCommands = MakeShareable(new FUICommandList);
 
-	PluginCommands->MapAction(
-		FOptickCommands::Get().PluginAction,
-		FExecuteAction::CreateRaw(this, &FOptickPlugin::OnOpenGUI),
-		FCanExecuteAction());
+		PluginCommands->MapAction(
+			FOptickCommands::Get().PluginAction,
+			FExecuteAction::CreateRaw(this, &FOptickPlugin::OnOpenGUI),
+			FCanExecuteAction());
 
-	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
-	ExtensionManager = LevelEditorModule.GetToolBarExtensibilityManager();
-	ToolbarExtender = MakeShareable(new FExtender);
-	ToolbarExtension = ToolbarExtender->AddToolBarExtension("Game", EExtensionHook::After, PluginCommands, FToolBarExtensionDelegate::CreateLambda([this](FToolBarBuilder& ToolbarBuilder) { AddToolbarExtension(ToolbarBuilder); })	);
-	ExtensionManager->AddExtender(ToolbarExtender);
+		FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
+		ExtensionManager = LevelEditorModule.GetToolBarExtensibilityManager();
+		ToolbarExtender = MakeShareable(new FExtender);
+		ToolbarExtension = ToolbarExtender->AddToolBarExtension("Game", EExtensionHook::After, PluginCommands, FToolBarExtensionDelegate::CreateLambda([this](FToolBarBuilder& ToolbarBuilder) { AddToolbarExtension(ToolbarBuilder); })	);
+		ExtensionManager->AddExtender(ToolbarExtender);
+	}
 #endif
 
 #ifdef OPTICK_UE4_GPU
@@ -280,11 +283,14 @@ void FOptickPlugin::ShutdownModule()
 	StopCapture();
 
 #if WITH_EDITOR
-	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
-	// we call this function before unloading the module.
-	FOptickStyle::Shutdown();
+	if (GIsEditor)
+	{
+		// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
+		// we call this function before unloading the module.
+		FOptickStyle::Shutdown();
 
-	FOptickCommands::Unregister();
+		FOptickCommands::Unregister();
+	}
 #endif
 
 	UE_LOG(OptickLog, Display, TEXT("OptickPlugin UnLoaded!"));
