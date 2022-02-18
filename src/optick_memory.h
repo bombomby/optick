@@ -136,7 +136,7 @@ namespace Optick
 			Allocator(const Allocator<U>&) {}
 			template<typename U> struct rebind { typedef Allocator<U> other; };
 
-			typename std::allocator<T>::pointer allocate(typename std::allocator<T>::size_type n, typename std::allocator<void>::const_pointer = 0)
+			typename std::allocator<T>::pointer allocate(typename std::allocator<T>::size_type n)
 			{
 				return reinterpret_cast<typename std::allocator<T>::pointer>(Memory::Alloc(n * sizeof(T)));
 			}

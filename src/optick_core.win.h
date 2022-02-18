@@ -1325,7 +1325,7 @@ CaptureStatus::Type ETW::Start(Mode::Type mode, int frequency, const ThreadList&
 
 		if (mode & Mode::AUTOSAMPLING)
 		{
-			TRACE_PROFILE_INTERVAL itnerval = { 0 };
+			TRACE_PROFILE_INTERVAL itnerval = { 0, 0 };
 			memset(&itnerval, 0, sizeof(TRACE_PROFILE_INTERVAL));
 			int step = 10000 * 1000 / frequency; // 1ms = 10000 steps
 			itnerval.Interval = step; // std::max(1221, std::min(step, 10000));
@@ -1615,11 +1615,18 @@ struct SYSTEM_MODULE_INFORMATION
 
 #pragma warning (push)
 #pragma warning(disable : 4200)
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wc99-extensions"
+#endif
 struct MODULE_LIST
 {
 	DWORD dwModules;
 	SYSTEM_MODULE_INFORMATION pModulesInfo[];
 };
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 #pragma warning (pop)
 
 void WinSymbolEngine::InitSystemModules()
@@ -1693,7 +1700,7 @@ void WinSymbolEngine::InitApplicationModules()
 
 	for (int i = 0; i < moduleCount; ++i)
 	{
-		MODULEINFO info = { 0 };
+		MODULEINFO info = { 0, 0, 0 };
 		if (GetModuleInformation(processHandle, hModules[i], &info, sizeof(MODULEINFO)))
 		{
 			char name[MAX_PATH] = "UnknownModule";
