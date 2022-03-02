@@ -31,8 +31,9 @@ namespace Profiler.Data
 		public const UInt32 NETWORK_PROTOCOL_VERSION_24 = 24; // Adding Modules
 		public const UInt32 NETWORK_PROTOCOL_VERSION_25 = 25; // Adding ThreadID to the frame list
 		public const UInt32 NETWORK_PROTOCOL_VERSION_26 = 26; // Adding FrameType to the FrameHeader
+		public const UInt32 NETWORK_PROTOCOL_VERSION_27 = 27; // Adding Counters
 
-		public const UInt32 NETWORK_PROTOCOL_VERSION = NETWORK_PROTOCOL_VERSION_26;
+		public const UInt32 NETWORK_PROTOCOL_VERSION = NETWORK_PROTOCOL_VERSION_27;
 		public const UInt32 NETWORK_PROTOCOL_MIN_VERSION = NETWORK_PROTOCOL_VERSION_18;
 
 		public const UInt16 OPTICK_APP_ID = 0xB50F;
@@ -53,7 +54,7 @@ namespace Profiler.Data
 			TagsPack,
 			CallstackDescriptionBoard,
 			CallstackPack,
-			Reserved_1,
+			CountersPack,
 			Reserved_2,
 			Reserved_3,
 			Reserved_4,

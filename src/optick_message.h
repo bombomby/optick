@@ -31,7 +31,7 @@
 namespace Optick
 {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-static const uint32 NETWORK_PROTOCOL_VERSION = 26;
+static const uint32 NETWORK_PROTOCOL_VERSION = 27;
 static const uint16 NETWORK_APPLICATION_ID = 0xB50F;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct DataResponse
@@ -49,7 +49,7 @@ struct DataResponse
 		TagsPack = 8,					// Pack of tags
 		CallstackDescriptionBoard = 9,	// DescriptionBoard with resolved function addresses
 		CallstackPack = 10,				// Pack of CallStacks
-		Reserved_1 = 11,				
+		Counters = 11,				
 		Reserved_2 = 12,				
 		Reserved_3 = 13,				
 		Reserved_4 = 14,				

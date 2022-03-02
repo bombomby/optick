@@ -47,7 +47,9 @@ namespace Profiler.Controls
         public Platform.Connection LastConnection { get; set; }
 		public ThreadViewSettings ThreadSettings { get; set; } = new ThreadViewSettings();
 
-        public string TempDirectoryPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Optick\\Temp\\");
+		public string PlotPanelsSettingsFile { get; set; }
+
+		public string TempDirectoryPath => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Optick\\Temp\\");
 
         public LocalSettings()
 		{

@@ -133,6 +133,7 @@ namespace Profiler.Data
 		public SummaryPack Summary { get; set; }
 		public FramePack Frames { get; set; }
 		public SynchronizationMap Synchronization { get; set; }
+		public List<RawCounterData> RawCounters { get; set; } 
 		public List<DataResponse> Responses { get; set; }
 
 		public bool IsCoreDataGenerated { get; set; }
@@ -188,6 +189,7 @@ namespace Profiler.Data
 
 			Fibers = new List<ThreadData>();
 			Responses = new List<DataResponse>();
+			RawCounters = new List<RawCounterData>();
 
 			if (board.Response != null)
 				Responses.Add(board.Response);
@@ -467,6 +469,13 @@ namespace Profiler.Data
 			if (0 <= pack.ThreadIndex && pack.ThreadIndex < Threads.Count)
 				Threads[pack.ThreadIndex].TagsPack = pack;
 		}
+		
+		public void Add(RawCountersPack pack)
+		{
+			Responses.Add(pack.Response);
+			if (0 <= pack.ThreadIndex && pack.ThreadIndex < Threads.Count)
+				RawCounters.AddRange(pack.Counters);
+		}
 
 		public ThreadData GetThread(UInt64 threadID)
 		{
@@ -566,12 +575,30 @@ namespace Profiler.Data
 			groups[group.Board.ID] = group;
 		}
 
-		public void Flush()
+		public Dictionary<string, CounterModel> Flush()
 		{
+			var counters = new Dictionary<string, CounterModel>();
+			
 			foreach (FrameGroup group in groups.Values)
 			{
 				group.UpdateEventsSynchronization();
 				group.Frames.FinishUpdate();
+
+				foreach (var counterGroup in group.RawCounters.GroupBy(c => c.Description, c => c))
+				{
+					var measurements = counterGroup.Select(rawCounter =>
+					{
+						var time = rawCounter.Time.Start - group.Board.TimeSlice.Start;
+						var timeMs = group.Board.TimeSettings.TicksToMs * time;
+						return new CounterModel.Measurement(rawCounter.Value, timeMs);
+						// Right now counters from all threads are merged together 
+						// In future it can be split by thread id 
+						// so we could filter what thread we are interested in
+					}).OrderBy(g => g.RelativeMSec).ToList();
+					var counter = new CounterModel(counterGroup.Key.FullName, counterGroup.Key.FullName, measurements);
+
+					counters.Add(counterGroup.Key.FullName, counter);
+				}
 
 				FrameList frameList = group.Frames[FrameList.Type.CPU];
 				foreach (EventFrame frame in frameList.Frames)
@@ -580,6 +607,8 @@ namespace Profiler.Data
 
 			groups.Clear();
 			summaries.Clear();
+
+			return counters;
 		}
 
 		public void UpdateName(String name, bool force = false)
@@ -713,7 +742,18 @@ namespace Profiler.Data
 						}
 						break;
 					}
+				case DataResponse.Type.CountersPack:
+				{
+					int id = response.Reader.ReadInt32();
+					if (groups.ContainsKey(id))
+					{
+						FrameGroup group = groups[id];
 
+						var counters = new RawCountersPack(response, group);
+						group.Add(counters);
+					}
+					break;
+				}
 
 				case DataResponse.Type.FramesPack:
 					{

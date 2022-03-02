@@ -19,12 +19,14 @@ namespace Profiler.Controls
 
 	public class FocusFrameEventArgs : RoutedEventArgs
 	{
-		public Data.Frame Frame { get; set; }
-		public IDurable Focus { get; set; }
+		public Data.Frame Frame { get; }
+		public bool FocusPlot { get; }
+		public IDurable Focus { get; }
 
-		public FocusFrameEventArgs(RoutedEvent routedEvent, Data.Frame frame, IDurable focus = null) : base(routedEvent)
+		public FocusFrameEventArgs(RoutedEvent routedEvent, Data.Frame frame, bool focusPlot = true, IDurable focus = null) : base(routedEvent)
 		{
 			Frame = frame;
+			FocusPlot = focusPlot;
 			Focus = focus;
 		}
 

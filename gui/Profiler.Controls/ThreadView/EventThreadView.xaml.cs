@@ -516,7 +516,7 @@ namespace Profiler.Controls
 			EventFrame focusFrame = frame;
 			if (node != null && node.Entry.CompareTo(frame.Header) != 0)
 				focusFrame = new EventFrame(frame, node);
-			RaiseEvent(new FocusFrameEventArgs(GlobalEvents.FocusFrameEvent, focusFrame, null));
+			RaiseEvent(new FocusFrameEventArgs(GlobalEvents.FocusFrameEvent, focusFrame));
 		}
 
 		private void Row_EventNodeHover(Point mousePos, Rect rect, ThreadRow row, EventNode node)

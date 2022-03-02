@@ -25,6 +25,7 @@
         <ControlsViewModel:FunctionInstanceViewModel x:Key="FunctionInstanceVM" Origin="IndividualCalls" Title="Per Call Statistics" />
         <ControlsViewModel:AddressBarViewModel x:Key="AddressBarVM" />
         <ControlsViewModel:CaptureSettingsViewModel x:Key="CaptureSettingsVM" />
+        <ControlsViewModel:PlotPanelsSettingsViewModel x:Key="CountersSettingsVM" />
         <BaseControlsViewModel:SamplingViewModel x:Key="FunctionSamplingVM" Reason="AutoSample" />
         <BaseControlsViewModel:SamplingViewModel x:Key="SysCallsSamplingVM" Reason="SysCall" />
     </UserControl.Resources>
@@ -83,6 +84,9 @@
                     <ToggleButton x:Name="SettingsButton" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Open Capture Settings" Margin="1,0,0,0" Padding="-4">
                         <ContentControl Style="{StaticResource appbar_settings}" />
                     </ToggleButton>
+                    <ToggleButton x:Name="CountersButton" HorizontalAlignment="Left"  VerticalAlignment="Center" ToolTip="Open Counters Settings" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" Padding="0">
+                        <ContentControl  Style="{StaticResource appbar_counters}" />
+                    </ToggleButton>
                     <Button x:Name="OpenButton" Command="ApplicationCommands.Open" HorizontalAlignment="Left" Width="{StaticResource DefaultButtonSize}" Height="{StaticResource DefaultButtonSize}" VerticalAlignment="Center" ToolTip="Open Saved Session" Margin="1,0,0,0" Padding="-6">
                         <ContentControl Style="{StaticResource appbar_folder_open}" />
                     </Button>
@@ -126,7 +130,7 @@
                     </DataTemplate>
                 </xcad:DockingManager.DocumentHeaderTemplate>
                 <xcad:LayoutRoot x:Name="_layoutRoot">
-                    <xcad:LayoutPanel Orientation="Vertical">
+                    <xcad:LayoutPanel Orientation="Vertical" x:Name="mainPanel">
                         <xcad:LayoutAnchorablePaneGroup DockHeight="2*">
                             <xcad:LayoutAnchorablePane x:Name="LayoutDocumentPane">
                                 <xcad:LayoutAnchorable ContentId="document1" Title="Threads" >
@@ -175,6 +179,10 @@
                                 </xcad:LayoutAnchorablePane>
                             </xcad:LayoutAnchorablePaneGroup>
                         </xcad:LayoutPanel>
+                        <xcad:LayoutAnchorablePaneGroup DockHeight="2*" x:Name="PlotsPaneGroup">
+                            <xcad:LayoutAnchorablePane x:Name="PlotsPane">
+                            </xcad:LayoutAnchorablePane>
+                        </xcad:LayoutAnchorablePaneGroup>
                     </xcad:LayoutPanel>
                 </xcad:LayoutRoot>
             </xcad:DockingManager>
@@ -195,6 +203,12 @@
         <Popup Width="Auto" Height="Auto" Placement="Bottom" PlacementTarget="{Binding ElementName=SettingsButton}" IsOpen="{Binding IsChecked, ElementName=SettingsButton}" StaysOpen="False">
             <Border BorderThickness="1" BorderBrush="LightGray" Background="{StaticResource OptickBackground}">
                 <ControlsView:CaptureSettingsView DataContext="{StaticResource CaptureSettingsVM}" Margin="1" />
+            </Border>
+        </Popup>
+        
+        <Popup Width="Auto" Height="Auto" Placement="Bottom" PlacementTarget="{Binding ElementName=CountersButton}" IsOpen="{Binding IsChecked, ElementName=CountersButton}" StaysOpen="False">
+            <Border BorderThickness="1" BorderBrush="LightGray" Background="{StaticResource OptickBackground}">
+                <ControlsView:PlotPanelsSettingsView DataContext="{StaticResource CountersSettingsVM}" Margin="1" PlotPanelsSettingsLoaded="OnPlotPanelsSettingsLoaded" CreatePanel="OnCreatePanel"  />
             </Border>
         </Popup>
         

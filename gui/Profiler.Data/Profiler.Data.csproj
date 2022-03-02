@@ -49,6 +49,7 @@
     <Compile Include="Callstack.cs" />
     <Compile Include="Capture.cs" />
     <Compile Include="CaptureSettings.cs" />
+    <Compile Include="RawCounterData.cs" />
     <Compile Include="Durationable.cs" />
     <Compile Include="EventBoard.cs" />
     <Compile Include="EventData.cs" />

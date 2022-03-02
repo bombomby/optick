@@ -167,6 +167,9 @@ typedef MemoryPool<EventData, 1024> EventBuffer;
 typedef MemoryPool<const EventData*, 32> CategoryBuffer;
 typedef MemoryPool<SyncData, 1024> SynchronizationBuffer;
 typedef MemoryPool<FiberSyncData, 1024> FiberSyncBuffer;
+
+typedef MemoryPool<CounterData, 1024> CounterDataBuffer;
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 typedef OptickString<32> ShortString;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -236,6 +239,7 @@ struct EventStorage
 	TagU64Buffer tagU64Buffer;
 	TagPointBuffer tagPointBuffer;
 	TagStringBuffer tagStringBuffer;
+    CounterDataBuffer counterBuffer;
 
 	struct GPUStorage
 	{
@@ -270,6 +274,7 @@ struct EventStorage
 		fiberSyncBuffer.Clear(preserveContent);
 		gpuStorage.Clear(preserveContent);
 		ClearTags(preserveContent);
+        ClearCounters(preserveContent);
 
 		while (pushPopEventStackIndex)
 		{
@@ -287,6 +292,11 @@ struct EventStorage
 		tagPointBuffer.Clear(preserveContent);
 		tagStringBuffer.Clear(preserveContent);
 	}
+
+    void ClearCounters(bool preserveContent)
+    {
+        counterBuffer.Clear(preserveContent);
+    } 
 
 	void Reset()
 	{
@@ -515,6 +525,7 @@ class Core
 
 	void DumpEvents(EventStorage& entry, const EventTime& timeSlice, ScopeData& scope);
 	void DumpTags(EventStorage& entry, ScopeData& scope);
+    void DumpCounters(EventStorage& entry, ScopeData& scope);
 	void DumpThread(ThreadEntry& entry, const EventTime& timeSlice, ScopeData& scope);
 	void DumpFiber(FiberEntry& entry, const EventTime& timeSlice, ScopeData& scope);
 
