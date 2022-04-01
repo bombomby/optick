@@ -1104,7 +1104,7 @@ void Core::DumpFrames(uint32 mode)
 
 		// We can free some memory now to unlock space for callstack serialization
 		DumpProgress("Deallocating memory for SymbolEngine");
-		Memory::Free(symbolEngine);
+		Memory::Delete(symbolEngine);
 		symbolEngine = nullptr;
 
 		DumpProgress("Serializing callstacks");
