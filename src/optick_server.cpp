@@ -146,7 +146,7 @@ class Socket
 
 	void Close()
 	{
-		if (!IsValidSocket(listenSocket))
+		if (IsValidSocket(listenSocket))
 		{
 			CloseSocket(listenSocket);
 		}
@@ -170,7 +170,7 @@ class Socket
 	{
 		std::lock_guard<std::recursive_mutex> lock(socketLock);
 
-		if (!IsValidSocket(acceptSocket))
+		if (IsValidSocket(acceptSocket))
 		{
 			CloseSocket(acceptSocket);
 		}
