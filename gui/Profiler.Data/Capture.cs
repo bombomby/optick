@@ -100,12 +100,12 @@ namespace Profiler.Data
 			return Create(new FileStream(fileName, FileMode.Create));
 		}
 
-		public static Stream Create(Stream stream)
+		public static Stream Create(Stream stream, bool leaveStreamOpen = false)
 		{
 			OptickHeader header = new OptickHeader();
 			header.Write(stream);
 			if (header.IsZip)
-				return new GZipStream(stream, CompressionLevel.Fastest);
+				return new GZipStream(stream, CompressionLevel.Fastest, leaveStreamOpen);
 			else
 				return stream;
 		}

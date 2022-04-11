@@ -119,7 +119,7 @@ namespace Profiler.Data
 	}
 
 
-	public class FrameGroup
+	public class FrameGroup : ISavable
 	{
 		public String Name { get; set; }
 		public SysCallBoard SysCallsBoard { get; protected set; }
@@ -134,6 +134,7 @@ namespace Profiler.Data
 		public FramePack Frames { get; set; }
 		public SynchronizationMap Synchronization { get; set; }
 		public List<DataResponse> Responses { get; set; }
+		public ISavable OwningSavable { get; set; }
 
 		public bool IsCoreDataGenerated { get; set; }
 
@@ -173,11 +174,12 @@ namespace Profiler.Data
 			return threads;
 		}
 
-		public FrameGroup(EventDescriptionBoard board)
+		public FrameGroup(EventDescriptionBoard board, ISavable owningSavable = null)
 		{
 			//System.Diagnostics.Debug.Assert(board != null && board.Response != null, "Invalid EventDescriptionBoard response");
 
 			Board = board;
+			OwningSavable = owningSavable;
 
 			if (board.Threads != null)
 			{
@@ -589,7 +591,7 @@ namespace Profiler.Data
 					group.Name = name;
 		}
 
-		public void Add(DataResponse response)
+		public void Add(DataResponse response, ISavable owningSavable = null)
 		{
 			switch (response.ResponseType)
 			{
@@ -603,7 +605,7 @@ namespace Profiler.Data
 				case DataResponse.Type.FrameDescriptionBoard:
 					{
 						EventDescriptionBoard board = EventDescriptionBoard.Read(response);
-						FrameGroup group = new FrameGroup(board);
+						FrameGroup group = new FrameGroup(board, owningSavable);
 
 						AddGroup(group);
 

@@ -59,6 +59,7 @@
     <Compile Include="FrameCollection.cs" />
     <Compile Include="FunctionStats.cs" />
     <Compile Include="Communication\Message.cs" />
+    <Compile Include="ISavable.cs" />
     <Compile Include="Mode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResponseHolder.cs" />
