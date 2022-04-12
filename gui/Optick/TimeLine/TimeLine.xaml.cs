@@ -38,7 +38,7 @@ namespace Profiler
 	/// <summary>
 	/// Interaction logic for TimeLine.xaml
 	/// </summary>
-	public partial class TimeLine : UserControl, ISavable
+	public partial class TimeLine : UserControl
 	{
 		FrameCollection frames = new FrameCollection();
 		Thread socketThread = null;
@@ -140,8 +140,6 @@ namespace Profiler
 				using (Stream stream = File.OpenRead(path))
 				{
 					T trace = new T();
-					trace.MainGroup.OwningSavable = this;
-
 					trace.Init(path, stream);
 					frames.AddGroup(trace.MainGroup);
 					frames.Add(trace.MainFrame);
@@ -241,7 +239,7 @@ namespace Profiler
 					default:
 						lock (frames)
 						{
-							frames.Add(response, this);
+							frames.Add(response);
 							//ScrollToEnd();
 						}
 						break;

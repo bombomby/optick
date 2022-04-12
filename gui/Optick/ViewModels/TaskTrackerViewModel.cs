@@ -439,9 +439,7 @@ namespace Profiler.ViewModels
 					Application.Current.Dispatcher.Invoke(() => { capture.IsUploading = true; capture.Status = "Saving capture..."; });
 
 					Stream captureStream = Capture.Create(capture.Attachment.Data, leaveStreamOpen: true);
-					ISavable targetSavable = group.OwningSavable ?? group;
-
-					targetSavable.Save(captureStream);
+					group.Save(captureStream);
 					if (captureStream != capture.Attachment.Data)
 					{
 						// If Capture.Create made a new stream, Dispose that to ensure
