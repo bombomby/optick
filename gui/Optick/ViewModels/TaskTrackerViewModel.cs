@@ -433,10 +433,20 @@ namespace Profiler.ViewModels
 			{
 				capture.Attachment.Name = "Capture.opt";
 				capture.Attachment.Data = new MemoryStream();
+				capture.IsUploading = true;
 				Task.Run(()=> 
 				{
 					Application.Current.Dispatcher.Invoke(() => { capture.IsUploading = true; capture.Status = "Saving capture..."; });
-					group.Save(Capture.Create(capture.Attachment.Data));
+
+					Stream captureStream = Capture.Create(capture.Attachment.Data, leaveStreamOpen: true);
+					group.Save(captureStream);
+					if (captureStream != capture.Attachment.Data)
+					{
+						// If Capture.Create made a new stream, Dispose that to ensure
+						// it finishes writing to the main MemoryStream
+						captureStream.Dispose();
+					}
+
 					Application.Current.Dispatcher.Invoke(() => { capture.IsUploading = false; capture.Status = String.Empty; capture.Size = capture.Attachment.Data.Length; });
 				});
 			}
