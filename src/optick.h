@@ -896,6 +896,8 @@ struct OptickApp
 													case Optick::FrameType::CPU:								\
 														::Optick::Update();										\
 														break;													\
+													default:													\
+														break;													\
 												}																\
 												::Optick::BeginFrame(FRAME_TYPE);								\
 												::Optick::Event OPTICK_CONCAT(autogen_event_, __LINE__)(*::Optick::GetFrameDescription(FRAME_TYPE));

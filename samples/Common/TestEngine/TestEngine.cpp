@@ -5,6 +5,7 @@
 #include <math.h>
 #include <vector>
 #include <cstring>
+#include <cstdio>
 
 #if OPTICK_ENABLE_FIBERS
 #include <MTProfilerEventListener.h>
