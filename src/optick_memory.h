@@ -370,8 +370,8 @@ namespace Optick
 			}
 			reference operator*() { return (reference)chunkPtr->data[chunkIndex]; }
 			pointer operator->() { return &chunkPtr->data[chunkIndex]; }
-			bool operator==(const self_type& rhs) { return (chunkPtr == rhs.chunkPtr) && (chunkIndex == rhs.chunkIndex); }
-			bool operator!=(const self_type& rhs) { return (chunkPtr != rhs.chunkPtr) || (chunkIndex != rhs.chunkIndex); }
+			bool operator==(const self_type& rhs) const { return (chunkPtr == rhs.chunkPtr) && (chunkIndex == rhs.chunkIndex); }
+			bool operator!=(const self_type& rhs) const { return (chunkPtr != rhs.chunkPtr) || (chunkIndex != rhs.chunkIndex); }
 		private:
 			const Chunk* chunkPtr;
 			size_t chunkIndex;
