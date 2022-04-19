@@ -41,6 +41,8 @@
 
 namespace Optick
 {
+    template <class T> void SafeRelease(T **ppT);
+
 	class GPUProfilerD3D12 : public GPUProfiler
 	{
 		struct Frame
@@ -138,17 +140,15 @@ namespace Optick
 
 	GPUProfilerD3D12::~GPUProfilerD3D12()
 	{
-		WaitForFrame(frameNumber - 1);
+        for (NodePayload* payload : nodePayloads)
+            Memory::Delete(payload);
+        nodePayloads.clear();
 
-		for (NodePayload* payload : nodePayloads)
-			Memory::Delete(payload);
-		nodePayloads.clear();
+        for (Node* node : nodes)
+            Memory::Delete(node);
+        nodes.clear();
 
-		for (Node* node : nodes)
-			Memory::Delete(node);
-		nodes.clear();
-
-		SafeRelease(&queryBuffer);
+        SafeRelease(&queryBuffer);
 	}
 
 	void GPUProfilerD3D12::InitDevice(ID3D12Device* pDevice, ID3D12CommandQueue** pCommandQueues, uint32_t numCommandQueues)

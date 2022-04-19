@@ -1652,6 +1652,18 @@ void Core::Shutdown()
 	symbolEngine = nullptr;
 
 	EventDescriptionBoard::Get().Shutdown();
+
+    if (gpuProfiler)
+    {
+        Memory::Delete(gpuProfiler);
+        gpuProfiler = nullptr;
+    }
+
+    if (symbolEngine)
+    {
+        Memory::Delete(symbolEngine);
+        symbolEngine = nullptr;
+    }
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 Core::~Core()
