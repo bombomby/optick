@@ -29,6 +29,7 @@
 #if USE_OPTICK
 #include <stdint.h>
 #include <stddef.h>
+#include <math.h>
 
 #if defined(_MSC_VER)
 #	define OPTICK_MSVC (1)
@@ -602,6 +603,15 @@ struct OPTICK_API SyncData : public EventTime
 	uint8_t core;
 	int8_t reason;
 };
+
+struct OPTICK_API CounterData {
+    int64_t timestamp;
+    float_t value;
+
+    const EventDescription* description;
+	static void Add(const EventDescription& description, float_t value);
+};
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 struct OPTICK_API FiberSyncData : public EventTime
 {
@@ -1000,6 +1010,10 @@ struct OptickApp
 #define OPTICK_STORAGE_PUSH(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START)							if (::Optick::IsActive()) { ::Optick::Event::Push(STORAGE, DESCRIPTION, CPU_TIMESTAMP_START); }
 #define OPTICK_STORAGE_POP(STORAGE, CPU_TIMESTAMP_FINISH)										if (::Optick::IsActive()) { ::Optick::Event::Pop(STORAGE, CPU_TIMESTAMP_FINISH); }
 
+
+#define OPTICK_COUNTER(NAME, VALUE) static ::Optick::EventDescription* OPTICK_CONCAT(autogen_description_, __LINE__) = nullptr; \
+										if (OPTICK_CONCAT(autogen_description_, __LINE__) == nullptr) OPTICK_CONCAT(autogen_description_, __LINE__) = ::Optick::EventDescription::Create( NAME, __FILE__, __LINE__ ); \
+										::Optick::CounterData::Add(*OPTICK_CONCAT(autogen_description_, __LINE__), VALUE);		\
 
 // Registers state change callback
 // If callback returns false - the call is repeated the next frame

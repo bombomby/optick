@@ -17,19 +17,11 @@ using System.Net;
 using System.IO;
 using System.Windows.Threading;
 using Profiler.Data;
-using Frame = Profiler.Data.Frame;
-using Microsoft.Win32;
-using System.Xml;
-using System.Net.Cache;
-using System.Reflection;
-using System.Diagnostics;
-using System.Web;
-using System.Net.NetworkInformation;
-using System.ComponentModel;
-using System.IO.Compression;
 using System.Threading.Tasks;
 using System.Security;
+using Microsoft.Win32;
 using Profiler.Controls;
+using Frame = Profiler.Data.Frame;
 
 namespace Profiler
 {
@@ -40,6 +32,8 @@ namespace Profiler
 	/// </summary>
 	public partial class TimeLine : UserControl
 	{
+		private bool _scrollingToEnd;
+		
 		FrameCollection frames = new FrameCollection();
 		Thread socketThread = null;
 
@@ -52,6 +46,8 @@ namespace Profiler
 				return frames;
 			}
 		}
+		
+		public Dictionary<string, CounterModel> Counters { get; private set; } = new Dictionary<string, CounterModel>();
 
 		public TimeLine()
 		{
@@ -127,7 +123,10 @@ namespace Profiler
 			}
 
 			frames.UpdateName(name);
-			frames.Flush();
+			Counters = frames.Flush();
+			if (frames.Count > 0)
+				RaiseEvent(new DataLoadedEventArgs());
+
 			ScrollToEnd();
 
 			return true;
@@ -206,7 +205,10 @@ namespace Profiler
 						StatusText.Visibility = System.Windows.Visibility.Collapsed;
 						lock (frames)
 						{
-							frames.Flush();
+							Counters = frames.Flush();
+							if (frames.Count > 0)
+								RaiseEvent(new DataLoadedEventArgs());
+							
 							ScrollToEnd();
 						}
 						break;
@@ -257,8 +259,10 @@ namespace Profiler
 		{
 			if (frames.Count > 0)
 			{
+				_scrollingToEnd = true;
 				frameList.SelectedItem = frames[frames.Count - 1];
 				frameList.ScrollIntoView(frames[frames.Count - 1]);
+				_scrollingToEnd = false;
 			}
 		}
 
@@ -278,7 +282,7 @@ namespace Profiler
 		#region FocusFrame
 		private void FocusOnFrame(Data.Frame frame)
 		{
-			FocusFrameEventArgs args = new FocusFrameEventArgs(GlobalEvents.FocusFrameEvent, frame);
+			FocusFrameEventArgs args = new FocusFrameEventArgs(GlobalEvents.FocusFrameEvent, frame, focusPlot: !_scrollingToEnd);
 			RaiseEvent(args);
 		}
 
@@ -310,14 +314,23 @@ namespace Profiler
 			{
 			}
 		}
+		
+		public class DataLoadedEventArgs : RoutedEventArgs
+		{
+			public DataLoadedEventArgs() : base(DataLoadedEvent)
+			{
+			}
+		}
 
 		public delegate void ShowWarningEventHandler(object sender, ShowWarningEventArgs e);
 		public delegate void NewConnectionEventHandler(object sender, NewConnectionEventArgs e);
 		public delegate void CancelConnectionEventHandler(object sender, CancelConnectionEventArgs e);
+		public delegate void DataLoadedEventHandler(object sender, DataLoadedEventArgs e);
 
 		public static readonly RoutedEvent ShowWarningEvent = EventManager.RegisterRoutedEvent("ShowWarning", RoutingStrategy.Bubble, typeof(ShowWarningEventArgs), typeof(TimeLine));
 		public static readonly RoutedEvent NewConnectionEvent = EventManager.RegisterRoutedEvent("NewConnection", RoutingStrategy.Bubble, typeof(NewConnectionEventHandler), typeof(TimeLine));
 		public static readonly RoutedEvent CancelConnectionEvent = EventManager.RegisterRoutedEvent("CancelConnection", RoutingStrategy.Bubble, typeof(CancelConnectionEventHandler), typeof(TimeLine));
+		public static readonly RoutedEvent DataLoadedEvent = EventManager.RegisterRoutedEvent("DataLoaded", RoutingStrategy.Bubble, typeof(DataLoadedEventHandler), typeof(TimeLine));
 
 		public event RoutedEventHandler FocusFrame
 		{
@@ -342,6 +355,13 @@ namespace Profiler
 			add { AddHandler(CancelConnectionEvent, value); }
 			remove { RemoveHandler(CancelConnectionEvent, value); }
 		}
+
+		public event RoutedEventHandler DataLoaded
+		{
+			add { AddHandler(DataLoadedEvent, value); }
+			remove { RemoveHandler(DataLoadedEvent, value); }
+		}
+		
 		#endregion
 
 		private void frameList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -388,7 +408,7 @@ namespace Profiler
 
 		public String Save()
 		{
-			SaveFileDialog dlg = new SaveFileDialog();
+			var dlg = new SaveFileDialog();
 			dlg.Filter = "Optick Performance Capture (*.opt)|*.opt";
 			dlg.Title = "Where should I save profiler results?";
 

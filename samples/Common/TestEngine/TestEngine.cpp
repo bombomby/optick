@@ -193,6 +193,12 @@ void Engine::UpdateMessages()
 {
 	OPTICK_CATEGORY("UpdateMessages", Optick::Category::Network);
 	SlowFunction<REPEAT_COUNT>();
+
+	float_t messageCount = (float_t)(rand() % 10000);
+	OPTICK_COUNTER("Network/Message count", messageCount);
+
+	float_t messageSize = (float_t)(rand() % 10000);
+	OPTICK_COUNTER("Network/AVG Message size", messageSize);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Engine::UpdateLogic()
@@ -246,6 +252,9 @@ void Engine::Draw()
 
 	// Registering a storage - could be done in any place
 	static Optick::EventStorage* GPUStorage = Optick::RegisterStorage("GPU");
+
+	float_t trianglesCount = (float_t)(rand() % 10000);
+	OPTICK_COUNTER("Render/Triangles Count", trianglesCount);
 
 	// Creating a shared event-description
 	static Optick::EventDescription* GPUFrame = Optick::EventDescription::CreateShared("GPU Frame");

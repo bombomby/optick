@@ -192,6 +192,11 @@ OutputDataStream& operator<<(OutputDataStream& stream, const TagData<T>& ob)
 	return stream << ob.timestamp << ob.description->index << ob.data;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+OutputDataStream& operator<<(OutputDataStream& stream, const CounterData& ob)
+{
+    return stream << ob.timestamp << ob.description->index << ob.value;
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream& operator<<(OutputDataStream& os, const Symbol * const symbol)
 {
 	OPTICK_VERIFY(symbol, "Can't serialize NULL symbol!", return os);
@@ -322,6 +327,16 @@ void Event::Push(EventStorage* storage, const EventDescription* description, int
 void Event::Pop(EventStorage* storage, int64_t timestampFinish)
 {
 	PopEvent(storage, timestampFinish);
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void CounterData::Add(const EventDescription& description, float_t value)
+{
+	if (EventStorage* storage = Core::storage) {
+		CounterData& data = storage->counterBuffer.Add();
+		data.description = &description;
+		data.timestamp = GetHighPrecisionTime();
+		data.value = value;
+	}
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventData* GPUEvent::Start(const EventDescription& description)
@@ -951,6 +966,19 @@ void Core::DumpTags(EventStorage& entry, ScopeData& scope)
 		entry.ClearTags(false);
 	}
 }
+
+void Core::DumpCounters(EventStorage& entry, ScopeData& scope) {
+    if (entry.counterBuffer.IsEmpty())
+        return;
+
+    OutputDataStream countersStream;
+    countersStream << scope.header.boardNumber << scope.header.threadNumber;
+    countersStream << entry.counterBuffer;
+    Server::Get().Send(DataResponse::Counters, countersStream);
+
+    entry.ClearCounters(false);
+
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void Core::DumpThread(ThreadEntry& entry, const EventTime& timeSlice, ScopeData& scope)
 {
@@ -962,6 +990,7 @@ void Core::DumpThread(ThreadEntry& entry, const EventTime& timeSlice, ScopeData&
 	DumpProgressFormatted("Serializing %s", entry.description.name.c_str());
 	DumpEvents(entry.storage, timeSlice, scope);
 	DumpTags(entry.storage, scope);
+    DumpCounters(entry.storage, scope);
 	OPTICK_ASSERT(entry.storage.fiberSyncBuffer.IsEmpty(), "Fiber switch events in native threads?");
 }
 

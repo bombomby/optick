@@ -133,6 +133,9 @@
     <Reference Include="Autofac, Version=4.8.1.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\packages\Autofac.4.8.1\lib\net45\Autofac.dll</HintPath>
     </Reference>
+    <Reference Include="ColorPicker, Version=3.2.1.0, Culture=neutral, PublicKeyToken=1c61eec504ce2276, processorArchitecture=MSIL">
+      <HintPath>..\packages\PixiEditor.ColorPicker.3.2.0\lib\net451\ColorPicker.dll</HintPath>
+    </Reference>
     <Reference Include="ControlzEx, Version=3.0.2.4, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ControlzEx.3.0.2.4\lib\net45\ControlzEx.dll</HintPath>
     </Reference>
@@ -170,6 +173,9 @@
     </Reference>
     <Reference Include="MahApps.Metro, Version=1.6.5.1, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MahApps.Metro.1.6.5\lib\net46\MahApps.Metro.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Xaml.Behaviors, Version=1.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Xaml.Behaviors.Wpf.1.1.31\lib\net45\Microsoft.Xaml.Behaviors.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
@@ -281,6 +287,15 @@
     <Compile Include="Controls\TagsControl.xaml.cs">
       <DependentUpon>TagsControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converters\IsNotEmptyConverter.cs" />
+    <Compile Include="Converters\IsNotNullConverter.cs" />
+    <Compile Include="PlotPanelsSettingsStorage.cs" />
+    <Compile Include="Plots\PlotPanelsSettingsViewModel.cs" />
+    <Compile Include="Plots\PlotsViewModel.cs" />
+    <Compile Include="Plots\SelectCounterViewModel.cs" />
+    <Compile Include="Plots\SelectedCounterViewModel.cs" />
+    <Compile Include="Plots\Units.cs" />
+    <Compile Include="Plots\UnitsViewModel.cs" />
     <Compile Include="SearchBox.xaml.cs">
       <DependentUpon>SearchBox.xaml</DependentUpon>
     </Compile>
@@ -297,6 +312,12 @@
     </Compile>
     <Compile Include="Views\CaptureSettingsView.xaml.cs">
       <DependentUpon>CaptureSettingsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PlotPanelsSettingsView.xaml.cs">
+      <DependentUpon>PlotPanelsSettingsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PlotView.xaml.cs">
+      <DependentUpon>PlotView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\FunctionDescriptionView.xaml.cs">
       <DependentUpon>FunctionDescriptionView.xaml</DependentUpon>
@@ -397,6 +418,8 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\PlotPanelsSettingsView.xaml" />
+    <Page Include="Views\PlotView.xaml" />
     <Page Include="Views\FunctionDescriptionView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -574,6 +597,14 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Bug.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="TimeLine\Icons\draw.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="counters.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\InteractiveDataDisplay.WPF\InteractiveDataDisplay.WPF.csproj">

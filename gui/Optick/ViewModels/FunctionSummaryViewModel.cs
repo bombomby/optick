@@ -103,7 +103,7 @@ namespace Profiler.ViewModels
 				if (maxEntry != null)
 				{
 					EventNode maxNode = maxEntry.Frame.Root.FindNode(maxEntry);
-					parent.RaiseEvent(new FocusFrameEventArgs(GlobalEvents.FocusFrameEvent, new EventFrame(maxEntry.Frame, maxNode), null));
+					parent.RaiseEvent(new FocusFrameEventArgs(GlobalEvents.FocusFrameEvent, new EventFrame(maxEntry.Frame, maxNode)));
 				}
 			}
 		}

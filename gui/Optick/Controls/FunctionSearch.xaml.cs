@@ -97,7 +97,7 @@ namespace Profiler.Controls
 					if (maxFrame != null && maxEntry != null)
 					{
 						EventNode maxNode = maxFrame.Root.FindNode(maxEntry);
-						RaiseEvent(new FocusFrameEventArgs(GlobalEvents.FocusFrameEvent, new EventFrame(maxFrame, maxNode), null));
+						RaiseEvent(new FocusFrameEventArgs(GlobalEvents.FocusFrameEvent, new EventFrame(maxFrame, maxNode)));
 					}
 				}
 			}

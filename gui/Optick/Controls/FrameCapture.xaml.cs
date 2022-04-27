@@ -23,6 +23,10 @@ using Profiler.ViewModels;
 using Profiler.InfrastructureMvvm;
 using Autofac;
 using Profiler.Controls.ViewModels;
+using Profiler.ViewModels.Plots;
+using Profiler.Views;
+using Xceed.Wpf.AvalonDock.Layout;
+using Frame = Profiler.Data.Frame;
 
 namespace Profiler.Controls
 {
@@ -31,9 +35,10 @@ namespace Profiler.Controls
     /// </summary>
     public partial class FrameCapture : UserControl, INotifyPropertyChanged
 	{
-        private string _captureName;
-
-        public event PropertyChangedEventHandler PropertyChanged;
+		private readonly List<PlotsViewModel> _plotPanels  = new List<PlotsViewModel>();
+		private string _captureName;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
@@ -58,7 +63,7 @@ namespace Profiler.Controls
 
 		public FrameCapture()
 		{
-            using (var scope = BootStrapperBase.Container.BeginLifetimeScope())
+			using (var scope = BootStrapperBase.Container.BeginLifetimeScope())
             {
                 SummaryVM = scope.Resolve<SummaryViewerModel>();
             }
@@ -77,6 +82,7 @@ namespace Profiler.Controls
 			timeLine.NewConnection += TimeLine_NewConnection;
 			timeLine.CancelConnection += TimeLine_CancelConnection;
 			timeLine.ShowWarning += TimeLine_ShowWarning;
+			timeLine.DataLoaded += TimeLine_DataLoaded;
 			warningBlock.Visibility = Visibility.Collapsed;
 
             AddressBarVM = (AddressBarViewModel)FindResource("AddressBarVM");
@@ -84,6 +90,14 @@ namespace Profiler.Controls
 			FunctionInstanceVM = (FunctionInstanceViewModel)FindResource("FunctionInstanceVM");
 			CaptureSettingsVM = (CaptureSettingsViewModel)FindResource("CaptureSettingsVM");
 
+			var plotPanelsSettingsViewModel = (PlotPanelsSettingsViewModel)FindResource("CountersSettingsVM");
+			plotPanelsSettingsViewModel.CustomPanels = _plotPanels;
+			if (string.IsNullOrEmpty(plotPanelsSettingsViewModel.CurrentPath))
+				plotPanelsSettingsViewModel.CurrentPath = "counters.json";
+
+			var plotPanelsSettings = PlotPanelsSettingsStorage.Load(plotPanelsSettingsViewModel.CurrentPath);
+			CreatePlotPanels(plotPanelsSettings);
+			
 			FunctionSamplingVM = (SamplingViewModel)FindResource("FunctionSamplingVM");
 			SysCallsSamplingVM = (SamplingViewModel)FindResource("SysCallsSamplingVM");
 
@@ -143,17 +157,34 @@ namespace Profiler.Controls
             AddressBarVM?.Update(args.Connection);
         }
 
+		private void TimeLine_DataLoaded(object sender, RoutedEventArgs e)
+		{
+			foreach (var plotPanel in _plotPanels)
+				plotPanel.SetModel(timeLine.Counters);
+		}
+		
 		private void OpenFrame(object source, FocusFrameEventArgs args)
 		{
 			Data.Frame frame = args.Frame;
-
-            if (frame is EventFrame)
+			
+			if (frame is EventFrame eventFrame)
+			{
+				var group = eventFrame.Group;
+				
 				EventThreadViewControl.Highlight(frame as EventFrame, null);
 
-			if (frame is EventFrame)
-			{
-				EventFrame eventFrame = frame as EventFrame;
-				FrameGroup group = eventFrame.Group;
+				if (args.FocusPlot)
+				{
+					var interval = (IDurable)frame;
+
+					var startRelative = interval.Start - frame.Group.Board.TimeSlice.Start;
+					var startRelativeMs = group.Board.TimeSettings.TicksToMs * startRelative;
+					
+					foreach (var plotPanel in _plotPanels)
+					{
+						plotPanel.Zoom(startRelativeMs, interval.Duration);
+					}
+				}
 
 				if (eventFrame.RootEntry != null)
 				{
@@ -235,6 +266,11 @@ namespace Profiler.Controls
 			SysCallInfoControl.DataContext = null;
 
 			//SamplingTreeControl.SetDescription(null, null);
+			
+			foreach (var plotPanel in _plotPanels)
+				plotPanel.Clear();
+			
+			timeLine.Counters.Clear();
 
 			MainViewModel vm = DataContext as MainViewModel;
 			if (vm.IsCapturing)
@@ -300,6 +336,114 @@ namespace Profiler.Controls
 			vm.Update();
 			DebugInfoPopup.DataContext = vm;
 			DebugInfoPopup.IsOpen = true;
+		}
+
+		/// <summary>
+		/// Gets called when a different counters layout is loaded
+		/// </summary>
+		private void OnPlotPanelsSettingsLoaded(List<PlotPanelSerialized> plotPanelsSerialized)
+		{
+			CreatePlotPanels(plotPanelsSerialized);
+		}
+
+		private void CreatePlotPanels(List<PlotPanelSerialized> plotPanelsSerialized)
+		{
+			PlotsPane.Children.Clear();
+			_plotPanels.Clear();
+			foreach (var plotPanelSerialized in plotPanelsSerialized)
+				AddPlotPanel(plotPanelSerialized.Title, plotPanelSerialized.Counters);
+		}
+		
+		/// <summary>
+		/// Gets called when "Create panel" button is being pressed 
+		/// </summary>
+		private void OnCreatePanel(string title)
+		{
+			AddPlotPanel(title, null);
+			PlotsPane.SelectedContentIndex = PlotsPane.Children.Count - 1;
+		}
+		
+		/// <summary>
+		/// Create a new panel.
+		/// </summary>
+		/// <param name="title">Panel's title</param>
+		/// <param name="selectedCounters">Optional, pre selected counters</param>
+		private void AddPlotPanel(string title, List<PlotPanelSerialized.CounterSerialized> selectedCounters)
+		{
+			var viewModel = new PlotsViewModel(title, timeLine.Counters);
+			var view = new PlotView
+			{
+				DataContext = viewModel
+			};
+			view.PlotClicked += (s, e) =>
+			{
+				var frame = GetFrame(timeLine.Frames, e.Time);
+				if (frame != null)
+					RaiseEvent(new FocusFrameEventArgs(GlobalEvents.FocusFrameEvent, frame, focusPlot: false));
+			};
+			if (selectedCounters != null)
+			{
+				foreach (var selectedCounter in selectedCounters)
+				{
+					var color = Color.FromArgb(selectedCounter.Color.A, selectedCounter.Color.R, selectedCounter.Color.G, selectedCounter.Color.B);
+					viewModel.SelectCounter(selectedCounter.Key, selectedCounter.Name, new SolidColorBrush(color), selectedCounter.DataUnits, selectedCounter.ViewUnits);
+				}
+			}
+			
+			var anchorable = new LayoutAnchorable
+			{
+				CanClose = true,
+				Content = view,
+				CanHide = false
+			};
+			
+			var titleBinding = new Binding(nameof(viewModel.Title))
+			{
+				Mode = BindingMode.OneWay,
+				Source = viewModel
+			};
+			BindingOperations.SetBinding(anchorable, LayoutContent.TitleProperty, titleBinding);
+			
+			// Restoring layout because when an user closes a tab this elements get removed from the layout
+			if (PlotsPaneGroup.Parent == null)
+				mainPanel.Children.Add(PlotsPaneGroup);
+			if (PlotsPane.Parent == null)
+				PlotsPaneGroup.Children.Add(PlotsPane);
+			
+			PlotsPane.Children.Add(anchorable);
+			
+			anchorable.Closed += (s,e) =>
+			{
+				_plotPanels.Remove(viewModel);
+			};
+			
+			_plotPanels.Add(viewModel);
+		}
+		
+		private static Frame GetFrame(FrameCollection frameCollection, double time)
+		{
+			// binary search
+			var left = 0;
+			var right = frameCollection.Count - 1;
+			while (left <= right)
+			{
+				var middle = (left + right) / 2;
+				var frame = frameCollection[middle];
+
+				var interval = (IDurable)frame;
+				var startRelative = interval.Start - frame.Group.Board.TimeSlice.Start;
+				var startRelativeMs = frame.Group.Board.TimeSettings.TicksToMs * startRelative;
+
+				if (startRelativeMs <= time && time <= startRelativeMs + interval.Duration)
+					return frame;
+				
+				if (startRelativeMs < time)
+					left = middle + 1;
+				else
+					right = middle - 1;
+			}
+			
+			return null;
 		}
 	}
 }

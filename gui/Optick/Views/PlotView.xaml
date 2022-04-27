@@ -1,0 +1,187 @@
+<UserControl x:Class="Profiler.Views.PlotView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:d3="clr-namespace:InteractiveDataDisplay.WPF;assembly=InteractiveDataDisplay.WPF"
+             xmlns:MahApps="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:views="clr-namespace:Profiler.Views"
+             xmlns:Profiler="clr-namespace:Profiler"
+             xmlns:colorpicker="clr-namespace:ColorPicker;assembly=ColorPicker"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="800">
+    <GroupBox MahApps:ButtonHelper.PreserveTextCase="True" Background="{StaticResource ControlBackgroundBrush}">
+        <GroupBox.Resources>
+            <Profiler:IsNotNullConverter x:Key="isNotNullConverter" />
+            <Profiler:IsNotEmptyConverter x:Key="IsNotEmptyConverter" />
+        </GroupBox.Resources>
+        <GroupBox.Header>
+            <views:FunctionDescriptionView />
+        </GroupBox.Header>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition Height="85" />
+                </Grid.RowDefinitions>
+                <d3:Figure x:Name="Chart" IsAutoFitEnabled="{Binding Path=IsAutoFitEnabled, Mode=TwoWay}" PlotOriginY="{Binding Path=YMin, Mode=TwoWay}" PlotOriginX="{Binding Path=XMin, Mode=TwoWay}"
+                           PlotHeight="{Binding Path=Height, Mode=TwoWay}" PlotWidth="{Binding Path=Width, Mode=TwoWay}"
+                           PreviewMouseLeftButtonDown="MouseNav_OnPreviewMouseLeftButtonDown" ZIndex="2">
+                    <d3:PlotAxis x:Name="PART_verticalAxis" AxisOrientation="Left" d3:Figure.Placement="Left"
+                                 Foreground="{StaticResource OptickForeground}" />
+                    <d3:PlotAxis x:Name="PART_horizontalAxis" AxisOrientation="Bottom" d3:Figure.Placement="Bottom"
+                                 Foreground="{StaticResource OptickForeground}" />
+                    <d3:AxisGrid x:Name="PART_axisGrid"
+                                 VerticalTicks="{Binding Ticks,ElementName=PART_verticalAxis, Mode=OneWay}"
+                                 HorizontalTicks="{Binding Ticks,ElementName=PART_horizontalAxis, Mode=OneWay}"
+                                 Stroke="{StaticResource OptickForeground}" Opacity="0.25" />
+                    <d3:MouseNavigation x:Name="MouseNav" IsVerticalNavigationEnabled="False" />
+                    <Canvas ZIndex="2">
+                        <Canvas.Resources>
+                            <SolidColorBrush x:Key="ToolTipBackground">#FF545454</SolidColorBrush>
+                            <SolidColorBrush x:Key="ToolTipBorder">#FF575757</SolidColorBrush>
+                            <SolidColorBrush x:Key="HoverLine">#FF2E2E2E</SolidColorBrush>
+                        </Canvas.Resources>
+                        <Line X1="{Binding Path=MousePositionX, Mode=OneWay}" Y1="0"
+                              X2="{Binding Path=MousePositionX, Mode=OneWay}"
+                              Y2="{Binding ElementName=MouseNav, Path=ActualHeight}"
+                              Stroke="{StaticResource HoverLine}" Visibility="{Binding Path=HoverVisibility}"
+                              StrokeThickness="2" />
+                        <Border BorderThickness="2" BorderBrush="{StaticResource ToolTipBorder}"
+                                Visibility="{Binding Path=HoverVisibility}"
+                                Canvas.Top="{Binding Path=MousePositionY}"
+                                Canvas.Left="{Binding Path=MousePositionX, Mode=OneWay}" Margin="10,10,0,0"
+                                Background="{StaticResource ToolTipBackground}" Padding="2,2,2,2">
+                            <StackPanel Orientation="Vertical">
+                                <ItemsControl ItemsSource="{Binding Path=SelectedCounterViewModels, Mode=OneWay}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" Height="15"
+                                                        Visibility="{Binding Path=Points, Converter={StaticResource IsNotEmptyConverter}}" >
+                                                <TextBlock VerticalAlignment="Center" FontSize="14"
+                                                           Text="{Binding Path=Name}" />
+                                                <Line HorizontalAlignment="Center" Width="5" Height="15" X1="0" Y1="0"
+                                                      X2="5" Y2="15"
+                                                      Stroke="{Binding Path=Color, Mode=OneWay}" StrokeThickness="2"
+                                                      Margin="10,0,10,0" />
+                                                <TextBlock VerticalAlignment="Center" FontSize="14"
+                                                           Text="{Binding Path=HoverPoint.Y, StringFormat={}{0:0.##}}" />
+                                                <TextBlock VerticalAlignment="Center" FontSize="14"
+                                                           Text="{Binding Path=ViewUnits}" Margin="2,0" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </Canvas>
+                    <Canvas>
+                        <ItemsControl ItemsSource="{Binding Path=SelectedCounterViewModels, Mode=OneWay}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Canvas
+                                        Visibility="{Binding Path=Points, Converter={StaticResource IsNotEmptyConverter}}">
+                                        <Ellipse Canvas.Left="{Binding HoverPointInScreenSpace.X}"
+                                                 Canvas.Top="{Binding HoverPointInScreenSpace.Y}"
+                                                 Width="{Binding Path=EllipseSize}" Height="{Binding Path=EllipseSize}" Fill="{Binding Path=Color}" />
+                                    </Canvas>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Canvas>
+                    
+                    
+                    <ItemsControl ItemsSource="{Binding Path=SelectedCounterViewModels, Mode=OneWay}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Grid/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <d3:LineGraph Stroke="{Binding Path=Color}" Description="{Binding Path=Name}" StrokeThickness="2" Points="{Binding Path=Points}">
+                                </d3:LineGraph>
+                            </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                </d3:Figure>
+
+                <StackPanel Grid.Row="1" Grid.Column="0" Margin="10,10">
+                    <StackPanel Orientation="Horizontal" Margin="0,2">
+                        <TextBlock Margin="0,0,5,0" VerticalAlignment="Center">Title:</TextBlock>
+                        <TextBox Text="{Binding Title, Mode=TwoWay}" Width="100" Margin="0,0,15,0" />
+
+                        <TextBlock Margin="0,0,5,0" VerticalAlignment="Center">Y Min:</TextBlock>
+                        <TextBox Text="{Binding YMin}" />
+                        <TextBlock Margin="5,0,5,0" VerticalAlignment="Center">Y Max:</TextBlock>
+                        <TextBox Text="{Binding YMax}" />
+                        <Button Margin="5,0" Click="BtnAutofit_OnClick">Fit all</Button>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal"
+                                IsEnabled="{Binding SelectCounterViewModel.SelectedCounter, Converter={StaticResource isNotNullConverter}}"
+                                Margin="0,2">
+                        <ComboBox ItemsSource="{Binding Path=SelectCounterViewModel.AvailableCounters, Mode=OneWay}"
+                                  DisplayMemberPath="Name" SelectedValuePath="Key"
+                                  SelectedValue="{Binding SelectCounterViewModel.SelectedCounter}" />
+                         <colorpicker:PortableColorPicker Width="30" 
+                                                          SelectedColor="{Binding SelectCounterViewModel.Color, Mode=TwoWay}" 
+                                                          Margin="10,0,10,0" /> 
+
+                        <TextBlock Margin="0,0,5,0" VerticalAlignment="Center">Data Units:</TextBlock>
+                        <ComboBox ItemsSource="{Binding Path=SelectCounterViewModel.UnitsViewModel.DataUnits}"
+                                  SelectedValue="{Binding SelectCounterViewModel.UnitsViewModel.SelectedDataUnits}"
+                                  MinHeight="10" />
+
+                        <TextBlock Margin="10,0,5,0" VerticalAlignment="Center">View Units:</TextBlock>
+                        <ComboBox ItemsSource="{Binding Path=SelectCounterViewModel.UnitsViewModel.ViewUnits}"
+                                  SelectedValue="{Binding SelectCounterViewModel.UnitsViewModel.SelectedViewUnits}"
+                                  MinHeight="10" Margin="0,0,15,0" />
+
+                        <Button HorizontalAlignment="Left" Click="BtnAddCounter_OnClick">Add counter</Button>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+
+            <ScrollViewer Grid.Row="0" Grid.Column="1" Margin="10" VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Path=SelectedCounterViewModels, Mode=OneWay}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Orientation="Horizontal" Height="20" Grid.Column="0">
+                                    <TextBlock VerticalAlignment="Center" FontSize="9" Text="{Binding Path=Name}" />
+                                    <Line Width="5" Height="15" X1="0" Y1="0" X2="5" Y2="15"
+                                          Stroke="{Binding Path=Color, Mode=OneWay}" StrokeThickness="2"
+                                          Margin="10,0,10,0" />
+                                </StackPanel>
+                                <Button HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="10"
+                                        Width="10" Padding="0,0,0,0" Command="{Binding RemoveCommand}"
+                                        CommandParameter="{Binding}" Grid.Column="1">
+                                    x
+                                </Button>
+                                <Grid.ToolTip>
+                                    <ToolTip>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Path=DataUnits}" />
+                                            <TextBlock Text="->" />
+                                            <TextBlock Text="{Binding Path=ViewUnits}" />
+                                        </StackPanel>
+                                    </ToolTip>
+                                </Grid.ToolTip>
+                            </Grid>
+
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+    </GroupBox>
+</UserControl>
