@@ -24,6 +24,7 @@
 
 #if USE_OPTICK
 
+#include "optick.h"
 #include "optick_server.h"
 
 #include <algorithm>
@@ -64,7 +65,11 @@ namespace Optick
 void* (*Memory::allocate)(size_t) = [](size_t size)->void* { return operator new(size); };
 void (*Memory::deallocate)(void* p) = [](void* p) { operator delete(p); };
 void (*Memory::initThread)(void) = nullptr;
-std::atomic<uint64_t> Memory::memAllocated;
+#if defined(OPTICK_32BIT)
+	std::atomic<uint32_t> Memory::memAllocated;
+#else
+	std::atomic<uint64_t> Memory::memAllocated;
+#endif
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 uint64_t MurmurHash64A(const void * key, int len, uint64_t seed)
 {
@@ -738,7 +743,7 @@ bool SwitchContextCollector::Serialize(OutputDataStream& stream)
 #if defined(OPTICK_MSVC)
 #include <intrin.h>
 #define CPUID(INFO, ID) __cpuid(INFO, ID)
-#elif defined(__ANDROID__)
+#elif (defined(__ANDROID__) || defined(OPTICK_ARM))
 // Nothing
 #elif defined(OPTICK_GCC)
 #include <cpuid.h>
@@ -762,6 +767,12 @@ string GetCPUName()
     	return s;
     }
 	return "Undefined CPU";
+#elif defined(OPTICK_ARM)
+	#if defined(OPTICK_ARM32)
+		return "ARM 32-bit";
+	#else
+		return "ARM 64-bit";
+	#endif
 #else
 	int cpuInfo[4] = { -1 };
 	char cpuBrandString[0x40] = { 0 };
@@ -1093,7 +1104,7 @@ void Core::DumpFrames(uint32 mode)
 
 		// We can free some memory now to unlock space for callstack serialization
 		DumpProgress("Deallocating memory for SymbolEngine");
-		Memory::Free(symbolEngine);
+		Memory::Delete(symbolEngine);
 		symbolEngine = nullptr;
 
 		DumpProgress("Serializing callstacks");
@@ -1254,19 +1265,22 @@ void Core::Update()
 	{
 		FrameBuffer frameBuffer = frames[FrameType::CPU].m_Frames;
 
-		if (settings.frameLimit > 0 && frameBuffer.Size() >= settings.frameLimit)
-			DumpCapture();
-
-		if (settings.timeLimitUs > 0)
+		if (frameBuffer.Size() > 0)
 		{
-			if (TicksToUs(frameBuffer.Back()->finish - frameBuffer.Front()->start) >= settings.timeLimitUs)
+			if (settings.frameLimit > 0 && frameBuffer.Size() >= settings.frameLimit)
 				DumpCapture();
-		}
 
-		if (settings.spikeLimitUs > 0)
-		{
-			if (TicksToUs(frameBuffer.Back()->finish - frameBuffer.Front()->start) >= settings.spikeLimitUs)
-				DumpCapture();
+			if (settings.timeLimitUs > 0)
+			{
+				if (TicksToUs(frameBuffer.Back()->finish - frameBuffer.Front()->start) >= settings.timeLimitUs)
+					DumpCapture();
+			}
+
+			if (settings.spikeLimitUs > 0)
+			{
+				if (TicksToUs(frameBuffer.Back()->finish - frameBuffer.Front()->start) >= settings.spikeLimitUs)
+					DumpCapture();
+			}
 		}
 
 		if (IsTimeToReportProgress())
@@ -1634,6 +1648,9 @@ void Core::Shutdown()
 	}
 	fibers.clear();
 
+	Memory::Delete(symbolEngine);
+	symbolEngine = nullptr;
+
 	EventDescriptionBoard::Get().Shutdown();
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1885,7 +1902,11 @@ bool EndsWith(const char* str, const char* substr)
 OPTICK_API bool SaveCapture(const char* path, bool force /*= true*/)
 {
 	char filePath[512] = { 0 };
+#if defined(OPTICK_MSVC)
+	strcpy_s(filePath, 512, path);
+#else
 	strcpy(filePath, path);
+#endif
 	
 	if (path == nullptr || !EndsWith(path, ".opt"))
 	{
@@ -1898,7 +1919,11 @@ OPTICK_API bool SaveCapture(const char* path, bool force /*= true*/)
 #endif
 		char timeStr[80] = { 0 };
 		strftime(timeStr, sizeof(timeStr), "(%Y-%m-%d.%H-%M-%S).opt", &tstruct);
+#if defined(OPTICK_MSVC)
+		strcat_s(filePath, 512, timeStr);
+#else
 		strcat(filePath, timeStr);
+#endif
 	}
 
 	SaveHelper::Init(filePath);

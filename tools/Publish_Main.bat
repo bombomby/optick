@@ -4,10 +4,9 @@ cd ..
 
 rem call tools/GenerateProjects.bat
 
-
 MsBuild build/vs2019/Optick.sln /t:OptickCore:Rebuild /p:Configuration=Debug /p:Platform=x64
 MsBuild build/vs2019/Optick.sln /t:Samples\ConsoleApp:Rebuild /p:Configuration=Release /p:Platform=x64
-MsBuild gui/OptickApp_vs2019.sln /t:Rebuild /p:Configuration=Release /p:Platform=x64
+MsBuild gui/OptickApp_vs2022.sln /t:Rebuild /p:Configuration=Release /p:Platform=x64
 
 for /f %%i in ('powershell "(Get-Item -path gui\Bin\Release\x64\Optick.exe).VersionInfo.ProductVersion"') do set VERSION=%%i
 

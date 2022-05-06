@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 11)
 
 
 # hacks for standalone builds with visual studio
-if(MSVC AND CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+if(MSVC AND CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_LIST_DIR)
 	message(STATUS "Standalone build")
 	list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/Build")
 	set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
@@ -46,11 +46,11 @@ option(OPTICK_BUILD_CONSOLE_SAMPLE "Build Optick console sample app" ${standalon
 add_library(OptickCore SHARED ${OPTICK_SRC})
 target_include_directories(OptickCore
 	PUBLIC
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+		$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src>
 )
 set_target_properties(OptickCore 
 	PROPERTIES 
-		PUBLIC_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/src/optick.h;${CMAKE_CURRENT_SOURCE_DIR}/src/optick.config.h"
+		PUBLIC_HEADER "${CMAKE_CURRENT_LIST_DIR}/src/optick.h;${CMAKE_CURRENT_LIST_DIR}/src/optick.config.h"
 		DEBUG_POSTFIX d # So that we can install debug and release side by side
 )
 target_compile_definitions(OptickCore PRIVATE OPTICK_EXPORTS=1)
@@ -130,6 +130,7 @@ if(OPTICK_INSTALL_TARGETS)
 		LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
 		ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
 		INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+		PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 
 	)
 

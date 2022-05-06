@@ -13,11 +13,11 @@ matrix:
   fast_finish: true
 
 before_build:
-  - nuget restore gui/OptickApp_vs2019.sln
+  - nuget restore gui/OptickApp_vs2022.sln
   
 build_script:
   - tools\Windows\premake5.exe vs2019
   - cd build/vs2019
   - MsBuild Optick.sln /t:Rebuild /p:Configuration=%CONFIGURATION%
   - cd ../../gui
-  - MsBuild OptickApp_vs2019.sln /t:Rebuild /p:Configuration=%CONFIGURATION%
+  - MsBuild OptickApp_vs2022.sln /t:Rebuild /p:Configuration=%CONFIGURATION%

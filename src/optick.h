@@ -30,22 +30,33 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#if defined(__clang__) || defined(__GNUC__)
-#	define OPTICK_GCC (1)
-#	if defined(__APPLE_CC__)
-#		define OPTICK_OSX (1)
-#	elif defined(__linux__)
-#		define OPTICK_LINUX (1)
-#	elif defined(__FreeBSD__)
-#		define OPTICK_FREEBSD (1)
-#	endif
-#elif defined(_MSC_VER)
+#if defined(_MSC_VER)
 #	define OPTICK_MSVC (1)
+#	define OPTICK_64BIT (1)
 #	if defined(_DURANGO)
 #		define OPTICK_PC (0)
 #	else
 #		define OPTICK_PC (1)
-#endif
+#   endif
+#elif defined(__clang__) || defined(__GNUC__)
+#	define OPTICK_GCC (1)
+#	if defined(__APPLE_CC__)
+#		define OPTICK_OSX (1)
+#		define OPTICK_64BIT (1)
+#	elif defined(__linux__)
+#		define OPTICK_LINUX (1)
+#		define OPTICK_64BIT (1)
+#	elif defined(__FreeBSD__)
+#		define OPTICK_FREEBSD (1)
+#		define OPTICK_64BIT (1)
+#	endif
+#	if defined(__aarch64__) || defined(_M_ARM64)
+#		define OPTICK_ARM (1)
+#		define OPTICK_64BIT (1)
+#	elif defined(__arm__) || defined(_M_ARM)
+#		define OPTICK_ARM (1)
+#		define OPTICK_32BIT (1)
+#	endif
 #else
 #error Compiler not supported
 #endif
@@ -103,6 +114,7 @@ struct VkSubmitInfo;
 struct VkCommandBufferBeginInfo;
 
 #ifndef VKAPI_PTR
+#define OPTICK_VKAPI_PTR_DEFINED 1
 #if defined(_WIN32)
     // On Windows, Vulkan commands use the stdcall convention
 	#define VKAPI_PTR  __stdcall
@@ -129,6 +141,10 @@ typedef void (VKAPI_PTR *PFN_vkDestroyCommandPool_)(VkDevice device, VkCommandPo
 typedef void (VKAPI_PTR *PFN_vkDestroyQueryPool_)(VkDevice device, VkQueryPool queryPool, const VkAllocationCallbacks* pAllocator);
 typedef void (VKAPI_PTR *PFN_vkDestroyFence_)(VkDevice device, VkFence fence, const VkAllocationCallbacks* pAllocator);
 typedef void (VKAPI_PTR *PFN_vkFreeCommandBuffers_)(VkDevice device, VkCommandPool commandPool, uint32_t commandBufferCount, const VkCommandBuffer* pCommandBuffers);
+
+#if OPTICK_VKAPI_PTR_DEFINED
+#undef VKAPI_PTR
+#endif
 
 // D3D12 Forward Declarations
 struct ID3D12CommandList;
@@ -801,7 +817,7 @@ struct OptickApp
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Scoped profiling event which automatically grabs current function name.
-// Use tis macro 95% of the time.
+// Use this macro 95% of the time.
 // Example A:
 //		void Function()
 //		{
@@ -879,6 +895,8 @@ struct OptickApp
 												switch (FRAME_TYPE) {											\
 													case Optick::FrameType::CPU:								\
 														::Optick::Update();										\
+														break;													\
+													default:													\
 														break;													\
 												}																\
 												::Optick::BeginFrame(FRAME_TYPE);								\

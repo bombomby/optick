@@ -48,7 +48,11 @@ namespace Optick
 			uint64_t size;
 		};
 
+	#if defined(OPTICK_32BIT)
+		static std::atomic<uint32_t> memAllocated;
+	#else
 		static std::atomic<uint64_t> memAllocated;
+	#endif
 
 		static void* (*allocate)(size_t);
 		static void  (*deallocate)(void*);
@@ -132,12 +136,12 @@ namespace Optick
 			Allocator(const Allocator<U>&) {}
 			template<typename U> struct rebind { typedef Allocator<U> other; };
 
-			typename std::allocator<T>::pointer allocate(typename std::allocator<T>::size_type n, typename std::allocator<void>::const_pointer = 0)
+			typename std::allocator<T>::value_type* allocate(typename std::allocator<T>::size_type n, const typename std::allocator<void>::value_type* = 0)
 			{
-				return reinterpret_cast<typename std::allocator<T>::pointer>(Memory::Alloc(n * sizeof(T)));
+				return reinterpret_cast<typename std::allocator<T>::value_type*>(Memory::Alloc(n * sizeof(T)));
 			}
 
-			void deallocate(typename std::allocator<T>::pointer p, typename std::allocator<T>::size_type)
+			void deallocate(typename std::allocator<T>::value_type* p, typename std::allocator<T>::size_type)
 			{
 				Memory::Free(p);
 			}
@@ -366,8 +370,8 @@ namespace Optick
 			}
 			reference operator*() { return (reference)chunkPtr->data[chunkIndex]; }
 			pointer operator->() { return &chunkPtr->data[chunkIndex]; }
-			bool operator==(const self_type& rhs) { return (chunkPtr == rhs.chunkPtr) && (chunkIndex == rhs.chunkIndex); }
-			bool operator!=(const self_type& rhs) { return (chunkPtr != rhs.chunkPtr) || (chunkIndex != rhs.chunkIndex); }
+			bool operator==(const self_type& rhs) const { return (chunkPtr == rhs.chunkPtr) && (chunkIndex == rhs.chunkIndex); }
+			bool operator!=(const self_type& rhs) const { return (chunkPtr != rhs.chunkPtr) || (chunkIndex != rhs.chunkIndex); }
 		private:
 			const Chunk* chunkPtr;
 			size_t chunkIndex;
