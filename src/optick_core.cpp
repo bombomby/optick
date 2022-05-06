@@ -1589,7 +1589,6 @@ bool Core::AttachFile(File::Type type, const char* name, const wchar_t* path)
 void Core::InitGPUProfiler(GPUProfiler* profiler)
 {
 	OPTICK_ASSERT(gpuProfiler == nullptr, "Can't reinitialize GPU profiler! Not supported yet!");
-	Memory::Delete<GPUProfiler>(gpuProfiler);
 	gpuProfiler = profiler;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1635,6 +1634,9 @@ const EventDescription* Core::GetFrameDescription(FrameType::Type frame) const
 void Core::Shutdown()
 {
 	std::lock_guard<std::recursive_mutex> lock(threadsLock);
+
+	Memory::Delete<GPUProfiler>(gpuProfiler);
+	gpuProfiler = nullptr;
 
 	for (ThreadList::iterator it = threads.begin(); it != threads.end(); ++it)
 	{
