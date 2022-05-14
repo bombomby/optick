@@ -395,8 +395,6 @@ namespace Optick
 
 	GPUProfilerVulkan::~GPUProfilerVulkan()
 	{
-		WaitForFrame(frameNumber - 1);
-
 		for (NodePayload* payload : nodePayloads)
 		{
 			for (Frame& frame : payload->frames)
