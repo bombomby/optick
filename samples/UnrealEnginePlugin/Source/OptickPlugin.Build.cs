@@ -79,6 +79,7 @@ namespace UnrealBuildTool.Rules
 						"InputCore",
 						"LevelEditor",
 						"DesktopPlatform",
+						"ToolMenus",
 					}
 				);
 			}

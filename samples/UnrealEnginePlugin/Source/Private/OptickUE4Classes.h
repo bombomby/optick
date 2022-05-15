@@ -10,9 +10,6 @@
 #include "ProfilingDebugging/TracingProfiler.h"
 #include "Runtime/Launch/Resources/Version.h"
 
-#define UE_4_27_OR_LATER (ENGINE_MAJOR_VERSION >= 4 && ENGINE_MINOR_VERSION >= 27)
-
-
 #define REALTIME_GPU_PROFILER_EVENT_TRACK_FRAME_NUMBER (TRACING_PROFILER || DO_CHECK)
 
 /*-----------------------------------------------------------------------------
@@ -173,6 +170,11 @@ public:
 	FRenderQueryPoolRHIRef RenderQueryPool;
 	bool bStatGatheringPaused;
 	bool bInBeginEndBlock;
+	bool bLocked;
+
+#if GPUPROFILERTRACE_ENABLED
+	FRealtimeGPUProfilerHistoryByDescription HistoryByDescription;
+#endif
 };
 
 static_assert(sizeof(FRealtimeGPUProfilerImpl) == sizeof(FRealtimeGPUProfiler), "Size mismatch");
