@@ -70,7 +70,7 @@ All the available API calls are documented here:<br/>
 https://github.com/bombomby/optick/wiki/Optick-API
 
 ## Unreal Engine
-Optick provides a special plugin for UE4. Check more detailed documentation here: 
+Optick provides a special plugin for UE4. Check more detailed documentation here: <br/>
 https://github.com/bombomby/optick/wiki/UE4-Optick-Plugin <br/>
 https://github.com/bombomby/optick/wiki/UE5-Optick-Plugin <br/>
 ![](https://github.com/bombomby/brofiler/blob/gh-pages/images/UE5_OpenOptick.jpg)
