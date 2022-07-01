@@ -60,19 +60,19 @@ extern "C" {
 	OPTICK_API void OptickAPI_AttachTag_UInt64(uint64_t inEventDescription, uint64_t inValue);
 	OPTICK_API void OptickAPI_AttachTag_Point(uint64_t inEventDescription, float x, float y, float z);
 #else
-	inline void OptickAPI_RegisterThread(const char* inThreadName, uint16_t inThreadNameLength) {}
-	inline uint64_t OptickAPI_CreateEventDescription(const char* inFunctionName, uint16_t inFunctionLength, const char* inFileName, uint16_t inFileNameLenght, uint32_t inFileLine) { return 0; }
-	inline uint64_t OptickAPI_PushEvent(uint64_t inEventDescription) { return 0; }
-    inline void OptickAPI_PopEvent(uint64_t inEventData) {}
+	inline void OptickAPI_RegisterThread(const char* inThreadName, uint16_t inThreadNameLength) { (void)inThreadName, inThreadNameLength; }
+	inline uint64_t OptickAPI_CreateEventDescription(const char* inFunctionName, uint16_t inFunctionLength, const char* inFileName, uint16_t inFileNameLenght, uint32_t inFileLine) { (void)inFunctionName, inFunctionLength, inFileName, inFileNameLenght, inFileLine; return 0; }
+	inline uint64_t OptickAPI_PushEvent(uint64_t inEventDescription) { (void)inEventDescription; return 0; }
+	inline void OptickAPI_PopEvent(uint64_t inEventData) { (void)inEventData; }
 	inline void OptickAPI_NextFrame() {}
 	inline void OptickAPI_StartCapture() {}
-	inline void OptickAPI_StopCapture(const char* inFileName, uint16_t inFileNameLength) {}
-	inline void OptickAPI_AttachTag_String(uint64_t inEventDescription, const char* inValue, uint16_t intValueLength) {}
-	inline void OptickAPI_AttachTag_Int(uint64_t inEventDescription, int inValue) {}
-	inline void OptickAPI_AttachTag_Float(uint64_t inEventDescription, float inValue) {}
-	inline void OptickAPI_AttachTag_Int32(uint64_t inEventDescription, uint32_t inValue) {}
-	inline void OptickAPI_AttachTag_UInt64(uint64_t inEventDescription, uint64_t inValue) {}
-	inline void OptickAPI_AttachTag_Point(uint64_t inEventDescription, float x, float y, float z) {}
+	inline void OptickAPI_StopCapture(const char* inFileName, uint16_t inFileNameLength) { (void)inFileName, inFileNameLength; }
+	inline void OptickAPI_AttachTag_String(uint64_t inEventDescription, const char* inValue, uint16_t intValueLength) { (void)inEventDescription, inValue, intValueLength; }
+	inline void OptickAPI_AttachTag_Int(uint64_t inEventDescription, int inValue) { (void)inEventDescription, inValue; }
+	inline void OptickAPI_AttachTag_Float(uint64_t inEventDescription, float inValue) { (void)inEventDescription, inValue; }
+	inline void OptickAPI_AttachTag_Int32(uint64_t inEventDescription, uint32_t inValue) { (void)inEventDescription, inValue; }
+	inline void OptickAPI_AttachTag_UInt64(uint64_t inEventDescription, uint64_t inValue) { (void)inEventDescription, inValue; }
+	inline void OptickAPI_AttachTag_Point(uint64_t inEventDescription, float x, float y, float z) { (void)inEventDescription, x, y, z; }
 #endif
 
 #ifdef __cplusplus
