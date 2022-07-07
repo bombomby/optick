@@ -60,19 +60,21 @@ extern "C" {
 	OPTICK_API void OptickAPI_AttachTag_UInt64(uint64_t inEventDescription, uint64_t inValue);
 	OPTICK_API void OptickAPI_AttachTag_Point(uint64_t inEventDescription, float x, float y, float z);
 #else
-	inline void OptickAPI_RegisterThread(const char* inThreadName, uint16_t inThreadNameLength) { OPTICK_UNUSED(inThreadName); OPTICK_UNUSED(inThreadNameLength); }
-	inline uint64_t OptickAPI_CreateEventDescription(const char* inFunctionName, uint16_t inFunctionLength, const char* inFileName, uint16_t inFileNameLenght, uint32_t inFileLine) { OPTICK_UNUSED(inFunctionName); OPTICK_UNUSED(inFunctionLength); OPTICK_UNUSED(inFileName); OPTICK_UNUSED(inFileNameLenght); OPTICK_UNUSED(inFileLine); return 0; }
-	inline uint64_t OptickAPI_PushEvent(uint64_t inEventDescription) { OPTICK_UNUSED(inEventDescription); return 0; }
-	inline void OptickAPI_PopEvent(uint64_t inEventData) { OPTICK_UNUSED(inEventData); }
+
+#define OPTICK_CAPI_UNUSED(x) (void)(x)
+	inline void OptickAPI_RegisterThread(const char* inThreadName, uint16_t inThreadNameLength) { OPTICK_CAPI_UNUSED(inThreadName); OPTICK_CAPI_UNUSED(inThreadNameLength); }
+	inline uint64_t OptickAPI_CreateEventDescription(const char* inFunctionName, uint16_t inFunctionLength, const char* inFileName, uint16_t inFileNameLenght, uint32_t inFileLine) { OPTICK_CAPI_UNUSED(inFunctionName); OPTICK_CAPI_UNUSED(inFunctionLength); OPTICK_CAPI_UNUSED(inFileName); OPTICK_CAPI_UNUSED(inFileNameLenght); OPTICK_CAPI_UNUSED(inFileLine); return 0; }
+	inline uint64_t OptickAPI_PushEvent(uint64_t inEventDescription) { OPTICK_CAPI_UNUSED(inEventDescription); return 0; }
+	inline void OptickAPI_PopEvent(uint64_t inEventData) { OPTICK_CAPI_UNUSED(inEventData); }
 	inline void OptickAPI_NextFrame() {}
 	inline void OptickAPI_StartCapture() {}
-	inline void OptickAPI_StopCapture(const char* inFileName, uint16_t inFileNameLength) { OPTICK_UNUSED(inFileName); OPTICK_UNUSED(inFileNameLength); }
-	inline void OptickAPI_AttachTag_String(uint64_t inEventDescription, const char* inValue, uint16_t intValueLength) { OPTICK_UNUSED(inEventDescription); OPTICK_UNUSED(inValue); OPTICK_UNUSED(intValueLength); }
-	inline void OptickAPI_AttachTag_Int(uint64_t inEventDescription, int inValue) { OPTICK_UNUSED(inEventDescription); OPTICK_UNUSED(inValue); }
-	inline void OptickAPI_AttachTag_Float(uint64_t inEventDescription, float inValue) { OPTICK_UNUSED(inEventDescription); OPTICK_UNUSED(inValue); }
-	inline void OptickAPI_AttachTag_Int32(uint64_t inEventDescription, uint32_t inValue) { OPTICK_UNUSED(inEventDescription); OPTICK_UNUSED(inValue); }
-	inline void OptickAPI_AttachTag_UInt64(uint64_t inEventDescription, uint64_t inValue) { OPTICK_UNUSED(inEventDescription); OPTICK_UNUSED(inValue); }
-	inline void OptickAPI_AttachTag_Point(uint64_t inEventDescription, float x, float y, float z) { OPTICK_UNUSED(inEventDescription); OPTICK_UNUSED(x); OPTICK_UNUSED(y); OPTICK_UNUSED(z); }
+	inline void OptickAPI_StopCapture(const char* inFileName, uint16_t inFileNameLength) { OPTICK_CAPI_UNUSED(inFileName); OPTICK_CAPI_UNUSED(inFileNameLength); }
+	inline void OptickAPI_AttachTag_String(uint64_t inEventDescription, const char* inValue, uint16_t intValueLength) { OPTICK_CAPI_UNUSED(inEventDescription); OPTICK_CAPI_UNUSED(inValue); OPTICK_CAPI_UNUSED(intValueLength); }
+	inline void OptickAPI_AttachTag_Int(uint64_t inEventDescription, int inValue) { OPTICK_CAPI_UNUSED(inEventDescription); OPTICK_CAPI_UNUSED(inValue); }
+	inline void OptickAPI_AttachTag_Float(uint64_t inEventDescription, float inValue) { OPTICK_CAPI_UNUSED(inEventDescription); OPTICK_CAPI_UNUSED(inValue); }
+	inline void OptickAPI_AttachTag_Int32(uint64_t inEventDescription, uint32_t inValue) { OPTICK_CAPI_UNUSED(inEventDescription); OPTICK_CAPI_UNUSED(inValue); }
+	inline void OptickAPI_AttachTag_UInt64(uint64_t inEventDescription, uint64_t inValue) { OPTICK_CAPI_UNUSED(inEventDescription); OPTICK_CAPI_UNUSED(inValue); }
+	inline void OptickAPI_AttachTag_Point(uint64_t inEventDescription, float x, float y, float z) { OPTICK_CAPI_UNUSED(inEventDescription); OPTICK_CAPI_UNUSED(x); OPTICK_CAPI_UNUSED(y); OPTICK_CAPI_UNUSED(z); }
 #endif
 
 #ifdef __cplusplus
