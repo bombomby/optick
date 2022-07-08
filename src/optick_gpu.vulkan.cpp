@@ -84,11 +84,18 @@ namespace Optick
 		void Flip(void* swapChain) override;
 	};
 
+	GPUProfilerVulkan* gpuProfiler = nullptr;
+
 	void InitGpuVulkan(VkDevice* vkDevices, VkPhysicalDevice* vkPhysicalDevices, VkQueue* vkQueues, uint32_t* cmdQueuesFamily, uint32_t numQueues, const VulkanFunctions* functions)
 	{
-		GPUProfilerVulkan* gpuProfiler = Memory::New<GPUProfilerVulkan>();
+		gpuProfiler = Memory::New<GPUProfilerVulkan>();
 		gpuProfiler->InitDevice(vkDevices, vkPhysicalDevices, vkQueues, cmdQueuesFamily, numQueues, functions);
 		Core::Get().InitGPUProfiler(gpuProfiler);
+	}
+
+	void ShutdownGpuVulkan()
+	{
+		Memory::Delete<GPUProfilerVulkan>(gpuProfiler);
 	}
 
 	GPUProfilerVulkan::GPUProfilerVulkan()
