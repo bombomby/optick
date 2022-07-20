@@ -124,11 +124,18 @@ namespace Optick
 		}
 	}
 
+	GPUProfilerD3D12* gpuProfiler = nullptr;
+
 	void InitGpuD3D12(ID3D12Device* device, ID3D12CommandQueue** cmdQueues, uint32_t numQueues)
 	{
-		GPUProfilerD3D12* gpuProfiler = Memory::New<GPUProfilerD3D12>();
+		gpuProfiler = Memory::New<GPUProfilerD3D12>();
 		gpuProfiler->InitDevice(device, cmdQueues, numQueues);
 		Core::Get().InitGPUProfiler(gpuProfiler);
+	}
+
+	void ShutdownGpuD3D12()
+	{
+		Memory::Delete<GPUProfilerD3D12>(gpuProfiler);
 	}
 
 	GPUProfilerD3D12::GPUProfilerD3D12() :  queryBuffer(nullptr), device(nullptr)
