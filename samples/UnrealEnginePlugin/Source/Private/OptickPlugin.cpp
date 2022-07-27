@@ -147,6 +147,7 @@ bool FOptickPlugin::Tick(float DeltaTime)
 	//static const FString OptickMessage(TEXT("OptickPlugin is running!"));
 	//GEngine->AddOnScreenDebugMessage(31313, 5.f, FColor::Yellow, OptickMessage);
 
+	FScopeLock ScopeLock(&UpdateCriticalSection);
 	Optick::Update();
 	return true;
 }
