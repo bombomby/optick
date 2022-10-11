@@ -24,6 +24,7 @@ source_group("OptickCore" FILES ${OPTICK_SRC})
 
 # Enabled
 option(OPTICK_ENABLED "Enable profiling with Optick" ON)
+option(OPTICK_BUILD_STATIC_LIB "Build OptickCore as a static library" OFF)
 option(OPTICK_INSTALL_TARGETS "Should optick be installed? Set to OFF if you use add_subdirectory to include Optick." ON)
 
 if(NOT OPTICK_ENABLED)
@@ -43,7 +44,11 @@ option(OPTICK_BUILD_GUI_APP "Build Optick gui viewer app" OFF)
 option(OPTICK_BUILD_CONSOLE_SAMPLE "Build Optick console sample app" ${standalone})
 
 # OptickCore
-add_library(OptickCore SHARED ${OPTICK_SRC})
+if(OPTICK_BUILD_STATIC_LIB)
+	add_library(OptickCore STATIC ${OPTICK_SRC})
+else()
+	add_library(OptickCore SHARED ${OPTICK_SRC})
+endif()
 target_include_directories(OptickCore
 	PUBLIC
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src>
