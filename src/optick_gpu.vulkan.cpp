@@ -220,7 +220,7 @@ namespace Optick
 		{
 			uint32_t index = nodes[currentNode]->QueryTimestamp(outCpuTimestamp);
 			
-			(*vulkanFunctions.vkCmdWriteTimestamp)(commandBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, nodePayloads[currentNode]->queryPool, index);
+			(*vulkanFunctions.vkCmdWriteTimestamp)(commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, nodePayloads[currentNode]->queryPool, index);
 		}
 	}
 
@@ -365,7 +365,7 @@ namespace Optick
 		
 		int64_t unusedTimestap;
 		uint32_t queryIdx = nodes[nodeIndex]->QueryTimestamp( &unusedTimestap );
-		(*vulkanFunctions.vkCmdWriteTimestamp)(CB, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, nodePayloads[nodeIndex]->queryPool, queryIdx);
+		(*vulkanFunctions.vkCmdWriteTimestamp)(CB, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, nodePayloads[nodeIndex]->queryPool, queryIdx);
 		
 		(*vulkanFunctions.vkEndCommandBuffer)(CB);
 
