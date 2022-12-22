@@ -143,7 +143,7 @@ namespace Optick
 		VkResult r;
 		for (uint32_t i = 0; i < nodeCount; ++i)
 		{
-			VkPhysicalDeviceProperties properties = { 0 };
+			VkPhysicalDeviceProperties properties{};
 			(*vulkanFunctions.vkGetPhysicalDeviceProperties)(physicalDevices[i], &properties);
 			GPUProfiler::InitNode(properties.deviceName, i);
 
@@ -207,6 +207,8 @@ namespace Optick
 					(*vulkanFunctions.vkQueueSubmit)(nodePayload->queue, 1, &submitInfo, frame.fence);
 					(*vulkanFunctions.vkWaitForFences)(nodePayload->device, 1, &frame.fence, 1, (uint64_t)-1);
 					(*vulkanFunctions.vkResetCommandBuffer)(frame.commandBuffer, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
+
+					
 				}
 			}
 		}
@@ -217,7 +219,8 @@ namespace Optick
 		if (currentState == STATE_RUNNING)
 		{
 			uint32_t index = nodes[currentNode]->QueryTimestamp(outCpuTimestamp);
-			(*vulkanFunctions.vkCmdWriteTimestamp)(commandBuffer, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, nodePayloads[currentNode]->queryPool, index);
+			
+			(*vulkanFunctions.vkCmdWriteTimestamp)(commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, nodePayloads[currentNode]->queryPool, index);
 		}
 	}
 
@@ -294,18 +297,6 @@ namespace Optick
 			QueryTimestamp(commandBuffer, &AddFrameTag().timestamp);
 			nextFrame.frameEvent = &event;
 
-			OPTICK_VK_CHECK((VkResult)(*vulkanFunctions.vkEndCommandBuffer)(commandBuffer));
-			VkSubmitInfo submitInfo = {};
-			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-			submitInfo.pNext = nullptr;
-			submitInfo.waitSemaphoreCount = 0;
-			submitInfo.pWaitSemaphores = nullptr;
-			submitInfo.commandBufferCount = 1;
-			submitInfo.pCommandBuffers = &commandBuffer;
-			submitInfo.signalSemaphoreCount = 0;
-			submitInfo.pSignalSemaphores = nullptr;
-			OPTICK_VK_CHECK((VkResult)(*vulkanFunctions.vkQueueSubmit)(queue, 1, &submitInfo, fence));
-
 			uint32_t queryBegin = currentFrame.queryIndexStart;
 			uint32_t queryEnd = node.queryIndex;
 
@@ -313,7 +304,7 @@ namespace Optick
 			{
 				currentFrame.queryIndexCount = queryEnd - queryBegin;
 			}
-
+			
 			// Preparing Next Frame
 			// Try resolve timestamps for the current frame
 			if (nextFrame.queryIndexStart != (uint32_t)-1)
@@ -331,6 +322,18 @@ namespace Optick
 					ResolveTimestamps(commandBuffer, 0, finishIndex);
 				}
 			}
+
+			OPTICK_VK_CHECK((VkResult)(*vulkanFunctions.vkEndCommandBuffer)(commandBuffer));
+			VkSubmitInfo submitInfo = {};
+			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+			submitInfo.pNext = nullptr;
+			submitInfo.waitSemaphoreCount = 0;
+			submitInfo.pWaitSemaphores = nullptr;
+			submitInfo.commandBufferCount = 1;
+			submitInfo.pCommandBuffers = &commandBuffer;
+			submitInfo.signalSemaphoreCount = 0;
+			submitInfo.pSignalSemaphores = nullptr;
+			OPTICK_VK_CHECK((VkResult)(*vulkanFunctions.vkQueueSubmit)(queue, 1, &submitInfo, fence));
 
 			nextFrame.queryIndexStart = queryEnd;
 			nextFrame.queryIndexCount = 0;
@@ -359,8 +362,11 @@ namespace Optick
 		(*vulkanFunctions.vkResetFences)(Device, 1, &Fence);
 		(*vulkanFunctions.vkResetCommandBuffer)(CB, VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 		(*vulkanFunctions.vkBeginCommandBuffer)(CB, &commandBufferBeginInfo);
-		(*vulkanFunctions.vkCmdResetQueryPool)(CB, nodePayloads[nodeIndex]->queryPool, 0, 1);
-		(*vulkanFunctions.vkCmdWriteTimestamp)(CB, VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT, nodePayloads[nodeIndex]->queryPool, 0);
+		
+		int64_t unusedTimestap;
+		uint32_t queryIdx = nodes[nodeIndex]->QueryTimestamp( &unusedTimestap );
+		(*vulkanFunctions.vkCmdWriteTimestamp)(CB, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, nodePayloads[nodeIndex]->queryPool, queryIdx);
+		
 		(*vulkanFunctions.vkEndCommandBuffer)(CB);
 
 		VkSubmitInfo submitInfo = {};
@@ -376,13 +382,16 @@ namespace Optick
 		(*vulkanFunctions.vkWaitForFences)(Device, 1, &Fence, 1, (uint64_t)-1);
 
 		clock.timestampGPU = 0;
-		(*vulkanFunctions.vkGetQueryPoolResults)(Device, nodePayloads[nodeIndex]->queryPool, 0, 1, 8, &clock.timestampGPU, 8, VK_QUERY_RESULT_64_BIT);
+		(*vulkanFunctions.vkGetQueryPoolResults)(Device, nodePayloads[nodeIndex]->queryPool, queryIdx, 1, 8, &clock.timestampGPU, 8, VK_QUERY_RESULT_64_BIT);
 		clock.timestampCPU = GetHighPrecisionTime();
 		clock.frequencyCPU = GetHighPrecisionFrequency();
 
 		VkPhysicalDeviceProperties Properties;
 		(*vulkanFunctions.vkGetPhysicalDeviceProperties)(nodePayloads[nodeIndex]->physicalDevice, &Properties);
 		clock.frequencyGPU = (uint64_t)(1000000000ll / Properties.limits.timestampPeriod);
+
+		// make so vkCmdResetQueryPool is called for initialization and first frame's queues
+		nodes[nodeIndex]->queryGpuframes[frameNumber % NUM_FRAMES_DELAY].queryIndexStart = queryIdx;
 
 		return clock;
 	}
