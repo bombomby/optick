@@ -26,7 +26,7 @@
 #include "optick_common.h"
 #include "optick_miniz.h"
 
-#if defined(OPTICK_MSVC)
+#if defined(OPTICK_WINDOWS)
 #define USE_WINDOWS_SOCKETS (1)
 #else
 #define USE_BERKELEY_SOCKETS (1)
@@ -49,7 +49,7 @@ typedef UINT_PTR TcpSocket;
 #endif
 
 
-#if defined(OPTICK_MSVC)
+#if defined(OPTICK_WINDOWS)
 #pragma comment( lib, "ws2_32.lib" )
 #endif
 

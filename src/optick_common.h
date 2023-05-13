@@ -34,7 +34,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#if defined(OPTICK_MSVC)
+#if defined(OPTICK_WINDOWS)
 
 #ifdef OPTICK_UE4
 #include "Core/Public/Windows/AllowWindowsPlatformTypes.h"
