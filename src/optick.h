@@ -30,35 +30,50 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#if defined(_MSC_VER)
-#	define OPTICK_MSVC (1)
-#	define OPTICK_64BIT (1)
+////////////////////////////////////////////////////////////////////////
+// Platform Detection
+////////////////////////////////////////////////////////////////////////
+
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
+#	define OPTICK_WINDOWS (1)
+# if defined(WIN64) || defined(_WIN64) || defined(__WIN64__)
+#  define OPTICK_64BIT (1)
+# else 
+#  define OPTICK_32BIT (1)
+# endif
 #	if defined(_DURANGO)
 #		define OPTICK_PC (0)
 #	else
 #		define OPTICK_PC (1)
-#   endif
-#elif defined(__clang__) || defined(__GNUC__)
-#	define OPTICK_GCC (1)
-#	if defined(__APPLE_CC__)
-#		define OPTICK_OSX (1)
-#		define OPTICK_64BIT (1)
-#	elif defined(__linux__)
+# endif
+#elif defined(__APPLE_CC__) || defined(__APPLE__)
+#	define OPTICK_OSX (1)
+#	define OPTICK_64BIT (1)
+#elif defined(__linux__)
 #		define OPTICK_LINUX (1)
 #		define OPTICK_64BIT (1)
-#	elif defined(__FreeBSD__)
+#elif defined(__FreeBSD__)
 #		define OPTICK_FREEBSD (1)
 #		define OPTICK_64BIT (1)
-#	endif
-#	if defined(__aarch64__) || defined(_M_ARM64)
+#elif defined(__aarch64__) || defined(_M_ARM64)
 #		define OPTICK_ARM (1)
 #		define OPTICK_64BIT (1)
-#	elif defined(__arm__) || defined(_M_ARM)
+#elif defined(__arm__) || defined(_M_ARM)
 #		define OPTICK_ARM (1)
 #		define OPTICK_32BIT (1)
-#	endif
 #else
-#error Compiler not supported
+# error Platform not supported
+#endif
+
+////////////////////////////////////////////////////////////////////////
+// Compiler Detection
+////////////////////////////////////////////////////////////////////////
+#if defined(_MSC_VER)
+#	define OPTICK_MSVC (1)
+#elif defined(__clang__) || defined(__GNUC__)
+#	define OPTICK_GCC (1)
+#else
+# error Compiler not supported
 #endif
 
 ////////////////////////////////////////////////////////////////////////
