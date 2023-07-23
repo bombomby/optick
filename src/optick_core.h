@@ -256,6 +256,10 @@ struct EventStorage
 	bool isFiberStorage;
 
 	EventStorage();
+    ~EventStorage()
+    {
+        Clear(false);
+    }
 
 	OPTICK_INLINE EventData& NextEvent() 
 	{
