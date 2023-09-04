@@ -1,0 +1,4 @@
+\.vs
+\out
+\build
+CMakeUserPresets.json
