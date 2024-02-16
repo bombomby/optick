@@ -67,7 +67,12 @@
 #if defined(_MSC_VER)
 #define OPTICK_ENABLE_GPU_VULKAN (OPTICK_ENABLE_GPU /*&& 0*/)
 #else
-#define OPTICK_ENABLE_GPU_VULKAN (0)
+#define OPTICK_ENABLE_GPU_VULKAN (OPTICK_ENABLE_GPU /*&& 0*/)
+#endif
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Vulkan Functions - static+dynamic (1) or dynamic linking only (0)
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#if !defined(OPTICK_STATIC_VULKAN_FUNCTIONS)
+#define OPTICK_STATIC_VULKAN_FUNCTIONS (1)
 #endif
 #endif
-
