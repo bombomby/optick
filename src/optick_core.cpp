@@ -224,12 +224,12 @@ void SortMemoryPool(MemoryPool<T, SIZE>& memoryPool)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-EventDescription* EventDescription::Create(const char* eventName, const char* fileName, const unsigned long fileLine, const unsigned long eventColor /*= Color::Null*/, const unsigned long filter /*= 0*/, const uint8_t eventFlags /*= 0*/)
+EventDescription* EventDescription::Create(const char* eventName, const char* fileName, const uint32_t fileLine, const uint32_t eventColor /*= Color::Null*/, const uint32_t filter /*= 0*/, const uint8_t eventFlags /*= 0*/)
 {
 	return EventDescriptionBoard::Get().CreateDescription(eventName, fileName, fileLine, eventColor, filter, eventFlags);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-EventDescription* EventDescription::CreateShared(const char* eventName, const char* fileName, const unsigned long fileLine, const unsigned long eventColor /*= Color::Null*/, const unsigned long filter /*= 0*/)
+EventDescription* EventDescription::CreateShared(const char* eventName, const char* fileName, const uint32_t fileLine, const uint32_t eventColor /*= Color::Null*/, const uint32_t filter /*= 0*/)
 {
 	return EventDescriptionBoard::Get().CreateSharedDescription(eventName, fileName, fileLine, eventColor, filter);
 }
@@ -840,7 +840,8 @@ void Core::DumpProgressFormatted(const char* format, ...)
 #ifdef OPTICK_MSVC
 	vsprintf_s(buffer, format, arglist);
 #else
-	vsprintf(buffer, format, arglist);
+	// SRS - use vsnprintf() for buffer security and to eliminate warning
+	vsnprintf(buffer, sizeof(buffer), format, arglist);
 #endif
 	va_end(arglist);
 	DumpProgress(buffer);
