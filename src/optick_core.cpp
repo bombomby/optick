@@ -411,6 +411,48 @@ void Tag::Attach(const EventDescription& description, const char* val, uint16_t 
 			storage->tagStringBuffer.Add(TagString(description, val, length));
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Tag::Attach(EventStorage* storage, int64_t timestamp, const EventDescription& description, float val)
+{
+	if (EventStorage* coreStorage = Core::storage)
+		if (storage && (coreStorage->currentMode & Mode::TAGS))
+			storage->tagFloatBuffer.Add(TagFloat(description, val, timestamp));
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Tag::Attach(EventStorage* storage, int64_t timestamp, const EventDescription& description, int32_t val)
+{
+	if (EventStorage* coreStorage = Core::storage)
+		if (storage && (coreStorage->currentMode & Mode::TAGS))
+			storage->tagS32Buffer.Add(TagS32(description, val, timestamp));
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Tag::Attach(EventStorage* storage, int64_t timestamp, const EventDescription& description, uint32_t val)
+{
+	if (EventStorage* coreStorage = Core::storage)
+		if (storage && (coreStorage->currentMode & Mode::TAGS))
+			storage->tagU32Buffer.Add(TagU32(description, val, timestamp));
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Tag::Attach(EventStorage* storage, int64_t timestamp, const EventDescription& description, uint64_t val)
+{
+	if (EventStorage* coreStorage = Core::storage)
+		if (storage && (coreStorage->currentMode & Mode::TAGS))
+			storage->tagU64Buffer.Add(TagU64(description, val, timestamp));
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Tag::Attach(EventStorage* storage, int64_t timestamp, const EventDescription& description, float val[3])
+{
+	if (EventStorage* coreStorage = Core::storage)
+		if (storage && (coreStorage->currentMode & Mode::TAGS))
+			storage->tagPointBuffer.Add(TagPoint(description, val, timestamp));
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Tag::Attach(EventStorage* storage, int64_t timestamp, const EventDescription& description, const char* val)
+{
+	if (EventStorage* coreStorage = Core::storage)
+		if (storage && (coreStorage->currentMode & Mode::TAGS))
+			storage->tagStringBuffer.Add(TagString(description, val, timestamp));
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream & operator<<(OutputDataStream &stream, const EventDescription &ob)
 {
 	return stream << ob.name << ob.file << ob.line << ob.filter << ob.color << (float)0.0f << ob.flags;
