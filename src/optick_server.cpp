@@ -241,7 +241,11 @@ public:
 		return true;
 	}
 
+#if defined(USE_WINDOWS_SOCKETS)
 	int Receive(char *buf, int len)
+#else
+	ssize_t Receive(char *buf, int len)
+#endif
 	{
 		std::lock_guard<std::recursive_mutex> lock(socketLock);
 
@@ -289,7 +293,7 @@ Server::Server(short port) : socket(Memory::New<Socket>()), saveCb(nullptr)
 {
 	if (!socket->Bind(port, 4))
 	{
-		OPTICK_FAILED("Failed to bind a socket! Most probably the port is blocked by anti-virus! Change the port and verify that your game has enough permissions to communicate over the TCP\IP.");
+		OPTICK_FAILED("Failed to bind a socket! Most probably the port is blocked by anti-virus! Change the port and verify that your game has enough permissions to communicate over the TCP/IP.");
 	}
 	else
 	{
@@ -304,7 +308,11 @@ void Server::Update()
 	if (!InitConnection())
 		return;
 
+#if defined(USE_WINDOWS_SOCKETS)
 	int length = -1;
+#else
+	ssize_t length = -1;
+#endif
 	while ( (length = socket->Receive( buffer, BIFFER_SIZE ) ) > 0 )
 	{
 		networkStream.Append(buffer, length);

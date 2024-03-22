@@ -29,10 +29,12 @@
 #include "optick.h"
 
 #include <cstdio>
+#include <iostream>
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdexcept>
 
 #if defined(OPTICK_MSVC)
 
@@ -133,21 +135,30 @@ static const ProcessID INVALID_PROCESS_ID = (ProcessID)-1;
 // Asserts
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #if defined(OPTICK_MSVC)
-#define OPTICK_DEBUG_BREAK __debugbreak()
+#ifdef UNICODE
+	#define OPTICK_DEBUG_BREAK(description) OutputDebugString(L"Optick ERROR: " description L"\n"); __debugbreak()
+#else
+	#define OPTICK_DEBUG_BREAK(description) OutputDebugString("Optick ERROR: " description "\n"); __debugbreak()
+#endif
 #elif defined(OPTICK_GCC)
-#define OPTICK_DEBUG_BREAK __builtin_trap()
+#if __has_builtin(__builtin_debugtrap)
+	#define OPTICK_DEBUG_BREAK(description) std::cerr << "Optick ERROR: " << description << std::endl; __builtin_debugtrap()
+#else
+	#define OPTICK_DEBUG_BREAK(description) std::cerr << "Optick ERROR: " << description << std::endl; __builtin_trap()
+#endif
 #else
 	#error Can not define OPTICK_DEBUG_BREAK. Unknown platform.
 #endif
 #define OPTICK_UNUSED(x) (void)(x)
 #ifdef _DEBUG
-	#define OPTICK_ASSERT(arg, description) if (!(arg)) { OPTICK_DEBUG_BREAK; }
-	#define OPTICK_FAILED(description) { OPTICK_DEBUG_BREAK; }
+	#define OPTICK_ASSERT(arg, description) if (!(arg)) { OPTICK_DEBUG_BREAK(description); }
+	#define OPTICK_FAILED(description) { OPTICK_DEBUG_BREAK(description); }
+	#define OPTICK_VERIFY(arg, description, operation) if (!(arg)) { OPTICK_DEBUG_BREAK(description); operation; }
 #else
 	#define OPTICK_ASSERT(arg, description)
-	#define OPTICK_FAILED(description)
+	#define OPTICK_FAILED(description) { std::cerr << "Optick FATAL ERROR: " << description << std::endl; throw std::runtime_error("Optick FAILED"); }
+	#define OPTICK_VERIFY(arg, description, operation) if (!(arg)) { std::cerr << "Optick ERROR: " << description << std::endl; operation; }
 #endif
-#define OPTICK_VERIFY(arg, description, operation) if (!(arg)) { OPTICK_DEBUG_BREAK; operation; }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -168,7 +179,7 @@ inline int sprintf_s(char(&buffer)[sizeOfBuffer], const char* format, ...)
 #if defined(OPTICK_GCC)
 #include <string.h>
 template<size_t sizeOfBuffer>
-inline int wcstombs_s(char(&buffer)[sizeOfBuffer], const wchar_t* src, size_t maxCount)
+inline size_t wcstombs_s(char(&buffer)[sizeOfBuffer], const wchar_t* src, size_t maxCount)
 {
 	return wcstombs(buffer, src, maxCount);
 }
@@ -176,7 +187,7 @@ inline int wcstombs_s(char(&buffer)[sizeOfBuffer], const wchar_t* src, size_t ma
 
 #if defined(OPTICK_MSVC)
 template<size_t sizeOfBuffer>
-inline int wcstombs_s(char(&buffer)[sizeOfBuffer], const wchar_t* src, size_t maxCount)
+inline size_t wcstombs_s(char(&buffer)[sizeOfBuffer], const wchar_t* src, size_t maxCount)
 {
 	size_t converted = 0;
 	return ::wcstombs_s(&converted, buffer, src, maxCount);
