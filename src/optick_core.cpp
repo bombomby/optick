@@ -224,12 +224,12 @@ void SortMemoryPool(MemoryPool<T, SIZE>& memoryPool)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-EventDescription* EventDescription::Create(const char* eventName, const char* fileName, const unsigned long fileLine, const unsigned long eventColor /*= Color::Null*/, const unsigned long filter /*= 0*/, const uint8_t eventFlags /*= 0*/)
+EventDescription* EventDescription::Create(const char* eventName, const char* fileName, const uint32_t fileLine, const uint32_t eventColor /*= Color::Null*/, const uint32_t filter /*= 0*/, const uint8_t eventFlags /*= 0*/)
 {
 	return EventDescriptionBoard::Get().CreateDescription(eventName, fileName, fileLine, eventColor, filter, eventFlags);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-EventDescription* EventDescription::CreateShared(const char* eventName, const char* fileName, const unsigned long fileLine, const unsigned long eventColor /*= Color::Null*/, const unsigned long filter /*= 0*/)
+EventDescription* EventDescription::CreateShared(const char* eventName, const char* fileName, const uint32_t fileLine, const uint32_t eventColor /*= Color::Null*/, const uint32_t filter /*= 0*/)
 {
 	return EventDescriptionBoard::Get().CreateSharedDescription(eventName, fileName, fileLine, eventColor, filter);
 }
@@ -240,7 +240,7 @@ EventDescription::EventDescription() : name(""), file(""), line(0), index((uint3
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventDescription& EventDescription::operator=(const EventDescription&)
 {
-	OPTICK_FAILED("It is pointless to copy EventDescription. Please, check you logic!"); return *this;
+	OPTICK_VERIFY( false, "It is pointless to copy EventDescription. Please, check your logic!", return *this );
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 EventData* Event::Start(const EventDescription& description)
@@ -409,6 +409,48 @@ void Tag::Attach(const EventDescription& description, const char* val, uint16_t 
 	if (EventStorage * storage = Core::storage)
 		if (storage->currentMode & Mode::TAGS)
 			storage->tagStringBuffer.Add(TagString(description, val, length));
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Tag::Attach(EventStorage* storage, int64_t timestamp, const EventDescription& description, float val)
+{
+	if (EventStorage* coreStorage = Core::storage)
+		if (storage && (coreStorage->currentMode & Mode::TAGS))
+			storage->tagFloatBuffer.Add(TagFloat(description, val, timestamp));
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Tag::Attach(EventStorage* storage, int64_t timestamp, const EventDescription& description, int32_t val)
+{
+	if (EventStorage* coreStorage = Core::storage)
+		if (storage && (coreStorage->currentMode & Mode::TAGS))
+			storage->tagS32Buffer.Add(TagS32(description, val, timestamp));
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Tag::Attach(EventStorage* storage, int64_t timestamp, const EventDescription& description, uint32_t val)
+{
+	if (EventStorage* coreStorage = Core::storage)
+		if (storage && (coreStorage->currentMode & Mode::TAGS))
+			storage->tagU32Buffer.Add(TagU32(description, val, timestamp));
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Tag::Attach(EventStorage* storage, int64_t timestamp, const EventDescription& description, uint64_t val)
+{
+	if (EventStorage* coreStorage = Core::storage)
+		if (storage && (coreStorage->currentMode & Mode::TAGS))
+			storage->tagU64Buffer.Add(TagU64(description, val, timestamp));
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Tag::Attach(EventStorage* storage, int64_t timestamp, const EventDescription& description, float val[3])
+{
+	if (EventStorage* coreStorage = Core::storage)
+		if (storage && (coreStorage->currentMode & Mode::TAGS))
+			storage->tagPointBuffer.Add(TagPoint(description, val, timestamp));
+}
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void Tag::Attach(EventStorage* storage, int64_t timestamp, const EventDescription& description, const char* val)
+{
+	if (EventStorage* coreStorage = Core::storage)
+		if (storage && (coreStorage->currentMode & Mode::TAGS))
+			storage->tagStringBuffer.Add(TagString(description, val, timestamp));
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OutputDataStream & operator<<(OutputDataStream &stream, const EventDescription &ob)
@@ -840,7 +882,8 @@ void Core::DumpProgressFormatted(const char* format, ...)
 #ifdef OPTICK_MSVC
 	vsprintf_s(buffer, format, arglist);
 #else
-	vsprintf(buffer, format, arglist);
+	// SRS - use vsnprintf() for buffer security and to eliminate warning
+	vsnprintf(buffer, sizeof(buffer), format, arglist);
 #endif
 	va_end(arglist);
 	DumpProgress(buffer);
@@ -1801,10 +1844,10 @@ OPTICK_API EventStorage* RegisterStorage(const char* name, uint64_t threadID, Th
 	return entry ? &entry->storage : nullptr;
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-OPTICK_API void GpuFlip(void* swapChain)
+OPTICK_API void GpuFlip(void* swapChain, uint32_t frameID)
 {
 	if (GPUProfiler* gpuProfiler = Core::Get().gpuProfiler)
-		gpuProfiler->Flip(swapChain);
+		gpuProfiler->Flip(swapChain, frameID);
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 OPTICK_API GPUContext SetGpuContext(GPUContext context)
