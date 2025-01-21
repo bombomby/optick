@@ -384,12 +384,19 @@ namespace Optick
 
 		const_iterator begin() const
 		{
-			return const_iterator(root, root ? 0 : SIZE);
+			return const_iterator(root, 0);
 		}
 
 		const_iterator end() const
 		{
-			return const_iterator(chunk, index);
+			if (index >= SIZE)
+			{
+			    return const_iterator(chunk ? chunk->next : nullptr, 0);
+			}
+			else
+			{
+			    return const_iterator(chunk, index);
+			}
 		}
 
 		template<class Func>
